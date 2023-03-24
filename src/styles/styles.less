@@ -1,0 +1,196 @@
+@import './variables.less';
+
+html,
+body {
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
+
+body {
+  --header-margin-y: 0.1px;
+
+  padding-top: calc(var(--header-margin-y) * 2 + 6rem);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+}
+
+@media screen and (min-width: 992px) {
+  body {
+    --header-margin-y: 1.25rem;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  body {
+    --header-margin-y: 2.5rem;
+  }
+}
+
+.container {
+  padding-top: 0.01px;
+  padding-bottom: 0.01px;
+}
+
+// .ff-layout-main .container {
+//   max-width: calc(var(--bs-gutter-x, 0) + 50rem);
+// }
+
+.table-card {
+  border-radius: 12px;
+  border: 1px solid var(--color-gray-200);
+  box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.1), 0px 1px 2px rgba(16, 24, 40, 0.06);
+
+  .table {
+    --bs-table-color: var(--color-gray-600);
+
+    td {
+      padding: 24px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.42857143;
+    }
+
+    thead {
+      th {
+        padding: 12px 24px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.5;
+        // color: var(--color-gray-600);
+        background-color: var(--color-gray-50);
+      }
+
+      tr:first-child th:first-child {
+        border-top-left-radius: 12px;
+      }
+
+      tr:first-child th:last-child {
+        border-top-right-radius: 12px;
+      }
+    }
+  }
+
+  .progress {
+    --bs-progress-height: 8px;
+    --bs-progress-border-radius: 8px;
+
+    .progress-bar {
+      border-radius: inherit;
+    }
+  }
+
+  .pagination {
+    --bs-pagination-padding-x: 17px;
+    --bs-pagination-padding-y: 13px;
+    --bs-pagination-font-size: 14px;
+    --bs-pagination-border-width: 0;
+    --bs-pagination-border-radius: 50%;
+    --bs-pagination-color: var(--color-gray-600);
+    --bs-pagination-active-color: var(--color-gray-600);
+    --bs-pagination-active-bg: var(--color-gray-50);
+
+    .page-link {
+      margin: 0 4px;
+      line-height: 1;
+      border-radius: var(--bs-pagination-border-radius);
+    }
+
+    // .page-item:not(:first-child) .page-link {
+    //   margin-left: unset;
+    // }
+  }
+}
+
+.alert {
+  --bs-alert-border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4285714285;
+}
+.alert-primary {
+  --bs-alert-bg: var(--color-primary-25);
+  --bs-alert-color: var(--color-primary);
+  --bs-alert-border-color: var(--color-primary-300);
+}
+
+.ant-form {
+  .ant-form-item {
+    .ant-form-item-label > label {
+      color: var(--color-gray-700);
+    }
+
+    .ant-form-item-explain, .ant-form-item-extra {
+      color: var(--color-gray-400);
+      margin-bottom: 24px;
+    }
+  }
+
+  .ant-input,
+  .ant-picker {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border-color: var(--color-gray-300);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  }
+
+  .ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+    height: 40px;
+  }
+
+  .ant-select-single:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-search-input {
+    height: 40px;
+  }
+  .ant-select-single .ant-select-selector .ant-select-selection-item,
+  .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    line-height: 38px;
+  }
+
+  .ant-input:read-only {
+    background-color: #F9FAFB;
+  }
+
+  .ant-input-group {
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+
+    .ant-input-group-addon {
+      color: var(--color-gray-900);
+      background-color: unset;
+      border-color: var(--color-gray-300);
+    }
+
+    .ant-input {
+      box-shadow: none;
+
+      &:not(:last-child),
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless):not(:last-child):focus,
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless):not(:last-child).ant-input-focused {
+        border-right-width: 0;
+      }
+
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless):focus,
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless).ant-input-focused {
+        box-shadow: none;
+      }
+
+      + .ant-input-group-addon {
+        border-left-width: 0;
+      }
+
+      &:read-only ~ .ant-input-group-addon {
+        background-color: #F9FAFB;
+      }
+
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless) ~ .ant-input-group-addon {
+         border-color: #ff4d4f;
+      }
+    }
+  }
+}

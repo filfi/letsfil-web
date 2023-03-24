@@ -1,0 +1,20 @@
+.breadcrumb {
+  --bs-link-color: #475467;
+  --bs-breadcrumb-font-size: 14px;
+  --bs-breadcrumb-item-padding-x: 10px;
+  --bs-breadcrumb-item-active-color: #344054;
+  --bs-breadcrumb-divider-color: var(--color-gray-300);
+
+  margin-bottom: 0;
+}
+
+.item {
+  &:global(.active) {
+    font-weight: 600;
+  }
+
+  + .item::before {
+    content: '\f285';
+    font-family: bootstrap-icons;
+  }
+}
