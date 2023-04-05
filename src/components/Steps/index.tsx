@@ -2,21 +2,20 @@ import classNames from 'classnames';
 
 import styles from './styles.less';
 
-export type StepsProps = {
-  current?: number;
+export type StepItem = {
+  title: React.ReactNode;
+  desc?: React.ReactNode;
 };
 
-const Steps: React.FC<StepsProps> = ({ current = 0 }) => {
-  const items = [
-    { title: '计划方案' },
-    { title: '分配方案' },
-    { title: '建设方案' },
-    { title: '确认信息' },
-    { title: '支付保证金' },
-  ];
+export type StepsProps = {
+  current?: number;
+  items: StepItem[];
+  className?: string;
+};
 
+const Steps: React.FC<StepsProps> = ({ className, current = 0, items }) => {
   return (
-    <ol className={styles.steps}>
+    <ol className={classNames(styles.steps, className)}>
       {items.map((item, key) => (
         <li
           key={key}
@@ -26,7 +25,10 @@ const Steps: React.FC<StepsProps> = ({ current = 0 }) => {
           })}
         >
           <span className={styles.dot}></span>
-          <span className={styles.title}>{item.title}</span>
+          <div className={styles.content}>
+            <h5 className={styles.title}>{item.title}</h5>
+            <p className={styles.desc}>{item.desc}</p>
+          </div>
         </li>
       ))}
     </ol>

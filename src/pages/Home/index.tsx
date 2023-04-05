@@ -26,7 +26,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container text-center">
+    <div className={classNames('container text-center', styles.container)}>
       <div className={styles.hero}>
         <h2 className={styles.title}>
           <FormattedMessage id="pages.home.hero.title" />
@@ -51,7 +51,7 @@ export default function Home() {
                 <button
                   className="btn btn-dark btn-lg rounded-pill"
                   type="button"
-                  onClick={() => go('/market/raising')}
+                  onClick={() => go('/letsfil/raising')}
                 >
                   <span className="me-2">
                     <FormattedMessage id="pages.home.borrow.btn" />
@@ -75,7 +75,7 @@ export default function Home() {
                 <button
                   className="btn btn-dark btn-lg rounded-pill"
                   type="button"
-                  onClick={() => go('/market/investing')}
+                  onClick={() => go('/letsfil/investing')}
                 >
                   <span className="me-2">
                     <FormattedMessage id="pages.home.supply.btn" />

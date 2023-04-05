@@ -1,9 +1,8 @@
 .modal {
-  --bs-modal-width: 22rem;
   --bs-modal-color: var(--color-gray-500);
   --bs-modal-border-color: var(--color-gray-300);
-  --bs-modal-border-radius: .75rem;
-  --bs-modal-header-padding: 1rem 1rem .5rem;
+  --bs-modal-border-radius: 0.75rem;
+  --bs-modal-header-padding: 1rem 1rem 0.5rem;
   --bs-modal-header-border-width: 0;
   --bs-modal-footer-gap: 0.75rem;
   --bs-modal-footer-border-width: 0;
@@ -25,7 +24,7 @@
     }
 
     .modal-body {
-      font-size: .875rem;
+      font-size: 0.875rem;
       line-height: 1.4286;
     }
 
@@ -34,17 +33,24 @@
     }
 
     .modal-footer {
-      flex-direction: column;
-      // padding: var(--bs-modal-padding);
+      justify-content: space-around;
 
       > .btn {
-        width: 100%;
-        max-width: 20rem;
+        flex: 1;
+        // width: calc(100% - var(--bs-modal-footer-gap));
+        max-width: var(--bs-modal-btn-max-width);
       }
     }
 
-    .modal-body ~ .modal-footer {
-      padding-top: calc(0.25rem - var(--bs-modal-footer-gap) * 0.5);
-    }
+    // .modal-body ~ .modal-footer {
+    //   padding-top: calc(0.25rem - var(--bs-modal-footer-gap) * 0.5);
+    // }
+  }
+}
+
+@media screen and (min-width: 576px) {
+  .modal {
+    --bs-modal-width: 25rem;
+    --bs-modal-btn-max-width: 22.75rem;
   }
 }

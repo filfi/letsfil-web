@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import { useBoolean } from 'ahooks';
-import BigNumber from 'bignumber.js';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 
 import styles from './styles.less';
@@ -9,6 +8,7 @@ import useWallet from '@/hooks/useWallet';
 import useNotify from '@/hooks/useNotify';
 import EditPane from './components/EditPane';
 import { formatAmount } from '@/utils/format';
+import { accAdd, accSub } from '@/utils/utils';
 import { ReactComponent as LineIcon } from '@/assets/icons/line.svg';
 import { ReactComponent as ArrowLeft } from '@/assets/icons/arrow-left.svg';
 import { ReactComponent as ArrowRight } from '@/assets/icons/arrow-right.svg';
@@ -37,11 +37,11 @@ export default function Supply() {
 
     setPools((data) => ({
       ...data,
-      amount: BigNumber(amount).plus(v).toNumber(),
+      amount: accAdd(amount, v),
     }));
     setWallet((data) => ({
       ...data,
-      balance: BigNumber(balance).minus(v).toNumber(),
+      balance: accSub(balance, v),
     }));
   };
 

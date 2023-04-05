@@ -15,7 +15,9 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@ant-design/plots": "^1.2.3",
+    "@metamask/onboarding": "^1.0.1",
     "@popperjs/core": "^2.11.6",
+    "@types/numeral": "^2.0.2",
     "@umijs/max": "^4.0.40",
     "ahooks": "^3.7.4",
     "antd": "^5.0.0",
@@ -26,6 +28,8 @@
     "classnames": "^2.3.2",
     "dayjs": "^1.11.7",
     "ethers": "^5.7.2",
+    "mitt": "^3.0.0",
+    "numeral": "^2.0.6",
     "react-bootstrap": "^2.7.0",
     "react-dom": "^18.0.0",
     "react-render-html": "^0.6.0"

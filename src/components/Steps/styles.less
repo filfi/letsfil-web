@@ -1,45 +1,53 @@
 .steps {
   padding-left: 0;
   list-style-type: none;
+}
 
-  .item {
-    --dot-color: var(--color-gray-200);
-    --item-color: var(--color-gray-700);
-    --item-border-color: var(--color-gray-200);
+.item {
+  --item-min-height: 66px;
+  --item-dot-color: var(--color-gray-200);
+  --item-color: var(--color-gray-700);
+  --item-border-color: var(--color-gray-200);
+  --item-dot-box-shadow: unset;
 
-    display: flex;
-    position: relative;
-    align-items: center;
-    margin-bottom: 40px;
+  display: flex;
+  padding-left: 48px;
+  position: relative;
+  min-height: var(--item-min-height);
 
-    &:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 15px;
-      width: 2px;
-      height: 30px;
-      margin-top: 5px;
-      background-color: var(--dot-color);
-    }
+  &:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: 36px;
+    left: 15px;
+    bottom: 4px;
+    width: 2px;
+    background-color: var(--item-dot-color);
+  }
 
-    &.active,
-    &.finish {
-      --item-color: var(--color-primary);
-      --item-border-color: var(--color-primary);
-    }
-    &.finish {
-      --dot-color: var(--color-primary);
-    }
+  &.active,
+  &.finish {
+    --item-color: var(--color-primary);
+    --item-border-color: var(--color-primary);
+  }
+
+  &.active {
+    --item-dot-box-shadow: 0 0 4px 4px #f4ebff;
+  }
+
+  &.finish {
+    --item-dot-color: var(--color-primary);
   }
 
   .dot {
-    margin-right: 16px;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 32px;
     height: 32px;
     border-radius: 50%;
     border: 2px solid var(--item-border-color);
+    box-shadow: var(--item-dot-box-shadow);
 
     &::before {
       content: '';
@@ -54,7 +62,7 @@
     }
   }
 
-  .item.finish .dot::before {
+  &.finish .dot::before {
     content: '\F633';
     width: auto;
     height: auto;
@@ -67,12 +75,19 @@
     background-color: unset;
   }
 
-  .title {
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.5;
+  .content {
+    padding: 4px 0;
     color: var(--item-color);
   }
 
+  .title {
+    margin-bottom: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
 
+  .desc {
+    margin-bottom: 16px;
+  }
 }

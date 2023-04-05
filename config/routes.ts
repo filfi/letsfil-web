@@ -1,5 +1,5 @@
 export type IBestAFSRoute = {
-  path?: string,
+  path?: string;
   name?: string;
   icon?: string;
   component?: string;
@@ -40,43 +40,102 @@ const routes: IBestAFSRoute[] = [
   },
   {
     name: 'lending',
-    path: '/Lending',
+    path: '/lending',
     component: './Lending',
   },
   {
-    name: 'market',
-    path: '/market',
-    component: './market/layout',
+    name: 'account',
+    path: '/account',
+    component: './Account',
+  },
+  {
+    name: 'letsfil',
+    path: '/letsfil',
+    component: './letsfil/layout',
     routes: [
       {
+        name: 'raising',
         path: 'raising',
-        component: './market/Raising',
+        component: './letsfil/Raising',
       },
       {
+        name: 'investing',
         path: 'investing',
-        component: './market/Investing',
+        component: './letsfil/Investing',
       },
       {
+        name: 'create',
         path: 'create',
-        component: './market/Create',
+        component: './letsfil/create/layout',
+        routes: [
+          {
+            name: 'program',
+            path: 'program',
+            component: './letsfil/create/Program',
+          },
+          {
+            name: 'allocation',
+            path: 'allocation',
+            component: './letsfil/create/Allocation',
+          },
+          {
+            name: 'build',
+            path: 'build',
+            component: './letsfil/create/Build',
+          },
+          {
+            name: 'confirm',
+            path: 'confirm',
+            component: './letsfil/create/Confirm',
+          },
+          {
+            name: 'payment',
+            path: 'payment',
+            component: './letsfil/create/Payment',
+          },
+          { path: '/letsfil/create', redirect: '/letsfil/create/program' },
+        ],
       },
       {
-        path: 'allocation',
-        component: './market/Allocation',
+        name: 'payfor',
+        path: 'payfor',
+        component: './letsfil/payfor/layout',
+        routes: [
+          {
+            name: 'payforOverview',
+            path: 'overview/:id',
+            component: './letsfil/payfor/Overview',
+          },
+          {
+            name: 'payforResult',
+            path: 'result/:id',
+            component: './letsfil/payfor/Result',
+          },
+        ],
       },
       {
-        path: 'build',
-        component: './market/Build',
-      },
-      {
+        name: 'confirm',
         path: 'confirm',
-        component: './market/Confirm',
+        component: './letsfil/confirm/layout',
+        routes: [
+          {
+            name: 'confirmOverview',
+            path: 'overview/:id',
+            component: './letsfil/confirm/Overview',
+          },
+          {
+            name: 'confirmResult',
+            path: 'result/:id',
+            component: './letsfil/confirm/Result',
+          },
+        ],
       },
       {
-        path: 'payment',
-        component: './market/Payment',
+        name: 'overview',
+        path: 'overview/:id',
+        component: './letsfil/Overview',
       },
-      { path: '/market', redirect: '/market/raising' },
+      { path: '/letsfil', redirect: '/letsfil/raising' },
     ],
   },
 ];

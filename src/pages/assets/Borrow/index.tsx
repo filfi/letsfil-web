@@ -1,12 +1,12 @@
 import classNames from 'classnames';
 import { useBoolean } from 'ahooks';
-import BigNumber from 'bignumber.js';
 import { useMemo, useRef } from 'react';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
+import { accAdd } from '@/utils/utils';
 import useNotify from '@/hooks/useNotify';
 import useWallet from '@/hooks/useWallet';
 import EditPane from './components/EditPane';
@@ -111,7 +111,7 @@ export default function Supply() {
 
     setBorrow((data) => ({
       ...data,
-      amount: BigNumber(amount).plus(v).toNumber(),
+      amount: accAdd(amount, v),
     }));
   };
 

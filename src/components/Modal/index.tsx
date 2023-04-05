@@ -1,41 +1,42 @@
 import classNames from 'classnames';
 import { useIntl } from '@umijs/max';
+import { useEventListener } from 'ahooks';
 import { Modal as BSModal } from 'bootstrap';
-import { useEventListener, useMount } from 'ahooks';
-import React, {
-  useCallback,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useImperativeHandle, useRef } from 'react';
 
 import * as U from './utils';
 import styles from './styles.less';
-import { ReactComponent as IconHelp } from './imgs/help.svg';
-import { ReactComponent as IconInfo } from './imgs/info.svg';
-import { ReactComponent as IconLock } from './imgs/lock.svg';
-import { ReactComponent as IconWarn } from './imgs/warn.svg';
+import SpinBtn from '@/components/SpinBtn';
 import { mountPortal, unmountPortal } from '@/helpers/app';
+import { ReactComponent as IconHelp } from '@/assets/icons/help.svg';
+import { ReactComponent as IconInfo } from '@/assets/icons/info.svg';
+import { ReactComponent as IconLock } from '@/assets/icons/lock.svg';
+import { ReactComponent as IconWarn } from '@/assets/icons/warn.svg';
+import { ReactComponent as IconSuccess } from '@/assets/icons/success.svg';
 
 export type ModalProps = {
-  icon?: 'help' | 'info' | 'lock' | 'warn' | React.ReactNode;
+  icon?: 'help' | 'info' | 'lock' | 'warn' | 'success' | React.ReactNode;
   size?: 'sm' | 'lg' | 'xl';
   fade?: boolean;
+  closable?: boolean;
   centered?: boolean;
+  confirmLoading?: boolean;
   title?: React.ReactNode;
   children?: React.ReactNode;
   cancelText?: string;
   confirmText?: string;
   showCancel?: boolean;
   showConfirm?: boolean;
-  bodyClassName?: classNames.Argument;
   dialogClassName?: classNames.Argument;
+  headerClassName?: classNames.Argument;
+  bodyClassName?: classNames.Argument;
+  footerClassName?: classNames.Argument;
   onHide?: () => void;
   onShow?: () => void;
   onShown?: () => void;
   onHidden?: () => void;
   onCancel?: () => void;
-  onConfirm?: () => void;
+  onConfirm?: () => any;
 };
 export type ModalAction = 'cancel' | 'confirm';
 export type AlertProps = Omit<
@@ -81,14 +82,18 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
     size,
     title,
     children,
-    bodyClassName,
+    confirmLoading,
     dialogClassName,
+    bodyClassName,
+    headerClassName,
+    footerClassName,
     cancelText,
     confirmText,
     showCancel,
     fade = true,
     icon = 'info',
     centered = true,
+    closable = true,
     showConfirm = true,
     onHide,
     onShow,
@@ -103,38 +108,32 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
 
   const { formatMessage } = useIntl();
 
-  const [action, setAction] = useState<ModalAction>();
-
   const handleHide = () => getModal(el)?.hide();
   const handleShow = () => getModal(el)?.show();
   const handleToggle = () => getModal(el)?.toggle();
+
   const handleCancel = useCallback(() => {
-    handleHide();
+    onCancel?.();
 
-    setAction('cancel');
-  }, []);
-  const handleConfirm = useCallback(() => {
     handleHide();
+  }, [onCancel]);
 
-    setAction('confirm');
-  }, []);
-  const handleHidden = useCallback(() => {
-    if (action === 'cancel') {
-      onCancel?.();
-    } else if (action === 'confirm') {
-      onConfirm?.();
+  const handleConfirm = useCallback(async () => {
+    let r = onConfirm?.();
+
+    if (r instanceof Promise) {
+      r = await r;
     }
 
-    onHidden?.();
-  }, [action, onCancel, onConfirm, onHidden]);
+    if (r === false) return;
+
+    handleHide();
+  }, [onConfirm]);
 
   const _onHide = useCallback(() => onHide?.(), [onHide]);
-  const _onHidden = useCallback(() => handleHidden?.(), [handleHidden]);
+  const _onHidden = useCallback(() => onHidden?.(), [onHidden]);
   const _onShow = useCallback(() => onShow?.(), [onShow]);
-  const _onShown = useCallback(
-    () => (setAction(undefined), onShown?.()),
-    [onShown],
-  );
+  const _onShown = useCallback(() => onShown?.(), [onShown]);
 
   useImperativeHandle(
     ref,
@@ -161,6 +160,8 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
         return <IconLock />;
       case 'warn':
         return <IconWarn />;
+      case 'success':
+        return <IconSuccess />;
       default:
         return icon ?? <IconInfo />;
     }
@@ -168,19 +169,6 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
 
   const renderBtns = () => {
     const btns: React.ReactNode[] = [];
-
-    if (showConfirm) {
-      btns.push(
-        <button
-          key="confirm"
-          className="btn btn-lg btn-primary"
-          type="button"
-          onClick={handleConfirm}
-        >
-          {confirmText ?? formatMessage({ id: 'actions.button.confirm' })}
-        </button>,
-      );
-    }
 
     if (showCancel) {
       btns.push(
@@ -195,8 +183,23 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
       );
     }
 
+    if (showConfirm) {
+      btns.push(
+        <SpinBtn
+          key="confirm"
+          loading={confirmLoading}
+          className="btn btn-lg btn-primary"
+          onClick={handleConfirm}
+        >
+          {confirmText ?? formatMessage({ id: 'actions.button.confirm' })}
+        </SpinBtn>,
+      );
+    }
+
     return btns;
   };
+
+  const btns = renderBtns();
 
   return (
     <div
@@ -219,7 +222,7 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
         )}
       >
         <div className="modal-content">
-          <div className="modal-header">
+          <div className={classNames('modal-header', headerClassName)}>
             <div className="modal-icon">{renderIcon()}</div>
 
             {U.isDef(title) &&
@@ -228,11 +231,28 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
               ) : (
                 title
               ))}
+
+            {closable && (
+              <button
+                type="button"
+                className="btn-close position-absolute end-0 top-0 me-3 mt-3"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            )}
           </div>
-          <div className={classNames('modal-body', bodyClassName)}>
+          <div className={classNames('modal-body text-break', bodyClassName)}>
             {children}
           </div>
-          <div className="modal-footer">{renderBtns()}</div>
+          <div
+            className={classNames(
+              'modal-footer',
+              { 'flex-column': btns.length > 2 },
+              footerClassName,
+            )}
+          >
+            {btns}
+          </div>
         </div>
       </div>
     </div>
@@ -256,10 +276,6 @@ const AlertRender: React.ForwardRefRenderFunction<ModalAttrs, AlertProps> = (
     [],
   );
 
-  useMount(() => {
-    modal.current?.show();
-  });
-
   return <Modal ref={modal} {...props} />;
 };
 const ConfirmRender: React.ForwardRefRenderFunction<
@@ -277,10 +293,6 @@ const ConfirmRender: React.ForwardRefRenderFunction<
     }),
     [],
   );
-
-  useMount(() => {
-    modal.current?.show();
-  });
 
   return <Modal ref={modal} {...props} showCancel />;
 };
@@ -324,6 +336,7 @@ const confirm: ModalStatic['confirm'] = (msgOrOpts) => {
     ? { content: msgOrOpts }
     : msgOrOpts;
   const props: ConfirmProps = {
+    icon: 'warn',
     bodyClassName: 'text-center',
     ...opts,
     children: content,
