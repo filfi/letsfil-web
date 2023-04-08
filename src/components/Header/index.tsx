@@ -1,26 +1,13 @@
 import classNames from 'classnames';
 import { Collapse } from 'bootstrap';
-import { useEffect, useMemo, useRef } from 'react';
-import {
-  useBoolean,
-  useClickAway,
-  useEventListener,
-  useResponsive,
-  useScroll,
-} from 'ahooks';
-import {
-  FormattedMessage,
-  Link,
-  NavLink,
-  setLocale,
-  useIntl,
-  useLocation,
-  useModel,
-} from '@umijs/max';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useBoolean, useClickAway, useEventListener, useResponsive, useScroll } from 'ahooks';
+import { FormattedMessage, Link, NavLink, setLocale, useIntl, useLocation, useModel } from '@umijs/max';
 
 import './styles.less';
+import SpinBtn from '../SpinBtn';
 import { locales } from '@/constants';
-import useWallet from '@/hooks/useWallet';
+import useAccounts from '@/hooks/useAccounts';
 import { formatAddr, formatEther } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as NodeIcon } from '@/assets/icons/fil-node.svg';
@@ -35,6 +22,7 @@ const Header: React.FC = () => {
   const { initialState } = useModel('@@initialState');
 
   // states
+  const [balance, setBalance] = useState<any>();
   const [expand, { setTrue, setFalse }] = useBoolean(false);
 
   // hooks
@@ -42,30 +30,27 @@ const Header: React.FC = () => {
   const position = useScroll();
   const location = useLocation();
   const resposive = useResponsive();
-  const { wallet, connect } = useWallet();
+  const { accounts, getBalance, handleConnect } = useAccounts();
 
-  const percent = useMemo(
-    () => Math.min((position?.top ?? 0) / 80, 1),
-    [position],
-  );
-  const localeLabel = useMemo(
-    () => locales.find((_) => _.locale === locale)?.abbr,
-    [locale],
-  );
-  const maxHeight = useMemo(
-    () => (resposive.xl ? 160 : resposive.lg ? 120 : 80),
-    [resposive],
-  );
-  const headerHeight = useMemo(
-    () => maxHeight - (maxHeight - 80) * percent,
-    [maxHeight, percent],
-  );
+  const percent = useMemo(() => Math.min((position?.top ?? 0) / 80, 1), [position]);
+  const localeLabel = useMemo(() => locales.find((_) => _.locale === locale)?.abbr, [locale]);
+  const maxHeight = useMemo(() => (resposive.xl ? 160 : resposive.lg ? 120 : 80), [resposive]);
+  const headerHeight = useMemo(() => maxHeight - (maxHeight - 80) * percent, [maxHeight, percent]);
+
+  const fetchBalance = async () => {
+    if (!accounts[0]) return;
+
+    const balance = await getBalance(accounts[0]);
+
+    setBalance(balance);
+  };
 
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      '--header-height',
-      headerHeight + 'px',
-    );
+    fetchBalance();
+  }, [accounts]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--header-height', headerHeight + 'px');
   }, [headerHeight]);
 
   const closeCollapse = () => {
@@ -110,11 +95,7 @@ const Header: React.FC = () => {
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div
-            ref={collapse}
-            id="navbarCollapse"
-            className="collapse navbar-collapse"
-          >
+          <div ref={collapse} id="navbarCollapse" className="collapse navbar-collapse">
             <ul className="nav navbar-nav me-lg-auto mb-3 mb-lg-0">
               <li className="nav-item">
                 <NavLink className="nav-link" to="/">
@@ -138,9 +119,7 @@ const Header: React.FC = () => {
                 <div className="d-flex assets-bar">
                   <div className="d-flex align-items-center px-2">
                     <Filecoin />
-                    <span className="assets-bar-amount mx-2">
-                      {formatEther(wallet?.balance)}
-                    </span>
+                    <span className="assets-bar-amount mx-2">{formatEther(balance)}</span>
                     <span className="assets-bar-unit">FIL</span>
                   </div>
 
@@ -150,8 +129,9 @@ const Header: React.FC = () => {
                       className={classNames('assets-bar-extra p-2 ms-0', {
                         processing: initialState?.processing,
                       })}
-                      data-bs-toggle="dropdown"
                       aria-expanded="false"
+                      data-bs-toggle="dropdown"
+                      data-bs-auto-close="true"
                     >
                       {initialState.processing ? (
                         <>
@@ -161,16 +141,14 @@ const Header: React.FC = () => {
                           </span>
                         </>
                       ) : (
-                        <span>{formatAddr(wallet?.address)}</span>
+                        <span>{formatAddr(accounts[0])}</span>
                       )}
                     </button>
 
                     <div className="dropdown-menu dropdown-menu-end">
                       <div className="d-flex align-items-center mb-3">
                         <NodeIcon />
-                        <span className="ms-2">
-                          {formatAddr(wallet?.address)}
-                        </span>
+                        <span className="ms-2">{formatAddr(accounts[0])}</span>
                       </div>
 
                       <div className="d-flex justify-content-between">
@@ -185,42 +163,20 @@ const Header: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <button
-                  className="btn btn-light btn-connect rounded-pill"
-                  type="button"
-                  onClick={connect}
-                >
-                  {initialState?.connecting && (
-                    <span
-                      className="spinner-grow spinner-grow-sm me-2 align-middle"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                  )}
-                  <span>
-                    <FormattedMessage id="actions.button.connect" />
-                  </span>
-                </button>
+                <SpinBtn className="btn btn-light btn-connect rounded-pill" loading={initialState?.connecting} onClick={handleConnect}>
+                  <FormattedMessage id="actions.button.connect" />
+                </SpinBtn>
               )}
 
               <div className="dropdown ms-4">
-                <button
-                  className="btn border-0 h-100 shadow-none"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
+                <button type="button" className="btn border-0 h-100 shadow-none" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
                   {localeLabel}
                 </button>
 
                 <ul className="dropdown-menu dropdown-menu-end">
                   {locales.map((item) => (
                     <li key={item.locale}>
-                      <button
-                        className="dropdown-item"
-                        type="button"
-                        onClick={() => handleLocale(item.locale)}
-                      >
+                      <button className="dropdown-item" type="button" onClick={() => handleLocale(item.locale)}>
                         <span>{item.icon}</span>
                         <span className="ms-3">{item.label}</span>
                       </button>

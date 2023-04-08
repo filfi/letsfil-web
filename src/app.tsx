@@ -2,7 +2,6 @@
  * 运行时配置
  */
 
-import { routeGuard } from '@/helpers/app';
 import { getLocale, setLocale } from '@/utils/storage';
 
 /**
@@ -10,15 +9,7 @@ import { getLocale, setLocale } from '@/utils/storage';
  */
 export const locale = {
   getLocale,
-  setLocale({
-    lang,
-    realReload,
-    updater,
-  }: {
-    lang: string;
-    realReload: boolean;
-    updater: () => void;
-  }) {
+  setLocale({ lang, realReload, updater }: { lang: string; realReload: boolean; updater: () => void }) {
     setLocale(lang);
 
     if (realReload) {
@@ -37,8 +28,4 @@ export async function getInitialState() {
     connecting: false,
     processing: false,
   };
-}
-
-export function onRouteChange(data: { location: Location }) {
-  routeGuard(data);
 }

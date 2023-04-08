@@ -4,8 +4,21 @@ import BigNumber from 'bignumber.js';
 
 dayjs.locale('zh-cn');
 
-export function isFn(val: unknown): val is () => void {
-  return typeof val === 'function';
+export const isStr = (v: unknown): v is string => typeof v === 'string';
+
+export const isDef = <T>(v: T | null | undefined): v is T => v !== null && v !== undefined;
+
+export const isFn = (val: unknown): val is () => void => typeof val === 'function';
+
+export function isEqual(a?: unknown, b?: unknown) {
+  const _a = `${a ?? ''}`;
+  const _b = `${b ?? ''}`;
+
+  if (_a && _b) {
+    return _a.toLowerCase() === _b.toLowerCase();
+  }
+
+  return false;
 }
 
 /**
@@ -99,7 +112,7 @@ export async function withTx(tx: Promise<any> | (() => Promise<any>)) {
 
   console.log(res);
 
-  if (res?.status !== 1) {
+  if (res && res.status !== 1) {
     throw new Error('交易失败');
   }
 

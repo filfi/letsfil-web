@@ -5,6 +5,7 @@ import MetaMaskOboarding from '@metamask/onboarding';
 
 import abi from '@/abis/factory.abi.json';
 import { RAISE_ADDRESS } from '@/constants';
+import useAuthHandler from './useAuthHandler';
 import { createDispatcher, EventType } from '@/utils/mitt';
 
 export type RaiseInfo = {
@@ -45,14 +46,7 @@ function createContract() {
 
 const events = {
   // 募集计划创建
-  onCreateRaise: createDispatcher(EventType.OnCreateRaise, [
-    'raisePool',
-    'caller',
-    'payValue',
-    'raiseInfo',
-    'nodeInfo',
-    'raiseID',
-  ]),
+  onCreateRaise: createDispatcher(EventType.OnCreateRaise, ['raisePool', 'caller', 'payValue', 'raiseInfo', 'nodeInfo', 'raiseID']),
 };
 
 export default function useRaiseContract() {
@@ -69,9 +63,7 @@ export default function useRaiseContract() {
     contract.current?.off('eCreateRaisePlan', events.onCreateRaise);
   });
 
-  const withContract = <R = any, P extends unknown[] = any>(
-    handler: (...args: P) => Promise<R>,
-  ) => {
+  const withContract = <R = any, P extends unknown[] = any>(handler: (...args: P) => Promise<R>) => {
     return async (...args: P) => {
       if (!contract.current) {
         contract.current = createContract();
@@ -83,17 +75,17 @@ export default function useRaiseContract() {
   };
 
   const getRaisePool = withContract(
-    async (sponsor: string, minerID: number, raiseID: number) => {
+    useAuthHandler(async (sponsor: string, minerID: number, raiseID: number) => {
       return await contract.current?.getRaisePool(sponsor, minerID, raiseID);
-    },
+    }),
   );
 
   // 创建募集计划
   const createRaisePlan = withContract(
-    async (raise: RaiseInfo, node: NodeInfo, opts?: { value?: BigNumber }) => {
+    useAuthHandler(async (raise: RaiseInfo, node: NodeInfo, opts?: { value?: BigNumber }) => {
       console.log(raise, node, opts);
       return await contract.current?.createRaisePlan(raise, node, opts);
-    },
+    }),
   );
 
   return { createRaisePlan, getRaisePool };

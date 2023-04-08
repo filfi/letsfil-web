@@ -1,11 +1,10 @@
-import { history, Outlet } from '@umijs/max';
+import { history, Outlet, useModel } from '@umijs/max';
 
 import Modal from '@/components/Modal';
-import useStepsForm from '@/hooks/useStepsForm';
 import PageHeader from '@/components/PageHeader';
 
 export default function ConfirmLayout() {
-  const [, setData] = useStepsForm();
+  const [, setData] = useModel('stepform');
 
   const handleClear = () => {
     Modal.confirm({
@@ -14,7 +13,7 @@ export default function ConfirmLayout() {
       cancelText: '留在本页',
       confirmText: '确定退出',
       onConfirm: () => {
-        setData(null);
+        setData(undefined);
 
         history.replace('/letsfil');
       },

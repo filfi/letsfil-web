@@ -1,10 +1,12 @@
-import { history } from '@umijs/max';
+import { history, useModel } from '@umijs/max';
 
 import { formatDate } from '@/utils/format';
-import useStepsForm from '@/hooks/useStepsForm';
+import useProvider from '@/hooks/useProvider';
 
 export default function CreateConfirm() {
-  const [data] = useStepsForm();
+  const [data] = useModel('stepform');
+
+  const { renderLabel } = useProvider();
 
   const handleSubmit = () => {
     history.push('/letsfil/create/payment');
@@ -19,7 +21,7 @@ export default function CreateConfirm() {
 
       <div className="letsfil-item">
         <h5 className="letsfil-label">发起单位</h5>
-        <p className="mb-0">{data?.company}</p>
+        <p className="mb-0">{data?.raiseCompany}</p>
       </div>
 
       <div className="letsfil-item">
@@ -44,7 +46,7 @@ export default function CreateConfirm() {
 
       <div className="letsfil-item">
         <h5 className="letsfil-label">服务商</h5>
-        <p className="mb-0">{data?.service}</p>
+        <p className="mb-0">{renderLabel(data?.companyId)}</p>
       </div>
 
       <div className="letsfil-item">
@@ -71,9 +73,7 @@ export default function CreateConfirm() {
 
       <div className="letsfil-item">
         <h5 className="letsfil-label">节点运行周期</h5>
-        <p className="mb-0">
-          {['90', '120', '180', '240', '360'][data?.nodePeriod]}天
-        </p>
+        <p className="mb-0">{['90', '120', '180', '240', '360'][data?.nodePeriod]}天</p>
       </div>
 
       <div className="letsfil-item">
@@ -85,11 +85,7 @@ export default function CreateConfirm() {
         <button className="btn btn-light" type="button" onClick={history.back}>
           上一步
         </button>
-        <button
-          className="btn btn-primary ms-4"
-          type="button"
-          onClick={handleSubmit}
-        >
+        <button className="btn btn-primary ms-4" type="button" onClick={handleSubmit}>
           提交
         </button>
       </div>

@@ -15,7 +15,7 @@ export default defineConfig({
   routes,
 
   model: {},
-  title: 'FilFi',
+  title: "Let's Fil",
   access: false,
   deadCode: {},
   layout: false,

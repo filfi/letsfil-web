@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { useMount } from 'ahooks';
 import { Form, Input } from 'antd';
-import { history } from '@umijs/max';
+import { history, useModel } from '@umijs/max';
 
-import useWallet from '@/hooks/useWallet';
-import useStepsForm from '@/hooks/useStepsForm';
 import * as validators from '@/utils/validators';
 import { accMul, disabledDate } from '@/utils/utils';
 import DateTimePicker from '@/components/DateTimePicker';
@@ -12,11 +10,10 @@ import ProviderSelect from '@/components/ProviderSelect';
 
 export default function CreateProgram() {
   const [form] = Form.useForm();
-  const [data, setData] = useStepsForm();
+  const [accounts] = useModel('accounts');
+  const [data, setData] = useModel('stepform');
   const amount = Form.useWatch('targetAmount', form);
   const rate = Form.useWatch('securityFundRate', form);
-
-  const { wallet } = useWallet();
 
   useEffect(() => {
     let val = 0;
@@ -30,10 +27,14 @@ export default function CreateProgram() {
   }, [amount, rate]);
 
   useEffect(() => {
-    if (wallet?.address) {
-      form.setFieldValue('sponsor', wallet.address);
+    if (accounts[0]) {
+      const val = form.getFieldValue('sponsor');
+
+      if (!val) {
+        form.setFieldValue('sponsor', accounts[0]);
+      }
     }
-  }, [wallet?.address]);
+  }, [accounts]);
 
   useMount(() => {
     form.setFieldValue('securityFundRate', 0.05);
@@ -51,31 +52,16 @@ export default function CreateProgram() {
 
   return (
     <>
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={data ?? {}}
-        onFinish={handleSubmit}
-      >
+      <Form form={form} layout="vertical" initialValues={data ?? {}} onFinish={handleSubmit}>
         <Form.Item label="发起账户" name="sponsor">
           <Input readOnly placeholder="请输入发起账户" />
         </Form.Item>
 
-        <Form.Item
-          label="发起单位"
-          name="raiseCompany"
-          requiredMark={false}
-          rules={[{ required: true, message: '请输入发起单位' }]}
-        >
+        <Form.Item label="发起单位" name="raiseCompany" requiredMark={false} rules={[{ required: true, message: '请输入发起单位' }]}>
           <Input placeholder="如：XX科技有限公司" />
         </Form.Item>
 
-        <Form.Item
-          label="封装节点大小"
-          name="nodeSize"
-          help="单位进制按1024算"
-          rules={[{ required: true, message: '请输入封装节点大小' }]}
-        >
+        <Form.Item label="封装节点大小" name="nodeSize" help="单位进制按1024算" rules={[{ required: true, message: '请输入封装节点大小' }]}>
           <Input suffix="PB" placeholder="请输入数目" />
         </Form.Item>
 
@@ -83,19 +69,12 @@ export default function CreateProgram() {
           label="募集目标"
           name="targetAmount"
           requiredMark={false}
-          rules={[
-            { required: true, message: '请输入募集目标' },
-            { validator: validators.number },
-          ]}
+          rules={[{ required: true, message: '请输入募集目标' }, { validator: validators.number }]}
         >
           <Input suffix="FIL" placeholder="请输入数目" />
         </Form.Item>
 
-        <Form.Item
-          label="募集保证金"
-          name="securityFund"
-          help="募集保证金为募集目标的5%，从当前登录钱包地址中进行扣除，节点开始封装时返还"
-        >
+        <Form.Item label="募集保证金" name="securityFund" help="募集保证金为募集目标的5%，从当前登录钱包地址中进行扣除，节点开始封装时返还">
           <Input readOnly suffix="FIL" placeholder="0" />
         </Form.Item>
 
@@ -110,18 +89,10 @@ export default function CreateProgram() {
           requiredMark={false}
           rules={[{ required: true, message: '请选择募集截止时间' }]}
         >
-          <DateTimePicker
-            disabledDate={disabledDate}
-            placeholder="YYYY-MM-DD 24:00"
-          />
+          <DateTimePicker disabledDate={disabledDate} placeholder="YYYY-MM-DD 24:00" />
         </Form.Item>
 
-        <Form.Item
-          label="选择服务商"
-          name="companyId"
-          requiredMark={false}
-          rules={[{ required: true, message: '请选择服务商' }]}
-        >
+        <Form.Item label="选择服务商" name="companyId" requiredMark={false} rules={[{ required: true, message: '请选择服务商' }]}>
           <ProviderSelect onSelect={handleSelect} />
         </Form.Item>
 
@@ -130,11 +101,7 @@ export default function CreateProgram() {
         </Form.Item>
 
         <div className="letsfil-item letsfil-actions text-center">
-          <button
-            className="btn btn-light"
-            type="submit"
-            style={{ minWidth: 160 }}
-          >
+          <button className="btn btn-light" type="submit" style={{ minWidth: 160 }}>
             下一步
           </button>
         </div>

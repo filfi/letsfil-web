@@ -5,34 +5,32 @@ export function providers() {
 }
 
 export function plans(params: API.PagingParams) {
-  return A.get<API.PagingParams, API.PagingRes<API.Base>>(
-    '/raising-plan/list',
-    { params },
-  );
+  return A.get<API.PagingParams, API.PagingRes<API.Base>>('/raising-plan/list', { params });
 }
 
-export function raiseList({
-  address,
-  ...params
-}: API.PagingParams & { address: string }) {
-  return A.get<API.PagingParams, API.PagingRes<API.Base>>(
-    '/raising-plan/raiser/list',
-    {
-      params: { ...params, raiser_address: address },
-    },
-  );
+export function raiseList({ address, ...params }: API.PagingParams & { address: string }) {
+  return A.get<API.PagingParams, API.PagingRes<API.Base>>('/raising-plan/raiser/list', {
+    params: { ...params, raiser_address: address },
+  });
 }
 
-export function investList({
-  address,
-  ...params
-}: API.PagingParams & { address: string }) {
-  return A.get<API.PagingParams, API.PagingRes<API.Base>>(
-    '/raising-plan/invest/list',
-    {
-      params: { ...params, invest_address: address },
-    },
-  );
+export function investList({ address, ...params }: API.PagingParams & { address: string }) {
+  return A.get<API.PagingParams, API.PagingRes<API.Base>>('/raising-plan/invest/list', {
+    params: { ...params, invest_address: address },
+  });
+}
+
+export function getPlansByAddr(search_address: string) {
+  return A.get<
+    string,
+    API.PagingRes<{
+      miner_id: string;
+      raising_id: number;
+      raise_address: string;
+    }>
+  >('/raising-plan/address/in/plan/all/list', {
+    params: { search_address },
+  });
 }
 
 export function getInfo(id: number | string) {

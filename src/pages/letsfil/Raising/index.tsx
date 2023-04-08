@@ -1,33 +1,31 @@
 import { Table } from 'antd';
 import { useState } from 'react';
-import { Link } from '@umijs/max';
 import { useUpdateEffect } from 'ahooks';
+import { Link, useModel } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
 
 import * as A from '@/apis/raise';
 import * as F from '@/utils/format';
 import Empty from './components/Empty';
 // import { byte2pb } from '@/utils/utils';
-import useWallet from '@/hooks/useWallet';
 import PageHeader from '@/components/PageHeader';
 import usePagination from '@/hooks/usePagination';
 
 export default function Raising() {
-  const { wallet } = useWallet();
+  const [accounts] = useModel('accounts');
   const [type, setType] = useState('all');
 
   const service = async ({ page, pageSize }: any) => {
     const p = { page, page_size: pageSize };
 
     if (type === 'mine') {
-      return A.raiseList({ ...p, address: wallet?.address });
+      return A.raiseList({ ...p, address: accounts[0] });
     }
 
     return A.plans(p);
   };
 
-  const { data, page, total, loading, pageSize, changePage } =
-    usePagination(service);
+  const { data, page, total, loading, pageSize, changePage } = usePagination(service);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(data);
@@ -76,14 +74,7 @@ export default function Raising() {
       title: '募集进度',
       dataIndex: 'progress',
       render: (val: number) => (
-        <div
-          className="progress"
-          role="progressbar"
-          aria-label="Example 1px high"
-          aria-valuenow={val}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
+        <div className="progress" role="progressbar" aria-label="Example 1px high" aria-valuenow={val} aria-valuemin={0} aria-valuemax={100}>
           <div className="progress-bar" style={{ width: `${val}%` }} />
         </div>
       ),
@@ -91,9 +82,7 @@ export default function Raising() {
     {
       title: '',
       dataIndex: 'action',
-      render: (_, row) => (
-        <Link to={`/letsfil/overview/${row.raising_id}`}>查看</Link>
-      ),
+      render: (_, row) => <Link to={`/letsfil/overview/${row.raising_id}`}>查看</Link>,
     },
   ];
 
@@ -107,11 +96,7 @@ export default function Raising() {
       </PageHeader>
 
       <div className="mb-4 d-flex justify-content-between">
-        <div
-          className="btn-group"
-          role="group"
-          aria-label="Basic radio toggle button group"
-        >
+        <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
           <input
             type="radio"
             className="btn-check"
@@ -142,12 +127,7 @@ export default function Raising() {
         </div>
 
         <div className="dropdown">
-          <button
-            className="btn btn-light"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
+          <button className="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i className="bi bi-chevron-double-down"></i>
             <span className="ms-1">排序</span>
           </button>

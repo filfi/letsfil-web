@@ -106,11 +106,6 @@ const routes: IBestAFSRoute[] = [
             path: 'overview/:id',
             component: './letsfil/payfor/Overview',
           },
-          {
-            name: 'payforResult',
-            path: 'result/:id',
-            component: './letsfil/payfor/Result',
-          },
         ],
       },
       {
@@ -123,17 +118,17 @@ const routes: IBestAFSRoute[] = [
             path: 'overview/:id',
             component: './letsfil/confirm/Overview',
           },
-          {
-            name: 'confirmResult',
-            path: 'result/:id',
-            component: './letsfil/confirm/Result',
-          },
         ],
       },
       {
         name: 'overview',
         path: 'overview/:id',
         component: './letsfil/Overview',
+      },
+      {
+        name: 'staking',
+        path: 'staking/:id',
+        component: './letsfil/Staking',
       },
       { path: '/letsfil', redirect: '/letsfil/raising' },
     ],

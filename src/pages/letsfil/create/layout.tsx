@@ -1,29 +1,19 @@
 import { useMemo } from 'react';
-import { history, Outlet, useLocation } from '@umijs/max';
+import { history, Outlet, useLocation, useModel } from '@umijs/max';
 
 import Modal from '@/components/Modal';
 import Steps from '@/components/Steps';
-import useStepsForm from '@/hooks/useStepsForm';
 import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 
-const items = [
-  { title: '计划方案' },
-  { title: '分配方案' },
-  { title: '建设方案' },
-  { title: '确认信息' },
-  { title: '支付保证金' },
-];
+const items = [{ title: '计划方案' }, { title: '分配方案' }, { title: '建设方案' }, { title: '确认信息' }, { title: '支付保证金' }];
 
 export default function Create() {
   const location = useLocation();
-  const [, setData] = useStepsForm();
+  const [, setData] = useModel('stepform');
 
   const current = useMemo(
-    () =>
-      ['program', 'allocation', 'build', 'confirm', 'payment'].findIndex(
-        (path) => location.pathname.includes(path),
-      ),
+    () => ['program', 'allocation', 'build', 'confirm', 'payment'].findIndex((path) => location.pathname.includes(path)),
     [location.pathname],
   );
 
@@ -34,7 +24,7 @@ export default function Create() {
       cancelText: '留在本页',
       confirmText: '确定退出',
       onConfirm: () => {
-        setData(null);
+        setData(undefined);
 
         history.replace('/letsfil');
       },
@@ -43,12 +33,7 @@ export default function Create() {
 
   return (
     <div className="container">
-      <Breadcrumb
-        items={[
-          { title: '我的募集计划', route: '/letsfil/raising' },
-          { title: '新建募集计划' },
-        ]}
-      />
+      <Breadcrumb items={[{ title: '我的募集计划', route: '/letsfil/raising' }, { title: '新建募集计划' }]} />
 
       <PageHeader title="新建募集计划">
         <button className="btn btn-light" type="button" onClick={handleClear}>

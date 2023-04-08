@@ -1,37 +1,57 @@
-import { useRef, useState } from 'react';
+import { useModel } from '@umijs/max';
+import { useMount, useUnmount } from 'ahooks';
+import { useEffect, useRef, useState } from 'react';
 import MetaMaskOnboarding from '@metamask/onboarding';
-import { useMount, useUnmount, useUpdateEffect } from 'ahooks';
+import { ethers } from 'ethers';
 
 export default function useAccounts() {
   const onboarding = useRef(new MetaMaskOnboarding()).current;
 
+  const { setInitialState } = useModel('@@initialState');
   const [disabled, setDisabled] = useState(false);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useModel('accounts');
   const [buttonText, setBtnText] = useState('点击安装MetaMask');
 
-  const handleAccounts = (accounts: any[]) => {
+  const handleAccounts = (accounts: string[]) => {
     setAccounts(accounts);
   };
 
-  const requestAccounts = () => {
-    window.ethereum
-      ?.request({ method: 'eth_requestAccounts' })
-      .then(handleAccounts);
+  const requestAccounts = async (): Promise<string[] | undefined> => {
+    setInitialState((d: any) => ({ ...d, connecting: true }));
+
+    const accounts = await window.ethereum?.request({ method: 'eth_requestAccounts' });
+
+    console.log(accounts);
+
+    handleAccounts(accounts ?? []);
+
+    const connected = !!(accounts && accounts[0]);
+    setInitialState((d: any) => ({ ...d, connected, connecting: false }));
+
+    return accounts;
   };
 
-  const handleConnect = () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      requestAccounts();
-    } else {
-      onboarding.startOnboarding();
+  const getBalance = async (account: string) => {
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      return await provider.getBalance(account);
     }
+  };
+
+  const handleConnect = async () => {
+    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+      return await requestAccounts();
+    }
+
+    onboarding.startOnboarding();
   };
 
   useMount(() => {
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       window.ethereum?.on('accountsChanged', handleAccounts);
 
-      requestAccounts();
+      // requestAccounts();
     }
   });
 
@@ -39,23 +59,28 @@ export default function useAccounts() {
     window.ethereum?.removeListener('accountsChanged', handleAccounts);
   });
 
-  useUpdateEffect(() => {
+  useEffect(() => {
+    let connected = false;
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       if (accounts.length > 0) {
         setBtnText('已连接');
         setDisabled(true);
+        connected = true;
         onboarding.stopOnboarding();
       } else {
         setBtnText('连接钱包');
         setDisabled(false);
       }
     }
+
+    setInitialState((d: any) => ({ ...d, connected, connecting: false }));
   }, [accounts]);
 
   return {
     accounts,
     buttonText,
     disabled,
+    getBalance,
     handleConnect,
     requestAccounts,
   };

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import useWallet from '@/hooks/useWallet';
+// import useWallet from '@/hooks/useWallet';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 
 function getDom() {
@@ -29,7 +29,7 @@ function removeDom() {
 }
 
 const BasicLayout: React.FC = () => {
-  const { wallet, fetchWallet } = useWallet();
+  // const { wallet, fetchWallet } = useWallet();
   const [node, setNode] = useState<React.ReactNode>();
 
   useMount(() => {
@@ -45,9 +45,9 @@ const BasicLayout: React.FC = () => {
       setTimeout(removeDom, 1000 / 60);
     };
 
-    if (wallet) {
-      fetchWallet();
-    }
+    // if (wallet) {
+    //   fetchWallet();
+    // }
   });
 
   return (

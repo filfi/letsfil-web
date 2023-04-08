@@ -10,7 +10,7 @@ export const API_URL = process.env.API_URL ?? '';
 // hyperspace - testnet
 // export const RAISE_ADDRESS = '0x948448af544a1C0d88f4659946A8840AF258F299';
 // 2k - testnet
-export const RAISE_ADDRESS = '0x7C6508d43C5C9BbeEC8e6874b48639D18aF5751C';
+export const RAISE_ADDRESS = '0xAD2A0fF09EBc6bce52F5bB3a2FDA9F2836C648e8';
 
 export const locales = [
   {

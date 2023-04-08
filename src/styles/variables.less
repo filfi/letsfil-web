@@ -143,6 +143,17 @@
   --bs-btn-disabled-border-color: var(--color-gray-200);
 }
 
+.btn-outline-light {
+  --bs-btn-color: var(--text-main);
+  --bs-btn-border-color: @gray-300;
+  --bs-btn-hover-color: var(--text-main);
+  --bs-btn-hover-border-color: darken(@white, 5%);
+  --bs-btn-active-color: var(--text-main);
+  --bs-btn-active-border-color: darken(@white, 10%);
+  --bs-btn-disabled-color: var(--color-gray-300);
+  --bs-btn-disabled-border-color: var(--color-gray-200);
+}
+
 .btn-dark {
   --bs-btn-bg: @text-main;
   --bs-btn-border-color: @text-main;
@@ -151,6 +162,13 @@
   --bs-btn-active-bg: lighten(@text-main, 10%);
   --bs-btn-active-border-color: lighten(@text-main, 10%);
   --bs-btn-disabled-bg: rgb(@text-main 0.4);
+  --bs-btn-disabled-border-color: rgb(@text-main 0.4);
+}
+
+.btn-outline-dark {
+  --bs-btn-border-color: @text-main;
+  --bs-btn-hover-border-color: lighten(@text-main, 5%);
+  --bs-btn-active-border-color: lighten(@text-main, 10%);
   --bs-btn-disabled-border-color: rgb(@text-main 0.4);
 }
 

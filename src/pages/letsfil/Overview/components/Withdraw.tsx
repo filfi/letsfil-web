@@ -1,31 +1,51 @@
-import SpinBtn from '@/components/SpinBtn';
-import { formatEther } from '@/utils/format';
-import { ReactComponent as MinusIcon } from '@/assets/icons/minus-circle.svg';
+import { Form, Input } from 'antd';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 
-const Withdraw: React.FC<{
-  amount?: string;
-  loading?: boolean;
-  onConfirm?: () => void;
-}> = ({ amount, loading, onConfirm }) => {
+import Modal from '@/components/Modal';
+
+const Withdraw: React.ForwardRefRenderFunction<
+  ModalAttrs,
+  {
+    onConfirm?: (address: string) => void;
+  }
+> = ({ onConfirm }, ref?: React.Ref<ModalAttrs> | null) => {
+  const modal = useRef<ModalAttrs>(null);
+
+  const [form] = Form.useForm();
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      hide: () => modal.current?.hide(),
+      show: () => modal.current?.show(),
+      toggle: () => modal.current?.toggle(),
+    }),
+    [],
+  );
+
+  const handleConfirm = async () => {
+    try {
+      await form.validateFields();
+    } catch (e) {
+      return false;
+    }
+
+    const address = form.getFieldValue('address');
+
+    onConfirm?.(address);
+  };
+
   return (
-    <>
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">计划已关闭</h5>
-          <p>该计划的募集保证金共 {formatEther(amount)} FIL</p>
+    <Modal ref={modal} title="提取募集保证金" bodyClassName="pb-0" confirmText="提交" onConfirm={handleConfirm}>
+      <p className="text-gray text-center">注：提取行为将产生Gas费</p>
 
-          <SpinBtn
-            className="btn btn-primary btn-lg w-100"
-            loading={loading}
-            icon={<MinusIcon />}
-            onClick={onConfirm}
-          >
-            提取募集保证金
-          </SpinBtn>
-        </div>
-      </div>
-    </>
+      <Form layout="vertical" form={form}>
+        <Form.Item name="address" label="钱包地址" rules={[{ required: true, message: '输入地址' }]}>
+          <Input placeholder="输入地址" />
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 };
 
-export default Withdraw;
+export default forwardRef(Withdraw);

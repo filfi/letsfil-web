@@ -1,0 +1,27 @@
+.result {
+  --result-margin-y: 48px;
+  --result-margin-x: auto;
+  --result-max-width: 360px;
+
+  margin: var(--result-margin-y) var(--result-margin-x);
+  max-width: var(--result-max-width);
+  text-align: center;
+}
+
+@media screen and (min-width: 768px) {
+  .result {
+    --result-margin-y: 64px;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .result {
+    --result-margin-y: 72px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .result {
+    --result-margin-y: 96px;
+  }
+}

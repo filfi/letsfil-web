@@ -1,11 +1,9 @@
-import { history } from '@umijs/max';
 import { Form, Input, Select } from 'antd';
-
-import useStepsForm from '@/hooks/useStepsForm';
+import { history, useModel } from '@umijs/max';
 
 export default function CreateBuild() {
   const [form] = Form.useForm();
-  const [data, setData] = useStepsForm();
+  const [data, setData] = useModel('stepform');
 
   const handleSubmit = (vals: API.Base) => {
     setData((d) => ({ ...d, ...vals }));
@@ -15,25 +13,12 @@ export default function CreateBuild() {
 
   return (
     <>
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={data ?? {}}
-        onFinish={handleSubmit}
-      >
-        <Form.Item
-          label="Miner ID"
-          name="minerID"
-          rules={[{ required: true, message: '请输入Miner ID' }]}
-        >
+      <Form form={form} layout="vertical" initialValues={data ?? {}} onFinish={handleSubmit}>
+        <Form.Item label="Miner ID" name="minerID" rules={[{ required: true, message: '请输入Miner ID' }]}>
           <Input placeholder="如：F053746" />
         </Form.Item>
 
-        <Form.Item
-          label="单个扇区大小"
-          name="sectorSize"
-          rules={[{ required: true, message: '请选择单个扇区大小' }]}
-        >
+        <Form.Item label="单个扇区大小" name="sectorSize" rules={[{ required: true, message: '请选择单个扇区大小' }]}>
           <Select
             placeholder="请选择"
             options={[
@@ -43,11 +28,7 @@ export default function CreateBuild() {
           />
         </Form.Item>
 
-        <Form.Item
-          label="节点运行周期"
-          name="nodePeriod"
-          rules={[{ required: true, message: '请选择节点运行周期' }]}
-        >
+        <Form.Item label="节点运行周期" name="nodePeriod" rules={[{ required: true, message: '请选择节点运行周期' }]}>
           <Select
             placeholder="请选择"
             options={[
@@ -66,21 +47,11 @@ export default function CreateBuild() {
           help="募集成功后需在该期限内封装完毕并投入生产，否则会产生罚金"
           rules={[{ required: true, message: '请输入天数，不大于30' }]}
         >
-          <Input
-            type="number"
-            suffix="天"
-            max={30}
-            min={0}
-            placeholder="请输入天数，不大于30"
-          />
+          <Input type="number" suffix="天" max={30} min={0} placeholder="请输入天数，不大于30" />
         </Form.Item>
 
         <div className="letsfil-item letsfil-actions text-center">
-          <button
-            className="btn btn-light"
-            type="button"
-            onClick={history.back}
-          >
+          <button className="btn btn-light" type="button" onClick={history.back}>
             上一步
           </button>
           <button className="btn btn-light ms-4" type="submit">
