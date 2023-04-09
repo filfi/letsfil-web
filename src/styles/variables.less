@@ -182,9 +182,21 @@
   --bs-badge-font-weight: 500;
   --bs-badge-line-height: 1.5;
   --bs-badge-border-radius: 1rem;
+  --bs-badge-dot-bg: var(--color-gray-300);
 
   line-height: var(--bs-badge-line-height);
   background-color: var(--bs-badge-bg);
+
+  .badge-dot {
+    display: inline-block;
+    vertical-align: middle;
+    width: 6px;
+    height: 6px;
+    margin-top: -2px;
+    margin-right: 4px;
+    border-radius: 50%;
+    background: var(--bs-badge-dot-bg);
+  }
 }
 
 .badge-lg {
@@ -193,36 +205,26 @@
   --bs-badge-line-height: 1.4286;
 }
 
-.badge-success {
-  --bs-badge-bg: #ecfdf3;
-  --bs-badge-color: var(--color-success);
-
-  .badge-dot {
-    display: inline-block;
-    vertical-align: middle;
-    width: 6px;
-    height: 6px;
-    margin-top: -2px;
-    margin-right: 4px;
-    border-radius: 50%;
-    background: #12b76a;
-  }
-}
-
 .badge-primary {
   --bs-badge-bg: var(--color-primary-50);
   --bs-badge-color: var(--color-primary);
+  --bs-badge-dot-bg: #12b76a;
+}
 
-  .badge-dot {
-    display: inline-block;
-    vertical-align: middle;
-    width: 6px;
-    height: 6px;
-    margin-top: -2px;
-    margin-right: 4px;
-    border-radius: 50%;
-    background: #12b76a;
-  }
+.badge-warning {
+  --bs-badge-bg: #fffaeb;
+  --bs-badge-color: #b54708;
+}
+
+.badge-success {
+  --bs-badge-bg: #ecfdf3;
+  --bs-badge-color: var(--color-success);
+  --bs-badge-dot-bg: #12b76a;
+}
+
+.badge-danger {
+  --bs-badge-bg: #fef3f2;
+  --bs-badge-color: #b42318;
 }
 
 /** card **/
