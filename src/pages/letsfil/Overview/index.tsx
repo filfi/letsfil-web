@@ -347,7 +347,7 @@ export default function Overview() {
                         <span className="ms-2">{data?.miner_id}</span>
                       </div>
                     </td>
-                    <td>规划容量 {U.byte2pb(data?.target_power)}PB</td>
+                    <td>规划容量 {F.formatByte(data?.target_power)}</td>
                     <td className="text-end">
                       <a href="#">链上查看</a>
                     </td>

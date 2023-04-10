@@ -189,7 +189,7 @@ export default function Staking() {
                   </>
                 ) : (
                   <button type="button" className="btn btn-light btn-lg" disabled>
-                    {['未开始', '等待缴纳运维保证金', '等待服务商确认', '', '募集已关闭', '募集已完成', '募集失败'][planState]}
+                    {['未开始', '等待缴纳运维保证金', '等待服务商签名', '', '募集已关闭', '募集已完成', '募集失败'][planState]}
                   </button>
                 )}
               </div>

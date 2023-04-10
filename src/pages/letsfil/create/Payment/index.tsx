@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { ethers } from 'ethers';
+import Clipboard from 'clipboard';
 import { Form, Input } from 'antd';
 import { history, useModel } from '@umijs/max';
 import { useMemoizedFn, useMount } from 'ahooks';
@@ -19,6 +20,7 @@ import useRaiseContract from '@/hooks/useRaiseContract';
 
 export default function CreatePayment() {
   const modal = useRef<ModalAttrs>(null);
+  const btn = useRef<HTMLButtonElement>(null);
   const [data, setData] = useModel('stepform');
   const address = useRef<string | undefined>(data?.raisePool);
 
@@ -29,6 +31,27 @@ export default function CreatePayment() {
 
   const isRaisePaied = useMemo(() => raiseState > RaiseState.NotStarted, [raiseState]);
   const isPlanPaied = useMemo(() => raiseState > RaiseState.WaitPayOPSSecurityFund, [raiseState]);
+
+  const initClipboard = () => {
+    if (!btn.current) return;
+
+    const cb = new Clipboard(btn.current, {
+      text: () => {
+        const rid = data?.raiseID;
+        if (rid) {
+          return `${location.origin}/letsfil/confirm/overview/${rid}`;
+        }
+
+        return '';
+      },
+    });
+
+    cb.on('success', (e) => {
+      if (e.text) {
+        Modal.alert({ icon: 'success', content: '链接已复制' });
+      }
+    });
+  };
 
   // 创建募集计划并支付募集保证金
   const handleRaisePay = async () => {
@@ -99,6 +122,14 @@ export default function CreatePayment() {
     await toastify(async () => {
       return U.withTx(plan.specifyOpsPayer(vals.address));
     })();
+
+    const url = `${location.origin}/letsfil/payfor/overview/${data?.raiseID ?? ''}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+
+      Modal.alert({ icon: 'success', content: '链接已复制' });
+    } catch (e) {}
   };
 
   const { loading: poolLoading, run: depositOPSFund } = useLoadingify(handlePoolPay);
@@ -162,7 +193,11 @@ export default function CreatePayment() {
     [EventType.OnDepositOPSFund]: onDepositOPSFund,
   });
 
-  useMount(getRaiseState);
+  useMount(() => {
+    initClipboard();
+
+    getRaiseState();
+  });
 
   return (
     <>
@@ -214,7 +249,7 @@ export default function CreatePayment() {
         <h5 className="letsfil-label">服务商签名</h5>
         <p className={styles.help}>服务商将核对分配比例和节点信息，无误即可签名核准</p>
 
-        <button type="button" disabled={!isRaisePaied || !isPlanPaied} className="btn btn-primary btn-lg w-100">
+        <button ref={btn} type="button" disabled={!isRaisePaied || !isPlanPaied} className="btn btn-primary btn-lg w-100">
           分享计划给服务商
         </button>
       </div>
