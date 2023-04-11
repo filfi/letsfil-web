@@ -1,32 +1,54 @@
+import { ethers } from 'ethers';
 import { useModel } from '@umijs/max';
 import { useMount, useUnmount } from 'ahooks';
-import { useEffect, useRef, useState } from 'react';
 import MetaMaskOnboarding from '@metamask/onboarding';
-import { ethers } from 'ethers';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import * as S from '@/utils/storage';
 
 export default function useAccounts() {
   const onboarding = useRef(new MetaMaskOnboarding()).current;
 
-  const { setInitialState } = useModel('@@initialState');
   const [disabled, setDisabled] = useState(false);
-  const [accounts, setAccounts] = useModel('accounts');
   const [buttonText, setBtnText] = useState('点击安装MetaMask');
+  const { initialState, setInitialState } = useModel('@@initialState');
 
-  const handleAccounts = (accounts: string[]) => {
-    setAccounts(accounts);
+  const accounts = useMemo(() => initialState?.accounts ?? [], [initialState]);
+
+  const setState = (state: Partial<InitState>) => {
+    setInitialState((d) => {
+      const _state = {
+        ...d,
+        ...state,
+      };
+
+      S.setInitState(_state as any);
+
+      return _state as any;
+    });
+  };
+
+  const onAccounts = (accounts: string[]) => {
+    setState({ accounts });
+  };
+
+  const onChainChanged = (chainId: string) => {
+    setState({ chainId });
   };
 
   const requestAccounts = async (): Promise<string[] | undefined> => {
-    setInitialState((d: any) => ({ ...d, connecting: true }));
+    setState({ connecting: true });
 
     const accounts = await window.ethereum?.request({ method: 'eth_requestAccounts' });
 
     console.log(accounts);
-
-    handleAccounts(accounts ?? []);
-
     const connected = !!(accounts && accounts[0]);
-    setInitialState((d: any) => ({ ...d, connected, connecting: false }));
+
+    setState({
+      connected,
+      connecting: false,
+      accounts: accounts ?? [],
+    });
 
     return accounts;
   };
@@ -39,24 +61,14 @@ export default function useAccounts() {
     }
   };
 
-  const handleConnect = async () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      return await requestAccounts();
-    }
-
-    onboarding.startOnboarding();
-  };
-
   useMount(() => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      window.ethereum?.on('accountsChanged', handleAccounts);
-
-      // requestAccounts();
-    }
+    window.ethereum?.on('accountsChanged', onAccounts);
+    window.ethereum?.on('chainChanged', onChainChanged);
   });
 
   useUnmount(() => {
-    window.ethereum?.removeListener('accountsChanged', handleAccounts);
+    window.ethereum?.removeListener('accountsChanged', onAccounts);
+    window.ethereum?.removeListener('chainChanged', onChainChanged);
   });
 
   useEffect(() => {
@@ -73,15 +85,47 @@ export default function useAccounts() {
       }
     }
 
-    setInitialState((d: any) => ({ ...d, connected, connecting: false }));
+    setState({ connected, connecting: false });
   }, [accounts]);
+
+  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string | undefined, ...args: P) => Promise<R>) => {
+    return async (...args: P) => {
+      let account: string | undefined = accounts?.[0];
+
+      if (!account) {
+        const list = await requestAccounts();
+        account = list?.[0];
+      }
+
+      return service(account, ...args);
+    };
+  };
+
+  const withConnect = <R = any, P extends unknown[] = any>(service: (...args: P) => Promise<R>) => {
+    return withAccount((_, ...args: P) => service(...args));
+  };
+
+  const handleConnect = async () => {
+    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+      return await requestAccounts();
+    }
+
+    onboarding.startOnboarding();
+  };
+
+  const handleDisconnect = () => {
+    setState({ accounts: [], connected: false, connecting: false });
+  };
 
   return {
     accounts,
     buttonText,
     disabled,
     getBalance,
+    withAccount,
+    withConnect,
     handleConnect,
     requestAccounts,
+    handleDisconnect,
   };
 }

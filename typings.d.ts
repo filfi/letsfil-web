@@ -1,16 +1,17 @@
 declare module '.png';
-declare module '*.abi';
 declare module 'bootstrap';
 declare module 'react-render-html';
-
-declare const web3:
-  | {
-      currentProvider: Record<string, any>;
-    }
-  | undefined;
 
 declare type ModalAttrs = {
   hide: () => void;
   show: () => void;
   toggle: () => void;
+};
+
+declare type InitState = {
+  accounts: string[];
+  chainId?: string;
+  connected: boolean;
+  connecting: boolean;
+  processing: boolean;
 };

@@ -1,19 +1,21 @@
-import { Skeleton } from 'antd';
 import { ethers } from 'ethers';
+import { Skeleton } from 'antd';
 import classNames from 'classnames';
-import { useRequest } from 'ahooks';
-import { useModel, useParams } from '@umijs/max';
+import ClipboardJS from 'clipboard';
+import { useParams } from '@umijs/max';
+import { useMount, useRequest } from 'ahooks';
 import { useMemo, useRef, useState } from 'react';
+import { newDelegatedEthAddress } from '@glif/filecoin-address';
 
 import * as U from '@/utils/utils';
 import styles from './styles.less';
-import { getInfo } from '@/apis/raise';
 import Modal from '@/components/Modal';
-import toastify from '@/utils/toastify';
+import { getInfo } from '@/apis/raise';
 import { EventType } from '@/utils/mitt';
 import Result from '@/components/Result';
 import SpinBtn from '@/components/SpinBtn';
 import { formatUnix } from '@/utils/format';
+import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import { RaiseState } from '@/constants/state';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -22,11 +24,49 @@ import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 import { ReactComponent as IconCheck } from '@/assets/icons/check-filled.svg';
 
+function toF4Address(addr?: string) {
+  if (addr) {
+    return newDelegatedEthAddress(addr).toString();
+  }
+
+  return '';
+}
+
+const Code = ({ command }: { command: string }) => {
+  const btn = useRef<HTMLAnchorElement>(null);
+
+  useMount(() => {
+    if (!btn.current) return;
+
+    const cb = new ClipboardJS(btn.current, {
+      text: () => {
+        return command;
+      },
+    });
+
+    cb.on('success', () => {
+      Modal.alert({ icon: 'success', content: '已复制到剪贴板' });
+    });
+  });
+
+  return (
+    <div className={classNames('card', styles.card)}>
+      <div className={classNames('d-flex', styles.code)}>
+        <span>$</span>
+        <p className={classNames('flex-fill mx-1 mb-0 fw-bold text-break', styles.command)}>{command}</p>
+        <a ref={btn} href="#">
+          <IconCopy />
+        </a>
+      </div>
+    </div>
+  );
+};
+
 export default function ConfirmOverview() {
   const params = useParams();
   const address = useRef<string>();
 
-  const [accounts] = useModel('accounts');
+  const { accounts } = useAccounts();
   const { renderLabel } = useProvider();
   const plan = usePlanContract(address);
   const [planState, setPlanState] = useState(-1);
@@ -58,6 +98,7 @@ export default function ConfirmOverview() {
 
   const disabled = useMemo(() => planState !== RaiseState.WaitSeverSign, [planState]);
   const isSigned = useMemo(() => planState > RaiseState.WaitSeverSign, [planState]);
+  const statusText = useMemo(() => ['未缴纳募集保证金', '未缴纳运维保证金', '', '募集进行中', '计划已关闭', '募集成功', '募集失败'][planState], [planState]);
 
   const onStartRaisePlan = ({ raiseID }: API.Base) => {
     if (U.isEqual(raiseID, params.id)) {
@@ -69,6 +110,12 @@ export default function ConfirmOverview() {
   };
 
   useEmittHandler({ [EventType.OnStartRaisePlan]: onStartRaisePlan });
+
+  const getCommand = () => {
+    const address = plan.getContract()?.address;
+
+    return `lotus-miner actor set-owner --really-do-it ${toF4Address(address)} <ownerAddress>`;
+  };
 
   const handleSwitch = () => {};
 
@@ -86,9 +133,7 @@ export default function ConfirmOverview() {
       return;
     }
 
-    await toastify(async () => {
-      return await U.withTx(plan.startRaisePlan());
-    })();
+    await plan.startRaisePlan();
   });
 
   return (
@@ -113,17 +158,22 @@ export default function ConfirmOverview() {
 
               <div className="letsfil-item">
                 <h5 className="letsfil-label">募集目标</h5>
-                <p className="mb-0">{ethers.utils.formatEther(data?.target_amount ?? 0)} FIL</p>
+                <p className="mb-0">{ethers.utils.formatEther(data?.target_amount || 0)} FIL</p>
+              </div>
+
+              <div className="letsfil-item">
+                <h5 className="letsfil-label">最小募集比例</h5>
+                <p className="mb-0">{data?.min_raise_rate}%</p>
               </div>
 
               <div className="letsfil-item">
                 <h5 className="letsfil-label">募集保证金</h5>
-                <p className="mb-0">{ethers.utils.formatEther(data?.security_fund ?? 0)} FIL</p>
+                <p className="mb-0">{ethers.utils.formatEther(data?.security_fund || '0')} FIL</p>
               </div>
 
               <div className="letsfil-item">
                 <h5 className="letsfil-label">运维保证金</h5>
-                <p className="mb-0">{ethers.utils.formatEther(data?.ops_security_fund ?? 0)} FIL</p>
+                <p className="mb-0">{ethers.utils.formatEther(data?.ops_security_fund || '0')} FIL</p>
               </div>
 
               <div className="letsfil-item">
@@ -190,34 +240,11 @@ export default function ConfirmOverview() {
                 <hr />
               </div>
 
-              <div className={classNames('card', styles.card)}>
-                <div className={classNames('d-flex mb-3', styles.code)}>
-                  <span>$</span>
-                  <p className={classNames('flex-fill mx-1 mb-0 fw-bold', styles.command)}>
-                    lotus-miner actor propose-change-beneficiary --really-do-it &lt;contractAddress&gt; &lt;quota&gt; &lt;expiration&gt;
-                    <br />
-                    quota: 10000000
-                    <br />
-                    expiration: block.number + 1080 * 24 * 3600 / 30
-                  </p>
-                  <a href="#">
-                    <IconCopy />
-                  </a>
-                </div>
-                <div className={classNames('d-flex', styles.code)}>
-                  <span>$</span>
-                  <p className={classNames('flex-fill mx-1 mb-0 fw-bold', styles.command)}>
-                    lotus-miner actor set-owner --really-do-it &lt;contractAddress&gt; &lt;ownerAddress&gt;
-                  </p>
-                  <a href="#">
-                    <IconCopy />
-                  </a>
-                </div>
-              </div>
+              <Code command={getCommand()} />
 
               <div className="p-5">
                 <SpinBtn className="btn btn-primary w-100" disabled={disabled} loading={submitting} onClick={handleSubmit}>
-                  {isSigned ? '已确认' : submitting ? '正在确认' : '信息无误且已完成操作，确认'}
+                  {disabled && statusText ? statusText : isSigned ? '已确认' : submitting ? '正在确认' : '信息无误且已完成操作，确认'}
                 </SpinBtn>
               </div>
             </div>

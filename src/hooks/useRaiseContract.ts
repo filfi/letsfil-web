@@ -3,10 +3,21 @@ import { BigNumber, ethers } from 'ethers';
 import { useMount, useUnmount } from 'ahooks';
 import MetaMaskOboarding from '@metamask/onboarding';
 
+import toastify from '@/utils/toastify';
+import useAccounts from './useAccounts';
 import abi from '@/abis/factory.abi.json';
 import { RAISE_ADDRESS } from '@/constants';
-import useAuthHandler from './useAuthHandler';
+import { /* withGas, */ withTx } from '@/helpers/app';
 import { createDispatcher, EventType } from '@/utils/mitt';
+
+export type Options = {
+  gas?: ethers.BigNumberish;
+  gasLimit?: ethers.BigNumberish;
+  gasPrice?: ethers.BigNumberish;
+  maxFeePerGas?: ethers.BigNumber;
+  maxPriorityFeePerGas?: ethers.BigNumberish;
+  value?: ethers.BigNumberish;
+};
 
 export type RaiseInfo = {
   id: number; // 募集ID，合约内递增唯一标识
@@ -34,23 +45,29 @@ export type NodeInfo = {
   opsSecurityFundPayer: string; // 缴纳运维保证金地址
 };
 
+export type ExtraInfo = {
+  minRaiseRate: number; // 最小募集比例
+};
+
 function createContract() {
   if (MetaMaskOboarding.isMetaMaskInstalled()) {
     const provider = new ethers.providers.Web3Provider(window.ethereum!);
 
     const signer = provider.getSigner();
 
-    return new ethers.Contract(RAISE_ADDRESS, abi.abi, signer);
+    return new ethers.Contract(RAISE_ADDRESS, abi, signer);
   }
 }
 
 const events = {
   // 募集计划创建
-  onCreateRaise: createDispatcher(EventType.OnCreateRaise, ['raisePool', 'caller', 'payValue', 'raiseInfo', 'nodeInfo', 'raiseID']),
+  onCreateRaise: createDispatcher(EventType.OnCreateRaise, ['raisePool', 'caller', 'payValue', 'raiseInfo', 'nodeInfo', 'extraInfo', 'raiseID']),
 };
 
 export default function useRaiseContract() {
   const contract = useRef(createContract());
+
+  const { withConnect } = useAccounts();
 
   const bindEvents = () => {
     console.log(contract.current);
@@ -63,29 +80,39 @@ export default function useRaiseContract() {
     contract.current?.off('eCreateRaisePlan', events.onCreateRaise);
   });
 
-  const withContract = <R = any, P extends unknown[] = any>(handler: (...args: P) => Promise<R>) => {
+  const withContract = <R = any, P extends unknown[] = any>(handler: (contract: ethers.Contract | undefined, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
       if (!contract.current) {
         contract.current = createContract();
         bindEvents();
       }
 
-      return handler(...args);
+      return await handler(contract.current, ...args);
     };
   };
 
-  const getRaisePool = withContract(
-    useAuthHandler(async (sponsor: string, minerID: number, raiseID: number) => {
-      return await contract.current?.getRaisePool(sponsor, minerID, raiseID);
-    }),
+  const getRaisePool = withConnect(
+    withContract(
+      toastify(async (contract, sponsor: string, minerID: number, raiseID: number) => {
+        return await contract?.getRaisePool(sponsor, minerID, raiseID);
+      }),
+    ),
   );
 
   // 创建募集计划
-  const createRaisePlan = withContract(
-    useAuthHandler(async (raise: RaiseInfo, node: NodeInfo, opts?: { value?: BigNumber }) => {
-      console.log(raise, node, opts);
-      return await contract.current?.createRaisePlan(raise, node, opts);
-    }),
+  const createRaisePlan = withConnect(
+    withContract(
+      toastify(
+        withTx(async (contract, raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: Options) => {
+          console.log(raise, node, extra, opts);
+          return await contract?.createRaisePlan(raise, node, extra, {
+            // maxPriorityFeePerGas,
+            gasLimit: 10000000000,
+            ...opts,
+          });
+        }),
+      ),
+    ),
   );
 
   return { createRaisePlan, getRaisePool };

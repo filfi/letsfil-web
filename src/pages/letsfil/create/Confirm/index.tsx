@@ -30,6 +30,11 @@ export default function CreateConfirm() {
       </div>
 
       <div className="letsfil-item">
+        <h5 className="letsfil-label">最小募集比例</h5>
+        <p className="mb-0">{data?.minRaiseRate}%</p>
+      </div>
+
+      <div className="letsfil-item">
         <h5 className="letsfil-label">募集保证金</h5>
         <p className="mb-0">{data?.securityFund} FIL</p>
       </div>

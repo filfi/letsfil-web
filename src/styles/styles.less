@@ -29,6 +29,10 @@ a {
   padding-bottom: 0.01px;
 }
 
+.alert + .header {
+  top: 54px;
+}
+
 // .ff-layout-main .container {
 //   max-width: calc(var(--bs-gutter-x, 0) + 50rem);
 // }
@@ -219,9 +223,7 @@ a {
     height: 40px;
   }
 
-  .ant-select-single:not(.ant-select-customize-input)
-    .ant-select-selector
-    .ant-select-selection-search-input {
+  .ant-select-single:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-search-input {
     height: 40px;
   }
 
@@ -243,21 +245,13 @@ a {
       box-shadow: none;
 
       &:not(:last-child),
-      &.ant-input-status-error:not(.ant-input-disabled):not(
-          .ant-input-borderless
-        ):not(:last-child):focus,
-      &.ant-input-status-error:not(.ant-input-disabled):not(
-          .ant-input-borderless
-        ):not(:last-child).ant-input-focused {
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless):not(:last-child):focus,
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless):not(:last-child).ant-input-focused {
         border-right-width: 0;
       }
 
-      &.ant-input-status-error:not(.ant-input-disabled):not(
-          .ant-input-borderless
-        ):focus,
-      &.ant-input-status-error:not(.ant-input-disabled):not(
-          .ant-input-borderless
-        ).ant-input-focused {
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless):focus,
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless).ant-input-focused {
         box-shadow: none;
       }
 
@@ -269,10 +263,7 @@ a {
         background-color: #f9fafb;
       }
 
-      &.ant-input-status-error:not(.ant-input-disabled):not(
-          .ant-input-borderless
-        )
-        ~ .ant-input-group-addon {
+      &.ant-input-status-error:not(.ant-input-disabled):not(.ant-input-borderless) ~ .ant-input-group-addon {
         border-color: #ff4d4f;
       }
     }

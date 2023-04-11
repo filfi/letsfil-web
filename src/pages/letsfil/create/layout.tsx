@@ -43,7 +43,7 @@ export default function Create() {
       </PageHeader>
 
       <div className="clearfix">
-        <div className="float-start d-none d-lg-block">
+        <div className="float-start d-none d-lg-block sticky-lg-top" style={{ top: 'calc(var(--header-height) + 20px)' }}>
           <Steps className="letsfil-steps" current={current} items={items} />
         </div>
         <div className="letsfil-form">

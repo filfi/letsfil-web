@@ -34,8 +34,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 }) => {
   const [dateOpen, setDateOpen] = useState(false);
   const [timeOpen, setTimeOpen] = useState(false);
-  const [date, setDate] = useState<dayjs.Dayjs | null | undefined>();
-  const [time, setTime] = useState<dayjs.Dayjs | null | undefined>();
+  const [date, setDate] = useState<dayjs.Dayjs | null | undefined>(value ? dayjs(value) : undefined);
+  const [time, setTime] = useState<dayjs.Dayjs | null | undefined>(value ? dayjs(value) : undefined);
   // const [dateTime, setDateTime] = useState<dayjs.Dayjs | null | undefined>(resolveDateTime(value));
 
   const timeVal = useMemo(() => {
@@ -46,12 +46,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     return '';
   }, [value, dateFormat, timeFormat]);
 
-  useUpdateEffect(() => {
-    if (value) {
-      setDate(dayjs(value));
-      setTime(dayjs(value));
-    }
-  }, [value]);
+  // useUpdateEffect(() => {
+  //   if (value) {
+  //     setDate(dayjs(value));
+  //     setTime(dayjs(value));
+  //   }
+  // }, [value]);
 
   useUpdateEffect(() => {
     if (date && time) {
@@ -65,15 +65,13 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     }
   }, [date, time]);
 
-  const handleDateChange = (val: dayjs.Dayjs | null) => {
+  const handleDateSelect = (val: dayjs.Dayjs | null) => {
     setDate(val);
 
-    if (!time) {
-      setTimeOpen(true);
-    }
+    setTimeOpen(true);
   };
 
-  const handleTimeChange = (val: dayjs.Dayjs | null) => {
+  const handleTimeSelect = (val: dayjs.Dayjs | null) => {
     setTime(val);
   };
 
@@ -86,7 +84,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         format={dateFormat}
         disabled={disabled}
         disabledDate={disabledDate}
-        onChange={handleDateChange}
+        // onChange={handleDateChange}
+        onSelect={handleDateSelect}
         onOpenChange={(val) => setDateOpen(val)}
       />
       <TimePicker
@@ -96,7 +95,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         format={timeFormat}
         disabled={disabled}
         disabledTime={disabledTime}
-        onChange={handleTimeChange}
+        // onChange={handleTimeChange}
+        onSelect={handleTimeSelect}
         onOpenChange={(val) => setTimeOpen(val)}
       />
       <Input

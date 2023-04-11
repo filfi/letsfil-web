@@ -1,18 +1,18 @@
-import { Skeleton } from 'antd';
 import { ethers } from 'ethers';
+import { Skeleton } from 'antd';
 import { useRequest } from 'ahooks';
-import { useModel, useParams } from '@umijs/max';
+import { useParams } from '@umijs/max';
 import { useMemo, useRef, useState } from 'react';
 
 import * as U from '@/utils/utils';
 import styles from './styles.less';
-import { getInfo } from '@/apis/raise';
 import Modal from '@/components/Modal';
-import toastify from '@/utils/toastify';
+import { getInfo } from '@/apis/raise';
 import { EventType } from '@/utils/mitt';
 import Result from '@/components/Result';
 import SpinBtn from '@/components/SpinBtn';
 import { formatUnix } from '@/utils/format';
+import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
 import useLoadingify from '@/hooks/useLoadingify';
 import useEmittHandler from '@/hooks/useEmitHandler';
@@ -22,7 +22,7 @@ export default function PayforOverview() {
   const params = useParams();
   const address = useRef<string>();
 
-  const [accounts] = useModel('accounts');
+  const { accounts } = useAccounts();
   const plan = usePlanContract(address);
   const [planState, setPlanState] = useState(-1);
 
@@ -52,6 +52,7 @@ export default function PayforOverview() {
 
   const isPaied = useMemo(() => planState > RaiseState.WaitPayOPSSecurityFund, [planState]);
   const disabled = useMemo(() => planState !== RaiseState.WaitPayOPSSecurityFund, [planState]);
+  const statusText = useMemo(() => ['未缴纳募集保证金', '', '等待服务商签名', '募集进行中', '计划已关闭', '募集成功', '募集失败'][planState], [planState]);
 
   const onDepositOPSFund = ({ raiseID }: API.Base) => {
     if (U.isEqual(raiseID, params.id)) {
@@ -80,13 +81,9 @@ export default function PayforOverview() {
       return;
     }
 
-    await toastify(async () => {
-      return await U.withTx(
-        plan.depositOPSFund({
-          value: ethers.BigNumber.from(data.ops_security_fund),
-        }),
-      );
-    })();
+    await plan.depositOPSFund({
+      value: ethers.BigNumber.from(data.ops_security_fund),
+    });
   });
 
   return (
@@ -110,6 +107,11 @@ export default function PayforOverview() {
               <div className="letsfil-item">
                 <h5 className="letsfil-label">募集目标</h5>
                 <p className="mb-0">{ethers.utils.formatEther(data?.target_amount ?? 0)} FIL</p>
+              </div>
+
+              <div className="letsfil-item">
+                <h5 className="letsfil-label">最小募集比例</h5>
+                <p className="mb-0">{data?.min_raise_rate}%</p>
               </div>
 
               <div className="letsfil-item">
@@ -169,7 +171,7 @@ export default function PayforOverview() {
 
             <div className="px-5 mb-5">
               <SpinBtn className="btn btn-primary w-100" disabled={disabled} loading={submitting} onClick={handleSubmit}>
-                {isPaied ? '已支付' : submitting ? '正在支付' : '支付运维保证金'}
+                {disabled ? statusText : isPaied ? '已支付' : submitting ? '正在支付' : '支付运维保证金'}
               </SpinBtn>
             </div>
           </>

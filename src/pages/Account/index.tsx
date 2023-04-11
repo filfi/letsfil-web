@@ -1,6 +1,5 @@
 import { Skeleton } from 'antd';
 import classNames from 'classnames';
-import { useModel } from '@umijs/max';
 import { useMemo, useState } from 'react';
 import { ethers, BigNumber } from 'ethers';
 import { useRequest, useUpdateEffect } from 'ahooks';
@@ -9,13 +8,14 @@ import styles from './styles.less';
 import { accAdd } from '@/utils/utils';
 import { getPlansByAddr } from '@/apis/raise';
 import { formatAmount } from '@/utils/format';
+import useAccounts from '@/hooks/useAccounts';
 import PageHeader from '@/components/PageHeader';
 import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as IncomeIcon } from './imgs/income.svg';
 import { ReactComponent as WithdrawIcon } from './imgs/withdraw.svg';
 
 export default function Account() {
-  const [accounts] = useModel('accounts');
+  const { accounts } = useAccounts();
 
   const [total, setTotal] = useState(0);
   const [usable, setUsable] = useState(0);
@@ -107,11 +107,6 @@ export default function Account() {
                     <WithdrawIcon />
                     <span className="ms-2">待提取</span>
                   </div>
-
-                  <button className="btn btn-light" type="button" disabled={usable <= 0}>
-                    <span className="me-2">提取</span>
-                    <i className="bi bi-chevron-right"></i>
-                  </button>
                 </div>
 
                 <p className={classNames('card-text mb-0', styles.text)}>

@@ -1,15 +1,14 @@
 import { Table } from 'antd';
 import { ethers } from 'ethers';
 import { useState } from 'react';
-import { useUpdateEffect } from 'ahooks';
-import { Link, useModel } from '@umijs/max';
+import { Link } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
 
 import * as A from '@/apis/raise';
 import * as F from '@/utils/format';
 import Empty from './components/Empty';
 import Status from './components/Status';
-// import { byte2pb } from '@/utils/utils';
+import useAccounts from '@/hooks/useAccounts';
 import PageHeader from '@/components/PageHeader';
 import usePagination from '@/hooks/usePagination';
 
@@ -19,12 +18,17 @@ function formatIncome(progress: number) {
   return F.formatRate(val);
 }
 
-export default function Invest() {
-  const [accounts] = useModel('accounts');
+export default function Investing() {
+  const { accounts } = useAccounts();
   const [type, setType] = useState('all');
+  const [sort, setSort] = useState('desc');
 
   const service = async ({ page, pageSize }: any) => {
-    const p = { page, page_size: pageSize };
+    const p = {
+      page,
+      page_size: pageSize,
+      sort: sort === 'desc' ? 'created_at desc' : 'created_at asc',
+    };
 
     if (type === 'mine') {
       return A.raiseList({ ...p, address: accounts[0] });
@@ -33,16 +37,13 @@ export default function Invest() {
     return A.plans(p);
   };
 
-  const { data, page, total, loading, pageSize, changePage } = usePagination(service);
+  const { data, page, total, loading, pageSize, changePage } = usePagination(service, {
+    refreshDeps: [type, sort],
+  });
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(data);
     setType(e.target.value);
   };
-
-  useUpdateEffect(() => {
-    changePage(1);
-  }, [type]);
 
   const columns: ColumnsType<API.Base> = [
     {
@@ -125,29 +126,11 @@ export default function Invest() {
           </label>
         </div>
 
-        <div className="dropdown">
-          <button className="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i className="bi bi-chevron-double-down"></i>
-            <span className="ms-1">排序</span>
-          </button>
-          <ul className="dropdown-menu">
-            <li>
-              <a className="dropdown-item" href="#">
-                Action
-              </a>
-            </li>
-            <li>
-              <a className="dropdown-item" href="#">
-                Another action
-              </a>
-            </li>
-            <li>
-              <a className="dropdown-item" href="#">
-                Something else here
-              </a>
-            </li>
-          </ul>
-        </div>
+        <button className="btn btn-light" type="button" onClick={() => setSort(sort === 'asc' ? 'desc' : 'asc')}>
+          {sort === 'asc' ? <i className="bi bi-chevron-double-up"></i> : <i className="bi bi-chevron-double-down"></i>}
+
+          <span className="ms-1">排序</span>
+        </button>
       </div>
 
       {data?.length ? (

@@ -17,6 +17,7 @@ export const namespace = 'sxx.ff';
 export enum Keys {
   Locale = 'locale',
   Wallet = 'wallet',
+  InitState = 'initState',
 }
 
 export function normalizeKey(key: string) {
@@ -26,16 +27,8 @@ export function normalizeKey(key: string) {
 }
 
 export function getItem<D = any>(key: string, adapter?: Adapter): D | null;
-export function getItem<D = any>(
-  key: string,
-  defaultVal: D,
-  adapter?: Adapter,
-): D;
-export function getItem<D = any>(
-  key: string,
-  defaultVal?: D,
-  adapter = defaultAdapter,
-) {
+export function getItem<D = any>(key: string, defaultVal: D, adapter?: Adapter): D;
+export function getItem<D = any>(key: string, defaultVal?: D, adapter = defaultAdapter) {
   const storage = adapter();
   const data = storage.getItem(normalizeKey(key));
 
@@ -50,11 +43,7 @@ export function getItem<D = any>(
   return defaultVal ?? null;
 }
 
-export function setItem<D = any>(
-  key: string,
-  val: D,
-  adapter = defaultAdapter,
-) {
+export function setItem<D = any>(key: string, val: D, adapter = defaultAdapter) {
   adapter().setItem(normalizeKey(key), JSON.stringify(val));
 }
 
@@ -75,18 +64,18 @@ export function clear(adapter = defaultAdapter) {
   }
 }
 
-export function getWallet() {
-  return getItem<API.Base>(Keys.Wallet);
-}
-
-export function setWallet(wallet: API.Base) {
-  setItem(Keys.Wallet, wallet);
-}
-
 export function getLocale() {
   return getItem(Keys.Locale, defaultLocale, localeAdapter);
 }
 
 export function setLocale(locale: string) {
   setItem(Keys.Locale, locale, localeAdapter);
+}
+
+export function getInitState() {
+  return getItem<InitState>(Keys.InitState, sessionAdapter);
+}
+
+export function setInitState(state: InitState) {
+  return setItem(Keys.InitState, state, sessionAdapter);
 }

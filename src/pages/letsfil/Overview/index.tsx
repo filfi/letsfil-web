@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import { ScrollSpy } from 'bootstrap';
-import { useModel, useParams } from '@umijs/max';
+import { useParams } from '@umijs/max';
 import { useMemo, useRef, useState } from 'react';
 import { useMount, useRequest, useUpdateEffect } from 'ahooks';
 
@@ -19,6 +19,7 @@ import Staking from './components/Staking';
 import Success from './components/Success';
 import Withdraw from './components/Withdraw';
 import Unstaking from './components/Unstaking';
+import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import { RaiseState } from '@/constants/state';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -30,6 +31,7 @@ import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as Share4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as Share6 } from '@/assets/icons/share-06.svg';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
+// import Deposit from './components/Deposit';
 
 async function initScrollSpy() {
   return new ScrollSpy(document.querySelector('[data-bs-spy="scroll"]'));
@@ -41,7 +43,7 @@ export default function Overview() {
   const withdraw = useRef<ModalAttrs>(null);
   const unstaking = useRef<ModalAttrs>(null);
 
-  const [accounts] = useModel('accounts');
+  const { accounts } = useAccounts();
   const plan = usePlanContract(address);
   const [amount, setAmount] = useState(0);
   const [planState, setPlanState] = useState(-1);
@@ -156,6 +158,7 @@ export default function Overview() {
       switch (planState) {
         case RaiseState.NotStarted: // 未开始
         case RaiseState.WaitPayOPSSecurityFund: // 待缴纳运维保证金
+        // <Deposit amount={data?.security_fund} loading={opsLoading} onConfirm={handleDeposit} />
         case RaiseState.WaitSeverSign: // 等待服务商签名
           break;
         case RaiseState.InProgress: // 募集中

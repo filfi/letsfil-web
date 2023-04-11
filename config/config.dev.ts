@@ -1,13 +1,16 @@
 import { defineConfig } from '@umijs/max';
 
-import proxy from './proxy';
+import proxies from './proxy';
+
+const RUN_ENV = process.env.RUN_ENV ?? '2k';
 
 export default defineConfig({
   define: {
     'process.env': {
       API_URL: process.env.API_URL ?? '/api',
+      RPC_URL: process.env.RPC_URL ?? '/rpc',
     },
   },
 
-  proxy,
+  proxy: proxies[RUN_ENV],
 });

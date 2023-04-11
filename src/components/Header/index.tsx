@@ -30,7 +30,7 @@ const Header: React.FC = () => {
   const position = useScroll();
   const location = useLocation();
   const resposive = useResponsive();
-  const { accounts, getBalance, handleConnect } = useAccounts();
+  const { accounts, getBalance, handleConnect, handleDisconnect } = useAccounts();
 
   const percent = useMemo(() => Math.min((position?.top ?? 0) / 80, 1), [position]);
   const localeLabel = useMemo(() => locales.find((_) => _.locale === locale)?.abbr, [locale]);
@@ -123,44 +123,33 @@ const Header: React.FC = () => {
                     <span className="assets-bar-unit">FIL</span>
                   </div>
 
-                  <div className="dropdown">
-                    <button
-                      type="button"
-                      className={classNames('assets-bar-extra p-2 ms-0', {
-                        processing: initialState?.processing,
-                      })}
-                      aria-expanded="false"
-                      data-bs-toggle="dropdown"
-                      data-bs-auto-close="true"
-                    >
-                      {initialState.processing ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm"></span>
-                          <span className="ms-2">
-                            <FormattedMessage id="notify.transaction.processing" />
-                          </span>
-                        </>
-                      ) : (
+                  {initialState.processing ? (
+                    <SpinBtn className="assets-bar-extra p-2 ms-0 processing" loading>
+                      <FormattedMessage id="notify.transaction.processing" />
+                    </SpinBtn>
+                  ) : (
+                    <div className="dropdown">
+                      <button type="button" className="assets-bar-extra p-2 ms-0" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
                         <span>{formatAddr(accounts[0])}</span>
-                      )}
-                    </button>
+                      </button>
 
-                    <div className="dropdown-menu dropdown-menu-end">
-                      <div className="d-flex align-items-center mb-3">
-                        <NodeIcon />
-                        <span className="ms-2">{formatAddr(accounts[0])}</span>
-                      </div>
+                      <div className="dropdown-menu dropdown-menu-end">
+                        <div className="d-flex align-items-center mb-3">
+                          <NodeIcon />
+                          <span className="ms-2">{formatAddr(accounts[0])}</span>
+                        </div>
 
-                      <div className="d-flex justify-content-between">
-                        <Link className="btn btn-secondary" to="/account">
-                          收益概况
-                        </Link>
-                        <button type="button" className="btn btn-secondary">
-                          断开连接
-                        </button>
+                        <div className="d-flex justify-content-between">
+                          <Link className="btn btn-secondary" to="/account">
+                            收益概况
+                          </Link>
+                          <button type="button" className="btn btn-secondary" onClick={handleDisconnect}>
+                            断开连接
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ) : (
                 <SpinBtn className="btn btn-light btn-connect rounded-pill" loading={initialState?.connecting} onClick={handleConnect}>

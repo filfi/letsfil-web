@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
-import { useMount } from 'ahooks';
+import { useEffect, useMemo } from 'react';
+import { useMount, useRequest } from 'ahooks';
 import { Form, Input } from 'antd';
 import { history, useModel } from '@umijs/max';
 
+import { statChainInfo } from '@/apis/raise';
+import useAccounts from '@/hooks/useAccounts';
 import * as validators from '@/utils/validators';
 import { accMul, disabledDate } from '@/utils/utils';
 import DateTimePicker from '@/components/DateTimePicker';
@@ -10,10 +12,20 @@ import ProviderSelect from '@/components/ProviderSelect';
 
 export default function CreateProgram() {
   const [form] = Form.useForm();
-  const [accounts] = useModel('accounts');
+  const { accounts } = useAccounts();
   const [data, setData] = useModel('stepform');
+
+  const nodeSize = Form.useWatch('nodeSize', form);
   const amount = Form.useWatch('targetAmount', form);
   const rate = Form.useWatch('securityFundRate', form);
+
+  const { data: stat } = useRequest(statChainInfo, { retryCount: 3 });
+
+  const perTera = useMemo(() => stat?.pledge_per_tera ?? 0, [stat]);
+  const targetFil = useMemo(() => {
+    const val = accMul(accMul(nodeSize, 1024), perTera);
+    return Number.isNaN(val) ? 0 : val;
+  }, [nodeSize, perTera]);
 
   useEffect(() => {
     let val = 0;
@@ -39,6 +51,12 @@ export default function CreateProgram() {
   useMount(() => {
     form.setFieldValue('securityFundRate', 0.05);
   });
+
+  const handleFill = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    e.preventDefault();
+
+    form.setFieldValue('targetAmount', targetFil);
+  };
 
   const handleSelect = (_: unknown, item: API.Base) => {
     form.setFieldValue('spAddress', item.wallet_address);
@@ -70,8 +88,26 @@ export default function CreateProgram() {
           name="targetAmount"
           requiredMark={false}
           rules={[{ required: true, message: '请输入募集目标' }, { validator: validators.number }]}
+          help={
+            <>
+              <span className="me-2">根据节点大小，约需要{targetFil} FIL</span>
+              <a href="#" onClick={handleFill}>
+                填入
+              </a>
+            </>
+          }
         >
           <Input suffix="FIL" placeholder="请输入数目" />
+        </Form.Item>
+
+        <Form.Item
+          label="最小募集比例"
+          name="minRaiseRate"
+          requiredMark={false}
+          help="募集截止时，募集额达到目标的最小募集比例即可视为募集成功，例如：募集目标为100 FIL，最小募集比例为80%，那最终募集到80 FIL即可视为募集成功"
+          rules={[{ required: true, message: '请输入募集目标' }, { validator: validators.minRaiseRate }]}
+        >
+          <Input type="number" suffix="%" max={100} min={10} placeholder="请输入百分比，不低于10%，建议80%" />
         </Form.Item>
 
         <Form.Item label="募集保证金" name="securityFund" help="募集保证金为募集目标的5%，从当前登录钱包地址中进行扣除，节点开始封装时返还">

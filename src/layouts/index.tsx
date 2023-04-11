@@ -1,11 +1,11 @@
-import { useState } from 'react';
 import { useMount } from 'ahooks';
-import { Outlet } from '@umijs/max';
 import { createPortal } from 'react-dom';
+import { useMemo, useState } from 'react';
+import { Outlet, useModel } from '@umijs/max';
 
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-// import useWallet from '@/hooks/useWallet';
+import Header from '@/components/Header';
+import { SUPPORTED_CHAINS } from '@/constants';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 
 function getDom() {
@@ -29,8 +29,9 @@ function removeDom() {
 }
 
 const BasicLayout: React.FC = () => {
-  // const { wallet, fetchWallet } = useWallet();
+  const { initialState } = useModel('@@initialState');
   const [node, setNode] = useState<React.ReactNode>();
+  const showAlert = useMemo(() => initialState?.connected && initialState?.chainId && !SUPPORTED_CHAINS.includes(initialState.chainId), [initialState]);
 
   useMount(() => {
     // @ts-ignore
@@ -44,14 +45,16 @@ const BasicLayout: React.FC = () => {
 
       setTimeout(removeDom, 1000 / 60);
     };
-
-    // if (wallet) {
-    //   fetchWallet();
-    // }
   });
 
   return (
     <>
+      {showAlert && (
+        <div className="alert alert-danger fixed-top rounded-0">
+          <div className="container text-center">不支持当前网络，请切换到支持的网络</div>
+        </div>
+      )}
+
       <Header />
 
       <main className="ff-layout-main">

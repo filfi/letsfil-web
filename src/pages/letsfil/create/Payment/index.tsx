@@ -9,7 +9,6 @@ import { useMemo, useRef, useState } from 'react';
 import * as U from '@/utils/utils';
 import styles from './styles.less';
 import Modal from '@/components/Modal';
-import toastify from '@/utils/toastify';
 import { EventType } from '@/utils/mitt';
 import SpinBtn from '@/components/SpinBtn';
 import { RaiseState } from '@/constants/state';
@@ -52,89 +51,6 @@ export default function CreatePayment() {
       }
     });
   };
-
-  // 创建募集计划并支付募集保证金
-  const handleRaisePay = async () => {
-    if (!data) return;
-
-    await toastify(async () => {
-      // 创建交易
-      return await U.withTx(
-        raise.createRaisePlan(
-          {
-            // 募集计划信息
-            id: 0,
-            targetAmount: ethers.utils.parseEther(`${data.targetAmount}`),
-            securityFund: ethers.utils.parseEther(`${data.securityFund}`),
-            securityFundRate: data.securityFundRate * 100,
-            deadline: dayjs(data.deadline).unix(),
-            raiserShare: +data.raiserShare,
-            investorShare: +data.investorShare,
-            servicerShare: +data.servicerShare,
-            sponsor: data.sponsor,
-            raiseCompany: data.raiseCompany,
-            spAddress: data.spAddress,
-            companyId: data.companyId,
-          },
-          {
-            // 节点信息
-            minerID: +U.parseMinerID(data.minerID),
-            nodeSize: `${U.pb2byte(data.nodeSize)}`,
-            sectorSize: [32, 64][data.sectorSize],
-            sealPeriod: U.day2sec(data.sealPeriod),
-            nodePeriod: U.day2sec([90, 120, 180, 240, 360][data.nodePeriod]),
-            opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
-            opsSecurityFundPayer: data.sponsor,
-            realSealAmount: 0,
-          },
-          {
-            value: ethers.utils.parseEther(`${data.securityFund}`),
-          },
-        ),
-      );
-    })();
-  };
-
-  // 支付运维保证金
-  const handlePoolPay = async () => {
-    if (!data) return;
-
-    await toastify(async () => {
-      return U.withTx(
-        plan.depositOPSFund({
-          value: ethers.utils.parseEther(`${data.securityFund}`),
-        }),
-      );
-    })();
-  };
-
-  // 确认发起代付
-  const handleConfirm = async () => {
-    try {
-      await form.validateFields();
-    } catch (e) {
-      return false;
-    }
-
-    const vals = form.getFieldsValue();
-    console.log(vals);
-
-    await toastify(async () => {
-      return U.withTx(plan.specifyOpsPayer(vals.address));
-    })();
-
-    const url = `${location.origin}/letsfil/payfor/overview/${data?.raiseID ?? ''}`;
-
-    try {
-      await navigator.clipboard.writeText(url);
-
-      Modal.alert({ icon: 'success', content: '链接已复制' });
-    } catch (e) {}
-  };
-
-  const { loading: poolLoading, run: depositOPSFund } = useLoadingify(handlePoolPay);
-  const { loading: raiseLoading, run: createRaisePool } = useLoadingify(handleRaisePay);
-  const { loading: confirmLoading, run: handlePayfor } = useLoadingify(handleConfirm);
 
   const getRaiseState = async () => {
     address.current = data?.raisePool;
@@ -199,15 +115,87 @@ export default function CreatePayment() {
     getRaiseState();
   });
 
+  // 创建募集计划并支付募集保证金
+  const handleRaisePay = async () => {
+    if (!data) return;
+
+    await raise.createRaisePlan(
+      {
+        // 募集计划信息
+        id: 0,
+        targetAmount: ethers.utils.parseEther(`${data.targetAmount}`),
+        securityFund: ethers.utils.parseEther(`${data.securityFund}`),
+        securityFundRate: data.securityFundRate * 100,
+        deadline: dayjs(data.deadline).unix(),
+        raiserShare: +data.raiserShare,
+        investorShare: +data.investorShare,
+        servicerShare: +data.servicerShare,
+        sponsor: data.sponsor,
+        raiseCompany: data.raiseCompany,
+        spAddress: data.spAddress,
+        companyId: data.companyId,
+      },
+      {
+        // 节点信息
+        minerID: +U.parseMinerID(data.minerID),
+        nodeSize: `${U.pb2byte(data.nodeSize)}`,
+        sectorSize: [32, 64][data.sectorSize],
+        sealPeriod: U.day2sec(data.sealPeriod),
+        nodePeriod: U.day2sec([90, 120, 180, 240, 360][data.nodePeriod]),
+        opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
+        opsSecurityFundPayer: data.sponsor,
+        realSealAmount: 0,
+      },
+      {
+        minRaiseRate: +data.minRaiseRate,
+      },
+      {
+        value: ethers.utils.parseEther(`${data.securityFund}`),
+      },
+    );
+  };
+
+  // 支付运维保证金
+  const handlePoolPay = async () => {
+    if (!data) return;
+
+    await plan.depositOPSFund({
+      value: ethers.utils.parseEther(`${data.securityFund}`),
+    });
+  };
+
+  // 确认发起代付
+  const handleConfirm = async () => {
+    try {
+      await form.validateFields();
+    } catch (e) {
+      return false;
+    }
+
+    const vals = form.getFieldsValue();
+    console.log(vals);
+
+    await plan.specifyOpsPayer(vals.address);
+
+    const url = `${location.origin}/letsfil/payfor/overview/${data?.raiseID ?? ''}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+
+      Modal.alert({ icon: 'success', content: '链接已复制' });
+    } catch (e) {}
+  };
+
+  const { loading: poolLoading, run: depositOPSFund } = useLoadingify(handlePoolPay);
+  const { loading: raiseLoading, run: createRaisePool } = useLoadingify(handleRaisePay);
+  const { loading: confirmLoading, run: handlePayfor } = useLoadingify(handleConfirm);
+
   return (
     <>
       <div className={styles.item}>
         <h5 className="letsfil-label">募集保证金</h5>
         <p className={styles.input}>{data?.securityFund} FIL</p>
-        <p className={styles.help}>
-          募集保证金为募集目标的{data?.securityFundRate}
-          %，从当前登录钱包地址中进行扣除，节点开始封装时返还
-        </p>
+        <p className={styles.help}>募集保证金为募集目标的{data?.securityFundRate}%，从当前登录钱包地址中进行扣除，节点开始封装时返还</p>
 
         {isRaisePaied ? (
           <button type="button" disabled className="btn btn-light btn-lg w-100">
@@ -246,7 +234,7 @@ export default function CreatePayment() {
       </div>
 
       <div className={styles.item}>
-        <h5 className="letsfil-label">服务商签名</h5>
+        <h5 className="letsfil-label mb-2">服务商签名</h5>
         <p className={styles.help}>服务商将核对分配比例和节点信息，无误即可签名核准</p>
 
         <button ref={btn} type="button" disabled={!isRaisePaied || !isPlanPaied} className="btn btn-primary btn-lg w-100">

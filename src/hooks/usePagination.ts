@@ -1,20 +1,16 @@
 import { useState } from 'react';
-import { useMount } from 'ahooks';
+import { useMount, useUpdateEffect } from 'ahooks';
 
-export type IService<R = any, P extends any[] = any> = (
-  ...args: P
-) => Promise<API.PagingRes<R>>;
+export type IService<R = any, P extends any[] = any> = (...args: P) => Promise<API.PagingRes<R>>;
 
 export type IOptions = {
   defaultPage?: number;
   pageSize?: number;
   manual?: boolean;
+  refreshDeps?: any[];
 };
 
-export default function usePagination<R = any, P extends any[] = any>(
-  service: IService<R, P>,
-  options?: IOptions,
-) {
+export default function usePagination<R = any, P extends any[] = any>(service: IService<R, P>, options?: IOptions) {
   const opts = Object.assign(
     {
       defaultPage: 1,
@@ -81,6 +77,10 @@ export default function usePagination<R = any, P extends any[] = any>(
       run(...([{ pageSize, page }] as P));
     }
   });
+
+  useUpdateEffect(() => {
+    changePage(1);
+  }, opts.refreshDeps);
 
   return {
     page,
