@@ -637,32 +637,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "availableReward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "availableRewardAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -1220,7 +1194,7 @@
   },
   {
     "inputs": [],
-    "name": "totalReward",
+    "name": "totalReleasedRewardAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1297,20 +1271,7 @@
         "type": "address"
       }
     ],
-    "name": "willRelease",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "willRelease",
+    "name": "willReleaseOf",
     "outputs": [
       {
         "internalType": "uint256",

@@ -8,7 +8,7 @@ const Unstaking: React.ForwardRefRenderFunction<
   ModalAttrs,
   {
     amount?: number | string;
-    onConfirm?: (vals: { amount: string; address: string }) => void;
+    onConfirm?: (amount: string) => void;
   }
 > = ({ amount, onConfirm }, ref?: React.Ref<ModalAttrs> | null) => {
   const modal = useRef<ModalAttrs>(null);
@@ -38,9 +38,9 @@ const Unstaking: React.ForwardRefRenderFunction<
       return false;
     }
 
-    const vals = form.getFieldsValue();
+    const amount = form.getFieldValue('amount');
 
-    onConfirm?.(vals);
+    onConfirm?.(amount);
   };
 
   return (
@@ -59,13 +59,6 @@ const Unstaking: React.ForwardRefRenderFunction<
             }
           />
         </Form.Item>
-        {/* <Form.Item
-          name="address"
-          label="赎回钱包地址"
-          rules={[{ required: true, message: '输入地址' }]}
-        >
-          <Input placeholder="输入地址" />
-        </Form.Item> */}
       </Form>
     </Modal>
   );

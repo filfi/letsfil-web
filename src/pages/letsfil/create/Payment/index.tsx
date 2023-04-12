@@ -1,18 +1,18 @@
-import dayjs from 'dayjs';
 import { ethers } from 'ethers';
-import Clipboard from 'clipboard';
-import { Form, Input } from 'antd';
+import ClipboardJS from 'clipboard';
 import { history, useModel } from '@umijs/max';
 import { useMemoizedFn, useMount } from 'ahooks';
 import { useMemo, useRef, useState } from 'react';
 
-import * as U from '@/utils/utils';
 import styles from './styles.less';
+import * as H from '@/helpers/app';
+import * as U from '@/utils/utils';
 import Modal from '@/components/Modal';
 import { EventType } from '@/utils/mitt';
 import SpinBtn from '@/components/SpinBtn';
 import { RaiseState } from '@/constants/state';
 import useLoadingify from '@/hooks/useLoadingify';
+import PayforModal from '@/components/PayforModal';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import usePlanContract from '@/hooks/usePlanContract';
 import useRaiseContract from '@/hooks/useRaiseContract';
@@ -23,7 +23,6 @@ export default function CreatePayment() {
   const [data, setData] = useModel('stepform');
   const address = useRef<string | undefined>(data?.raisePool);
 
-  const [form] = Form.useForm();
   const raise = useRaiseContract();
   const plan = usePlanContract(address);
   const [raiseState, setRaiseState] = useState(-1);
@@ -34,7 +33,7 @@ export default function CreatePayment() {
   const initClipboard = () => {
     if (!btn.current) return;
 
-    const cb = new Clipboard(btn.current, {
+    const cb = new ClipboardJS(btn.current, {
       text: () => {
         const rid = data?.raiseID;
         if (rid) {
@@ -63,17 +62,17 @@ export default function CreatePayment() {
     setRaiseState(raiseState ?? -1);
   };
 
-  const onCreateRaise = useMemoizedFn((res: API.Base) => {
-    console.log('[onCreateRaise]: ', res);
+  const onCreatePlan = useMemoizedFn((res: API.Base) => {
+    console.log('[onCreatePlan]: ', res);
 
-    const { raisePool, raiseInfo } = res;
-    const raiseID = raiseInfo.id.toNumber();
+    const raisePool = res.raisePool;
+    const raiseID = res.raiseID.toString();
 
     // 当前账户创建
-    if (U.isEqual(raiseInfo.sponsor, data?.sponsor)) {
+    if (U.isEqual(raiseID, data?.raiseID)) {
       address.current = raisePool;
 
-      setData((d) => ({ ...d, raiseID, raisePool }));
+      setData((d) => ({ ...d, raisePool }));
 
       // getRaiseState();
       // 创建成功，等待支付运维保证金
@@ -84,7 +83,7 @@ export default function CreatePayment() {
   const onDepositOPSFund = useMemoizedFn((res: API.Base) => {
     console.log('[onDepositOPSFund]: ', res);
 
-    const raiseID = res.raiseID.toNumber();
+    const raiseID = res.raiseID.toString();
 
     if (U.isEqual(raiseID, data?.raiseID)) {
       setRaiseState(RaiseState.WaitSeverSign);
@@ -94,7 +93,7 @@ export default function CreatePayment() {
   const onStartPlan = useMemoizedFn((res: API.Base) => {
     console.log('[onStartPlan]: ', res);
 
-    const raiseID = res.raiseID.toNumber();
+    const raiseID = res.raiseID.toString();
 
     if (U.isEqual(raiseID, data?.raiseID)) {
       setData(undefined);
@@ -104,8 +103,8 @@ export default function CreatePayment() {
   });
 
   useEmittHandler({
-    [EventType.OnCreateRaise]: onCreateRaise,
     [EventType.OnStartRaisePlan]: onStartPlan,
+    [EventType.OnCreateRaisePlan]: onCreatePlan,
     [EventType.OnDepositOPSFund]: onDepositOPSFund,
   });
 
@@ -116,36 +115,20 @@ export default function CreatePayment() {
   });
 
   // 创建募集计划并支付募集保证金
-  const handleRaisePay = async () => {
+  const { loading: raiseLoading, run: handleRaisePay } = useLoadingify(async () => {
     if (!data) return;
 
-    await raise.createRaisePlan(
-      {
-        // 募集计划信息
-        id: 0,
-        targetAmount: ethers.utils.parseEther(`${data.targetAmount}`),
-        securityFund: ethers.utils.parseEther(`${data.securityFund}`),
-        securityFundRate: data.securityFundRate * 100,
-        deadline: dayjs(data.deadline).unix(),
-        raiserShare: +data.raiserShare,
-        investorShare: +data.investorShare,
-        servicerShare: +data.servicerShare,
-        sponsor: data.sponsor,
-        raiseCompany: data.raiseCompany,
-        spAddress: data.spAddress,
-        companyId: data.companyId,
-      },
-      {
-        // 节点信息
-        minerID: +U.parseMinerID(data.minerID),
-        nodeSize: `${U.pb2byte(data.nodeSize)}`,
-        sectorSize: [32, 64][data.sectorSize],
-        sealPeriod: U.day2sec(data.sealPeriod),
-        nodePeriod: U.day2sec([90, 120, 180, 240, 360][data.nodePeriod]),
-        opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
-        opsSecurityFundPayer: data.sponsor,
-        realSealAmount: 0,
-      },
+    // 募集计划信息
+    const raiseInfo = H.transformRaiseInfo(data);
+    // 节点信息
+    const nodeInfo = H.transformNodeInfo(data);
+
+    setData((d) => ({ ...d, raiseID: raiseInfo.id.toString() }));
+
+    const res = await raise.createRaisePlan(
+      raiseInfo,
+      nodeInfo,
+      // 拓展信息
       {
         minRaiseRate: +data.minRaiseRate,
       },
@@ -153,29 +136,28 @@ export default function CreatePayment() {
         value: ethers.utils.parseEther(`${data.securityFund}`),
       },
     );
-  };
+
+    if (res?.status === 1) {
+      setRaiseState(RaiseState.WaitPayOPSSecurityFund);
+    }
+  });
 
   // 支付运维保证金
-  const handlePoolPay = async () => {
+  const { loading: opsLoading, run: handleOpsFund } = useLoadingify(async () => {
     if (!data) return;
 
-    await plan.depositOPSFund({
+    const res = await plan.depositOPSFund({
       value: ethers.utils.parseEther(`${data.securityFund}`),
     });
-  };
+
+    if (res?.status === 1) {
+      setRaiseState(RaiseState.WaitSeverSign);
+    }
+  });
 
   // 确认发起代付
-  const handleConfirm = async () => {
-    try {
-      await form.validateFields();
-    } catch (e) {
-      return false;
-    }
-
-    const vals = form.getFieldsValue();
-    console.log(vals);
-
-    await plan.specifyOpsPayer(vals.address);
+  const { loading: payforLoading, run: handlePayfor } = useLoadingify(async (address: string) => {
+    await plan.specifyOpsPayer(address);
 
     const url = `${location.origin}/letsfil/payfor/overview/${data?.raiseID ?? ''}`;
 
@@ -184,11 +166,7 @@ export default function CreatePayment() {
 
       Modal.alert({ icon: 'success', content: '链接已复制' });
     } catch (e) {}
-  };
-
-  const { loading: poolLoading, run: depositOPSFund } = useLoadingify(handlePoolPay);
-  const { loading: raiseLoading, run: createRaisePool } = useLoadingify(handleRaisePay);
-  const { loading: confirmLoading, run: handlePayfor } = useLoadingify(handleConfirm);
+  });
 
   return (
     <>
@@ -202,7 +180,7 @@ export default function CreatePayment() {
             已支付
           </button>
         ) : (
-          <SpinBtn className="btn btn-primary btn-lg w-100" loading={raiseLoading} onClick={createRaisePool}>
+          <SpinBtn className="btn btn-primary btn-lg w-100" loading={raiseLoading} onClick={handleRaisePay}>
             {raiseLoading ? '正在支付' : '自己支付'}
           </SpinBtn>
         )}
@@ -220,12 +198,12 @@ export default function CreatePayment() {
         ) : (
           <div className="row row-cols-2">
             <div className="col">
-              <SpinBtn className="btn btn-light btn-lg w-100" loading={poolLoading} disabled={!isRaisePaied} onClick={depositOPSFund}>
-                {poolLoading ? '正在支付' : '自己支付'}
+              <SpinBtn className="btn btn-light btn-lg w-100" loading={opsLoading} disabled={!isRaisePaied} onClick={handleOpsFund}>
+                {opsLoading ? '正在支付' : '自己支付'}
               </SpinBtn>
             </div>
             <div className="col">
-              <SpinBtn disabled={poolLoading || !isRaisePaied} className="btn btn-primary btn-lg w-100" onClick={() => modal.current?.show()}>
+              <SpinBtn disabled={opsLoading || !isRaisePaied} className="btn btn-primary btn-lg w-100" onClick={() => modal.current?.show()}>
                 他人代付
               </SpinBtn>
             </div>
@@ -242,15 +220,7 @@ export default function CreatePayment() {
         </button>
       </div>
 
-      <Modal ref={modal} title="填写支付地址" bodyClassName="pb-0" confirmLoading={confirmLoading} onConfirm={handlePayfor}>
-        <p className="text-gray text-center">只有该地址对应的账户才能支付运维保证金</p>
-
-        <Form layout="vertical" form={form}>
-          <Form.Item name="address" label="钱包地址" rules={[{ required: true, message: '输入地址' }]}>
-            <Input placeholder="输入地址" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <PayforModal ref={modal} loading={payforLoading} onConfirm={handlePayfor} />
     </>
   );
 }

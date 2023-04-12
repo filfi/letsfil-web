@@ -1,5 +1,4 @@
 import { Table } from 'antd';
-import { ethers } from 'ethers';
 import { useState } from 'react';
 import { Link } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
@@ -7,16 +6,10 @@ import type { ColumnsType } from 'antd/es/table';
 import * as A from '@/apis/raise';
 import * as F from '@/utils/format';
 import Empty from './components/Empty';
-import Status from './components/Status';
 import useAccounts from '@/hooks/useAccounts';
 import PageHeader from '@/components/PageHeader';
+import PlanStatus from '@/components/PlanStatus';
 import usePagination from '@/hooks/usePagination';
-
-function formatIncome(progress: number) {
-  const val = ethers.utils.formatUnits(progress, 6);
-
-  return F.formatRate(val);
-}
 
 export default function Investing() {
   const { accounts } = useAccounts();
@@ -53,7 +46,7 @@ export default function Investing() {
     {
       title: '年华收益',
       dataIndex: 'income_rate',
-      render: formatIncome,
+      render: F.formatIncome,
     },
     {
       title: '投资者收益',
@@ -82,7 +75,7 @@ export default function Investing() {
     {
       title: '募集进度',
       dataIndex: 'progress',
-      render: (_, row) => <Status state={row.status} progress={row.progress} />,
+      render: (_, row) => <PlanStatus data={row} />,
     },
     {
       title: '',

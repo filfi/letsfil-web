@@ -5,7 +5,6 @@ import ClipboardJS from 'clipboard';
 import { useParams } from '@umijs/max';
 import { useMount, useRequest } from 'ahooks';
 import { useMemo, useRef, useState } from 'react';
-import { newDelegatedEthAddress } from '@glif/filecoin-address';
 
 import * as U from '@/utils/utils';
 import styles from './styles.less';
@@ -24,16 +23,8 @@ import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 import { ReactComponent as IconCheck } from '@/assets/icons/check-filled.svg';
 
-function toF4Address(addr?: string) {
-  if (addr) {
-    return newDelegatedEthAddress(addr).toString();
-  }
-
-  return '';
-}
-
 const Code = ({ command }: { command: string }) => {
-  const btn = useRef<HTMLAnchorElement>(null);
+  const btn = useRef<HTMLButtonElement>(null);
 
   useMount(() => {
     if (!btn.current) return;
@@ -51,12 +42,12 @@ const Code = ({ command }: { command: string }) => {
 
   return (
     <div className={classNames('card', styles.card)}>
-      <div className={classNames('d-flex', styles.code)}>
+      <div className={classNames('d-flex align-items-start', styles.code)}>
         <span>$</span>
         <p className={classNames('flex-fill mx-1 mb-0 fw-bold text-break', styles.command)}>{command}</p>
-        <a ref={btn} href="#">
+        <button ref={btn} type="button" className="btn btn-link text-reset p-0">
           <IconCopy />
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -114,21 +105,18 @@ export default function ConfirmOverview() {
   const getCommand = () => {
     const address = plan.getContract()?.address;
 
-    return `lotus-miner actor set-owner --really-do-it ${toF4Address(address)} <ownerAddress>`;
+    return `lotus-miner actor set-owner --really-do-it ${U.toF4Address(address)} <ownerAddress>`;
   };
-
-  const handleSwitch = () => {};
 
   const { loading: submitting, run: handleSubmit } = useLoadingify(async () => {
     if (!data || !accounts[0]) return;
 
-    if (accounts[0].toLowerCase() !== data.service_provider_address?.toLowerCase()) {
+    if (!U.isEqual(accounts[0], data.service_provider_address)) {
       Modal.alert({
         icon: 'warn',
         title: '非指定服务商地址',
-        content: '请用募集商指定的服务商账户登录并确认计划',
-        confirmText: '切换钱包地址',
-        onConfirm: handleSwitch,
+        content: '请在Metamask钱包中切换到募集商指定的服务商支付账户，再进行支付',
+        confirmText: '我知道了',
       });
       return;
     }

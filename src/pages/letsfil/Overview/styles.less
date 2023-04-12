@@ -66,6 +66,16 @@
         font-size: 18px;
         font-weight: 500;
       }
+
+      .decimal {
+        font-size: 30px;
+        font-weight: 600;
+      }
+
+      .unit {
+        font-size: 24px;
+        font-weight: 600;
+      }
     }
   }
 }
@@ -90,6 +100,54 @@
     font-weight: 600;
     line-height: 1.5;
   }
+
+  :global {
+    .reward-list {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .reward-item {
+      --dot-color: var(--color-primary-600);
+
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .reward-dot {
+      position: absolute;
+      top: 6px;
+      left: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--dot-color);
+      border: 2px solid var(--dot-color);
+
+      &-circle {
+        background-color: transparent;
+      }
+    }
+
+    .reward-label {
+      margin-bottom: 4px;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #475467;
+    }
+
+    .reward-text {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .reward-decimal {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.333;
+    }
+  }
 }
 
 @media screen and (min-width: 992px) {
@@ -98,14 +156,14 @@
   }
 
   .tabs {
-    position: sticky;
-    top: var(--header-height, 0);
-    z-index: 100;
     width: 15%;
     padding-right: 32px;
 
     :global {
       .nav {
+        position: sticky;
+        top: calc(var(--header-height, 0) + 20px);
+        z-index: 100;
         display: inline-block;
       }
     }

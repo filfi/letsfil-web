@@ -78,10 +78,54 @@ const Header: React.FC = () => {
       }}
     >
       <nav className="navbar navbar-expand-lg">
-        <div className="container">
+        <div className="container position-relative">
           <Link className="navbar-brand" to="/">
             <Brand />
           </Link>
+
+          <div className="extra-bar">
+            {initialState?.connected ? (
+              <div className="d-flex assets-bar">
+                <div className="d-none d-sm-flex align-items-center px-2">
+                  <Filecoin />
+                  <span className="assets-bar-amount mx-2">{formatEther(balance)}</span>
+                  <span className="assets-bar-unit">FIL</span>
+                </div>
+
+                {initialState.processing ? (
+                  <SpinBtn className="assets-bar-extra p-2 ms-0 processing" loading>
+                    <FormattedMessage id="notify.transaction.processing" />
+                  </SpinBtn>
+                ) : (
+                  <div className="dropdown">
+                    <button type="button" className="assets-bar-extra p-2 ms-0" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
+                      <span>{formatAddr(accounts[0])}</span>
+                    </button>
+
+                    <div className="dropdown-menu dropdown-menu-end">
+                      <div className="d-flex align-items-center mb-3">
+                        <NodeIcon />
+                        <span className="ms-2">{formatAddr(accounts[0])}</span>
+                      </div>
+
+                      <div className="d-flex justify-content-between">
+                        <Link className="btn btn-secondary" to="/account">
+                          收益概况
+                        </Link>
+                        <button type="button" className="btn btn-secondary" onClick={handleDisconnect}>
+                          断开连接
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <SpinBtn className="btn btn-light btn-connect rounded-pill" loading={initialState?.connecting} onClick={handleConnect}>
+                <FormattedMessage id="actions.button.connect" />
+              </SpinBtn>
+            )}
+          </div>
 
           <button
             className="navbar-toggler"
@@ -96,7 +140,7 @@ const Header: React.FC = () => {
           </button>
 
           <div ref={collapse} id="navbarCollapse" className="collapse navbar-collapse">
-            <ul className="nav navbar-nav me-lg-auto mb-3 mb-lg-0">
+            <ul className="nav navbar-nav flex-grow-1 mb-3 mb-lg-0">
               <li className="nav-item">
                 <NavLink className="nav-link" to="/">
                   <FormattedMessage id="menu.home" />
@@ -112,57 +156,12 @@ const Header: React.FC = () => {
                   <FormattedMessage id="menu.letsfil" />
                 </NavLink>
               </li>
-            </ul>
-
-            <div className="d-flex justify-content-center mb-3 mb-lg-0">
-              {initialState?.connected ? (
-                <div className="d-flex assets-bar">
-                  <div className="d-flex align-items-center px-2">
-                    <Filecoin />
-                    <span className="assets-bar-amount mx-2">{formatEther(balance)}</span>
-                    <span className="assets-bar-unit">FIL</span>
-                  </div>
-
-                  {initialState.processing ? (
-                    <SpinBtn className="assets-bar-extra p-2 ms-0 processing" loading>
-                      <FormattedMessage id="notify.transaction.processing" />
-                    </SpinBtn>
-                  ) : (
-                    <div className="dropdown">
-                      <button type="button" className="assets-bar-extra p-2 ms-0" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
-                        <span>{formatAddr(accounts[0])}</span>
-                      </button>
-
-                      <div className="dropdown-menu dropdown-menu-end">
-                        <div className="d-flex align-items-center mb-3">
-                          <NodeIcon />
-                          <span className="ms-2">{formatAddr(accounts[0])}</span>
-                        </div>
-
-                        <div className="d-flex justify-content-between">
-                          <Link className="btn btn-secondary" to="/account">
-                            收益概况
-                          </Link>
-                          <button type="button" className="btn btn-secondary" onClick={handleDisconnect}>
-                            断开连接
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <SpinBtn className="btn btn-light btn-connect rounded-pill" loading={initialState?.connecting} onClick={handleConnect}>
-                  <FormattedMessage id="actions.button.connect" />
-                </SpinBtn>
-              )}
-
-              <div className="dropdown ms-4">
-                <button type="button" className="btn border-0 h-100 shadow-none" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
+              <li className="nav-item dropdown ms-lg-auto">
+                <a className="nav-link text-main me-lg-0 opacity-100" href="#" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
                   {localeLabel}
-                </button>
+                </a>
 
-                <ul className="dropdown-menu dropdown-menu-end">
+                <ul className="dropdown-menu dropdown-menu-lg-end">
                   {locales.map((item) => (
                     <li key={item.locale}>
                       <button className="dropdown-item" type="button" onClick={() => handleLocale(item.locale)}>
@@ -172,8 +171,11 @@ const Header: React.FC = () => {
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
+              </li>
+            </ul>
+
+            {/* <div className="dropdown ms-3 ms-lg-4 mb-3 mb-lg-0 float-lg-end">
+            </div> */}
           </div>
         </div>
       </nav>

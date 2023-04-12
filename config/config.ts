@@ -7,6 +7,7 @@ export default defineConfig({
     'process.env': {
       API_URL: process.env.API_URL ?? '/api',
       RPC_URL: process.env.RPC_URL ?? '/rpc',
+      RUN_ENV: process.env.RUN_ENV,
     },
   },
 

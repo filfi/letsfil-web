@@ -7,8 +7,10 @@ export default function toastify<R = any, P extends unknown[] = any>(service: (.
     try {
       return await service(...args);
     } catch (e: any) {
+      console.log(e);
+
       if (!isEqual(e.code, 'ACTION_REJECTED')) {
-        const content = e.data?.message ?? e.message;
+        const content = e.reason ?? e.data?.message ?? e.message;
 
         Modal.alert({
           content,

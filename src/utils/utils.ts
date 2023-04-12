@@ -1,8 +1,15 @@
 import 'dayjs/locale/zh-cn';
 import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
+import { newDelegatedEthAddress } from '@glif/filecoin-address';
 
 dayjs.locale('zh-cn');
+
+Object.defineProperty(window, '_dayjs', {
+  value: dayjs,
+  writable: false,
+  enumerable: true,
+});
 
 export const isStr = (v: unknown): v is string => typeof v === 'string';
 
@@ -98,23 +105,14 @@ export function diffDays(seconds: number | string) {
   return dayjs(+seconds * 1000).diff(dayjs(), 'days');
 }
 
-export function parseMinerID(minerID: string) {
+export function parseMinerID(minerID: number | string) {
   return `${minerID}`.replace(/^(f0|t0)/i, '');
 }
 
-export async function withTx(tx: Promise<any> | (() => Promise<any>)) {
-  const promise = isFn(tx) ? tx() : tx;
-
-  const _tx = await promise;
-
-  // 交易上链
-  const res = await _tx?.wait();
-
-  console.log(res);
-
-  if (res && res.status !== 1) {
-    throw new Error('交易失败');
+export function toF4Address(addr?: string) {
+  if (addr) {
+    return newDelegatedEthAddress(addr).toString();
   }
 
-  return res;
+  return '';
 }

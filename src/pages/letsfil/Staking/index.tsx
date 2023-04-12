@@ -8,11 +8,11 @@ import styles from './styles.less';
 import * as F from '@/utils/format';
 import * as U from '@/utils/utils';
 import { getInfo } from '@/apis/raise';
-import toastify from '@/utils/toastify';
 import { EventType } from '@/utils/mitt';
 import Result from '@/components/Result';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
+import ShareBtn from '@/components/ShareBtn';
 import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -53,7 +53,7 @@ export default function Staking() {
     setTotalAmount(+ethers.utils.formatEther(totalAmount));
   };
 
-  const { data, loading } = useRequest(service, { refreshDeps: [params] });
+  const { data, loading, refresh } = useRequest(service, { refreshDeps: [params] });
 
   const onDataChange = () => {
     address.current = data?.raise_address;
@@ -86,10 +86,11 @@ export default function Staking() {
   const onStaking = (res: API.Base) => {
     console.log('[onStaking]: ', res);
 
-    const raiseID = res.raiseID.toNumber();
+    const raiseID = res.raiseID.toString();
 
     if (U.isEqual(raiseId, raiseID)) {
       setSuccess(true);
+      refresh();
     }
   };
 
@@ -104,13 +105,9 @@ export default function Staking() {
   });
 
   const { loading: stakeLoading, run: handleStaking } = useLoadingify(async ({ amount }: API.Base) => {
-    await toastify(async () => {
-      return await U.withTx(
-        plan.staking({
-          value: ethers.utils.parseEther(`${amount}`),
-        }),
-      );
-    })();
+    await plan.staking({
+      value: ethers.utils.parseEther(`${amount}`),
+    });
   });
 
   return (
@@ -119,9 +116,9 @@ export default function Staking() {
 
       <PageHeader title={`FIL募集计划 - ${F.formatNum(total, '0a')} - ${data?.sponsor_company ?? ''}`}>
         <div className="d-flex align-items-center gap-3">
-          <button type="button" className="btn btn-light">
+          <ShareBtn className="btn btn-light" text={location.href} toast="链接已复制">
             <Share4 />
-          </button>
+          </ShareBtn>
           <button type="button" className="btn btn-light text-nowrap">
             <Share6 />
             <span className="ms-1">查看智能合约</span>

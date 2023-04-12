@@ -1,27 +1,20 @@
 import { Table } from 'antd';
-import { ethers } from 'ethers';
 import { useState } from 'react';
-import { Link } from '@umijs/max';
+import { history, Link } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
 
 import * as A from '@/apis/raise';
 import * as F from '@/utils/format';
 import Empty from './components/Empty';
-import Status from './components/Status';
 import useAccounts from '@/hooks/useAccounts';
 import PageHeader from '@/components/PageHeader';
+import PlanStatus from '@/components/PlanStatus';
 import usePagination from '@/hooks/usePagination';
 
-function formatIncome(progress: number) {
-  const val = ethers.utils.formatUnits(progress, 6);
-
-  return F.formatRate(val);
-}
-
 export default function Raising() {
-  const { accounts } = useAccounts();
   const [type, setType] = useState('all');
   const [sort, setSort] = useState('desc');
+  const { accounts, withConnect } = useAccounts();
 
   const service = async ({ page, pageSize }: any) => {
     const p = {
@@ -41,6 +34,10 @@ export default function Raising() {
     refreshDeps: [type, sort],
   });
 
+  const go = withConnect(async () => {
+    history.push('/letsfil/create');
+  });
+
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setType(e.target.value);
   };
@@ -53,7 +50,7 @@ export default function Raising() {
     {
       title: '年华收益',
       dataIndex: 'income_rate',
-      render: formatIncome,
+      render: F.formatIncome,
     },
     {
       title: '投资者收益',
@@ -82,7 +79,7 @@ export default function Raising() {
     {
       title: '募集进度',
       dataIndex: 'progress',
-      render: (_, row) => <Status state={row.status} progress={row.progress} />,
+      render: (_, row) => <PlanStatus data={row} />,
     },
     {
       title: '',
@@ -94,10 +91,10 @@ export default function Raising() {
   return (
     <div className="container">
       <PageHeader title="Fil募集计划" desc="可查看市场上进行中的募集计划">
-        <Link className="btn btn-primary" to="/letsfil/create">
+        <button className="btn btn-primary" type="button" onClick={go}>
           <i className="bi bi-plus-lg"></i>
           <span className="ms-1">新建募集计划</span>
-        </Link>
+        </button>
       </PageHeader>
 
       <div className="mb-4 d-flex justify-content-between">
@@ -156,7 +153,7 @@ export default function Raising() {
           />
         </div>
       ) : (
-        <Empty />
+        <Empty onClick={go} />
       )}
     </div>
   );

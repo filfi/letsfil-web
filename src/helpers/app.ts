@@ -1,5 +1,8 @@
+import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import { createRef } from 'react';
+
+import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
@@ -58,5 +61,51 @@ export function withTx<P extends unknown[] = any>(service: (...args: P) => Promi
     }
 
     return res;
+  };
+}
+
+export function genRaiseID(minerId: number | string) {
+  const mid = U.parseMinerID(minerId);
+
+  return ethers.BigNumber.from(mid).mul(Math.pow(10, 10)).add(dayjs().unix());
+}
+
+/**
+ * 将表单数据转换成 RaiseInfo
+ * @param data 表单数据
+ */
+export function transformRaiseInfo(data: API.Base) {
+  // 募集计划信息
+  return {
+    id: genRaiseID(data.minerID),
+    targetAmount: ethers.utils.parseEther(`${data.targetAmount}`),
+    securityFund: ethers.utils.parseEther(`${data.securityFund}`),
+    securityFundRate: data.securityFundRate * 100,
+    deadline: dayjs(data.deadline).unix(),
+    raiserShare: +data.raiserShare,
+    investorShare: +data.investorShare,
+    servicerShare: +data.servicerShare,
+    sponsor: data.sponsor,
+    raiseCompany: data.raiseCompany,
+    spAddress: data.spAddress,
+    companyId: data.companyId,
+  };
+}
+
+/**
+ * 将表单数据转换成 NodeInfo
+ * @param data 表单数据
+ */
+export function transformNodeInfo(data: API.Base) {
+  // 节点信息
+  return {
+    minerID: +U.parseMinerID(data.minerID),
+    nodeSize: `${U.pb2byte(data.nodeSize)}`,
+    sectorSize: [32, 64][data.sectorSize],
+    sealPeriod: U.day2sec(data.sealPeriod),
+    nodePeriod: U.day2sec([90, 120, 180, 240, 360][data.nodePeriod]),
+    opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
+    opsSecurityFundPayer: data.sponsor,
+    realSealAmount: 0,
   };
 }

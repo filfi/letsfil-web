@@ -1,8 +1,6 @@
-import { Link } from '@umijs/max';
-
 import { ReactComponent as Icon } from './imgs/emtpy.svg';
 
-const Empty: React.FC = () => {
+const Empty: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   return (
     <div className="text-center my-5">
       <Icon />
@@ -11,10 +9,10 @@ const Empty: React.FC = () => {
       <p>暂时没有募集计划，快去新建一个吧</p>
 
       <p>
-        <Link className="btn btn-primary" to="/letsfil/create">
+        <button className="btn btn-primary" type="button" onClick={onClick}>
           <i className="bi bi-plus-lg"></i>
           <span className="ms-1">新建募集计划</span>
-        </Link>
+        </button>
       </p>
     </div>
   );

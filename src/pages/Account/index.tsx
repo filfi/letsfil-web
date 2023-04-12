@@ -37,13 +37,13 @@ export default function Account() {
   const { data, loading } = useRequest(service, { refreshDeps: [account] });
 
   const fetchTotalIncome = async () => {
-    if (!data || !data.length) return;
+    if (!accounts[0] || !data || !data.length) return;
 
     const rewards = await Promise.all(
       data.map<Promise<BigNumber | undefined>>(async (item) => {
         const contract = getContract(item.raise_address);
 
-        return await contract?.totalReward();
+        return await contract?.totalRewardOf(accounts[0]);
       }),
     );
 
@@ -53,13 +53,13 @@ export default function Account() {
   };
 
   const fetchUsableIncome = async () => {
-    if (!data || !data.length) return;
+    if (!accounts[0] || !data || !data.length) return;
 
     const rewards = await Promise.all(
       data.map<Promise<BigNumber | undefined>>(async (item) => {
         const contract = getContract(item.raise_address);
 
-        return await contract?.availableReward();
+        return await contract?.availableRewardOf(accounts[0]);
       }),
     );
 

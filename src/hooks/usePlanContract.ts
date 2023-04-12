@@ -9,6 +9,8 @@ import useAccounts from './useAccounts';
 import { /* withGas, */ withTx } from '@/helpers/app';
 import { createDispatcher, EventType } from '@/utils/mitt';
 
+export type MaybeRef<T> = T | React.MutableRefObject<T>;
+
 export type Options = {
   gas?: ethers.BigNumberish;
   gasLimit?: ethers.BigNumberish;
@@ -27,6 +29,16 @@ export enum PlanEventTypes {
   onDepositOPSFund = 'eDepositOPSSecurityFund',
   onWithdrawOPSFund = 'eWithdrawOPSSecurityFund',
   onWithdrawRaiseFund = 'eWithdrawRaiseSecurityFund',
+}
+
+const isRef = <T>(val: unknown): val is React.MutableRefObject<T> => Object.prototype.hasOwnProperty.call(val, 'current');
+
+function getRefVal<T>(ref?: MaybeRef<T>) {
+  if (ref && isRef(ref)) {
+    return ref.current;
+  }
+
+  return ref;
 }
 
 function createContract(address?: string) {
@@ -54,12 +66,12 @@ const events = {
   onCloseRaisePlan: createDispatcher(EventType.OnCloseRaisePlan, ['caller', 'raiseID']),
   // 提取运维保证金
   onWithdrawOPSFund: createDispatcher(EventType.OnWithdrawOPSFund, ['caller', 'raiseID', 'amount']),
-  // 提取运维保证金
+  // 提取募集保证金
   onWithdrawRaiseFund: createDispatcher(EventType.OnWithdrawRaiseFund, ['caller', 'raiseID', 'amount']),
 };
 
-export default function usePlanContract(address?: React.MutableRefObject<string | undefined>) {
-  const contract = useRef(createContract(address?.current));
+export default function usePlanContract(address?: MaybeRef<string | undefined>) {
+  const contract = useRef(createContract(getRefVal(address)));
 
   const { withConnect } = useAccounts();
 
@@ -90,7 +102,7 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   const withContract = <R = any, P extends unknown[] = any>(service: (contract: ethers.Contract | undefined, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
       if (!contract.current) {
-        contract.current = createContract(address?.current);
+        contract.current = createContract(getRefVal(address));
 
         bindEvents();
       }
@@ -129,13 +141,13 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 缴纳运维保证金
    */
-  const depositOPSFund = withConnect(
-    withContract(
-      toastify(
-        withTx(async (contract, opts?: Options) => {
+  const depositOPSFund = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
           return await contract?.payOpsSecurityFund({
             // maxPriorityFeePerGas,
-            gasLimit: 10000000000,
+            gasLimit: 1000000,
             ...opts,
           });
         }),
@@ -146,9 +158,9 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 指定保证金缴纳地址
    */
-  const specifyOpsPayer = withConnect(
-    withContract(
-      toastify(async (contract, address: string) => {
+  const specifyOpsPayer = toastify(
+    withConnect(
+      withContract(async (contract, address: string) => {
         return await contract?.specifyOpsPayer(address);
       }),
     ),
@@ -157,13 +169,13 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 启动募集计划
    */
-  const startRaisePlan = withConnect(
-    withContract(
-      toastify(
-        withTx(async (contract, opts?: Options) => {
+  const startRaisePlan = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
           return await contract?.startRaisePlan({
             // maxPriorityFeePerGas,
-            gasLimit: 10000000000,
+            gasLimit: 1000000,
             ...opts,
           });
         }),
@@ -174,13 +186,13 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 关闭募集计划
    */
-  const closeRaisePlan = withConnect(
-    withContract(
-      toastify(
-        withTx(async (contract, opts?: Options) => {
+  const closeRaisePlan = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
           return await contract?.closeRaisePlan({
             // maxPriorityFeePerGas,
-            gasLimit: 10000000000,
+            gasLimit: 1000000,
             ...opts,
           });
         }),
@@ -191,30 +203,26 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 获取已募集金额
    */
-  const pledgeTotalAmount = withConnect(
-    withContract(async (contract) => {
-      return await contract?.pledgeTotalAmount();
-    }),
-  );
+  const pledgeTotalAmount = withContract(async (contract) => {
+    return await contract?.pledgeTotalAmount();
+  });
 
   /**
    * 获取募集金额
    */
-  const pledgeAmount = withConnect(
-    withContract(async (contract, address: string) => {
-      return await contract?.pledgeRecord(address);
-    }),
-  );
+  const pledgeAmount = withContract(async (contract, address: string) => {
+    return await contract?.pledgeRecord(address);
+  });
 
   /**
    * 提取募集保证金
    */
-  const withdrawRaiseFund = withConnect(
-    withContract(
-      toastify(
-        withTx(async (contract, address: string, opts?: Options) => {
-          return await contract?.withdrawRaiseSecurityFund(address, {
-            gasLimit: 10000000000,
+  const withdrawRaiseFund = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
+          return await contract?.withdrawRaiseSecurityFund({
+            gasLimit: 1000000,
             ...opts,
           });
         }),
@@ -225,12 +233,12 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 提取运维保证金
    */
-  const withdrawOPSFund = withConnect(
-    withContract(
-      toastify(
-        withTx(async (contract, opts?: Options) => {
+  const withdrawOPSFund = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
           return await contract?.withdrawOPSSecurityFund({
-            gasLimit: 10000000000,
+            gasLimit: 1000000,
             ...opts,
           });
         }),
@@ -241,13 +249,13 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 质押
    */
-  const staking = withConnect(
-    withContract(
-      toastify(
-        withTx(async (contract, opts?: Options) => {
+  const staking = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
           return await contract?.staking({
             // maxPriorityFeePerGas,
-            gasLimit: 10000000000,
+            gasLimit: 1000000,
             ...opts,
           });
         }),
@@ -258,13 +266,13 @@ export default function usePlanContract(address?: React.MutableRefObject<string 
   /**
    * 赎回
    */
-  const unStaking = withConnect(
-    withContract(
-      toastify(
-        withTx(async (contract, amount: BigNumber, opts?: Options) => {
+  const unStaking = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, amount: BigNumber, opts?: Options) => {
           return await contract?.unStaking(amount, address, {
             // maxPriorityFeePerGas,
-            gasLimit: 10000000000,
+            gasLimit: 1000000,
             ...opts,
           });
         }),

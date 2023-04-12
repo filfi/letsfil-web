@@ -1,25 +1,27 @@
-import { ethers } from 'ethers';
+import { useMemo } from 'react';
 import classNames from 'classnames';
 
+import { accDiv } from '@/utils/utils';
 import { RaiseState } from '@/constants/state';
 import { ReactComponent as IconInfo } from './imgs/info-circle.svg';
 import { ReactComponent as IconCheck } from './imgs/check-circle.svg';
 import { ReactComponent as IconMinus } from './imgs/minus-circle.svg';
 import { ReactComponent as IconGlass } from './imgs/hourglass-01.svg';
 
-function formatPercent(progress: number) {
-  const val = ethers.utils.formatUnits(progress, 6);
+const PlanStatus: React.FC<{ data?: API.Base }> = ({ data }) => {
+  const state = useMemo(() => data?.status, [data]);
+  const progress = useMemo(() => {
+    if (data && data.target_amount) {
+      return accDiv(data.actual_amount || '0', data.target_amount) * 100;
+    }
 
-  return Math.round(+val);
-}
+    return 0;
+  }, [data]);
 
-const Status: React.FC<{ state: number; progress: number }> = ({ state, progress }) => {
   if (state === RaiseState.InProgress) {
-    const val = formatPercent(progress);
-
     return (
-      <div className="progress" role="progressbar" aria-label="Example 1px high" aria-valuenow={val} aria-valuemin={0} aria-valuemax={100}>
-        <div className="progress-bar" style={{ width: `${val}%` }} />
+      <div className="progress" role="progressbar" aria-label="Example 1px high" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+        <div className="progress-bar" style={{ width: `${progress}%` }} />
       </div>
     );
   }
@@ -37,4 +39,4 @@ const Status: React.FC<{ state: number; progress: number }> = ({ state, progress
   );
 };
 
-export default Status;
+export default PlanStatus;

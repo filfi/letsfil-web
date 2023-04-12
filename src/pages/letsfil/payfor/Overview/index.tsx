@@ -65,8 +65,6 @@ export default function PayforOverview() {
 
   useEmittHandler({ [EventType.OnDepositOPSFund]: onDepositOPSFund });
 
-  const handleSwitch = () => {};
-
   const { loading: submitting, run: handleSubmit } = useLoadingify(async () => {
     if (!data || !accounts[0]) return;
 
@@ -74,9 +72,8 @@ export default function PayforOverview() {
       Modal.alert({
         icon: 'warn',
         title: '非指定支付地址',
-        content: '请用募集商指定的支付账户登录并支付',
-        confirmText: '切换钱包地址',
-        onConfirm: handleSwitch,
+        content: '请在Metamask钱包中切换到募集商指定的支付账户，再进行支付',
+        confirmText: '我知道了',
       });
       return;
     }

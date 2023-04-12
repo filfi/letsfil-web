@@ -42,7 +42,7 @@ const Staking: React.FC<{
                   <span className="ms-2 align-middle">追加质押</span>
                 </button>
               </div> */}
-              <button type="button" className="btn btn-primary btn-lg flex-fill" onClick={() => link(`/letsfil/staking/${raiseID}`)}>
+              <button type="button" className="btn btn-primary btn-lg w-100" onClick={() => link(`/letsfil/staking/${raiseID}`)}>
                 <FilIcon />
                 <span className="ms-2 align-middle">追加质押</span>
               </button>
