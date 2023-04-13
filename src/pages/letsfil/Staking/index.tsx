@@ -12,6 +12,7 @@ import { EventType } from '@/utils/mitt';
 import Result from '@/components/Result';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
+import { planStatusText } from '@/constants';
 import ShareBtn from '@/components/ShareBtn';
 import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
@@ -104,7 +105,7 @@ export default function Staking() {
     [EventType.OnStaking]: onStaking,
   });
 
-  const { loading: stakeLoading, run: handleStaking } = useLoadingify(async ({ amount }: API.Base) => {
+  const { loading: stakeLoading, run: handleStaking } = useLoadingify(async () => {
     await plan.staking({
       value: ethers.utils.parseEther(`${amount}`),
     });
@@ -186,7 +187,7 @@ export default function Staking() {
                   </>
                 ) : (
                   <button type="button" className="btn btn-light btn-lg" disabled>
-                    {['未开始', '等待缴纳运维保证金', '等待服务商签名', '', '募集已关闭', '募集已完成', '募集失败'][planState]}
+                    {planStatusText[planState]}
                   </button>
                 )}
               </div>

@@ -79,9 +79,7 @@ export default function Overview() {
     if (accounts[0]) {
       const amount = await plan.pledgeAmount(accounts[0]);
 
-      if (amount) {
-        setAmount(+ethers.utils.formatEther(amount));
-      }
+      setAmount(F.toNumber(amount));
     }
   };
 

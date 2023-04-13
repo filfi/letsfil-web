@@ -27,8 +27,8 @@ export function formatAddr(addr?: unknown) {
   return '';
 }
 
-export function toNumber(amount?: ethers.BigNumberish) {
-  return BigNumber(ethers.utils.formatEther(amount || '0')).toNumber();
+export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumberish = 18) {
+  return BigNumber(ethers.utils.formatUnits(`${amount || '0'}`, unitName)).toNumber();
 }
 
 export function formatAmount(amount?: BigNumber.Value, decimalPlaces = 4) {
@@ -36,15 +36,29 @@ export function formatAmount(amount?: BigNumber.Value, decimalPlaces = 4) {
 }
 
 export function formatEther(amount?: ethers.BigNumberish, decimalPlaces?: number) {
-  return formatAmount(ethers.utils.formatEther(amount || '0'), decimalPlaces);
+  return formatAmount(toNumber(amount), decimalPlaces);
 }
 
 export function formatDate(date: number | string | Date | dayjs.Dayjs, fmt = 'YYYY-MM-DD HH:mm') {
   return dayjs(date).format(fmt);
 }
 
-export function formatIncome(progress: ethers.BigNumberish) {
-  const val = ethers.utils.formatUnits(`${progress || 0}`, 6);
+export function formatPercent(progress?: ethers.BigNumberish) {
+  return formatRate(toNumber(progress, 6));
+}
 
-  return formatRate(val);
+export function formatRemain(a?: number, b?: number) {
+  if (a && b) {
+    return formatDate((a + b) * 1000, 'lll');
+  }
+
+  return '-';
+}
+
+export function formatSecDate(sec?: number | string) {
+  if (sec) {
+    return formatDate(+sec * 1000, 'lll');
+  }
+
+  return '-';
 }

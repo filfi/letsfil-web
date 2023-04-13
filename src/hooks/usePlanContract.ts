@@ -6,7 +6,7 @@ import MetaMaskOboarding from '@metamask/onboarding';
 import abi from '@/abis/plan.abi.json';
 import toastify from '@/utils/toastify';
 import useAccounts from './useAccounts';
-import { /* withGas, */ withTx } from '@/helpers/app';
+import { withGas, withTx } from '@/helpers/app';
 import { createDispatcher, EventType } from '@/utils/mitt';
 
 export type MaybeRef<T> = T | React.MutableRefObject<T>;
@@ -39,6 +39,10 @@ function getRefVal<T>(ref?: MaybeRef<T>) {
   }
 
   return ref;
+}
+
+function getMaxFeePerGas(from: number | string) {
+  return BigNumber.from(from).add(200).toHexString();
 }
 
 function createContract(address?: string) {
@@ -144,13 +148,16 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const depositOPSFund = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
-          return await contract?.payOpsSecurityFund({
-            // maxPriorityFeePerGas,
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
+            return await contract?.payOpsSecurityFund({
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );
@@ -160,9 +167,18 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
    */
   const specifyOpsPayer = toastify(
     withConnect(
-      withContract(async (contract, address: string) => {
-        return await contract?.specifyOpsPayer(address);
-      }),
+      withTx(
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, address: string, opts?: Options) => {
+            return await contract?.specifyOpsPayer(address, {
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
+      ),
     ),
   );
 
@@ -172,13 +188,16 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const startRaisePlan = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
-          return await contract?.startRaisePlan({
-            // maxPriorityFeePerGas,
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
+            return await contract?.startRaisePlan({
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );
@@ -189,13 +208,16 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const closeRaisePlan = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
-          return await contract?.closeRaisePlan({
-            // maxPriorityFeePerGas,
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
+            return await contract?.closeRaisePlan({
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );
@@ -220,12 +242,16 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const withdrawRaiseFund = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
-          return await contract?.withdrawRaiseSecurityFund({
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
+            return await contract?.withdrawRaiseSecurityFund({
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );
@@ -236,12 +262,16 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const withdrawOPSFund = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
-          return await contract?.withdrawOPSSecurityFund({
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
+            return await contract?.withdrawOPSSecurityFund({
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );
@@ -252,13 +282,16 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const staking = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
-          return await contract?.staking({
-            // maxPriorityFeePerGas,
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
+            return await contract?.staking({
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );
@@ -269,13 +302,16 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const unStaking = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, amount: BigNumber, opts?: Options) => {
-          return await contract?.unStaking(amount, address, {
-            // maxPriorityFeePerGas,
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, amount: BigNumber, opts?: Options) => {
+            return await contract?.unStaking(amount, address, {
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );

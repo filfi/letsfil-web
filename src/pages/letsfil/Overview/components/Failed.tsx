@@ -15,6 +15,12 @@ const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount
   };
 };
 
+const isDisabled = (val?: number | string) => {
+  const v = +`${val ?? ''}`;
+
+  return Number.isNaN(v) || v <= 0;
+};
+
 const Failed: React.FC<{
   amount?: number | string;
   data?: API.Base;
@@ -46,7 +52,12 @@ const Failed: React.FC<{
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing} onClick={withdrawFund}>
+            <button
+              type="button"
+              className="btn btn-light btn-md ms-auto"
+              disabled={initialState?.processing || isDisabled(data?.security_fund)}
+              onClick={withdrawFund}
+            >
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
             </button>
@@ -59,7 +70,12 @@ const Failed: React.FC<{
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing} onClick={withdrawOpsFund}>
+            <button
+              type="button"
+              className="btn btn-light btn-md ms-auto"
+              disabled={initialState?.processing || isDisabled(data?.ops_security_fund)}
+              onClick={withdrawOpsFund}
+            >
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
             </button>
@@ -72,7 +88,12 @@ const Failed: React.FC<{
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing} onClick={withdrawInvestFund}>
+            <button
+              type="button"
+              className="btn btn-light btn-md ms-auto"
+              disabled={initialState?.processing || isDisabled(amount)}
+              onClick={withdrawInvestFund}
+            >
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
             </button>

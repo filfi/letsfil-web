@@ -73,12 +73,12 @@ export default function CreateConfirm() {
 
       {/* <div className="letsfil-item">
         <h5 className="letsfil-label">单个扇区大小</h5>
-        <p className="mb-0">{['32', '64'][data?.sectorSize]}GB</p>
+        <p className="mb-0">{data?.sectorSize}GB</p>
       </div> */}
 
       <div className="letsfil-item">
         <h5 className="letsfil-label">节点运行周期</h5>
-        <p className="mb-0">{['90', '120', '180', '240', '360'][data?.nodePeriod]}天</p>
+        <p className="mb-0">{data?.nodePeriod}天</p>
       </div>
 
       <div className="letsfil-item">

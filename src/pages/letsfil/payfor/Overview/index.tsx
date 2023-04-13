@@ -4,14 +4,15 @@ import { useRequest } from 'ahooks';
 import { useParams } from '@umijs/max';
 import { useMemo, useRef, useState } from 'react';
 
-import * as U from '@/utils/utils';
 import styles from './styles.less';
+import * as U from '@/utils/utils';
+import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import { getInfo } from '@/apis/raise';
 import { EventType } from '@/utils/mitt';
 import Result from '@/components/Result';
 import SpinBtn from '@/components/SpinBtn';
-import { formatUnix } from '@/utils/format';
+import { planStatusText } from '@/constants';
 import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -50,9 +51,9 @@ export default function PayforOverview() {
     },
   });
 
+  const statusText = useMemo(() => planStatusText[planState], [planState]);
   const isPaied = useMemo(() => planState > RaiseState.WaitPayOPSSecurityFund, [planState]);
   const disabled = useMemo(() => planState !== RaiseState.WaitPayOPSSecurityFund, [planState]);
-  const statusText = useMemo(() => ['未缴纳募集保证金', '', '等待服务商签名', '募集进行中', '计划已关闭', '募集成功', '募集失败'][planState], [planState]);
 
   const onDepositOPSFund = ({ raiseID }: API.Base) => {
     if (U.isEqual(raiseID, params.id)) {
@@ -103,7 +104,7 @@ export default function PayforOverview() {
 
               <div className="letsfil-item">
                 <h5 className="letsfil-label">募集目标</h5>
-                <p className="mb-0">{ethers.utils.formatEther(data?.target_amount ?? 0)} FIL</p>
+                <p className="mb-0">{F.formatEther(data?.target_amount)} FIL</p>
               </div>
 
               <div className="letsfil-item">
@@ -113,17 +114,17 @@ export default function PayforOverview() {
 
               <div className="letsfil-item">
                 <h5 className="letsfil-label">募集保证金</h5>
-                <p className="mb-0">{ethers.utils.formatEther(data?.security_fund ?? 0)} FIL</p>
+                <p className="mb-0">{F.formatEther(data?.security_fund)} FIL</p>
               </div>
 
               <div className="letsfil-item">
                 <h5 className="letsfil-label">运维保证金</h5>
-                <p className="mb-0">{ethers.utils.formatEther(data?.ops_security_fund ?? 0)} FIL</p>
+                <p className="mb-0">{F.formatEther(data?.ops_security_fund)} FIL</p>
               </div>
 
               <div className="letsfil-item">
                 <h5 className="letsfil-label">募集截止时间</h5>
-                <p className="mb-0">{data?.end_seal_time ? formatUnix(data.end_seal_time) : ''}</p>
+                <p className="mb-0">{data?.end_seal_time ? F.formatUnix(data.end_seal_time) : ''}</p>
               </div>
 
               <div className="letsfil-item">

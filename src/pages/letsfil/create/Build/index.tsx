@@ -1,6 +1,8 @@
 import { Form, Input, Select } from 'antd';
 import { history, useModel } from '@umijs/max';
 
+import { periods, sectors } from '@/constants';
+
 export default function CreateBuild() {
   const [form] = Form.useForm();
   const [data, setData] = useModel('stepform');
@@ -21,23 +23,20 @@ export default function CreateBuild() {
         <Form.Item label="单个扇区大小" name="sectorSize" rules={[{ required: true, message: '请选择单个扇区大小' }]}>
           <Select
             placeholder="请选择"
-            options={[
-              { value: 0, label: '32GB' },
-              { value: 1, label: '64GB' },
-            ]}
+            options={sectors.map((value) => ({
+              value,
+              label: `${value}GB`,
+            }))}
           />
         </Form.Item>
 
         <Form.Item label="节点运行周期" name="nodePeriod" rules={[{ required: true, message: '请选择节点运行周期' }]}>
           <Select
             placeholder="请选择"
-            options={[
-              { value: 0, label: '90天' },
-              { value: 1, label: '120天' },
-              { value: 2, label: '180天' },
-              { value: 3, label: '240天' },
-              { value: 4, label: '360天' },
-            ]}
+            options={periods.map((value) => ({
+              value,
+              label: `${value}天`,
+            }))}
           />
         </Form.Item>
 

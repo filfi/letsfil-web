@@ -35,7 +35,7 @@ export async function fetchGas() {
   return gas;
 }
 
-export function withGas<R = any, P extends unknown[] = any>(service: (gas: ethers.BigNumberish, ...args: P) => Promise<R>) {
+export function withGas<R = any, P extends unknown[] = any>(service: (gas: string, ...args: P) => Promise<R>) {
   return async (...args: P) => {
     const gas = await fetchGas();
 
@@ -101,9 +101,9 @@ export function transformNodeInfo(data: API.Base) {
   return {
     minerID: +U.parseMinerID(data.minerID),
     nodeSize: `${U.pb2byte(data.nodeSize)}`,
-    sectorSize: [32, 64][data.sectorSize],
+    sectorSize: +data.sectorSize,
     sealPeriod: U.day2sec(data.sealPeriod),
-    nodePeriod: U.day2sec([90, 120, 180, 240, 360][data.nodePeriod]),
+    nodePeriod: U.day2sec(data.nodePeriod),
     opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
     opsSecurityFundPayer: data.sponsor,
     realSealAmount: 0,

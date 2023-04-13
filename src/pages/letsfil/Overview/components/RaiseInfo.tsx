@@ -7,16 +7,8 @@ import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import usePlanContract from '@/hooks/usePlanContract';
 
-function formatRemain(a?: number, b?: number) {
-  if (a && b) {
-    return F.formatDate((a + b) * 1000, 'lll');
-  }
-
-  return '-';
-}
-
 function formatIncome(rate?: number | string) {
-  return F.formatIncome(rate || 0).replace(/%$/, '');
+  return F.formatPercent(rate).replace(/%$/, '');
 }
 
 const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
@@ -136,13 +128,13 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
             </tr>
             <tr>
               <th>预期封装完成</th>
-              <td>{formatRemain(data?.raise_create_time, data?.seal_time_limit)}</td>
+              <td>{F.formatRemain(data?.raise_create_time, data?.seal_time_limit)}</td>
               <th>封装时间</th>
               <td>{U.sec2day(data?.seal_time_limit)}天</td>
             </tr>
             <tr>
               <th>扇区到期(估)</th>
-              <td>{formatRemain(data?.raise_create_time, data?.sector_period)}</td>
+              <td>{F.formatRemain(data?.raise_create_time, data?.sector_period)}</td>
               <th>扇区期限</th>
               <td>{U.sec2day(data?.sector_period)}天</td>
             </tr>

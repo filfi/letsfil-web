@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import classNames from 'classnames';
 
 import { accDiv } from '@/utils/utils';
+import { planStatusText } from '@/constants';
 import { RaiseState } from '@/constants/state';
 import { ReactComponent as IconInfo } from './imgs/info-circle.svg';
 import { ReactComponent as IconCheck } from './imgs/check-circle.svg';
@@ -28,13 +29,12 @@ const PlanStatus: React.FC<{ data?: API.Base }> = ({ data }) => {
 
   const cls = ['badge-warning', 'badge-warning', 'badge-warning', '', '', 'badge-success', 'badge-danger'][state];
   const Icon = [IconGlass, IconGlass, IconGlass, null, IconMinus, IconCheck, IconInfo][state];
-  const txt = ['未缴纳运维保证金', '未缴纳运维保证金', '等待服务商签名', '', '计划已关闭', '募集成功', '募集失败'][state];
 
   return (
     <div className={classNames('badge', cls)}>
       {Icon ? <Icon /> : null}
 
-      <span className="ms-1">{txt}</span>
+      <span className="ms-1">{planStatusText[state]}</span>
     </div>
   );
 };

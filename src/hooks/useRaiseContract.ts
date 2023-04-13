@@ -7,7 +7,7 @@ import toastify from '@/utils/toastify';
 import useAccounts from './useAccounts';
 import abi from '@/abis/factory.abi.json';
 import { RAISE_ADDRESS } from '@/constants';
-import { /* withGas, */ withTx } from '@/helpers/app';
+import { withGas, withTx } from '@/helpers/app';
 import { createDispatcher, EventType } from '@/utils/mitt';
 
 export type Options = {
@@ -59,6 +59,10 @@ function createContract() {
   }
 }
 
+function getMaxFeePerGas(from: number | string) {
+  return ethers.BigNumber.from(from).add(200).toHexString();
+}
+
 const events = {
   // 募集计划创建
   onCreateRaise: createDispatcher(EventType.OnCreateRaisePlan, ['raisePool', 'caller', 'payValue', 'raiseInfo', 'nodeInfo', 'extraInfo', 'raiseID']),
@@ -103,14 +107,17 @@ export default function useRaiseContract() {
   const createRaisePlan = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: Options) => {
-          console.log(raise, node, extra, opts);
-          return await contract?.createRaisePlan(raise, node, extra, {
-            // maxPriorityFeePerGas,
-            gasLimit: 1000000,
-            ...opts,
-          });
-        }),
+        withContract(
+          withGas(async (maxPriorityFeePerGas, contract, raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: Options) => {
+            console.log(raise, node, extra, opts);
+            return await contract?.createRaisePlan(raise, node, extra, {
+              maxPriorityFeePerGas,
+              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+              // gasLimit: 1000000,
+              ...opts,
+            });
+          }),
+        ),
       ),
     ),
   );

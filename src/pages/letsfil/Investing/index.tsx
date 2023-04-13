@@ -46,7 +46,7 @@ export default function Investing() {
     {
       title: '年华收益',
       dataIndex: 'income_rate',
-      render: F.formatIncome,
+      render: F.formatPercent,
     },
     {
       title: '投资者收益',

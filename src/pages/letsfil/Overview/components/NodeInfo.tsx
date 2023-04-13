@@ -1,3 +1,4 @@
+import { SCAN_URL } from '@/constants';
 import { formatByte } from '@/utils/format';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 
@@ -16,7 +17,9 @@ const NodeInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
               </td>
               <td>规划容量 {formatByte(data?.target_power)}</td>
               <td className="text-end">
-                <a href="#">链上查看</a>
+                <a href={`${SCAN_URL}/${data?.miner_id}`} target="_blank" rel="noreferrer">
+                  链上查看
+                </a>
               </td>
             </tr>
           </tbody>

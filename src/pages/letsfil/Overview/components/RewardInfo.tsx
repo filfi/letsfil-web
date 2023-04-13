@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
 import * as U from '@/utils/utils';
+import { formatAmount, toNumber } from '@/utils/format';
 
 const RewardInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
   const pieData = useMemo(
@@ -12,6 +13,11 @@ const RewardInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
     ],
     [data],
   );
+
+  const days = useMemo(() => U.sec2day(data?.sector_period), [data]);
+  const rate = useMemo(() => toNumber(data?.income_rate, 6), [data]);
+  const target = useMemo(() => toNumber(data?.target_amount), [data]);
+  const reward = useMemo(() => U.accDiv(U.accMul(U.accMul(rate, target), days), 360), [data]);
 
   const config: PieConfig = {
     width: 120,
@@ -46,9 +52,9 @@ const RewardInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
         <div className="col-12 col-md-8 col-xl-9">
           <div className="reward-item mb-3">
             <span className="reward-dot reward-dot-circle"></span>
-            <p className="reward-label">{U.sec2day(data?.sector_period)}天总奖励(估)</p>
+            <p className="reward-label">{days}天总奖励(估)</p>
             <p className="reward-text">
-              <span className="reward-decimal">234M</span>
+              <span className="reward-decimal">{formatAmount(reward)}</span>
               <span className="ms-2 text-neutral">FIL</span>
             </p>
           </div>
@@ -107,7 +113,7 @@ const RewardInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
               <th>Gas费</th>
               <td>按照初始投入比例承担</td>
               <th>扇区期限</th>
-              <td>{U.sec2day(data?.sector_period)}天</td>
+              <td>{days}天</td>
             </tr>
           </tbody>
         </table>
