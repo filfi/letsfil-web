@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { useEffect, useMemo, useState } from 'react';
 
 import * as U from '@/utils/utils';
@@ -16,17 +15,14 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
   const { getProvider } = useProvider();
   const [amount, setAmount] = useState(0);
 
-  const { getContract } = usePlanContract();
+  const plan = usePlanContract(data?.raise_address);
 
   const fetchAmounts = async () => {
     if (!data?.raise_address) return;
-    const plan = getContract(data.raise_address);
 
-    const amount = await plan?.pledgeTotalAmount();
+    const amount = await plan.pledgeTotalAmount();
 
-    if (amount) {
-      setAmount(+ethers.utils.formatEther(amount));
-    }
+    setAmount(F.toNumber(amount));
   };
 
   useEffect(() => {
@@ -36,7 +32,7 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
   const actual = useMemo(() => F.toNumber(data?.actual_amount), [data]);
   const percent = useMemo(() => (total > 0 ? amount / total : 0), [total, amount]);
-  const isOwner = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
+  const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
   const provider = useMemo(() => (data?.service_id ? getProvider(data.service_id) : undefined), [data]);
   const isProvider = useMemo(() => U.isEqual(data?.service_provider_address, accounts[0]), [data, accounts]);
 
@@ -67,7 +63,7 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
                   <span className="ms-1 text-neutral">%</span>
                 </span>
                 <span className="badge badge-primary ms-auto">
-                  {isOwner ? data?.raiser_share : isProvider ? data?.servicer_share : data?.investor_share}% · 总产出
+                  {isRaiser ? data?.raiser_share : isProvider ? data?.servicer_share : data?.investor_share}% · 总产出
                 </span>
               </p>
             </div>
@@ -122,19 +118,19 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
             </tr>
             <tr>
               <th>截止日期</th>
-              <td>{data?.end_seal_time ? F.formatDate(data?.end_seal_time * 1000, 'lll') : '-'}</td>
+              <td>{F.formatSecDate(data?.end_seal_time)}</td>
               <th>距截止还有</th>
               <td>{U.diffDays(data?.end_seal_time)}天</td>
             </tr>
             <tr>
               <th>预期封装完成</th>
-              <td>{F.formatRemain(data?.raise_create_time, data?.seal_time_limit)}</td>
+              <td>{F.formatRemain(data?.end_seal_time, data?.seal_time_limit)}</td>
               <th>封装时间</th>
               <td>{U.sec2day(data?.seal_time_limit)}天</td>
             </tr>
             <tr>
               <th>扇区到期(估)</th>
-              <td>{F.formatRemain(data?.raise_create_time, data?.sector_period)}</td>
+              <td>{F.formatRemain(data?.end_seal_time, data?.seal_time_limit, data?.sector_period)}</td>
               <th>扇区期限</th>
               <td>{U.sec2day(data?.sector_period)}天</td>
             </tr>

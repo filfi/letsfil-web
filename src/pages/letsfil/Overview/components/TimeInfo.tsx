@@ -46,7 +46,7 @@ const TimeInfo: React.FC<{
 
   return (
     <>
-      <Steps current={current} items={items} />
+      <Steps current={current === items.length - 1 ? items.length : current} items={items} />
     </>
   );
 };

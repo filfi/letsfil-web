@@ -316,10 +316,48 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
     ),
   );
 
+  /**
+   * 获取募集保证金
+   */
+  const getRaiseFund = withConnect(
+    withContract(async (contract) => {
+      return await contract?.securityFundRemainAmount();
+    }),
+  );
+
+  /**
+   * 获取运维保证金
+   */
+  const getOpsFund = withConnect(
+    withContract(async (contract) => {
+      return await contract?.opsSecurityFundRemainAmount();
+    }),
+  );
+
+  /**
+   * 获取总收益
+   */
+  const totalRewardOf = withConnect(
+    withContract(async (contract, address: string) => {
+      return await contract?.totalRewardOf(address);
+    }),
+  );
+
+  /**
+   * 获取可提取收益
+   */
+  const availableRewardOf = withConnect(
+    withContract(async (contract, address: string) => {
+      return await contract?.availableRewardOf(address);
+    }),
+  );
+
   return {
     staking,
     unStaking,
     getContract,
+    getOpsFund,
+    getRaiseFund,
     closeRaisePlan,
     depositOPSFund,
     getNodeState,
@@ -330,5 +368,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
     withdrawRaiseFund,
     pledgeAmount,
     pledgeTotalAmount,
+    totalRewardOf,
+    availableRewardOf,
   };
 }

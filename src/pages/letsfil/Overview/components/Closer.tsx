@@ -23,7 +23,8 @@ const Closer: React.FC<{ loading?: boolean; onConfirm?: () => void }> = ({ loadi
           <h5 className="card-title">关闭此计划</h5>
           <p className="mb-0">您需要支付罚金以关闭计划，关闭后投资者已质押的Fil将返还用户，产生的Gas费也将由您账户承担</p>
           <p>
-            <a href="#">查看罚金计算规则</a>
+            &nbsp;
+            {/* <a href="#">查看罚金计算规则</a> */}
           </p>
 
           <SpinBtn className="btn btn-primary btn-lg w-100" loading={loading} icon={<MinusIcon />} onClick={handleClose}>

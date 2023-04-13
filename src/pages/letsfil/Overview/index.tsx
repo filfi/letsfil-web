@@ -16,7 +16,6 @@ import Signer from './components/Signer';
 import Deposit from './components/Deposit';
 import Staking from './components/Staking';
 import Success from './components/Success';
-import Withdraw from './components/Withdraw';
 import Unstaking from './components/Unstaking';
 import NodeInfo from './components/NodeInfo';
 import TimeInfo from './components/TimeInfo';
@@ -29,6 +28,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 import useLoadingify from '@/hooks/useLoadingify';
 import PayforModal from '@/components/PayforModal';
+import usePlanAmounts from '@/hooks/usePlanAmounts';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as Share4 } from '@/assets/icons/share-04.svg';
@@ -42,12 +42,11 @@ export default function Overview() {
   const params = useParams();
   const address = useRef<string>();
   const payfor = useRef<ModalAttrs>(null);
-  const withdraw = useRef<ModalAttrs>(null);
   const unstaking = useRef<ModalAttrs>(null);
 
   const { accounts } = useAccounts();
   const plan = usePlanContract(address);
-  const [amount, setAmount] = useState(0);
+  const amounts = usePlanAmounts(address);
   const [planState, setPlanState] = useState(-1);
   const [nodeState, setNodeState] = useState(-1);
 
@@ -75,14 +74,6 @@ export default function Overview() {
     setNodeState(nodeState ?? -1);
   };
 
-  const getAmounts = async () => {
-    if (accounts[0]) {
-      const amount = await plan.pledgeAmount(accounts[0]);
-
-      setAmount(F.toNumber(amount));
-    }
-  };
-
   const { data, refresh } = useRequest(service, { refreshDeps: [params] });
 
   const onDataChange = () => {
@@ -90,12 +81,12 @@ export default function Overview() {
 
     getRaiseState();
     getNodeState();
-    getAmounts();
+    amounts.refresh();
   };
 
   const raiseId = useMemo(() => data?.raising_id, [data]);
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
-  const isOwner = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
+  const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
 
   const onStatusChange = (res: API.Base) => {
     console.log('[onStatusChange]: ', res);
@@ -131,20 +122,21 @@ export default function Overview() {
     [EventType.OnWithdrawRaiseFund]: onWithdrawSuccess,
   });
 
+  // 关闭计划
   const { loading: closing, run: handleClose } = useLoadingify(async () => {
     await plan.closeRaisePlan();
   });
 
-  const { loading: rasieLoading, run: handleRaiseFund } = useLoadingify(async () => {
-    await plan.withdrawRaiseFund();
-  });
-
+  // 支付运维保证金
   const { loading: opsLoading, run: handleOpsFund } = useLoadingify(async () => {
+    if (!data || !data.ops_security_fund) return;
+
     await plan.depositOPSFund({
-      value: ethers.BigNumber.from(data?.ops_security_fund || '0'),
+      value: ethers.BigNumber.from(`${data.ops_security_fund}`),
     });
   });
 
+  // 好友代付，修改支付地址
   const { loading: payforing, run: handlePayfor } = useLoadingify(async (address: string) => {
     await plan.specifyOpsPayer(address);
 
@@ -157,20 +149,17 @@ export default function Overview() {
     } catch (e) {}
   });
 
-  const { loading: unstakeLoading, run: handleUnstaking } = useLoadingify(async (amount: string) => {
-    await plan.unStaking(ethers.utils.parseEther(`${amount}`));
+  // 解除质押|赎回
+  const { loading: unstakeLoading, run: handleUnstaking } = useLoadingify(async (amount?: number | string) => {
+    await plan.unStaking(ethers.utils.parseEther(`${amount ?? amounts.invest}`));
   });
 
-  const showPayfor = () => {
-    payfor.current?.show();
+  const withdrawRaiseFund = async () => {
+    await plan.withdrawRaiseFund();
   };
 
-  const showWithdraw = () => {
-    withdraw.current?.show();
-  };
-
-  const showUnstaking = () => {
-    unstaking.current?.show();
+  const withdrawOpsFund = async () => {
+    await plan.withdrawOPSFund();
   };
 
   const renderStatus = () => {
@@ -181,29 +170,43 @@ export default function Overview() {
         case RaiseState.NotStarted: // 未缴纳募集保证金
           break;
         case RaiseState.WaitPayOPSSecurityFund: // 未缴纳运维保证金
-          return isOwner && <Deposit loading={opsLoading} onPayfor={showPayfor} onConfirm={handleOpsFund} />;
+          return isRaiser && <Deposit loading={opsLoading} onPayfor={() => payfor.current?.show()} onConfirm={handleOpsFund} />;
         case RaiseState.WaitSeverSign: // 等待服务商签名
-          return isOwner && <Signer raiseID={data?.raising_id} />;
+          return isRaiser && <Signer raiseID={data?.raising_id} />;
         case RaiseState.InProgress: // 募集中
-          return <Staking amount={amount} loading={unstakeLoading} raiseID={raiseId} total={total} onConfirm={showUnstaking} />;
+          return <Staking total={total} raiseID={raiseId} amount={amounts.invest} loading={unstakeLoading} onConfirm={() => unstaking.current?.show()} />;
         case RaiseState.Closed: // 已关闭
         case RaiseState.Failed: // 募集失败
           return (
             <Failed
-              amount={amount}
-              data={data}
               state={planState}
-              onWithdrawRaiseFund={handleRaiseFund}
-              onWithdrawOpsFund={handleOpsFund}
-              onWithdrawInvestFund={() => handleUnstaking(`${amount}`)}
+              ops={amounts.ops}
+              raise={amounts.raise}
+              invest={amounts.invest}
+              onWithdrawOpsFund={withdrawOpsFund}
+              onWithdrawRaiseFund={withdrawRaiseFund}
+              onWithdrawInvestFund={handleUnstaking}
             />
           );
-        case RaiseState.Successed: // 募集已完成
-          return <Success data={data} state={nodeState} loading={rasieLoading} onConfirm={showWithdraw} />;
+        case RaiseState.Successed: // 募集成功
+          return (
+            <Success
+              data={data}
+              state={nodeState}
+              ops={amounts.ops}
+              raise={amounts.raise}
+              total={amounts.total}
+              invest={amounts.invest}
+              usable={amounts.usable}
+              onWithdrawOpsFund={withdrawOpsFund}
+              onWithdrawRaiseFund={withdrawRaiseFund}
+              onWithdrawInvestFund={handleUnstaking}
+            />
+          );
       }
     })();
 
-    const cloable = isOwner && planState <= RaiseState.InProgress;
+    const cloable = isRaiser && planState <= RaiseState.InProgress;
 
     return (
       <div className="d-flex flex-column gap-4">
@@ -295,8 +298,7 @@ export default function Overview() {
       </div>
 
       <PayforModal ref={payfor} loading={payforing} onConfirm={handlePayfor} />
-      <Withdraw ref={withdraw} onConfirm={handleRaiseFund} />
-      <Unstaking ref={unstaking} amount={amount} onConfirm={handleUnstaking} />
+      <Unstaking ref={unstaking} amount={amounts.invest} onConfirm={handleUnstaking} />
     </>
   );
 }

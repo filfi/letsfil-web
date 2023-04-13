@@ -106,6 +106,7 @@ export default function Staking() {
   });
 
   const { loading: stakeLoading, run: handleStaking } = useLoadingify(async () => {
+    console.log(amount);
     await plan.staking({
       value: ethers.utils.parseEther(`${amount}`),
     });

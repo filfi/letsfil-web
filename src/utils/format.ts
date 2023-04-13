@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import numeral from 'numeral';
 import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
+import { accAdd } from './utils';
 
 export function formatNum(num: number | string, fmt: string, runding?: numeral.RoundingFunction) {
   return numeral(num).format(fmt, runding);
@@ -47,9 +48,11 @@ export function formatPercent(progress?: ethers.BigNumberish) {
   return formatRate(toNumber(progress, 6));
 }
 
-export function formatRemain(a?: number, b?: number) {
-  if (a && b) {
-    return formatDate((a + b) * 1000, 'lll');
+export function formatRemain(...args: (number | string)[]) {
+  if (args.every(Boolean)) {
+    const sum = args.reduce<number>((sum, cur) => accAdd(sum, cur), 0);
+
+    return formatDate(sum * 1000, 'lll');
   }
 
   return '-';

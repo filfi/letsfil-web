@@ -22,20 +22,21 @@ const isDisabled = (val?: number | string) => {
 };
 
 const Failed: React.FC<{
-  amount?: number | string;
-  data?: API.Base;
   state?: number;
+  ops?: number | string;
+  raise?: number | string;
+  invest?: number | string;
   onWithdrawRaiseFund?: () => void;
   onWithdrawOpsFund?: () => void;
-  onWithdrawInvestFund?: () => void;
-}> = ({ amount, data, state, onWithdrawRaiseFund, onWithdrawOpsFund, onWithdrawInvestFund }) => {
+  onWithdrawInvestFund?: (amount: number | string) => void;
+}> = ({ state, ops = 0, raise = 0, invest = 0, onWithdrawOpsFund, onWithdrawRaiseFund, onWithdrawInvestFund }) => {
   const { initialState } = useModel('@@initialState');
 
-  const withdrawFund = withConfirm(onWithdrawRaiseFund, formatEther(data?.security_fund));
+  const withdrawFund = withConfirm(onWithdrawRaiseFund, formatEther(raise));
 
-  const withdrawOpsFund = withConfirm(onWithdrawOpsFund, formatEther(data?.ops_security_fund));
+  const withdrawOpsFund = withConfirm(onWithdrawOpsFund, formatEther(ops));
 
-  const withdrawInvestFund = withConfirm(onWithdrawInvestFund, formatAmount(amount));
+  const withdrawInvestFund = withConfirm(onWithdrawInvestFund, formatAmount(invest));
 
   return (
     <>
@@ -48,16 +49,11 @@ const Failed: React.FC<{
             <div className="me-3">
               <p className="mb-1 fw-500">募集保证金</p>
               <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatEther(data?.security_fund)}</span>
+                <span className="decimal me-2">{formatEther(raise)}</span>
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button
-              type="button"
-              className="btn btn-light btn-md ms-auto"
-              disabled={initialState?.processing || isDisabled(data?.security_fund)}
-              onClick={withdrawFund}
-            >
+            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing || isDisabled(raise)} onClick={withdrawFund}>
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
             </button>
@@ -66,16 +62,11 @@ const Failed: React.FC<{
             <div className="me-3">
               <p className="mb-1 fw-500">运维保证金</p>
               <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatEther(data?.ops_security_fund)}</span>
+                <span className="decimal me-2">{formatEther(ops)}</span>
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button
-              type="button"
-              className="btn btn-light btn-md ms-auto"
-              disabled={initialState?.processing || isDisabled(data?.ops_security_fund)}
-              onClick={withdrawOpsFund}
-            >
+            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing || isDisabled(ops)} onClick={withdrawOpsFund}>
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
             </button>
@@ -84,15 +75,15 @@ const Failed: React.FC<{
             <div className="me-3">
               <p className="mb-1 fw-500">我的投资额</p>
               <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatAmount(amount)}</span>
+                <span className="decimal me-2">{formatAmount(invest)}</span>
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
             <button
               type="button"
               className="btn btn-light btn-md ms-auto"
-              disabled={initialState?.processing || isDisabled(amount)}
-              onClick={withdrawInvestFund}
+              disabled={initialState?.processing || isDisabled(invest)}
+              onClick={() => withdrawInvestFund(invest)}
             >
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
