@@ -1,12 +1,12 @@
 import { useRef } from 'react';
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { useMount, useUnmount } from 'ahooks';
 import MetaMaskOboarding from '@metamask/onboarding';
 
 import abi from '@/abis/plan.abi.json';
+import { withTx } from '@/helpers/app';
 import toastify from '@/utils/toastify';
 import useAccounts from './useAccounts';
-import { withGas, withTx } from '@/helpers/app';
 import { createDispatcher, EventType } from '@/utils/mitt';
 
 export type MaybeRef<T> = T | React.MutableRefObject<T>;
@@ -25,10 +25,14 @@ export enum PlanEventTypes {
   onUnstaking = 'eUnstaking',
   onRaiseFailed = 'eRaiseFailed',
   onCloseRaisePlan = 'eCloseRaisePlan',
+  onChangeOpsPayer = 'eSpecifyOpsPayer',
   onStartRaisePlan = 'eStartRaisePlan',
   onDepositOPSFund = 'eDepositOPSSecurityFund',
   onWithdrawOPSFund = 'eWithdrawOPSSecurityFund',
   onWithdrawRaiseFund = 'eWithdrawRaiseSecurityFund',
+  onRaiserWithdraw = 'eRaiseWithdraw',
+  onServicerWithdraw = 'eSPWithdraw',
+  onInvestorWithdraw = 'eInvestorWithdraw',
 }
 
 const isRef = <T>(val: unknown): val is React.MutableRefObject<T> => Object.prototype.hasOwnProperty.call(val, 'current');
@@ -39,10 +43,6 @@ function getRefVal<T>(ref?: MaybeRef<T>) {
   }
 
   return ref;
-}
-
-function getMaxFeePerGas(from: number | string) {
-  return BigNumber.from(from).add(200).toHexString();
 }
 
 function createContract(address?: string) {
@@ -57,21 +57,29 @@ function createContract(address?: string) {
 
 const events = {
   // 质押
-  onStaking: createDispatcher(EventType.OnStaking, ['raiseID', 'from', 'to', 'amount']),
+  onStaking: createDispatcher(EventType.onStaking, ['raiseID', 'from', 'to', 'amount']),
   // 解除质押
-  onUnstaking: createDispatcher(EventType.OnUnstaking, ['raiseID', 'from', 'to', 'amount']),
+  onUnstaking: createDispatcher(EventType.onUnstaking, ['raiseID', 'from', 'to', 'amount']),
   // 解除质押
-  onRaiseFailed: createDispatcher(EventType.OnRaiseFailed, ['raiseID']),
+  onRaiseFailed: createDispatcher(EventType.onRaiseFailed, ['raiseID']),
+  // 修改保证金支付地址
+  onChangeOpsPayer: createDispatcher(EventType.onChangeOpsPayer, ['raiseID', 'caller', 'oldPayer', 'newPayer']),
   // 运维保证金缴纳
-  onDepositOPSFund: createDispatcher(EventType.OnDepositOPSFund, ['raiseID', 'sender', 'amount']),
+  onDepositOPSFund: createDispatcher(EventType.onDepositOPSFund, ['raiseID', 'sender', 'amount']),
   // 募集计划启动
-  onStartRaisePlan: createDispatcher(EventType.OnStartRaisePlan, ['caller', 'raiseID']),
+  onStartRaisePlan: createDispatcher(EventType.onStartRaisePlan, ['caller', 'raiseID']),
   // 关闭募集计划
-  onCloseRaisePlan: createDispatcher(EventType.OnCloseRaisePlan, ['caller', 'raiseID']),
+  onCloseRaisePlan: createDispatcher(EventType.onCloseRaisePlan, ['caller', 'raiseID']),
+  // 募集商提取收益
+  onRaiserWithdraw: createDispatcher(EventType.onRaiserWithdraw, ['raiseID', 'from', 'to', 'amount']),
+  // 服务商提取收益
+  onServicerWithdraw: createDispatcher(EventType.onServicerWithdraw, ['raiseID', 'from', 'to', 'amount']),
+  // 投资人提取收益
+  onInvestorWithdraw: createDispatcher(EventType.onInvestorWithdraw, ['raiseID', 'contractAddress', 'from', 'to', 'amount']),
   // 提取运维保证金
-  onWithdrawOPSFund: createDispatcher(EventType.OnWithdrawOPSFund, ['caller', 'raiseID', 'amount']),
+  onWithdrawOPSFund: createDispatcher(EventType.onWithdrawOPSFund, ['caller', 'raiseID', 'amount']),
   // 提取募集保证金
-  onWithdrawRaiseFund: createDispatcher(EventType.OnWithdrawRaiseFund, ['caller', 'raiseID', 'amount']),
+  onWithdrawRaiseFund: createDispatcher(EventType.onWithdrawRaiseFund, ['caller', 'raiseID', 'amount']),
 };
 
 export default function usePlanContract(address?: MaybeRef<string | undefined>) {
@@ -83,11 +91,15 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
     contract.current?.on(PlanEventTypes.onStaking, events.onStaking);
     contract.current?.on(PlanEventTypes.onUnstaking, events.onUnstaking);
     contract.current?.on(PlanEventTypes.onRaiseFailed, events.onRaiseFailed);
+    contract.current?.on(PlanEventTypes.onChangeOpsPayer, events.onChangeOpsPayer);
     contract.current?.on(PlanEventTypes.onCloseRaisePlan, events.onCloseRaisePlan);
     contract.current?.on(PlanEventTypes.onDepositOPSFund, events.onDepositOPSFund);
     contract.current?.on(PlanEventTypes.onStartRaisePlan, events.onStartRaisePlan);
     contract.current?.on(PlanEventTypes.onWithdrawOPSFund, events.onWithdrawOPSFund);
     contract.current?.on(PlanEventTypes.onWithdrawRaiseFund, events.onWithdrawRaiseFund);
+    contract.current?.on(PlanEventTypes.onRaiserWithdraw, events.onRaiserWithdraw);
+    contract.current?.on(PlanEventTypes.onServicerWithdraw, events.onServicerWithdraw);
+    contract.current?.on(PlanEventTypes.onInvestorWithdraw, events.onInvestorWithdraw);
   };
 
   useMount(bindEvents);
@@ -96,11 +108,15 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
     contract.current?.off(PlanEventTypes.onStaking, events.onStaking);
     contract.current?.off(PlanEventTypes.onUnstaking, events.onUnstaking);
     contract.current?.off(PlanEventTypes.onRaiseFailed, events.onRaiseFailed);
+    contract.current?.off(PlanEventTypes.onChangeOpsPayer, events.onChangeOpsPayer);
     contract.current?.off(PlanEventTypes.onCloseRaisePlan, events.onCloseRaisePlan);
     contract.current?.off(PlanEventTypes.onDepositOPSFund, events.onDepositOPSFund);
     contract.current?.off(PlanEventTypes.onStartRaisePlan, events.onStartRaisePlan);
     contract.current?.off(PlanEventTypes.onWithdrawOPSFund, events.onWithdrawOPSFund);
     contract.current?.off(PlanEventTypes.onWithdrawRaiseFund, events.onWithdrawRaiseFund);
+    contract.current?.off(PlanEventTypes.onRaiserWithdraw, events.onRaiserWithdraw);
+    contract.current?.off(PlanEventTypes.onServicerWithdraw, events.onServicerWithdraw);
+    contract.current?.off(PlanEventTypes.onInvestorWithdraw, events.onInvestorWithdraw);
   });
 
   const withContract = <R = any, P extends unknown[] = any>(service: (contract: ethers.Contract | undefined, ...args: P) => Promise<R>) => {
@@ -148,16 +164,11 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const depositOPSFund = toastify(
     withConnect(
       withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
-            return await contract?.payOpsSecurityFund({
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
+        withContract(async (contract, opts?: Options) => {
+          return await contract?.payOpsSecurityFund({
+            ...opts,
+          });
+        }),
       ),
     ),
   );
@@ -165,19 +176,14 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   /**
    * 指定保证金缴纳地址
    */
-  const specifyOpsPayer = toastify(
+  const changeOpsPayer = toastify(
     withConnect(
       withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, address: string, opts?: Options) => {
-            return await contract?.specifyOpsPayer(address, {
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
+        withContract(async (contract, address: string, opts?: Options) => {
+          return await contract?.specifyOpsPayer(address, {
+            ...opts,
+          });
+        }),
       ),
     ),
   );
@@ -188,16 +194,11 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const startRaisePlan = toastify(
     withConnect(
       withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
-            return await contract?.startRaisePlan({
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
+        withContract(async (contract, opts?: Options) => {
+          return await contract?.startRaisePlan({
+            ...opts,
+          });
+        }),
       ),
     ),
   );
@@ -208,70 +209,11 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const closeRaisePlan = toastify(
     withConnect(
       withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
-            return await contract?.closeRaisePlan({
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
-      ),
-    ),
-  );
-
-  /**
-   * 获取已募集金额
-   */
-  const pledgeTotalAmount = withContract(async (contract) => {
-    return await contract?.pledgeTotalAmount();
-  });
-
-  /**
-   * 获取募集金额
-   */
-  const pledgeAmount = withContract(async (contract, address: string) => {
-    return await contract?.pledgeRecord(address);
-  });
-
-  /**
-   * 提取募集保证金
-   */
-  const withdrawRaiseFund = toastify(
-    withConnect(
-      withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
-            return await contract?.withdrawRaiseSecurityFund({
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
-      ),
-    ),
-  );
-
-  /**
-   * 提取运维保证金
-   */
-  const withdrawOPSFund = toastify(
-    withConnect(
-      withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
-            return await contract?.withdrawOPSSecurityFund({
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
+        withContract(async (contract, opts?: Options) => {
+          return await contract?.closeRaisePlan({
+            ...opts,
+          });
+        }),
       ),
     ),
   );
@@ -282,38 +224,121 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const staking = toastify(
     withConnect(
       withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, opts?: Options) => {
-            return await contract?.staking({
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
+        withContract(async (contract, opts?: Options) => {
+          return await contract?.staking({
+            ...opts,
+          });
+        }),
       ),
     ),
   );
 
   /**
-   * 赎回
+   * 解除质押|赎回
    */
   const unStaking = toastify(
     withConnect(
       withTx(
-        withContract(
-          withGas(async (maxPriorityFeePerGas, contract, amount: BigNumber, opts?: Options) => {
-            return await contract?.unStaking(amount, address, {
-              maxPriorityFeePerGas,
-              maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
-          }),
-        ),
+        withContract(async (contract, amount: ethers.BigNumber, opts?: Options) => {
+          return await contract?.unStaking(amount, {
+            ...opts,
+          });
+        }),
       ),
     ),
+  );
+
+  /**
+   * 提取募集保证金
+   */
+  const withdrawRaiseFund = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
+          return await contract?.withdrawRaiseSecurityFund({
+            ...opts,
+          });
+        }),
+      ),
+    ),
+  );
+
+  /**
+   * 提取运维保证金
+   */
+  const withdrawOPSFund = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, opts?: Options) => {
+          return await contract?.withdrawOPSSecurityFund({
+            ...opts,
+          });
+        }),
+      ),
+    ),
+  );
+
+  /**
+   * 募集商提取收益
+   */
+  const raiserWithdraw = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, amount: ethers.BigNumber, opts?: Options) => {
+          return await contract?.raiserWithdraw(amount, {
+            ...opts,
+          });
+        }),
+      ),
+    ),
+  );
+
+  /**
+   * 服务商提取收益
+   */
+  const servicerWithdraw = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, amount: ethers.BigNumber, opts?: Options) => {
+          return await contract?.spWithdraw(amount, {
+            ...opts,
+          });
+        }),
+      ),
+    ),
+  );
+
+  /**
+   * 投资人提取收益
+   */
+  const investorWithdraw = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, to: string, amount: ethers.BigNumber, opts?: Options) => {
+          return await contract?.investorWithdraw(to, amount, {
+            ...opts,
+          });
+        }),
+      ),
+    ),
+  );
+
+  /**
+   * 获取已募集金额
+   */
+  const pledgeTotalAmount = withConnect(
+    withContract(async (contract) => {
+      return await contract?.pledgeTotalAmount();
+    }),
+  );
+
+  /**
+   * 获取募集金额
+   */
+  const pledgeAmount = withConnect(
+    withContract(async (contract, address: string) => {
+      return await contract?.pledgeRecord(address);
+    }),
   );
 
   /**
@@ -335,7 +360,79 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   );
 
   /**
-   * 获取总收益
+   * 获取募集商已领取的收益
+   */
+  const getRaiserWithdrawnReward = withConnect(
+    withContract(async (contract) => {
+      return await contract?.gotRaiserReward();
+    }),
+  );
+
+  /**
+   * 获取募集商可领取的收益
+   */
+  const getRaiserAvailableReward = withConnect(
+    withContract(async (contract) => {
+      return await contract?.raiserRewardAvailableLeft();
+    }),
+  );
+
+  /**
+   * 获取募集商待释放的收益
+   */
+  const getRaiserPendingReward = withConnect(
+    withContract(async (contract) => {
+      return await contract?.raiserWillReleaseReward();
+    }),
+  );
+
+  /**
+   * 获取服务商已领取的收益
+   */
+  const getServicerWithdrawnReward = withConnect(
+    withContract(async (contract) => {
+      return await contract?.gotSpReward();
+    }),
+  );
+
+  /**
+   * 获取服务商可领取的收益
+   */
+  const getServicerAvailableReward = withConnect(
+    withContract(async (contract) => {
+      return await contract?.spRewardAvailableLeft();
+    }),
+  );
+
+  /**
+   * 获取服务商待释放的收益
+   */
+  const getServicerPendingReward = withConnect(
+    withContract(async (contract) => {
+      return await contract?.spWillReleaseReward();
+    }),
+  );
+
+  /**
+   * 获取服务商可领取的收益
+   */
+  const totalRewardAmount = withConnect(
+    withContract(async (contract) => {
+      return await contract?.totalRewardAmount();
+    }),
+  );
+
+  /**
+   * 获取服务商待释放的收益
+   */
+  const totalReleasedRewardAmount = withConnect(
+    withContract(async (contract) => {
+      return await contract?.totalReleasedRewardAmount();
+    }),
+  );
+
+  /**
+   * 获取投资人总收益
    */
   const totalRewardOf = withConnect(
     withContract(async (contract, address: string) => {
@@ -344,11 +441,29 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   );
 
   /**
-   * 获取可提取收益
+   * 获取投资人可提取收益
    */
   const availableRewardOf = withConnect(
     withContract(async (contract, address: string) => {
       return await contract?.availableRewardOf(address);
+    }),
+  );
+
+  /**
+   * 获取投资人待释放收益
+   */
+  const pendingRewardOf = withConnect(
+    withContract(async (contract, address: string) => {
+      return await contract?.willReleaseOf(address);
+    }),
+  );
+
+  /**
+   * 获取投资人提取记录
+   */
+  const withdrawRecord = withConnect(
+    withContract(async (contract, address: string) => {
+      return await contract?.withdrawRecord(address);
     }),
   );
 
@@ -362,13 +477,26 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
     depositOPSFund,
     getNodeState,
     getRaiseState,
-    specifyOpsPayer,
+    changeOpsPayer,
     startRaisePlan,
     withdrawOPSFund,
     withdrawRaiseFund,
+    raiserWithdraw,
+    servicerWithdraw,
+    investorWithdraw,
     pledgeAmount,
     pledgeTotalAmount,
+    getRaiserAvailableReward,
+    getRaiserPendingReward,
+    getRaiserWithdrawnReward,
+    getServicerAvailableReward,
+    getServicerPendingReward,
+    getServicerWithdrawnReward,
+    totalRewardAmount,
+    totalReleasedRewardAmount,
     totalRewardOf,
     availableRewardOf,
+    pendingRewardOf,
+    withdrawRecord,
   };
 }

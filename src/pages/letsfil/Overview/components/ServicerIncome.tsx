@@ -1,6 +1,11 @@
+import { ethers } from 'ethers';
 import { useModel } from '@umijs/max';
+
 import Modal from '@/components/Modal';
-import { formatAmount, formatEther } from '@/utils/format';
+import SpinBtn from '@/components/SpinBtn';
+import { formatAmount } from '@/utils/format';
+import useLoadingify from '@/hooks/useLoadingify';
+import useRewardServicer from '@/hooks/useRewardServicer';
 
 const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount?: string) => {
   return (...args: P) => {
@@ -20,15 +25,16 @@ const isDisabled = (val?: number | string) => {
   return Number.isNaN(v) || v <= 0;
 };
 
-const ServicerIncome: React.FC<{
-  data?: API.Base;
-  total?: number | string;
-  usable?: number | string;
-  onWithdraw?: () => void;
-}> = ({ total = 0, usable = 0, onWithdraw }) => {
+const ServicerIncome: React.FC<{ address?: string }> = ({ address }) => {
   const { initialState } = useModel('@@initialState');
 
-  const handleWithdraw = withConfirm(onWithdraw, formatAmount(usable));
+  const { contract, reward, available } = useRewardServicer(address);
+
+  const { loading, run: handleWithdraw } = useLoadingify(async () => {
+    await contract.servicerWithdraw(ethers.utils.parseEther(`${available}`));
+  });
+
+  const onWithdraw = withConfirm(handleWithdraw, formatAmount(available));
 
   return (
     <>
@@ -41,7 +47,7 @@ const ServicerIncome: React.FC<{
             <div className="me-3">
               <p className="mb-1 fw-500">已分配FIL</p>
               <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatEther(total)}</span>
+                <span className="decimal me-2">{formatAmount(reward)}</span>
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
@@ -50,14 +56,20 @@ const ServicerIncome: React.FC<{
             <div className="me-3">
               <p className="mb-1 fw-500">待提取FIL</p>
               <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatAmount(usable)}</span>
+                <span className="decimal me-2">{formatAmount(available)}</span>
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing || isDisabled(usable)} onClick={handleWithdraw}>
+            <SpinBtn
+              type="button"
+              className="btn btn-light btn-md ms-auto"
+              loading={loading}
+              onClick={onWithdraw}
+              disabled={initialState?.processing || isDisabled(available)}
+            >
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
-            </button>
+            </SpinBtn>
           </div>
         </div>
       </div>

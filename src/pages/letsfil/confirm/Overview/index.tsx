@@ -1,8 +1,7 @@
 import { Skeleton } from 'antd';
 import classNames from 'classnames';
-import ClipboardJS from 'clipboard';
+import { useRequest } from 'ahooks';
 import { useParams } from '@umijs/max';
-import { useMount, useRequest } from 'ahooks';
 import { useMemo, useRef, useState } from 'react';
 
 import styles from './styles.less';
@@ -14,6 +13,7 @@ import { EventType } from '@/utils/mitt';
 import Result from '@/components/Result';
 import SpinBtn from '@/components/SpinBtn';
 import { planStatusText } from '@/constants';
+import ShareBtn from '@/components/ShareBtn';
 import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import { RaiseState } from '@/constants/state';
@@ -22,36 +22,6 @@ import useEmittHandler from '@/hooks/useEmitHandler';
 import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 import { ReactComponent as IconCheck } from '@/assets/icons/check-filled.svg';
-
-const Code = ({ command }: { command: string }) => {
-  const btn = useRef<HTMLButtonElement>(null);
-
-  useMount(() => {
-    if (!btn.current) return;
-
-    const cb = new ClipboardJS(btn.current, {
-      text: () => {
-        return command;
-      },
-    });
-
-    cb.on('success', () => {
-      Modal.alert({ icon: 'success', content: '已复制到剪贴板' });
-    });
-  });
-
-  return (
-    <div className={classNames('card', styles.card)}>
-      <div className={classNames('d-flex align-items-start', styles.code)}>
-        <span>$</span>
-        <p className={classNames('flex-fill mx-1 mb-0 fw-bold text-break', styles.command)}>{command}</p>
-        <button ref={btn} type="button" className="btn btn-link text-reset p-0">
-          <IconCopy />
-        </button>
-      </div>
-    </div>
-  );
-};
 
 export default function ConfirmOverview() {
   const params = useParams();
@@ -100,7 +70,7 @@ export default function ConfirmOverview() {
     }
   };
 
-  useEmittHandler({ [EventType.OnStartRaisePlan]: onStartRaisePlan });
+  useEmittHandler({ [EventType.onStartRaisePlan]: onStartRaisePlan });
 
   const getCommand = () => {
     const address = plan.getContract()?.address;
@@ -228,9 +198,17 @@ export default function ConfirmOverview() {
                 <hr />
               </div>
 
-              <Code command={getCommand()} />
+              <div className={classNames('card', styles.card)}>
+                <div className={classNames('d-flex align-items-start', styles.code)}>
+                  <span>$</span>
+                  <p className={classNames('flex-fill mx-1 mb-0 fw-bold text-break', styles.command)}>{getCommand()}</p>
+                  <ShareBtn className="btn btn-link text-reset p-0" text={getCommand()}>
+                    <IconCopy />
+                  </ShareBtn>
+                </div>
+              </div>
 
-              <div className="p-5">
+              <div className="px-5 pb-5">
                 <SpinBtn className="btn btn-primary w-100" disabled={disabled} loading={submitting} onClick={handleSubmit}>
                   {disabled && statusText ? statusText : isSigned ? '已确认' : submitting ? '正在确认' : '信息无误且已完成操作，确认'}
                 </SpinBtn>

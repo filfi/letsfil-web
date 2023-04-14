@@ -106,7 +106,7 @@ export function diffDays(seconds: number | string) {
 }
 
 export function parseMinerID(minerID: number | string) {
-  return `${minerID}`.replace(/^(f0|t0)/i, '');
+  return `${minerID}`.trim().replace(/^(f0|t0)/i, '');
 }
 
 export function toF4Address(addr?: string) {

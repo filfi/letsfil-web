@@ -1,16 +1,15 @@
 import { Skeleton } from 'antd';
 import classNames from 'classnames';
 import { useMemo, useState } from 'react';
-import { ethers, BigNumber } from 'ethers';
 import { useRequest, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import { accAdd } from '@/utils/utils';
 import { getPlansByAddr } from '@/apis/raise';
-import { formatAmount } from '@/utils/format';
 import useAccounts from '@/hooks/useAccounts';
 import PageHeader from '@/components/PageHeader';
 import usePlanContract from '@/hooks/usePlanContract';
+import { formatAmount, toNumber } from '@/utils/format';
 import { ReactComponent as IncomeIcon } from './imgs/income.svg';
 import { ReactComponent as WithdrawIcon } from './imgs/withdraw.svg';
 
@@ -40,38 +39,44 @@ export default function Account() {
     if (!accounts[0] || !data || !data.length) return;
 
     const rewards = await Promise.all(
-      data.map<Promise<BigNumber | undefined>>(async (item) => {
+      data.map(async (item) => {
         const contract = getContract(item.raise_address);
 
         return await contract?.totalRewardOf(accounts[0]);
       }),
     );
 
-    const total = rewards.reduce((sum, curr) => accAdd(sum, curr ? ethers.utils.formatEther(curr) : 0), 0);
+    const sum = rewards.reduce((sum, curr) => accAdd(sum, toNumber(curr)), 0);
 
-    setTotal(total);
+    console.log('[rewards]: ', rewards);
+    console.log('[total]: ', sum);
+
+    setTotal(sum);
   };
 
   const fetchUsableIncome = async () => {
     if (!accounts[0] || !data || !data.length) return;
 
     const rewards = await Promise.all(
-      data.map<Promise<BigNumber | undefined>>(async (item) => {
+      data.map(async (item) => {
         const contract = getContract(item.raise_address);
 
         return await contract?.availableRewardOf(accounts[0]);
       }),
     );
 
-    const usable = rewards.reduce((sum, curr) => accAdd(sum, curr ? ethers.utils.formatEther(curr) : 0), 0);
+    const sum = rewards.reduce((sum, curr) => accAdd(sum, toNumber(curr)), 0);
 
-    setUsable(usable);
+    console.log('[available rewards]: ', rewards);
+    console.log('[total available]: ', sum);
+
+    setUsable(sum);
   };
 
   useUpdateEffect(() => {
     fetchTotalIncome();
     fetchUsableIncome();
-  }, [data]);
+  }, [data, accounts]);
 
   return (
     <div className="container">

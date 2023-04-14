@@ -24,20 +24,23 @@ export async function callRPC(method: string, params: (number | string)[]) {
     }),
   });
 
-  const data = await res.json();
-
-  return data.result;
+  return await res.json();
 }
 
 export async function fetchGas() {
-  const gas = await callRPC('eth_maxPriorityFeePerGas', []);
+  const res = await callRPC('eth_maxPriorityFeePerGas', []);
 
-  return gas;
+  if (res.result) {
+    return res.result;
+  }
+
+  throw new Error(res.message);
 }
 
 export function withGas<R = any, P extends unknown[] = any>(service: (gas: string, ...args: P) => Promise<R>) {
   return async (...args: P) => {
-    const gas = await fetchGas();
+    // const gas = await fetchGas();
+    const gas = '0x30f3f';
 
     console.log('[maxPriorityFeePerGas]: ', gas);
 

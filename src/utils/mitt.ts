@@ -1,27 +1,40 @@
 import mitt from 'mitt';
+import { ethers } from 'ethers';
 
 export enum EventType {
-  OnStaking = 'onStaking', // 质押
-  OnUnstaking = 'onUnstaking', // 解除质押
-  OnRaiseFailed = 'eRaiseFailed', // 质押失败
-  OnDepositOPSFund = 'onDepositOPSFund', // 运维保证金支付
-  OnStartRaisePlan = 'onStartRaisePlan', // 募集计划启动
-  OnCloseRaisePlan = 'onCloseRaisePlan', // 募集计划关闭
-  OnCreateRaisePlan = 'onCreateRaisePlan', // 募集计划创建
-  OnWithdrawOPSFund = 'onWithdrawOPSFund', // 提取运维保证金
-  OnWithdrawRaiseFund = 'onWithdrawRaiseFund', // 提取募集保证金
+  onStaking = 'onStaking', // 质押
+  onUnstaking = 'onUnstaking', // 解除质押
+  onRaiseFailed = 'onRaiseFailed', // 质押失败
+  onChangeOpsPayer = 'onChangeOpsPayer', // 修改保证金支付地址
+  onDepositOPSFund = 'onDepositOPSFund', // 运维保证金支付
+  onStartRaisePlan = 'onStartRaisePlan', // 募集计划启动
+  onCloseRaisePlan = 'onCloseRaisePlan', // 募集计划关闭
+  onCreateRaisePlan = 'onCreateRaisePlan', // 募集计划创建
+  onWithdrawOPSFund = 'onWithdrawOPSFund', // 提取运维保证金
+  onWithdrawRaiseFund = 'onWithdrawRaiseFund', // 提取募集保证金
+  onRaiserWithdraw = 'onRaiserWithdraw', // 募集商提取收益
+  onServicerWithdraw = 'onServicerWithdraw', // 服务商提取收益
+  onInvestorWithdraw = 'onInvestorWithdraw', // 投资者提取收益
 }
 
-export type Events = {
-  [EventType.OnStaking]: object;
-  [EventType.OnUnstaking]: object;
-  [EventType.OnRaiseFailed]: object;
-  [EventType.OnCreateRaisePlan]: object;
-  [EventType.OnDepositOPSFund]: object;
-  [EventType.OnStartRaisePlan]: object;
-  [EventType.OnCloseRaisePlan]: object;
-  [EventType.OnWithdrawOPSFund]: object;
-  [EventType.OnWithdrawRaiseFund]: object;
+export type Data = {
+  raiseID: ethers.BigNumber;
+};
+
+export type Events<D extends Data = Data> = {
+  [EventType.onStaking]: D;
+  [EventType.onUnstaking]: D;
+  [EventType.onRaiseFailed]: D;
+  [EventType.onChangeOpsPayer]: D;
+  [EventType.onCreateRaisePlan]: D;
+  [EventType.onDepositOPSFund]: D;
+  [EventType.onStartRaisePlan]: D;
+  [EventType.onCloseRaisePlan]: D;
+  [EventType.onWithdrawOPSFund]: D;
+  [EventType.onWithdrawRaiseFund]: D;
+  [EventType.onRaiserWithdraw]: D;
+  [EventType.onServicerWithdraw]: D;
+  [EventType.onInvestorWithdraw]: D;
 };
 
 const emitter = mitt<Events>();
@@ -35,7 +48,7 @@ export function createDispatcher(event: keyof Events, keys?: string[]) {
       };
     }, {});
 
-    emitter.emit(event, data ?? {});
+    emitter.emit(event, data ?? ({} as any));
   };
 }
 

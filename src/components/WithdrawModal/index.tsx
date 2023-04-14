@@ -3,12 +3,14 @@ import { forwardRef, useImperativeHandle, useRef } from 'react';
 
 import Modal from '@/components/Modal';
 
-const Withdraw: React.ForwardRefRenderFunction<
+const WithdrawModal: React.ForwardRefRenderFunction<
   ModalAttrs,
   {
+    title?: React.ReactNode;
+    content?: React.ReactNode;
     onConfirm?: (address: string) => void;
   }
-> = ({ onConfirm }, ref?: React.Ref<ModalAttrs> | null) => {
+> = ({ title, content, onConfirm }, ref?: React.Ref<ModalAttrs> | null) => {
   const modal = useRef<ModalAttrs>(null);
 
   const [form] = Form.useForm();
@@ -36,8 +38,8 @@ const Withdraw: React.ForwardRefRenderFunction<
   };
 
   return (
-    <Modal ref={modal} title="提取募集保证金" bodyClassName="pb-0" confirmText="提交" onConfirm={handleConfirm}>
-      <p className="text-gray text-center">注：提取行为将产生Gas费</p>
+    <Modal ref={modal} title={title} confirmText="提交" bodyClassName="pb-0" onConfirm={handleConfirm}>
+      <p className="text-gray text-center">{content ?? '注：提取行为将产生Gas费'}</p>
 
       <Form layout="vertical" form={form}>
         <Form.Item name="address" label="钱包地址" rules={[{ required: true, message: '输入地址' }]}>
@@ -48,4 +50,4 @@ const Withdraw: React.ForwardRefRenderFunction<
   );
 };
 
-export default forwardRef(Withdraw);
+export default forwardRef(WithdrawModal);

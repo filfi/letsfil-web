@@ -2,8 +2,6 @@
  * 运行时配置
  */
 
-import MetaMaskOnboarding from '@metamask/onboarding';
-
 import { getInitState, getLocale, setLocale } from '@/utils/storage';
 
 /**
@@ -26,12 +24,6 @@ export const locale = {
 // 更多信息见文档：https://next.umijs.org/docs/api/runtime-config#getinitialstate
 export async function getInitialState(): Promise<InitState> {
   let state = getInitState();
-
-  if (state?.connected && MetaMaskOnboarding.isMetaMaskInstalled()) {
-    state.accounts = await window.ethereum!.request({ method: 'eth_requestAccounts' });
-
-    state.chainId = await window.ethereum!.request({ method: 'eth_chainId' });
-  }
 
   return {
     accounts: [],

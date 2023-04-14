@@ -3,52 +3,45 @@ import { useMemo } from 'react';
 import * as U from '@/utils/utils';
 import { NodeState } from '@/constants/state';
 import useAccounts from '@/hooks/useAccounts';
+import usePlanState from '@/hooks/usePlanState';
+import useDepositInvest from '@/hooks/useDepositInvest';
 import Assets from './Assets';
-import OpsDeposit from './OpsDeposit';
-import RaiseDeposit from './RaiseDeposit';
-import InvestDeposit from './InvestDeposit';
-import RaiserIncome from './RaiserIncome';
-import InvestorIncome from './InvestorIncome';
-import ServicerIncome from './ServicerIncome';
+import DepositOps from './DepositOps';
+import DepositRaise from './DepositRaise';
+import DepositInvest from './DepositInvest';
+import IncomeRaiser from './RaiserIncome';
+import IncomeServicer from './ServicerIncome';
+import IncomeInvestor from './InvestorIncome';
+import useRewardInvestor from '@/hooks/useRewardInvestor';
 
-const Success: React.FC<{
-  data?: API.Base;
-  state?: number;
-  ops?: number | string;
-  raise?: number | string;
-  invest?: number | string;
-  total?: number | string;
-  usable?: number | string;
-  onWithdrawOpsFund?: () => void;
-  onWithdrawRaiseFund?: () => void;
-  onWithdrawInvestFund?: (amount: number | string) => void;
-}> = ({ data, ops = 0, raise = 0, state = 0, invest = 0, total = 0, usable = 0, onWithdrawOpsFund, onWithdrawRaiseFund, onWithdrawInvestFund }) => {
+const Success: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { accounts } = useAccounts();
-  const isInvestor = useMemo(() => +invest > 0, [invest]);
-  const isNodeEnd = useMemo(() => state === NodeState.Destroy, [state]);
-  const isNodeStart = useMemo(() => state >= NodeState.Started, [state]);
-  const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
-  const isProvider = useMemo(() => U.isEqual(data?.service_provider_address, accounts[0]), [data, accounts]);
+  const { nodeState } = usePlanState(data?.raise_address);
+  const { amount } = useDepositInvest(data?.raise_address);
+  const { reward } = useRewardInvestor(data?.raise_address);
 
-  const handleWithdraw = (amount: number | string) => {
-    onWithdrawInvestFund?.(amount);
-  };
+  const isInvestor = useMemo(() => amount > 0 || reward > 0, [amount, reward]);
+  const isNodeEnd = useMemo(() => nodeState === NodeState.Destroy, [nodeState]);
+  const isNodeStart = useMemo(() => nodeState >= NodeState.Started, [nodeState]);
+  const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
+  const isServicer = useMemo(() => U.isEqual(data?.service_provider_address, accounts[0]), [data, accounts]);
+  const isOpsPayer = useMemo(() => U.isEqual(data?.ops_security_fund_address, accounts[0]), [data, accounts]);
 
   return (
     <div className="d-flex flex-column gap-3">
-      {isInvestor && <Assets amount={invest} />}
+      {isInvestor && <Assets data={data} />}
 
-      {isInvestor && <InvestorIncome total={total} usable={usable} onWithdraw={() => handleWithdraw(usable)} />}
+      {isInvestor && <IncomeInvestor address={data?.raise_address} />}
 
-      {isRaiser && <RaiserIncome total={total} usable={usable} onWithdraw={() => handleWithdraw(usable)} />}
+      {isRaiser && <IncomeRaiser address={data?.raise_address} />}
 
-      {isProvider && <ServicerIncome total={total} usable={usable} onWithdraw={() => handleWithdraw(usable)} />}
+      {isServicer && <IncomeServicer address={data?.raise_address} />}
 
-      {isRaiser && isNodeStart && <RaiseDeposit amount={raise} state={state} onWithdraw={onWithdrawRaiseFund} />}
+      {isRaiser && isNodeStart && <DepositRaise address={data?.raise_address} />}
 
-      {isRaiser && isNodeEnd && <OpsDeposit amount={ops} onWithdraw={onWithdrawOpsFund} />}
+      {isOpsPayer && isNodeEnd && <DepositOps address={data?.raise_address} />}
 
-      {isRaiser && isNodeEnd && <InvestDeposit amount={invest} onWithdraw={() => handleWithdraw(invest)} />}
+      {isInvestor && isNodeEnd && <DepositInvest address={data?.raise_address} />}
     </div>
   );
 };

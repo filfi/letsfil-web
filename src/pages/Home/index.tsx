@@ -37,12 +37,12 @@ export default function Home() {
             <div className="card flex-fill border-0 rounded-3 text-reset" style={{ backgroundColor: '#E6EEFA' }}>
               <div className="card-body py-4">
                 <h4 className="card-title mb-3 fw-bold">
-                  <FormattedMessage id="pages.home.borrow.title" />
+                  <FormattedMessage id="pages.home.raiser.title" />
                 </h4>
                 <p className={classNames('mb-0 d-grid', styles.btn)}>
                   <button className="btn btn-dark btn-lg rounded-pill" type="button" onClick={() => go('/letsfil/raising')}>
                     <span className="me-2">
-                      <FormattedMessage id="pages.home.borrow.btn" />
+                      <FormattedMessage id="pages.home.raiser.btn" />
                     </span>
                     <span className="bi bi-arrow-right"></span>
                   </button>
@@ -54,12 +54,12 @@ export default function Home() {
             <div className="card flex-fill border-0 rounded-3 text-reset" style={{ backgroundColor: '#E5F5D0' }}>
               <div className="card-body py-4">
                 <h4 className="card-title mb-3 fw-bold">
-                  <FormattedMessage id="pages.home.supply.title" />
+                  <FormattedMessage id="pages.home.invest.title" />
                 </h4>
                 <p className={classNames('mb-0 d-grid', styles.btn)}>
                   <button className="btn btn-dark btn-lg rounded-pill" type="button" onClick={() => go('/letsfil/investing')}>
                     <span className="me-2">
-                      <FormattedMessage id="pages.home.supply.btn" />
+                      <FormattedMessage id="pages.home.invest.btn" />
                     </span>
                     <span className="bi bi-arrow-right"></span>
                   </button>

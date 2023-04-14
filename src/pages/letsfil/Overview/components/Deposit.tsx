@@ -2,9 +2,10 @@ import SpinBtn from '@/components/SpinBtn';
 
 const Deposit: React.FC<{
   loading?: boolean;
+  payforing?: boolean;
   onPayfor?: () => void;
   onConfirm?: () => void;
-}> = ({ loading, onPayfor, onConfirm }) => {
+}> = ({ loading, payforing, onPayfor, onConfirm }) => {
   return (
     <>
       <div className="card">
@@ -14,13 +15,13 @@ const Deposit: React.FC<{
 
           <div className="row row-cols-1 row-cols-xl-2 g-3">
             <div className="col">
-              <SpinBtn className="btn btn-light btn-lg w-100" loading={loading} onClick={onConfirm}>
+              <SpinBtn className="btn btn-light btn-lg w-100" loading={loading} disabled={payforing} onClick={onConfirm}>
                 {loading ? '正在支付' : '自己支付'}
               </SpinBtn>
             </div>
             <div className="col">
-              <SpinBtn disabled={loading} className="btn btn-primary btn-lg w-100" onClick={onPayfor}>
-                他人代付
+              <SpinBtn className="btn btn-primary btn-lg w-100" loading={payforing} disabled={loading} onClick={onPayfor}>
+                {payforing ? '正在处理' : '他人代付'}
               </SpinBtn>
             </div>
           </div>

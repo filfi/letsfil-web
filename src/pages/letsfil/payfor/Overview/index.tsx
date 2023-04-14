@@ -64,7 +64,12 @@ export default function PayforOverview() {
     }
   };
 
-  useEmittHandler({ [EventType.OnDepositOPSFund]: onDepositOPSFund });
+  useEmittHandler({
+    [EventType.onCloseRaisePlan]: refresh,
+    [EventType.onStartRaisePlan]: refresh,
+    [EventType.onChangeOpsPayer]: refresh,
+    [EventType.onDepositOPSFund]: onDepositOPSFund,
+  });
 
   const { loading: submitting, run: handleSubmit } = useLoadingify(async () => {
     if (!data || !accounts[0]) return;
@@ -167,7 +172,7 @@ export default function PayforOverview() {
               </div>
             </div>
 
-            <div className="px-5 mb-5">
+            <div className="px-5 pb-5">
               <SpinBtn className="btn btn-primary w-100" disabled={disabled} loading={submitting} onClick={handleSubmit}>
                 {disabled ? statusText : isPaied ? '已支付' : submitting ? '正在支付' : '支付运维保证金'}
               </SpinBtn>

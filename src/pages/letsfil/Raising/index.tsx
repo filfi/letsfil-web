@@ -23,15 +23,19 @@ export default function Raising() {
       sort: sort === 'desc' ? 'created_at desc' : 'created_at asc',
     };
 
-    if (type === 'mine') {
+    if (type === 'raise') {
       return A.raiseList({ ...p, address: accounts[0] });
+    }
+
+    if (type === 'invest') {
+      return A.investList({ ...p, address: accounts[0] });
     }
 
     return A.plans(p);
   };
 
   const { data, page, total, loading, pageSize, changePage } = usePagination(service, {
-    refreshDeps: [type, sort],
+    refreshDeps: [accounts, type, sort],
   });
 
   const go = withConnect(async () => {
@@ -48,7 +52,7 @@ export default function Raising() {
       dataIndex: 'sponsor_company',
     },
     {
-      title: '年华收益',
+      title: '年化收益',
       dataIndex: 'income_rate',
       render: F.formatPercent,
     },
@@ -99,32 +103,37 @@ export default function Raising() {
 
       <div className="mb-4 d-flex justify-content-between">
         <div className="btn-group" role="group" aria-label="Basic radio toggle button group">
-          <input
-            type="radio"
-            className="btn-check"
-            name="btnradio"
-            id="btnradio1"
-            autoComplete="off"
-            value="all"
-            checked={type === 'all'}
-            onChange={onChange}
-          />
-          <label className="btn btn-outline-secondary" htmlFor="btnradio1">
+          <input type="radio" className="btn-check" name="type" id="allradio" autoComplete="off" value="all" checked={type === 'all'} onChange={onChange} />
+          <label className="btn btn-outline-secondary" htmlFor="allradio">
             全部募集计划
           </label>
 
           <input
             type="radio"
             className="btn-check"
-            name="btnradio"
-            id="btnradio2"
+            name="type"
+            id="raiseradio"
             autoComplete="off"
-            value="mine"
-            checked={type === 'mine'}
+            value="raise"
+            checked={type === 'raise'}
             onChange={onChange}
           />
-          <label className="btn btn-outline-secondary" htmlFor="btnradio2">
+          <label className="btn btn-outline-secondary" htmlFor="raiseradio">
             我创建的计划
+          </label>
+
+          <input
+            type="radio"
+            className="btn-check"
+            name="type"
+            id="investradio"
+            autoComplete="off"
+            value="invest"
+            checked={type === 'invest'}
+            onChange={onChange}
+          />
+          <label className="btn btn-outline-secondary" htmlFor="investradio">
+            我参与的计划
           </label>
         </div>
 

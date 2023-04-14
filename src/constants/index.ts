@@ -9,7 +9,7 @@ export const API_URL = process.env.API_URL ?? '';
 export const RPC_URL = process.env.RPC_URL ?? '';
 
 // hyperspace - testnet
-const ADDR_HP = '0xE44133Cb82b0EA183141486a8139691e9B5e1A5D';
+const ADDR_HP = '0x2921c393f4bC2bAd5f674A0672e75493A2e2D508';
 // 2k - testnet
 const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
 /**

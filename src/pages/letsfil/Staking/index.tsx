@@ -51,7 +51,7 @@ export default function Staking() {
 
   const getAmounts = async () => {
     const totalAmount = await plan.pledgeTotalAmount();
-    setTotalAmount(+ethers.utils.formatEther(totalAmount));
+    setTotalAmount(F.toNumber(totalAmount));
   };
 
   const { data, loading, refresh } = useRequest(service, { refreshDeps: [params] });
@@ -64,7 +64,7 @@ export default function Staking() {
   };
 
   const raiseId = useMemo(() => data?.raising_id, [data]);
-  const total = useMemo(() => +ethers.utils.formatEther(`${data?.target_amount ?? 0}`), [data]);
+  const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
   const remain = useMemo(() => U.accSub(total, totalAmount), [total, totalAmount]);
   const disabled = useMemo(() => remain < 10, [remain]);
 
@@ -102,11 +102,10 @@ export default function Staking() {
   }, [remain]);
   useUpdateEffect(onDataChange, [data]);
   useEmittHandler({
-    [EventType.OnStaking]: onStaking,
+    [EventType.onStaking]: onStaking,
   });
 
   const { loading: stakeLoading, run: handleStaking } = useLoadingify(async () => {
-    console.log(amount);
     await plan.staking({
       value: ethers.utils.parseEther(`${amount}`),
     });
@@ -131,7 +130,7 @@ export default function Staking() {
       <div className={styles.content}>
         <Skeleton active loading={loading} paragraph={{ rows: 10 }}>
           {success ? (
-            <Result title={`成功投资 ${amount} FIL`} desc={`如果 ${F.formatDate(data?.end_seal_time * 1000, 'lll')} 募集目标未达成，您的投资额将返还`}>
+            <Result title={`成功投资 ${amount} FIL`} desc={`如果 ${F.formatSecDate(data?.end_seal_time)} 募集目标未达成，您的投资额将返还`}>
               <p>
                 <Link className="btn btn-primary btn-lg w-100" replace to={`/letsfil/overview/${params.id}`}>
                   查看计划详情

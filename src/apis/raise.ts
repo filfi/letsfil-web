@@ -5,17 +5,17 @@ export function providers() {
 }
 
 export function plans(params: API.PagingParams & { sort?: string }) {
-  return A.get<API.PagingParams, API.PagingRes<API.Base>>('/raising-plan/list', { params });
+  return A.get<API.PagingParams, API.PagingRes<API.Plan>>('/raising-plan/list', { params });
 }
 
 export function raiseList({ address, ...params }: API.PagingParams & { address: string; sort?: string }) {
-  return A.get<API.PagingParams, API.PagingRes<API.Base>>('/raising-plan/raiser/list', {
+  return A.get<API.PagingParams, API.PagingRes<API.Plan>>('/raising-plan/raiser/list', {
     params: { ...params, raiser_address: address },
   });
 }
 
 export function investList({ address, ...params }: API.PagingParams & { address: string; sort?: string }) {
-  return A.get<API.PagingParams, API.PagingRes<API.Base>>('/raising-plan/invest/list', {
+  return A.get<API.PagingParams, API.PagingRes<API.Plan>>('/raising-plan/invest/list', {
     params: { ...params, invest_address: address },
   });
 }
@@ -34,7 +34,7 @@ export function getPlansByAddr(search_address: string) {
 }
 
 export function getInfo(id: number | string) {
-  return A.get<void, API.Base>('/raising-plan/info', {
+  return A.get<void, API.Plan>('/raising-plan/info', {
     params: { raising_id: id },
   });
 }
@@ -45,4 +45,8 @@ export function getGasFee() {
 
 export function statChainInfo() {
   return A.get<void, API.Base>('/service-provier/get-filscan-stat-chain-info');
+}
+
+export function statAsset(id: string) {
+  return A.get<string, API.Base>('/raising-plan/asset/report', { params: { raising_id: id } });
 }

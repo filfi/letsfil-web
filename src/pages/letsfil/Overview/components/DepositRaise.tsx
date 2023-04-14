@@ -1,10 +1,13 @@
 import { useModel } from '@umijs/max';
 
 import Modal from '@/components/Modal';
-import { formatEther } from '@/utils/format';
+import SpinBtn from '@/components/SpinBtn';
+import { formatAmount } from '@/utils/format';
 import { NodeState } from '@/constants/state';
+import usePlanState from '@/hooks/usePlanState';
+import useDepositRaise from '@/hooks/useDepositRaise';
 
-const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount?: string) => {
+const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount?: number | string) => {
   return (...args: P) => {
     Modal.confirm({
       title: `提取 ${amount} FIL`,
@@ -22,23 +25,22 @@ const isDisabled = (val?: number | string) => {
   return Number.isNaN(v) || v <= 0;
 };
 
-const RaiseDeposit: React.FC<{
-  amount?: number | string;
-  state?: number;
-  onWithdraw?: () => void;
-}> = ({ amount, state, onWithdraw }) => {
+const RaiseDeposit: React.FC<{ address?: string }> = ({ address }) => {
   const { initialState } = useModel('@@initialState');
 
-  const handleWithdraw = withConfirm(onWithdraw, formatEther(amount));
+  const { nodeState } = usePlanState(address);
+  const { amount, loading, withdraw } = useDepositRaise(address);
+
+  const onWithdraw = withConfirm(withdraw, formatAmount(amount));
 
   return (
     <>
       <div className="card">
         <div className="card-body">
           <h5 className="card-title mb-3">
-            {state === NodeState.Destroy
+            {nodeState === NodeState.Destroy
               ? '节点运行结束，可提取募集保证金'
-              : state === NodeState.End
+              : nodeState === NodeState.End
               ? '节点封装已结束，可提取募集保证金'
               : '节点封装已开始，可提取募集保证金'}
           </h5>
@@ -47,14 +49,14 @@ const RaiseDeposit: React.FC<{
             <div className="me-3">
               <p className="mb-1 fw-500">募集保证金</p>
               <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatEther(amount)}</span>
+                <span className="decimal me-2">{formatAmount(amount)}</span>
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing || isDisabled(amount)} onClick={handleWithdraw}>
+            <SpinBtn loading={loading} className="btn btn-light btn-md ms-auto" disabled={initialState?.processing || isDisabled(amount)} onClick={onWithdraw}>
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
-            </button>
+            </SpinBtn>
           </div>
         </div>
       </div>

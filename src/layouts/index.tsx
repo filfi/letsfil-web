@@ -6,6 +6,7 @@ import { Outlet, useModel } from '@umijs/max';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import { SUPPORTED_CHAINS } from '@/constants';
+import useAccountEvents from '@/hooks/useAccountEvents';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 
 function getDom() {
@@ -32,6 +33,8 @@ const BasicLayout: React.FC = () => {
   const { initialState } = useModel('@@initialState');
   const [node, setNode] = useState<React.ReactNode>();
   const showAlert = useMemo(() => initialState?.connected && initialState?.chainId && !SUPPORTED_CHAINS.includes(initialState.chainId), [initialState]);
+
+  useAccountEvents();
 
   useMount(() => {
     // @ts-ignore

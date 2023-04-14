@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
 import { useModel } from '@umijs/max';
-import { useMount, useUnmount } from 'ahooks';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -28,14 +27,6 @@ export default function useAccounts() {
     });
   };
 
-  const onAccounts = (accounts: string[]) => {
-    setState({ accounts });
-  };
-
-  const onChainChanged = (chainId: string) => {
-    setState({ chainId });
-  };
-
   const requestAccounts = async (): Promise<string[] | undefined> => {
     setState({ connecting: true });
 
@@ -60,16 +51,6 @@ export default function useAccounts() {
       return await provider.getBalance(account);
     }
   };
-
-  useMount(() => {
-    window.ethereum?.on('accountsChanged', onAccounts);
-    window.ethereum?.on('chainChanged', onChainChanged);
-  });
-
-  useUnmount(() => {
-    window.ethereum?.removeListener('accountsChanged', onAccounts);
-    window.ethereum?.removeListener('chainChanged', onChainChanged);
-  });
 
   useEffect(() => {
     let connected = false;

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import * as U from '@/utils/utils';
 import * as F from '@/utils/format';
-import useAccounts from '@/hooks/useAccounts';
+// import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import usePlanContract from '@/hooks/usePlanContract';
 
@@ -11,7 +11,7 @@ function formatIncome(rate?: number | string) {
 }
 
 const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
-  const { accounts } = useAccounts();
+  // const { accounts } = useAccounts();
   const { getProvider } = useProvider();
   const [amount, setAmount] = useState(0);
 
@@ -32,9 +32,9 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
   const actual = useMemo(() => F.toNumber(data?.actual_amount), [data]);
   const percent = useMemo(() => (total > 0 ? amount / total : 0), [total, amount]);
-  const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
+  // const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
   const provider = useMemo(() => (data?.service_id ? getProvider(data.service_id) : undefined), [data]);
-  const isProvider = useMemo(() => U.isEqual(data?.service_provider_address, accounts[0]), [data, accounts]);
+  // const isProvider = useMemo(() => U.isEqual(data?.service_provider_address, accounts[0]), [data, accounts]);
 
   return (
     <>
@@ -62,9 +62,9 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
                   <span className="fs-3">{formatIncome(data?.income_rate || 0)}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
-                <span className="badge badge-primary ms-auto">
+                {/* <span className="badge badge-primary ms-auto">
                   {isRaiser ? data?.raiser_share : isProvider ? data?.servicer_share : data?.investor_share}% · 总产出
-                </span>
+                </span> */}
               </p>
             </div>
           </div>

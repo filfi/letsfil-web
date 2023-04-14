@@ -16,11 +16,11 @@ import Signer from './components/Signer';
 import Deposit from './components/Deposit';
 import Staking from './components/Staking';
 import Success from './components/Success';
-import Unstaking from './components/Unstaking';
 import NodeInfo from './components/NodeInfo';
 import TimeInfo from './components/TimeInfo';
 import RaiseInfo from './components/RaiseInfo';
 import RewardInfo from './components/RewardInfo';
+import StatInfo from './components/StatInfo';
 import ShareBtn from '@/components/ShareBtn';
 import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
@@ -28,7 +28,6 @@ import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 import useLoadingify from '@/hooks/useLoadingify';
 import PayforModal from '@/components/PayforModal';
-import usePlanAmounts from '@/hooks/usePlanAmounts';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as Share4 } from '@/assets/icons/share-04.svg';
@@ -42,13 +41,11 @@ export default function Overview() {
   const params = useParams();
   const address = useRef<string>();
   const payfor = useRef<ModalAttrs>(null);
-  const unstaking = useRef<ModalAttrs>(null);
 
   const { accounts } = useAccounts();
   const plan = usePlanContract(address);
-  const amounts = usePlanAmounts(address);
-  const [planState, setPlanState] = useState(-1);
-  const [nodeState, setNodeState] = useState(-1);
+  const [planState, setPlanState] = useState(0);
+  const [nodeState, setNodeState] = useState(0);
 
   const service = async () => {
     if (params.id) {
@@ -58,12 +55,18 @@ export default function Overview() {
     return undefined;
   };
 
+  const { data, refresh } = useRequest(service, { refreshDeps: [params] });
+
+  const raiseId = useMemo(() => data?.raising_id, [data]);
+  const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
+  const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
+
   const getRaiseState = async () => {
     const raiseState = await plan.getRaiseState();
 
     console.log('[raiseState]: ', raiseState);
 
-    setPlanState(raiseState ?? -1);
+    setPlanState(raiseState ?? 0);
   };
 
   const getNodeState = async () => {
@@ -71,22 +74,15 @@ export default function Overview() {
 
     console.log('[nodeState]: ', nodeState);
 
-    setNodeState(nodeState ?? -1);
+    setNodeState(nodeState ?? 0);
   };
-
-  const { data, refresh } = useRequest(service, { refreshDeps: [params] });
 
   const onDataChange = () => {
     address.current = data?.raise_address;
 
     getRaiseState();
     getNodeState();
-    amounts.refresh();
   };
-
-  const raiseId = useMemo(() => data?.raising_id, [data]);
-  const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
-  const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
 
   const onStatusChange = (res: API.Base) => {
     console.log('[onStatusChange]: ', res);
@@ -98,28 +94,71 @@ export default function Overview() {
     }
   };
 
-  const onWithdrawSuccess = (res: API.Base) => {
-    Modal.alert({
-      icon: 'success',
-      title: '提取成功',
-      content: '交易可能会有延迟，请稍后至接收钱包查看',
-      confirmText: '我知道了',
-    });
+  const onChangeOpsPayer = async (res: API.Base) => {
+    console.log('[onChangeOpsPayer]: ', res);
 
-    onStatusChange(res);
+    const raiseID = res.raiseID.toString();
+
+    if (U.isEqual(raiseID, raiseId)) {
+      const url = `${location.origin}/letsfil/payfor/overview/${raiseId}`;
+
+      try {
+        await navigator.clipboard.writeText(url);
+
+        Modal.alert({ icon: 'success', content: '链接已复制' });
+      } catch (e) {
+        Modal.alert({
+          icon: 'success',
+          title: '支付地址已变更',
+          content: (
+            <>
+              <p>代付链接：</p>
+              <p>
+                <a href={url} target="_blank" rel="noreferrer">
+                  {url}
+                </a>
+              </p>
+            </>
+          ),
+        });
+      }
+
+      refresh();
+    }
+  };
+
+  const onWithdrawSuccess = (res: API.Base) => {
+    console.log('[onWithdrawSuccess]: ', res);
+
+    const raiseID = res.raiseID.toString();
+
+    if (U.isEqual(raiseID, raiseId)) {
+      Modal.alert({
+        icon: 'success',
+        title: '提取成功',
+        content: '交易可能会有延迟，请稍后至接收钱包查看',
+        confirmText: '我知道了',
+      });
+
+      refresh();
+    }
   };
 
   useMount(initScrollSpy);
   useUpdateEffect(onDataChange, [data]);
   useEmittHandler({
-    [EventType.OnStaking]: onStatusChange,
-    [EventType.OnUnstaking]: onWithdrawSuccess,
-    [EventType.OnRaiseFailed]: onStatusChange,
-    [EventType.OnCloseRaisePlan]: onStatusChange,
-    [EventType.OnDepositOPSFund]: onStatusChange,
-    [EventType.OnStartRaisePlan]: onStatusChange,
-    [EventType.OnWithdrawOPSFund]: onWithdrawSuccess,
-    [EventType.OnWithdrawRaiseFund]: onWithdrawSuccess,
+    [EventType.onStaking]: onStatusChange,
+    [EventType.onUnstaking]: onStatusChange,
+    [EventType.onRaiseFailed]: onStatusChange,
+    [EventType.onCloseRaisePlan]: onStatusChange,
+    [EventType.onDepositOPSFund]: onStatusChange,
+    [EventType.onStartRaisePlan]: onStatusChange,
+    [EventType.onChangeOpsPayer]: onChangeOpsPayer,
+    [EventType.onWithdrawOPSFund]: onWithdrawSuccess,
+    [EventType.onWithdrawRaiseFund]: onWithdrawSuccess,
+    [EventType.onRaiserWithdraw]: onWithdrawSuccess,
+    [EventType.onServicerWithdraw]: onWithdrawSuccess,
+    [EventType.onInvestorWithdraw]: onWithdrawSuccess,
   });
 
   // 关闭计划
@@ -138,29 +177,8 @@ export default function Overview() {
 
   // 好友代付，修改支付地址
   const { loading: payforing, run: handlePayfor } = useLoadingify(async (address: string) => {
-    await plan.specifyOpsPayer(address);
-
-    const url = `${location.origin}/letsfil/payfor/overview/${data?.raiseID ?? ''}`;
-
-    try {
-      await navigator.clipboard.writeText(url);
-
-      Modal.alert({ icon: 'success', content: '链接已复制' });
-    } catch (e) {}
+    await plan.changeOpsPayer(address);
   });
-
-  // 解除质押|赎回
-  const { loading: unstakeLoading, run: handleUnstaking } = useLoadingify(async (amount?: number | string) => {
-    await plan.unStaking(ethers.utils.parseEther(`${amount ?? amounts.invest}`));
-  });
-
-  const withdrawRaiseFund = async () => {
-    await plan.withdrawRaiseFund();
-  };
-
-  const withdrawOpsFund = async () => {
-    await plan.withdrawOPSFund();
-  };
 
   const renderStatus = () => {
     if (!data) return null;
@@ -170,39 +188,16 @@ export default function Overview() {
         case RaiseState.NotStarted: // 未缴纳募集保证金
           break;
         case RaiseState.WaitPayOPSSecurityFund: // 未缴纳运维保证金
-          return isRaiser && <Deposit loading={opsLoading} onPayfor={() => payfor.current?.show()} onConfirm={handleOpsFund} />;
+          return isRaiser && <Deposit loading={opsLoading} payforing={payforing} onPayfor={() => payfor.current?.show()} onConfirm={handleOpsFund} />;
         case RaiseState.WaitSeverSign: // 等待服务商签名
           return isRaiser && <Signer raiseID={data?.raising_id} />;
         case RaiseState.InProgress: // 募集中
-          return <Staking total={total} raiseID={raiseId} amount={amounts.invest} loading={unstakeLoading} onConfirm={() => unstaking.current?.show()} />;
+          return <Staking data={data} />;
         case RaiseState.Closed: // 已关闭
         case RaiseState.Failed: // 募集失败
-          return (
-            <Failed
-              state={planState}
-              ops={amounts.ops}
-              raise={amounts.raise}
-              invest={amounts.invest}
-              onWithdrawOpsFund={withdrawOpsFund}
-              onWithdrawRaiseFund={withdrawRaiseFund}
-              onWithdrawInvestFund={handleUnstaking}
-            />
-          );
+          return <Failed data={data} />;
         case RaiseState.Successed: // 募集成功
-          return (
-            <Success
-              data={data}
-              state={nodeState}
-              ops={amounts.ops}
-              raise={amounts.raise}
-              total={amounts.total}
-              invest={amounts.invest}
-              usable={amounts.usable}
-              onWithdrawOpsFund={withdrawOpsFund}
-              onWithdrawRaiseFund={withdrawRaiseFund}
-              onWithdrawInvestFund={handleUnstaking}
-            />
-          );
+          return <Success data={data} />;
       }
     })();
 
@@ -257,6 +252,13 @@ export default function Overview() {
                   时间进度
                 </a>
               </li>
+              {planState === RaiseState.Successed && (
+                <li className="nav-item">
+                  <a className="nav-link" href="#statistics">
+                    资产报告
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
           <div className={styles.main} tabIndex={0} data-bs-spy="scroll" data-bs-target="#nav-pills" data-bs-smooth-scroll="true">
@@ -292,13 +294,22 @@ export default function Overview() {
 
               <TimeInfo data={data} nodeState={nodeState} planState={planState} />
             </section>
+            {planState === RaiseState.Successed && (
+              <section id="statistics" className={styles.section}>
+                <div className={styles.header}>
+                  <h4 className={styles.title}>资产报告</h4>
+                  <p className="mb-0">募集计划的资产报告</p>
+                </div>
+
+                <StatInfo data={data} />
+              </section>
+            )}
           </div>
           <div className={styles.sidebar}>{renderStatus()}</div>
         </div>
       </div>
 
       <PayforModal ref={payfor} loading={payforing} onConfirm={handlePayfor} />
-      <Unstaking ref={unstaking} amount={amounts.invest} onConfirm={handleUnstaking} />
     </>
   );
 }

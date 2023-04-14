@@ -1,9 +1,11 @@
 import { useModel } from '@umijs/max';
 
 import Modal from '@/components/Modal';
-import { formatEther } from '@/utils/format';
+import SpinBtn from '@/components/SpinBtn';
+import { formatAmount } from '@/utils/format';
+import useDepositInvest from '@/hooks/useDepositInvest';
 
-const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount?: string) => {
+const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount?: number | string) => {
   return (...args: P) => {
     Modal.confirm({
       title: `提取 ${amount} FIL`,
@@ -21,13 +23,12 @@ const isDisabled = (val?: number | string) => {
   return Number.isNaN(v) || v <= 0;
 };
 
-const InvestDeposit: React.FC<{
-  amount?: number | string;
-  onWithdraw?: () => void;
-}> = ({ amount, onWithdraw }) => {
+const DepositInvest: React.FC<{ address?: string }> = ({ address }) => {
   const { initialState } = useModel('@@initialState');
 
-  const handleWithdraw = withConfirm(onWithdraw, formatEther(amount));
+  const { amount, loading, withdraw } = useDepositInvest(address);
+
+  const onWithdraw = withConfirm(withdraw, formatAmount(amount));
 
   return (
     <>
@@ -39,14 +40,15 @@ const InvestDeposit: React.FC<{
             <div className="me-3">
               <p className="mb-1 fw-500">我的投资额</p>
               <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatEther(amount)}</span>
+                <span className="decimal me-2">{formatAmount(amount)}</span>
                 <span className="unit text-neutral">FIL</span>
               </p>
             </div>
-            <button type="button" className="btn btn-light btn-md ms-auto" disabled={initialState?.processing || isDisabled(amount)} onClick={handleWithdraw}>
+
+            <SpinBtn className="btn btn-light btn-md ms-auto" loading={loading} disabled={initialState?.processing || isDisabled(amount)} onClick={onWithdraw}>
               <span className="me-2">提取</span>
               <i className="bi bi-chevron-right"></i>
-            </button>
+            </SpinBtn>
           </div>
         </div>
       </div>
@@ -54,4 +56,4 @@ const InvestDeposit: React.FC<{
   );
 };
 
-export default InvestDeposit;
+export default DepositInvest;
