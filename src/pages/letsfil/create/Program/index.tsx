@@ -10,6 +10,14 @@ import { accMul, disabledDate } from '@/utils/utils';
 import DateTimePicker from '@/components/DateTimePicker';
 import ProviderSelect from '@/components/ProviderSelect';
 
+async function targetValidator(rule: unknown, value: string) {
+  await validators.integer(rule, value);
+
+  if (value && +value > 2500000) {
+    return Promise.reject('不超过 2,500,000 FIL');
+  }
+}
+
 export default function CreateProgram() {
   const [form] = Form.useForm();
   const { accounts } = useAccounts();
@@ -86,7 +94,7 @@ export default function CreateProgram() {
         <Form.Item
           label="募集目标"
           name="targetAmount"
-          rules={[{ required: true, message: '请输入募集目标' }, { validator: validators.number }]}
+          rules={[{ required: true, message: '请输入募集目标' }, { validator: targetValidator }]}
           help={
             <>
               <span className="me-2">根据节点大小，约需要{targetFil} FIL</span>

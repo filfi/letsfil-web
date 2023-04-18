@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { Skeleton } from 'antd';
 import { useRequest } from 'ahooks';
 import { useParams } from '@umijs/max';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import styles from './styles.less';
 import * as U from '@/utils/utils';
@@ -15,17 +15,16 @@ import SpinBtn from '@/components/SpinBtn';
 import { planStatusText } from '@/constants';
 import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
+import usePlanState from '@/hooks/usePlanState';
 import useLoadingify from '@/hooks/useLoadingify';
 import useEmittHandler from '@/hooks/useEmitHandler';
-import usePlanContract from '@/hooks/usePlanContract';
 
 export default function PayforOverview() {
   const params = useParams();
-  const address = useRef<string>();
 
   const { accounts } = useAccounts();
-  const plan = usePlanContract(address);
-  const [planState, setPlanState] = useState(-1);
+  const [address, setAddress] = useState<string>();
+  const { contract, planState, refresh: refreshState } = usePlanState(address);
 
   const service = async () => {
     if (params.id) {
@@ -35,19 +34,10 @@ export default function PayforOverview() {
     return undefined;
   };
 
-  const getRaiseState = async () => {
-    const raiseState = await plan.getRaiseState();
-
-    console.log('[raiseState]: ', raiseState);
-
-    setPlanState(raiseState ?? -1);
-  };
-
   const { data, loading, refresh } = useRequest(service, {
     refreshDeps: [params],
     onSuccess: (d) => {
-      address.current = d?.raise_address;
-      getRaiseState();
+      setAddress(d?.raise_address);
     },
   });
 
@@ -59,8 +49,8 @@ export default function PayforOverview() {
     if (U.isEqual(raiseID, params.id)) {
       console.log('[onRaisePlanStart]: ', raiseID);
 
-      setPlanState(RaiseState.InProgress);
       refresh();
+      refreshState();
     }
   };
 
@@ -72,9 +62,9 @@ export default function PayforOverview() {
   });
 
   const { loading: submitting, run: handleSubmit } = useLoadingify(async () => {
-    if (!data || !accounts[0]) return;
+    if (!data || !accounts[0] || !data.ops_security_fund) return;
 
-    if (accounts[0].toLowerCase() !== data.ops_security_fund_address?.toLowerCase()) {
+    if (!U.isEqual(accounts[0], data.ops_security_fund_address)) {
       Modal.alert({
         icon: 'warn',
         title: '非指定支付地址',
@@ -84,7 +74,7 @@ export default function PayforOverview() {
       return;
     }
 
-    await plan.depositOPSFund({
+    await contract.depositOPSFund({
       value: ethers.BigNumber.from(data.ops_security_fund),
     });
   });

@@ -2,7 +2,7 @@ import { Skeleton } from 'antd';
 import classNames from 'classnames';
 import { useRequest } from 'ahooks';
 import { useParams } from '@umijs/max';
-import { useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
 
 import styles from './styles.less';
 import * as U from '@/utils/utils';
@@ -25,11 +25,11 @@ import { ReactComponent as IconCheck } from '@/assets/icons/check-filled.svg';
 
 export default function ConfirmOverview() {
   const params = useParams();
-  const address = useRef<string>();
 
   const { accounts } = useAccounts();
   const { renderLabel } = useProvider();
-  const { contract, planState, setPlanState, refresh: fetchState } = usePlanState(address);
+  const [address, setAddress] = useState<string>();
+  const { contract, planState, setPlanState } = usePlanState(address);
 
   const service = async () => {
     if (params.id) {
@@ -42,9 +42,7 @@ export default function ConfirmOverview() {
   const { data, loading, refresh } = useRequest(service, {
     refreshDeps: [params],
     onSuccess: (d) => {
-      address.current = d?.raise_address;
-
-      fetchState();
+      setAddress(d?.raise_address);
     },
   });
 

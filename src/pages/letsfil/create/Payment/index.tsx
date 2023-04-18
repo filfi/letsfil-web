@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { history, useModel } from '@umijs/max';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMemoizedFn, useMount, useRequest, useSessionStorageState, useUnmount } from 'ahooks';
 
 import styles from './styles.less';
@@ -11,20 +11,19 @@ import { getInfo } from '@/apis/raise';
 import { EventType } from '@/utils/mitt';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import { formatAmount } from '@/utils/format';
 import { normalizeKey } from '@/utils/storage';
 import { RaiseState } from '@/constants/state';
 import usePlanState from '@/hooks/usePlanState';
 import useLoadingify from '@/hooks/useLoadingify';
 import PayforModal from '@/components/PayforModal';
 import useEmittHandler from '@/hooks/useEmitHandler';
-import usePlanContract from '@/hooks/usePlanContract';
 import useRaiseContract from '@/hooks/useRaiseContract';
+import { formatAmount, toNumber } from '@/utils/format';
 
 export default function CreatePayment() {
   const modal = useRef<ModalAttrs>(null);
   const [data, setData] = useModel('stepform');
-  const address = useRef<string | undefined>(data?.raisePool);
+  const [address, setAddress] = useState<string | undefined>(data?.raisePool);
 
   const [amount, setAmount] = useSessionStorageState(normalizeKey('deposit'), {
     defaultValue: data?.securityFund,
@@ -34,8 +33,7 @@ export default function CreatePayment() {
   });
 
   const raise = useRaiseContract();
-  const contract = usePlanContract(address);
-  const { planState, setPlanState, refresh: refreshState } = usePlanState(address);
+  const { contract: plan, planState, setPlanState } = usePlanState(address);
 
   const isRaisePaied = useMemo(() => planState > RaiseState.NotStarted, [planState]);
   const isPlanPaied = useMemo(() => planState > RaiseState.WaitPayOPSSecurityFund, [planState]);
@@ -50,18 +48,17 @@ export default function CreatePayment() {
 
   const { data: detail, refresh } = useRequest(service, { refreshDeps: [raiseId] });
 
-  useEffect(
-    useMemoizedFn(() => {
-      if (detail?.raise_address) {
-        address.current = detail.raise_address;
-      }
+  const onDetailChange = useMemoizedFn(() => {
+    if (detail?.raise_address) {
+      setAddress(detail?.raise_address);
+    }
 
-      if (detail?.security_fund && !amount) {
-        setAmount(detail.security_fund);
-      }
-    }),
-    [detail],
-  );
+    if (detail?.security_fund && !amount) {
+      setAmount(`${toNumber(detail.security_fund)}`);
+    }
+  });
+
+  useEffect(onDetailChange, [detail]);
 
   const onCreatePlan = useMemoizedFn((res: API.Base) => {
     console.log('[onCreatePlan]: ', res);
@@ -71,8 +68,7 @@ export default function CreatePayment() {
 
     // 当前账户创建
     if (U.isEqual(raiseID, raiseId)) {
-      address.current = raisePool;
-
+      setAddress(raisePool);
       setData(undefined);
       refresh();
 
@@ -143,14 +139,12 @@ export default function CreatePayment() {
   });
 
   useMount(() => {
-    if (data?.raisePool && !address.current) {
-      address.current = data.raisePool;
-
-      refreshState();
+    if (data?.raisePool && !address) {
+      setAddress(data.raisePool);
     }
 
     if (data?.raiseID && !raiseId) {
-      setAmount(data.raiseID);
+      setRaiseId(data.raiseID);
     }
 
     if (data?.securityFund && !amount) {
@@ -183,14 +177,14 @@ export default function CreatePayment() {
 
   // 支付运维保证金
   const { loading: opsLoading, run: handleOpsFund } = useLoadingify(async () => {
-    await contract.depositOPSFund({
+    await plan.depositOPSFund({
       value: ethers.utils.parseEther(`${amount}`),
     });
   });
 
   // 确认发起代付
   const { loading: payforLoading, run: handlePayfor } = useLoadingify(async (address: string) => {
-    await contract.changeOpsPayer(address);
+    await plan.changeOpsPayer(address);
   });
 
   return (

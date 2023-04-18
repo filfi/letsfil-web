@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import { Collapse } from 'bootstrap';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useBoolean, useClickAway, useEventListener, useResponsive, useScroll } from 'ahooks';
-import { FormattedMessage, Link, NavLink, setLocale, useIntl, useLocation, useModel } from '@umijs/max';
+import { FormattedMessage, Link, NavLink, history, setLocale, useIntl, useLocation, useModel } from '@umijs/max';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
@@ -63,6 +63,12 @@ const Header: React.FC = () => {
     setLocale(locale);
   };
 
+  const disconnect = () => {
+    handleDisconnect();
+
+    history.replace('/');
+  };
+
   useClickAway(closeCollapse, header);
   useEffect(closeCollapse, [location.pathname]);
   useEventListener('show.bs.collapse', setTrue, { target: collapse });
@@ -112,7 +118,7 @@ const Header: React.FC = () => {
                         <Link className="btn btn-secondary" to="/account">
                           收益概况
                         </Link>
-                        <button type="button" className="btn btn-secondary" onClick={handleDisconnect}>
+                        <button type="button" className="btn btn-secondary" onClick={disconnect}>
                           断开连接
                         </button>
                       </div>
@@ -173,9 +179,6 @@ const Header: React.FC = () => {
                 </ul>
               </li>
             </ul>
-
-            {/* <div className="dropdown ms-3 ms-lg-4 mb-3 mb-lg-0 float-lg-end">
-            </div> */}
           </div>
         </div>
       </nav>

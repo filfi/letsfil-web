@@ -20,7 +20,7 @@ const TimeInfo: React.FC<{
       {
         active: planState > RaiseState.InProgress,
         title: planState === RaiseState.Failed ? '募集已截止，未达成目标，募集失败。您质押的的FIL已发送到个人账户，待提取' : '募集截止',
-        desc: `${F.formatSecDate(data?.end_seal_time)} 募集总额 ${F.formatEther(data?.target_amount)} FIL`,
+        desc: `${F.formatSecDate(data?.closing_time)} 募集总额 ${F.formatEther(data?.target_amount)} FIL`,
       },
       {
         title: '节点封装中',

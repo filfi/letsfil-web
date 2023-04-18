@@ -1,6 +1,6 @@
 import { ScrollSpy } from 'bootstrap';
 import { useParams } from '@umijs/max';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMemoizedFn, useMount, useRequest, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
@@ -24,10 +24,10 @@ import StatInfo from './components/StatInfo';
 import ShareBtn from '@/components/ShareBtn';
 import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
+import usePlanState from '@/hooks/usePlanState';
 import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 import useEmittHandler from '@/hooks/useEmitHandler';
-import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as Share4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as Share6 } from '@/assets/icons/share-06.svg';
 
@@ -37,12 +37,10 @@ async function initScrollSpy() {
 
 export default function Overview() {
   const params = useParams();
-  const address = useRef<string>();
 
   const { accounts } = useAccounts();
-  const plan = usePlanContract(address);
-  const [planState, setPlanState] = useState(0);
-  const [nodeState, setNodeState] = useState(0);
+  const [address, setAddress] = useState<string>();
+  const { nodeState, planState } = usePlanState(address);
 
   const service = async () => {
     if (params.id) {
@@ -59,27 +57,8 @@ export default function Overview() {
   const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
   const isPayer = useMemo(() => U.isEqual(data?.ops_security_fund_address, accounts[0]), [data, accounts]);
 
-  const getRaiseState = async () => {
-    const raiseState = await plan.getRaiseState();
-
-    console.log('[raiseState]: ', raiseState);
-
-    setPlanState(raiseState ?? 0);
-  };
-
-  const getNodeState = async () => {
-    const nodeState = await plan.getNodeState();
-
-    console.log('[nodeState]: ', nodeState);
-
-    setNodeState(nodeState ?? 0);
-  };
-
   const onDataChange = () => {
-    address.current = data?.raise_address;
-
-    getRaiseState();
-    getNodeState();
+    setAddress(data?.raise_address);
   };
 
   const onStatusChange = useMemoizedFn((res: API.Base) => {

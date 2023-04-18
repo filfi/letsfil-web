@@ -30,7 +30,7 @@ const Success: React.FC<{ data?: API.Plan }> = ({ data }) => {
 
       {isNodeEnd && <DepositOps address={data?.raise_address} />}
 
-      {isNodeEnd && <DepositInvest address={data?.raise_address} />}
+      <DepositInvest address={data?.raise_address} />
     </div>
   );
 };

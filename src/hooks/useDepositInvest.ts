@@ -23,10 +23,10 @@ export default function useDepositInvest(address: MaybeRef<string | undefined>) 
 
   const fetchData = async () => {
     if (accounts[0]) {
-      const raise = await contract.pledgeAmount(accounts[0]);
+      const amount = await contract.pledgeAmount(accounts[0]);
       const record = await contract.pledgeRecord(accounts[0]);
 
-      setAmount(toNumber(raise));
+      setAmount(toNumber(amount));
       setRecord(toNumber(record));
     }
 

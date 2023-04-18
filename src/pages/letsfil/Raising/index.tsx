@@ -77,7 +77,7 @@ export default function Raising() {
     },
     {
       title: '截止日期',
-      dataIndex: 'end_seal_time',
+      dataIndex: 'closing_time',
       render: (val: number) => F.formatUnix(val),
     },
     {

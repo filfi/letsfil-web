@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { Form, Input, Skeleton } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, history, useParams } from '@umijs/max';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { useBoolean, useMemoizedFn, useRequest, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
@@ -19,20 +19,20 @@ import PageHeader from '@/components/PageHeader';
 import usePlanState from '@/hooks/usePlanState';
 import useLoadingify from '@/hooks/useLoadingify';
 import useEmittHandler from '@/hooks/useEmitHandler';
+import useDepositInvest from '@/hooks/useDepositInvest';
 import { SCAN_URL, planStatusText } from '@/constants';
 import { ReactComponent as Share4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as Share6 } from '@/assets/icons/share-06.svg';
 
 export default function Staking() {
   const params = useParams();
-  const address = useRef<string>();
-
   const [form] = Form.useForm();
-  const amount = Form.useWatch('amount', form);
-  const { contract, planState } = usePlanState(address);
 
-  const [pledge, setPledge] = useState(0);
+  const [invested, setInvested] = useState(0);
   const [success, { setTrue }] = useBoolean(false);
+  const [address, setAddress] = useState<string>();
+  const { totalPledge } = useDepositInvest(address);
+  const { contract, planState } = usePlanState(address);
 
   const service = async () => {
     if (params.id) {
@@ -44,24 +44,16 @@ export default function Staking() {
 
   const { data, loading, refresh } = useRequest(service, { refreshDeps: [params] });
 
-  const fetchData = async () => {
-    const pledge = await contract.pledgeTotalAmount();
-
-    setPledge(F.toNumber(pledge));
-  };
-
   const onDataChange = () => {
-    address.current = data?.raise_address;
-
-    fetchData();
+    setAddress(data?.raise_address);
   };
 
   const raiseId = useMemo(() => data?.raising_id, [data]);
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
-  const remain = useMemo(() => U.accSub(total, pledge), [total, pledge]);
+  const remain = useMemo(() => U.accSub(total, totalPledge), [total, totalPledge]);
   const disabled = useMemo(() => remain < 10, [remain]);
 
-  const amountValidator = async (_: unknown, value: string) => {
+  const amountValidator = useMemoizedFn(async (_: unknown, value: string) => {
     await number(_, value);
 
     if (value) {
@@ -75,7 +67,7 @@ export default function Staking() {
     }
 
     return Promise.resolve();
-  };
+  });
 
   const onStaking = useMemoizedFn((res: API.Base) => {
     console.log('[onStaking]: ', res);
@@ -83,6 +75,7 @@ export default function Staking() {
     const raiseID = res.raiseID.toString();
 
     if (U.isEqual(raiseId, raiseID)) {
+      setInvested(form.getFieldValue('amount'));
       setTrue();
       refresh();
     }
@@ -99,6 +92,8 @@ export default function Staking() {
   });
 
   const { loading: stakeLoading, run: handleStaking } = useLoadingify(async () => {
+    const amount = form.getFieldValue('amount');
+
     await contract.staking({
       value: ethers.utils.parseEther(`${amount}`),
     });
@@ -108,13 +103,7 @@ export default function Staking() {
     if (planState === RaiseState.InProgress) {
       return (
         <Form form={form} layout="vertical" onFinish={handleStaking}>
-          <Form.Item
-            required
-            name="amount"
-            label="输入投资额度"
-            requiredMark={false}
-            rules={[{ required: true, message: '请输入投资额度' }, { validator: amountValidator }]}
-          >
+          <Form.Item required name="amount" label="输入投资额度" rules={[{ required: true, message: '请输入投资额度' }, { validator: amountValidator }]}>
             <Input disabled={disabled} placeholder="最低10 FIL" suffix="FIL" />
           </Form.Item>
 
@@ -141,7 +130,7 @@ export default function Staking() {
   const renderContent = () => {
     if (success) {
       return (
-        <Result title={`成功投资 ${amount} FIL`} desc={`如果 ${F.formatSecDate(data?.end_seal_time)} 募集目标未达成，您的投资额将返还`}>
+        <Result title={`成功投资 ${F.formatAmount(invested)} FIL`} desc={`如果 ${F.formatSecDate(data?.end_seal_time)} 募集目标未达成，您的投资额将返还`}>
           <p>
             <Link className="btn btn-primary btn-lg w-100" replace to={`/letsfil/overview/${params.id}`}>
               查看计划详情
@@ -172,7 +161,7 @@ export default function Staking() {
           <div className="letsfil-item mb-4">
             <h4 className="letsfil-label">募集目标：{total} FIL</h4>
             <p className="mb-0">
-              已募集 {pledge} FIL，您最多还可投 {remain} FIL
+              已募集 {F.formatAmount(totalPledge)} FIL，您最多还可投 {F.formatAmount(remain)} FIL
             </p>
           </div>
 

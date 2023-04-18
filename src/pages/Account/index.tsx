@@ -35,18 +35,48 @@ export default function Account() {
 
   const { data, loading } = useRequest(service, { refreshDeps: [account] });
 
+  const getServicerReward = async (address: string) => {
+    const contract = getContract(address);
+    const used = await contract?.gotSpReward();
+    const usable = await contract?.spRewardAvailableLeft();
+    const pending = await contract?.spWillReleaseReward();
+
+    return accAdd(accAdd(toNumber(used), toNumber(usable)), toNumber(pending));
+  };
+
+  const getRaiserReward = async (address: string) => {
+    const contract = getContract(address);
+    const used = await contract?.gotRaiserReward();
+    const usable = await contract?.raiserRewardAvailableLeft();
+    const pending = await contract?.raiserWillReleaseReward();
+
+    return accAdd(accAdd(toNumber(used), toNumber(usable)), toNumber(pending));
+  };
+
+  const getTotalReward = async (address: string) => {
+    const contract = getContract(address);
+    const raiser = await getRaiserReward(address);
+    const servicer = await getServicerReward(address);
+    const total = await contract?.totalRewardOf(accounts[0]);
+
+    return accAdd(accAdd(raiser, servicer), toNumber(total));
+  };
+
+  const getUsableReward = async (address: string) => {
+    const contract = getContract(address);
+    const invest = await contract?.availableRewardOf(accounts[0]);
+    const raiser = await contract?.raiserRewardAvailableLeft();
+    const servcer = await contract?.spRewardAvailableLeft();
+
+    return accAdd(accAdd(toNumber(raiser), toNumber(servcer)), toNumber(invest));
+  };
+
   const fetchTotalIncome = async () => {
     if (!accounts[0] || !data || !data.length) return;
 
-    const rewards = await Promise.all(
-      data.map(async (item) => {
-        const contract = getContract(item.raise_address);
+    const rewards = await Promise.all(data.map(async (item) => getTotalReward(item.raise_address)));
 
-        return await contract?.totalRewardOf(accounts[0]);
-      }),
-    );
-
-    const sum = rewards.reduce((sum, curr) => accAdd(sum, toNumber(curr)), 0);
+    const sum = rewards.reduce((sum, curr) => accAdd(sum, curr), 0);
 
     console.log('[rewards]: ', rewards);
     console.log('[total]: ', sum);
@@ -57,15 +87,9 @@ export default function Account() {
   const fetchUsableIncome = async () => {
     if (!accounts[0] || !data || !data.length) return;
 
-    const rewards = await Promise.all(
-      data.map(async (item) => {
-        const contract = getContract(item.raise_address);
+    const rewards = await Promise.all(data.map(async (item) => getUsableReward(item.raise_address)));
 
-        return await contract?.availableRewardOf(accounts[0]);
-      }),
-    );
-
-    const sum = rewards.reduce((sum, curr) => accAdd(sum, toNumber(curr)), 0);
+    const sum = rewards.reduce((sum, curr) => accAdd(sum, curr), 0);
 
     console.log('[available rewards]: ', rewards);
     console.log('[total available]: ', sum);

@@ -31,7 +31,7 @@ const Failed: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { initialState } = useModel('@@initialState');
 
   const { planState } = usePlanState(data?.raise_address);
-  const { cost: invest, isInvestor, loading, withdraw: withdrawCost } = useDepositInvest(data?.raise_address);
+  const { cost: invest, loading, withdraw: withdrawCost } = useDepositInvest(data?.raise_address);
   const { amount: ops, isOpsPayer, loading: opsLoading, withdraw: withdrawOps } = useDepositOps(data?.raise_address);
   const { amount: raise, isRaiser, loading: raiseLoading, withdraw: withdrawRaise } = useDepositRaise(data?.raise_address);
 
@@ -84,27 +84,25 @@ const Failed: React.FC<{ data?: API.Plan }> = ({ data }) => {
             </div>
           )}
 
-          {isInvestor && (
-            <div className="d-flex align-items-center mt-3">
-              <div className="me-3">
-                <p className="mb-1 fw-500">我的投资额</p>
-                <p className="mb-0 text-main">
-                  <span className="decimal me-2">{formatAmount(invest)}</span>
-                  <span className="unit text-neutral">FIL</span>
-                </p>
-              </div>
-
-              <SpinBtn
-                className="btn btn-light btn-md ms-auto"
-                loading={loading}
-                disabled={initialState?.processing || isDisabled(invest)}
-                onClick={handleInvest}
-              >
-                <span className="me-2">提取</span>
-                <i className="bi bi-chevron-right"></i>
-              </SpinBtn>
+          <div className="d-flex align-items-center mt-3">
+            <div className="me-3">
+              <p className="mb-1 fw-500">我的投资额</p>
+              <p className="mb-0 text-main">
+                <span className="decimal me-2">{formatAmount(invest)}</span>
+                <span className="unit text-neutral">FIL</span>
+              </p>
             </div>
-          )}
+
+            <SpinBtn
+              className="btn btn-light btn-md ms-auto"
+              loading={loading}
+              disabled={initialState?.processing || isDisabled(invest)}
+              onClick={handleInvest}
+            >
+              <span className="me-2">提取</span>
+              <i className="bi bi-chevron-right"></i>
+            </SpinBtn>
+          </div>
         </div>
       </div>
     </>

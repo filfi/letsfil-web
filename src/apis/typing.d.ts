@@ -20,6 +20,7 @@ declare namespace API {
   interface Plan {
     actual_amount: string;
     begin_seal_time: number;
+    closing_time: number;
     delay_seal_time: number;
     end_seal_time: number;
     factory_contract: string;

@@ -118,9 +118,9 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
             </tr>
             <tr>
               <th>截止日期</th>
-              <td>{F.formatSecDate(data?.end_seal_time)}</td>
+              <td>{F.formatSecDate(data?.closing_time)}</td>
               <th>距截止还有</th>
-              <td>{U.diffDays(data?.end_seal_time)}天</td>
+              <td>{U.diffDays(data?.closing_time)}天</td>
             </tr>
             <tr>
               <th>预期封装完成</th>

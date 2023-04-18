@@ -10,7 +10,7 @@ export const RUN_ENV = process.env.RUN_ENV ?? 'hp';
 
 // hyperspace - testnet
 // const ADDR_HP = '0x8C934Cc2979b549491529BcD6bb44a16bdE658EC';
-const ADDR_HP = '0x1070b09e24a385B4D4260Ba9750A64899772aBB5';
+const ADDR_HP = '0xe329dB3fe161C39A069AA08720e4bC2FdA73B0EA';
 // 2k - testnet
 const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
 /**
