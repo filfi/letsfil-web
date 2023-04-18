@@ -4,11 +4,11 @@ import { accAdd } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useEmittHandler from './useEmitHandler';
-import usePlanContract from './usePlanContract';
+import useDepositRaise from './useDepositRaise';
 import type { MaybeRef } from './usePlanContract';
 
 export default function useRewardRaiser(address: MaybeRef<string | undefined>) {
-  const contract = usePlanContract(address);
+  const { contract, isRaiser } = useDepositRaise(address);
 
   const [record, setRecord] = useState(0);
   const [pending, setPending] = useState(0);
@@ -39,6 +39,7 @@ export default function useRewardRaiser(address: MaybeRef<string | undefined>) {
     record,
     reward,
     pending,
+    isRaiser,
     available,
   };
 }

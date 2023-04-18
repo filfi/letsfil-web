@@ -6,7 +6,7 @@ type Data = Record<string, any>;
 
 export function error(error: AxiosError<Data>) {
   const res = error.response;
-  let msg = res?.data?.data?.errorMessage ?? res?.data?.message ?? error.message ?? res?.statusText;
+  let msg = res?.data?.data?.errorMessage ?? res?.data?.error?.message ?? res?.data?.msg ?? error.message ?? res?.statusText;
 
   message.error(msg);
 
@@ -14,7 +14,7 @@ export function error(error: AxiosError<Data>) {
 }
 
 export function request({ headers, ...options }: any) {
-  return { ...options, headers: { ...headers }, };
+  return { ...options, headers: { ...headers } };
 }
 
 export function response(res: AxiosResponse<Data>) {
@@ -28,13 +28,5 @@ export function response(res: AxiosResponse<Data>) {
     }
   }
 
-  return error(
-    new AxiosError(
-      res.data?.message ?? res.statusText,
-      res.data?.code ?? res.status,
-      res.config,
-      res.request,
-      res,
-    ),
-  );
+  return error(new AxiosError(res.data?.message ?? res.statusText, res.data?.code ?? res.status, res.config, res.request, res));
 }

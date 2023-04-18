@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
-import { ethers } from 'ethers';
 import { createRef } from 'react';
+import { ethers, BigNumber } from 'ethers';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
@@ -83,11 +83,11 @@ export function transformRaiseInfo(data: API.Base) {
     id: genRaiseID(data.minerID),
     targetAmount: ethers.utils.parseEther(`${data.targetAmount}`),
     securityFund: ethers.utils.parseEther(`${data.securityFund}`),
-    securityFundRate: data.securityFundRate * 100,
-    deadline: dayjs(data.deadline).unix(),
-    raiserShare: +data.raiserShare,
-    investorShare: +data.investorShare,
-    servicerShare: +data.servicerShare,
+    securityFundRate: BigNumber.from(`${data.securityFundRate * 100}`),
+    deadline: BigNumber.from(`${dayjs(data.deadline).unix()}`),
+    raiserShare: BigNumber.from(data.raiserShare),
+    investorShare: BigNumber.from(data.investorShare),
+    servicerShare: BigNumber.from(data.servicerShare),
     sponsor: data.sponsor,
     raiseCompany: data.raiseCompany,
     spAddress: data.spAddress,
@@ -103,12 +103,12 @@ export function transformNodeInfo(data: API.Base) {
   // 节点信息
   return {
     minerID: +U.parseMinerID(data.minerID),
-    nodeSize: `${U.pb2byte(data.nodeSize)}`,
-    sectorSize: +data.sectorSize,
-    sealPeriod: U.day2sec(data.sealPeriod),
-    nodePeriod: U.day2sec(data.nodePeriod),
+    nodeSize: BigNumber.from(`${U.pb2byte(data.nodeSize)}`),
+    sectorSize: BigNumber.from(data.sectorSize),
+    sealPeriod: BigNumber.from(`${U.day2sec(data.sealPeriod)}`),
+    nodePeriod: BigNumber.from(`${U.day2sec(data.nodePeriod)}`),
     opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
     opsSecurityFundPayer: data.sponsor,
-    realSealAmount: 0,
+    realSealAmount: BigNumber.from('0'),
   };
 }

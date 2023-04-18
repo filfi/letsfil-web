@@ -26,34 +26,43 @@ const isDisabled = (val?: number | string) => {
 const DepositOps: React.FC<{ address?: string }> = ({ address }) => {
   const { initialState } = useModel('@@initialState');
 
-  const { amount, loading, withdraw } = useDepositOps(address);
+  const { amount, loading, isOpsPayer, withdraw } = useDepositOps(address);
 
   const onWithdraw = withConfirm(withdraw, formatAmount(amount));
 
-  return (
-    <>
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title mb-3">节点运行结束，可提取运维保证金</h5>
+  if (isOpsPayer) {
+    return (
+      <>
+        <div className="card">
+          <div className="card-body">
+            <h5 className="card-title mb-3">节点运行结束，可提取运维保证金</h5>
 
-          <div className="d-flex align-items-center">
-            <div className="me-3">
-              <p className="mb-1 fw-500">运维保证金</p>
-              <p className="mb-0 text-main">
-                <span className="decimal me-2">{formatAmount(amount)}</span>
-                <span className="unit text-neutral">FIL</span>
-              </p>
+            <div className="d-flex align-items-center">
+              <div className="me-3">
+                <p className="mb-1 fw-500">运维保证金</p>
+                <p className="mb-0 text-main">
+                  <span className="decimal me-2">{formatAmount(amount)}</span>
+                  <span className="unit text-neutral">FIL</span>
+                </p>
+              </div>
+
+              <SpinBtn
+                className="btn btn-light btn-md ms-auto"
+                loading={loading}
+                disabled={initialState?.processing || isDisabled(amount)}
+                onClick={onWithdraw}
+              >
+                <span className="me-2">提取</span>
+                <i className="bi bi-chevron-right"></i>
+              </SpinBtn>
             </div>
-
-            <SpinBtn className="btn btn-light btn-md ms-auto" loading={loading} disabled={initialState?.processing || isDisabled(amount)} onClick={onWithdraw}>
-              <span className="me-2">提取</span>
-              <i className="bi bi-chevron-right"></i>
-            </SpinBtn>
           </div>
         </div>
-      </div>
-    </>
-  );
+      </>
+    );
+  }
+
+  return null;
 };
 
 export default DepositOps;

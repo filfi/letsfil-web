@@ -109,14 +109,19 @@ export default function useRaiseContract() {
       withTx(
         withContract(
           // withGas(
-          async (contract, raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: Options) => {
-            console.log(raise, node, extra, opts);
-            return await contract?.createRaisePlan(raise, node, extra, {
-              // maxPriorityFeePerGas,
-              // maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
-              // gasLimit: 1000000,
-              ...opts,
-            });
+          async (contract, raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, /* address?: string, */ opts?: Options) => {
+            console.log(raise, node, extra, /* address, */ opts);
+            return await contract?.createRaisePlan(
+              raise,
+              node,
+              extra,
+              /* address, */ {
+                // maxPriorityFeePerGas,
+                // maxFeePerGas: getMaxFeePerGas(maxPriorityFeePerGas),
+                // gasLimit: 1000000,
+                ...opts,
+              },
+            );
           },
         ),
         // ),

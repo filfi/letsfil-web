@@ -1,17 +1,13 @@
-import { useMemo, useRef } from 'react';
 import { useModel } from '@umijs/max';
 
 import Modal from '@/components/Modal';
-import { isEqual } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
-import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
 import usePlanState from '@/hooks/usePlanState';
 import useDepositOps from '@/hooks/useDepositOps';
 import useDepositRaise from '@/hooks/useDepositRaise';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import WithdrawModal from '@/components/WithdrawModal';
 
 const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount?: string) => {
   return (...args: P) => {
@@ -32,22 +28,16 @@ const isDisabled = (val?: number | string) => {
 };
 
 const Failed: React.FC<{ data?: API.Plan }> = ({ data }) => {
-  const modal = useRef<ModalAttrs>(null);
-
-  const { accounts } = useAccounts();
   const { initialState } = useModel('@@initialState');
 
   const { planState } = usePlanState(data?.raise_address);
-  const ops = useDepositOps(data?.raise_address);
-  const raise = useDepositRaise(data?.raise_address);
-  const invest = useDepositInvest(data?.raise_address);
+  const { cost: invest, isInvestor, loading, withdraw: withdrawCost } = useDepositInvest(data?.raise_address);
+  const { amount: ops, isOpsPayer, loading: opsLoading, withdraw: withdrawOps } = useDepositOps(data?.raise_address);
+  const { amount: raise, isRaiser, loading: raiseLoading, withdraw: withdrawRaise } = useDepositRaise(data?.raise_address);
 
-  const isInvestor = useMemo(() => invest.amount > 0, [invest.amount]);
-  const isRaiser = useMemo(() => isEqual(accounts[0], data?.raiser), [accounts, data]);
-  const isOpsPayer = useMemo(() => isEqual(accounts[0], data?.ops_security_fund_address), [accounts, data]);
-
-  const withdrawOps = withConfirm(ops.withdraw, formatAmount(ops.amount));
-  const withdrawRaise = withConfirm(raise.withdraw, formatAmount(raise.amount));
+  const handleOps = withConfirm(withdrawOps, formatAmount(ops));
+  const handleRaise = withConfirm(withdrawRaise, formatAmount(raise));
+  const handleInvest = withConfirm(withdrawCost, formatAmount(invest));
 
   return (
     <>
@@ -61,16 +51,16 @@ const Failed: React.FC<{ data?: API.Plan }> = ({ data }) => {
               <div className="me-3">
                 <p className="mb-1 fw-500">募集保证金</p>
                 <p className="mb-0 text-main">
-                  <span className="decimal me-2">{formatAmount(raise.amount)}</span>
+                  <span className="decimal me-2">{formatAmount(raise)}</span>
                   <span className="unit text-neutral">FIL</span>
                 </p>
               </div>
 
               <SpinBtn
                 className="btn btn-light btn-md ms-auto"
-                loading={raise.loading}
-                disabled={initialState?.processing || isDisabled(raise.amount)}
-                onClick={withdrawRaise}
+                loading={raiseLoading}
+                disabled={initialState?.processing || isDisabled(raise)}
+                onClick={handleRaise}
               >
                 <span className="me-2">提取</span>
                 <i className="bi bi-chevron-right"></i>
@@ -83,16 +73,11 @@ const Failed: React.FC<{ data?: API.Plan }> = ({ data }) => {
               <div className="me-3">
                 <p className="mb-1 fw-500">运维保证金</p>
                 <p className="mb-0 text-main">
-                  <span className="decimal me-2">{formatAmount(ops.amount)}</span>
+                  <span className="decimal me-2">{formatAmount(ops)}</span>
                   <span className="unit text-neutral">FIL</span>
                 </p>
               </div>
-              <SpinBtn
-                className="btn btn-light btn-md ms-auto"
-                loading={ops.loading}
-                disabled={initialState?.processing || isDisabled(ops.amount)}
-                onClick={withdrawOps}
-              >
+              <SpinBtn className="btn btn-light btn-md ms-auto" loading={opsLoading} disabled={initialState?.processing || isDisabled(ops)} onClick={handleOps}>
                 <span className="me-2">提取</span>
                 <i className="bi bi-chevron-right"></i>
               </SpinBtn>
@@ -104,16 +89,16 @@ const Failed: React.FC<{ data?: API.Plan }> = ({ data }) => {
               <div className="me-3">
                 <p className="mb-1 fw-500">我的投资额</p>
                 <p className="mb-0 text-main">
-                  <span className="decimal me-2">{formatAmount(invest.amount)}</span>
+                  <span className="decimal me-2">{formatAmount(invest)}</span>
                   <span className="unit text-neutral">FIL</span>
                 </p>
               </div>
 
               <SpinBtn
                 className="btn btn-light btn-md ms-auto"
-                loading={invest.loading}
-                disabled={initialState?.processing || isDisabled(invest.amount)}
-                onClick={() => modal.current?.show()}
+                loading={loading}
+                disabled={initialState?.processing || isDisabled(invest)}
+                onClick={handleInvest}
               >
                 <span className="me-2">提取</span>
                 <i className="bi bi-chevron-right"></i>
@@ -122,8 +107,6 @@ const Failed: React.FC<{ data?: API.Plan }> = ({ data }) => {
           )}
         </div>
       </div>
-
-      <WithdrawModal ref={modal} title={`提取 ${formatAmount(invest.amount)} FIL`} onConfirm={invest.withdraw} />
     </>
   );
 };

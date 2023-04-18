@@ -1139,6 +1139,19 @@
   },
   {
     "inputs": [],
+    "name": "returnAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "securityFundRemainAmount",
     "outputs": [
       {
@@ -1298,6 +1311,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "_amount",
+        "type": "uint64"
+      }
+    ],
+    "name": "transferAssetOnlyForTest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

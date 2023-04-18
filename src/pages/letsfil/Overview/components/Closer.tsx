@@ -1,20 +1,30 @@
-import { useMemoizedFn } from 'ahooks';
-
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
+import useLoadingify from '@/hooks/useLoadingify';
+import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as MinusIcon } from '@/assets/icons/minus-circle.svg';
 
-const Closer: React.FC<{ loading?: boolean; onConfirm?: () => void }> = ({ loading, onConfirm }) => {
-  const handleClose = useMemoizedFn(() => {
+const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void) => {
+  return (...args: P) => {
     Modal.confirm({
       title: '确定关闭计划吗？',
       content: '关闭计划会产生罚金，从募集保证金中扣除',
-      confirmText: '确定关闭',
       onConfirm: () => {
-        onConfirm?.();
+        handler?.(...args);
       },
     });
+  };
+};
+
+const Closer: React.FC<{ data?: API.Plan; loading?: boolean; onConfirm?: () => void }> = ({ data }) => {
+  const contract = usePlanContract(data?.raise_address);
+
+  // 关闭计划
+  const { loading, run: handleClose } = useLoadingify(async () => {
+    await contract.closeRaisePlan();
   });
+
+  const onClose = withConfirm(handleClose);
 
   return (
     <>
@@ -27,7 +37,7 @@ const Closer: React.FC<{ loading?: boolean; onConfirm?: () => void }> = ({ loadi
             {/* <a href="#">查看罚金计算规则</a> */}
           </p>
 
-          <SpinBtn className="btn btn-primary btn-lg w-100" loading={loading} icon={<MinusIcon />} onClick={handleClose}>
+          <SpinBtn className="btn btn-primary btn-lg w-100" loading={loading} icon={<MinusIcon />} onClick={onClose}>
             {loading ? '正在关闭' : '关闭计划'}
           </SpinBtn>
         </div>

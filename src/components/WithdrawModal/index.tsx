@@ -2,6 +2,7 @@ import { Form, Input } from 'antd';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 
 import Modal from '@/components/Modal';
+import { address } from '@/utils/validators';
 
 const WithdrawModal: React.ForwardRefRenderFunction<
   ModalAttrs,
@@ -42,7 +43,7 @@ const WithdrawModal: React.ForwardRefRenderFunction<
       <p className="text-gray text-center">{content ?? '注：提取行为将产生Gas费'}</p>
 
       <Form layout="vertical" form={form}>
-        <Form.Item name="address" label="钱包地址" rules={[{ required: true, message: '输入地址' }]}>
+        <Form.Item name="address" label="钱包地址" rules={[{ required: true, message: '输入地址' }, { validator: address }]}>
           <Input placeholder="输入地址" />
         </Form.Item>
       </Form>

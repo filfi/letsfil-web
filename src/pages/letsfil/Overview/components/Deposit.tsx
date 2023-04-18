@@ -1,11 +1,72 @@
-import SpinBtn from '@/components/SpinBtn';
+import { ethers } from 'ethers';
+import { useModel } from '@umijs/max';
+import { useMemoizedFn } from 'ahooks';
+import { useMemo, useRef } from 'react';
 
-const Deposit: React.FC<{
-  loading?: boolean;
-  payforing?: boolean;
-  onPayfor?: () => void;
-  onConfirm?: () => void;
-}> = ({ loading, payforing, onPayfor, onConfirm }) => {
+import Modal from '@/components/Modal';
+import { isEqual } from '@/utils/utils';
+import { EventType } from '@/utils/mitt';
+import SpinBtn from '@/components/SpinBtn';
+import useLoadingify from '@/hooks/useLoadingify';
+import PayforModal from '@/components/PayforModal';
+import useEmittHandler from '@/hooks/useEmitHandler';
+import usePlanContract from '@/hooks/usePlanContract';
+
+const Deposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  const modal = useRef<ModalAttrs>(null);
+  const { initialState } = useModel('@@initialState');
+  const contract = usePlanContract(data?.raise_address);
+  const raiseId = useMemo(() => data?.raising_id, [data]);
+
+  const onChangeOpsPayer = useMemoizedFn(async (res: API.Base) => {
+    console.log('[onChangeOpsPayer]: ', res);
+
+    const raiseID = res.raiseID.toString();
+
+    if (isEqual(raiseID, raiseId)) {
+      const url = `${location.origin}/letsfil/payfor/overview/${raiseID}`;
+
+      try {
+        await navigator.clipboard.writeText(url);
+
+        Modal.alert({ icon: 'success', content: '链接已复制' });
+      } catch (e) {
+        Modal.alert({
+          icon: 'success',
+          title: '支付地址已变更',
+          content: (
+            <>
+              <p>代付链接：</p>
+              <p>
+                <a href={url} target="_blank" rel="noreferrer">
+                  {url}
+                </a>
+              </p>
+            </>
+          ),
+        });
+      }
+    }
+  });
+
+  useEmittHandler({
+    [EventType.onChangeOpsPayer]: onChangeOpsPayer,
+  });
+
+  // 支付运维保证金
+  const { loading: paying, run: handlePay } = useLoadingify(async () => {
+    if (!data || !data.ops_security_fund) return;
+
+    await contract.depositOPSFund({
+      value: ethers.BigNumber.from(`${data.ops_security_fund}`),
+    });
+  });
+
+  // 好友代付，修改支付地址
+  const { loading: payforing, run: handlePayfor } = useLoadingify(async (address: string) => {
+    await contract.changeOpsPayer(address);
+  });
+
   return (
     <>
       <div className="card">
@@ -15,18 +76,25 @@ const Deposit: React.FC<{
 
           <div className="row row-cols-1 row-cols-xl-2 g-3">
             <div className="col">
-              <SpinBtn className="btn btn-light btn-lg w-100" loading={loading} disabled={payforing} onClick={onConfirm}>
-                {loading ? '正在支付' : '自己支付'}
+              <SpinBtn className="btn btn-light btn-lg w-100" loading={paying} disabled={initialState?.processing || payforing} onClick={handlePay}>
+                {paying ? '正在支付' : '自己支付'}
               </SpinBtn>
             </div>
             <div className="col">
-              <SpinBtn className="btn btn-primary btn-lg w-100" loading={payforing} disabled={loading} onClick={onPayfor}>
+              <SpinBtn
+                className="btn btn-primary btn-lg w-100"
+                loading={payforing}
+                disabled={initialState?.processing || paying}
+                onClick={() => modal.current?.show()}
+              >
                 {payforing ? '正在处理' : '他人代付'}
               </SpinBtn>
             </div>
           </div>
         </div>
       </div>
+
+      <PayforModal ref={modal} loading={payforing} onConfirm={handlePayfor} />
     </>
   );
 };

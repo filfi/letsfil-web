@@ -1,6 +1,6 @@
+import { Form, Input } from 'antd';
 import { useEffect, useMemo } from 'react';
 import { useMount, useRequest } from 'ahooks';
-import { Form, Input } from 'antd';
 import { history, useModel } from '@umijs/max';
 
 import { statChainInfo } from '@/apis/raise';
@@ -75,8 +75,8 @@ export default function CreateProgram() {
           <Input readOnly placeholder="请输入发起账户" />
         </Form.Item>
 
-        <Form.Item label="发起单位" name="raiseCompany" requiredMark={false} rules={[{ required: true, message: '请输入发起单位' }]}>
-          <Input placeholder="如：XX科技有限公司" />
+        <Form.Item label="发起单位" name="raiseCompany" rules={[{ required: true, message: '请输入发起单位' }]}>
+          <Input maxLength={56} placeholder="如：XX科技有限公司" />
         </Form.Item>
 
         <Form.Item label="封装节点大小" name="nodeSize" help="单位进制按1024算" rules={[{ required: true, message: '请输入封装节点大小' }]}>
@@ -86,7 +86,6 @@ export default function CreateProgram() {
         <Form.Item
           label="募集目标"
           name="targetAmount"
-          requiredMark={false}
           rules={[{ required: true, message: '请输入募集目标' }, { validator: validators.number }]}
           help={
             <>
@@ -103,7 +102,6 @@ export default function CreateProgram() {
         <Form.Item
           label="最小募集比例"
           name="minRaiseRate"
-          requiredMark={false}
           help="募集截止时，募集额达到目标的最小募集比例即可视为募集成功，例如：募集目标为100 FIL，最小募集比例为80%，那最终募集到80 FIL即可视为募集成功"
           rules={[{ required: true, message: '请输入募集目标' }, { validator: validators.minRaiseRate }]}
         >
@@ -122,13 +120,12 @@ export default function CreateProgram() {
           label="募集截止时间"
           name="deadline"
           help="若未达到募集目标，截止时间后将返还用户质押"
-          requiredMark={false}
           rules={[{ required: true, message: '请选择募集截止时间' }]}
         >
           <DateTimePicker disabledDate={disabledDate} placeholder="YYYY-MM-DD 24:00" />
         </Form.Item>
 
-        <Form.Item label="选择服务商" name="companyId" requiredMark={false} rules={[{ required: true, message: '请选择服务商' }]}>
+        <Form.Item label="选择服务商" name="companyId" rules={[{ required: true, message: '请选择服务商' }]}>
           <ProviderSelect onSelect={handleSelect} />
         </Form.Item>
 

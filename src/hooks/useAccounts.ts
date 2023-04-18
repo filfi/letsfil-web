@@ -4,10 +4,12 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import * as S from '@/utils/storage';
+import useAccountEvents from './useAccountEvents';
 
 export default function useAccounts() {
   const onboarding = useRef(new MetaMaskOnboarding()).current;
 
+  useAccountEvents();
   const [disabled, setDisabled] = useState(false);
   const [buttonText, setBtnText] = useState('点击安装MetaMask');
   const { initialState, setInitialState } = useModel('@@initialState');

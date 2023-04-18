@@ -74,7 +74,8 @@ export async function sleep(delay = 200) {
 }
 
 export function disabledDate(date: number | string | Date | dayjs.Dayjs) {
-  return dayjs(date).isBefore(dayjs().add(1, 'D'));
+  // TODO: Date Limit
+  return dayjs(date).isBefore(dayjs(), 'date');
 }
 
 export function day2sec(days: number | string) {

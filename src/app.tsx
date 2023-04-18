@@ -24,8 +24,10 @@ export const locale = {
 // 更多信息见文档：https://next.umijs.org/docs/api/runtime-config#getinitialstate
 export async function getInitialState(): Promise<InitState> {
   let state = getInitState();
+  const chainId = window.ethereum?.chainId;
 
   return {
+    chainId,
     accounts: [],
     connected: false,
     ...state,

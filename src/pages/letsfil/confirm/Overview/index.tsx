@@ -2,7 +2,7 @@ import { Skeleton } from 'antd';
 import classNames from 'classnames';
 import { useRequest } from 'ahooks';
 import { useParams } from '@umijs/max';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 
 import styles from './styles.less';
 import * as U from '@/utils/utils';
@@ -17,9 +17,9 @@ import ShareBtn from '@/components/ShareBtn';
 import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import { RaiseState } from '@/constants/state';
+import usePlanState from '@/hooks/usePlanState';
 import useLoadingify from '@/hooks/useLoadingify';
 import useEmittHandler from '@/hooks/useEmitHandler';
-import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 import { ReactComponent as IconCheck } from '@/assets/icons/check-filled.svg';
 
@@ -29,8 +29,7 @@ export default function ConfirmOverview() {
 
   const { accounts } = useAccounts();
   const { renderLabel } = useProvider();
-  const plan = usePlanContract(address);
-  const [planState, setPlanState] = useState(-1);
+  const { contract, planState, setPlanState, refresh: fetchState } = usePlanState(address);
 
   const service = async () => {
     if (params.id) {
@@ -40,20 +39,12 @@ export default function ConfirmOverview() {
     return undefined;
   };
 
-  const getRaiseState = async () => {
-    const raiseState = await plan.getRaiseState();
-
-    console.log('[raiseState]: ', raiseState);
-
-    setPlanState(raiseState ?? -1);
-  };
-
   const { data, loading, refresh } = useRequest(service, {
     refreshDeps: [params],
     onSuccess: (d) => {
       address.current = d?.raise_address;
 
-      getRaiseState();
+      fetchState();
     },
   });
 
@@ -73,7 +64,7 @@ export default function ConfirmOverview() {
   useEmittHandler({ [EventType.onStartRaisePlan]: onStartRaisePlan });
 
   const getCommand = () => {
-    const address = plan.getContract()?.address;
+    const address = contract.getContract()?.address;
 
     return `lotus-miner actor set-owner --really-do-it ${U.toF4Address(address)} <ownerAddress>`;
   };
@@ -91,7 +82,7 @@ export default function ConfirmOverview() {
       return;
     }
 
-    await plan.startRaisePlan();
+    await contract.startRaisePlan();
   });
 
   return (
@@ -198,7 +189,7 @@ export default function ConfirmOverview() {
                 <hr />
               </div>
 
-              <div className={classNames('card', styles.card)}>
+              <div className={classNames('card mb-4', styles.card)}>
                 <div className={classNames('d-flex align-items-start', styles.code)}>
                   <span>$</span>
                   <p className={classNames('flex-fill mx-1 mb-0 fw-bold text-break', styles.command)}>{getCommand()}</p>

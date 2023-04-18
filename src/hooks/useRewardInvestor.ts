@@ -4,12 +4,12 @@ import useAccounts from './useAccounts';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useEmittHandler from './useEmitHandler';
-import usePlanContract from './usePlanContract';
+import useDepositInvest from './useDepositInvest';
 import type { MaybeRef } from './usePlanContract';
 
 export default function useRewardInvestor(address: MaybeRef<string | undefined>) {
   const { accounts } = useAccounts();
-  const contract = usePlanContract(address);
+  const { contract, isInvestor } = useDepositInvest(address);
 
   const [reward, setReward] = useState(0);
   const [record, setRecord] = useState(0);
@@ -44,5 +44,6 @@ export default function useRewardInvestor(address: MaybeRef<string | undefined>)
     reward,
     pending,
     available,
+    isInvestor,
   };
 }

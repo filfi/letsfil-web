@@ -1,18 +1,19 @@
 import { useMemo } from 'react';
 import { history } from '@umijs/max';
 
-import { formatRate } from '@/utils/format';
+import { formatRate, toNumber } from '@/utils/format';
 import useAuthHandler from '@/hooks/useAuthHandler';
 import useDepositInvest from '@/hooks/useDepositInvest';
 import { ReactComponent as FilIcon } from '@/assets/icons/filecoin-light.svg';
 
-const Staking: React.FC<{ data?: API.Base }> = ({ data }) => {
-  const { amount, totalPledge } = useDepositInvest(data?.raise_address);
+const Staking: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  const { amount } = useDepositInvest(data?.raise_address);
 
   const raiseId = useMemo(() => data?.raising_id ?? '', [data]);
-  const percent = useMemo(() => (totalPledge > 0 ? amount / totalPledge : 0), [amount, totalPledge]);
+  const total = useMemo(() => toNumber(data?.target_amount), [data]);
+  const percent = useMemo(() => (total > 0 ? amount / total : 0), [amount, data]);
 
-  const goStaking = useAuthHandler(() => {
+  const goStaking = useAuthHandler(async () => {
     history.push(`/letsfil/staking/${raiseId}`);
   });
 

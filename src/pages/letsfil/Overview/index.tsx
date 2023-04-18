@@ -1,13 +1,13 @@
-import { ethers } from 'ethers';
 import { ScrollSpy } from 'bootstrap';
 import { useParams } from '@umijs/max';
 import { useMemo, useRef, useState } from 'react';
-import { useMount, useRequest, useUpdateEffect } from 'ahooks';
+import { useMemoizedFn, useMount, useRequest, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
 import * as U from '@/utils/utils';
 import { getInfo } from '@/apis/raise';
+import { SCAN_URL } from '@/constants';
 import Modal from '@/components/Modal';
 import { EventType } from '@/utils/mitt';
 import Closer from './components/Closer';
@@ -26,8 +26,6 @@ import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
 import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
-import useLoadingify from '@/hooks/useLoadingify';
-import PayforModal from '@/components/PayforModal';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as Share4 } from '@/assets/icons/share-04.svg';
@@ -40,7 +38,6 @@ async function initScrollSpy() {
 export default function Overview() {
   const params = useParams();
   const address = useRef<string>();
-  const payfor = useRef<ModalAttrs>(null);
 
   const { accounts } = useAccounts();
   const plan = usePlanContract(address);
@@ -60,6 +57,7 @@ export default function Overview() {
   const raiseId = useMemo(() => data?.raising_id, [data]);
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
   const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
+  const isPayer = useMemo(() => U.isEqual(data?.ops_security_fund_address, accounts[0]), [data, accounts]);
 
   const getRaiseState = async () => {
     const raiseState = await plan.getRaiseState();
@@ -84,7 +82,7 @@ export default function Overview() {
     getNodeState();
   };
 
-  const onStatusChange = (res: API.Base) => {
+  const onStatusChange = useMemoizedFn((res: API.Base) => {
     console.log('[onStatusChange]: ', res);
 
     const raiseID = res.raiseID.toString();
@@ -92,42 +90,9 @@ export default function Overview() {
     if (U.isEqual(raiseID, raiseId)) {
       refresh();
     }
-  };
+  });
 
-  const onChangeOpsPayer = async (res: API.Base) => {
-    console.log('[onChangeOpsPayer]: ', res);
-
-    const raiseID = res.raiseID.toString();
-
-    if (U.isEqual(raiseID, raiseId)) {
-      const url = `${location.origin}/letsfil/payfor/overview/${raiseId}`;
-
-      try {
-        await navigator.clipboard.writeText(url);
-
-        Modal.alert({ icon: 'success', content: '链接已复制' });
-      } catch (e) {
-        Modal.alert({
-          icon: 'success',
-          title: '支付地址已变更',
-          content: (
-            <>
-              <p>代付链接：</p>
-              <p>
-                <a href={url} target="_blank" rel="noreferrer">
-                  {url}
-                </a>
-              </p>
-            </>
-          ),
-        });
-      }
-
-      refresh();
-    }
-  };
-
-  const onWithdrawSuccess = (res: API.Base) => {
+  const onWithdrawSuccess = useMemoizedFn((res: API.Base) => {
     console.log('[onWithdrawSuccess]: ', res);
 
     const raiseID = res.raiseID.toString();
@@ -142,7 +107,7 @@ export default function Overview() {
 
       refresh();
     }
-  };
+  });
 
   useMount(initScrollSpy);
   useUpdateEffect(onDataChange, [data]);
@@ -153,31 +118,12 @@ export default function Overview() {
     [EventType.onCloseRaisePlan]: onStatusChange,
     [EventType.onDepositOPSFund]: onStatusChange,
     [EventType.onStartRaisePlan]: onStatusChange,
-    [EventType.onChangeOpsPayer]: onChangeOpsPayer,
+    [EventType.onChangeOpsPayer]: onStatusChange,
     [EventType.onWithdrawOPSFund]: onWithdrawSuccess,
     [EventType.onWithdrawRaiseFund]: onWithdrawSuccess,
     [EventType.onRaiserWithdraw]: onWithdrawSuccess,
     [EventType.onServicerWithdraw]: onWithdrawSuccess,
     [EventType.onInvestorWithdraw]: onWithdrawSuccess,
-  });
-
-  // 关闭计划
-  const { loading: closing, run: handleClose } = useLoadingify(async () => {
-    await plan.closeRaisePlan();
-  });
-
-  // 支付运维保证金
-  const { loading: opsLoading, run: handleOpsFund } = useLoadingify(async () => {
-    if (!data || !data.ops_security_fund) return;
-
-    await plan.depositOPSFund({
-      value: ethers.BigNumber.from(`${data.ops_security_fund}`),
-    });
-  });
-
-  // 好友代付，修改支付地址
-  const { loading: payforing, run: handlePayfor } = useLoadingify(async (address: string) => {
-    await plan.changeOpsPayer(address);
   });
 
   const renderStatus = () => {
@@ -188,9 +134,9 @@ export default function Overview() {
         case RaiseState.NotStarted: // 未缴纳募集保证金
           break;
         case RaiseState.WaitPayOPSSecurityFund: // 未缴纳运维保证金
-          return isRaiser && <Deposit loading={opsLoading} payforing={payforing} onPayfor={() => payfor.current?.show()} onConfirm={handleOpsFund} />;
+          return isPayer && <Deposit data={data} />;
         case RaiseState.WaitSeverSign: // 等待服务商签名
-          return isRaiser && <Signer raiseID={data?.raising_id} />;
+          return isRaiser && <Signer data={data} />;
         case RaiseState.InProgress: // 募集中
           return <Staking data={data} />;
         case RaiseState.Closed: // 已关闭
@@ -207,7 +153,7 @@ export default function Overview() {
       <div className="d-flex flex-column gap-4">
         {state}
 
-        {cloable && <Closer loading={closing} onConfirm={handleClose} />}
+        {cloable && <Closer data={data} />}
       </div>
     );
   };
@@ -218,15 +164,18 @@ export default function Overview() {
         <Breadcrumb items={[{ title: '全部募集计划', route: '/letsfil/raising' }, { title: data?.sponsor_company ?? '' }]} />
 
         <PageHeader title={`FIL募集计划 - ${F.formatNum(total, '0a')} - ${data?.sponsor_company ?? ''}`}>
-          <div className="d-flex align-items-center gap-3">
-            <ShareBtn className="btn btn-light" text={location.href} toast="链接已复制">
-              <Share4 />
-            </ShareBtn>
-            <button type="button" className="btn btn-light text-nowrap">
-              <Share6 />
-              <span className="ms-1">查看智能合约</span>
-            </button>
-          </div>
+          {data && (
+            <div className="d-flex align-items-center gap-3">
+              <ShareBtn className="btn btn-light" text={location.href} toast="链接已复制">
+                <Share4 />
+              </ShareBtn>
+
+              <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/${data.raise_address}`} target="_blank" rel="noreferrer">
+                <Share6 />
+                <span className="ms-1">查看智能合约</span>
+              </a>
+            </div>
+          )}
         </PageHeader>
 
         <div className={styles.content}>
@@ -308,8 +257,6 @@ export default function Overview() {
           <div className={styles.sidebar}>{renderStatus()}</div>
         </div>
       </div>
-
-      <PayforModal ref={payfor} loading={payforing} onConfirm={handlePayfor} />
     </>
   );
 }

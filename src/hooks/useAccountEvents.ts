@@ -1,5 +1,5 @@
 import { useModel } from '@umijs/max';
-import { useMount, useUnmount } from 'ahooks';
+import { useMemoizedFn, useMount, useUnmount } from 'ahooks';
 
 import * as S from '@/utils/storage';
 
@@ -19,17 +19,17 @@ export default function useAccountEvents() {
     });
   };
 
-  const onAccounts = (accounts: string[]) => {
+  const onAccounts = useMemoizedFn((accounts: string[]) => {
     if (initialState?.connected) {
       setState({ accounts });
     }
-  };
+  });
 
-  const onChainChanged = (chainId: string) => {
+  const onChainChanged = useMemoizedFn((chainId: string) => {
     if (initialState?.connected) {
       setState({ chainId });
     }
-  };
+  });
 
   useMount(() => {
     window.ethereum?.on('accountsChanged', onAccounts);

@@ -57,7 +57,7 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
           <div className="card h-100">
             <div className="card-body">
               <p className="mb-1 text-gray-dark">年化收益（预估）</p>
-              <p className="mb-0 d-flex flex-wrap align-items-center">
+              <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3">{formatIncome(data?.income_rate || 0)}</span>
                   <span className="ms-1 text-neutral">%</span>

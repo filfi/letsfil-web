@@ -1,26 +1,33 @@
 import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import { accSub } from '@/utils/utils';
 import useAccounts from './useAccounts';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
+import useDepositOps from './useDepositOps';
 import useLoadingify from './useLoadingify';
 import useEmittHandler from './useEmitHandler';
-import usePlanContract from './usePlanContract';
 import type { MaybeRef } from './usePlanContract';
 
-export default function useInvestAmount(address: MaybeRef<string | undefined>) {
+export default function useDepositInvest(address: MaybeRef<string | undefined>) {
   const { accounts } = useAccounts();
-  const contract = usePlanContract(address);
+  const { contract, amount: opsAmount, isOpsPayer } = useDepositOps(address);
 
   const [amount, setAmount] = useState(0);
+  const [record, setRecord] = useState(0);
   const [totalPledge, setTotalPledge] = useState(0);
+  // 投资成本。若是运维保证金支付人，则减去运维保证金
+  const cost = useMemo(() => (isOpsPayer ? accSub(amount, opsAmount) : amount), [amount, opsAmount, isOpsPayer]);
+  const isInvestor = useMemo(() => cost > 0, [cost]);
 
-  const fetchAmount = async () => {
+  const fetchData = async () => {
     if (accounts[0]) {
       const raise = await contract.pledgeAmount(accounts[0]);
+      const record = await contract.pledgeRecord(accounts[0]);
 
       setAmount(toNumber(raise));
+      setRecord(toNumber(record));
     }
 
     const total = await contract.pledgeTotalAmount();
@@ -29,17 +36,17 @@ export default function useInvestAmount(address: MaybeRef<string | undefined>) {
   };
 
   const { loading, run: withdraw } = useLoadingify(async () => {
-    await contract.unStaking(ethers.utils.parseEther(`${amount}`));
+    await contract.unStaking(ethers.utils.parseEther(`${cost}`));
   });
 
   useEffect(() => {
-    fetchAmount();
+    fetchData();
   }, [address, accounts]);
 
   useEmittHandler({
-    [EventType.onUnstaking]: fetchAmount,
-    [EventType.onWithdrawOPSFund]: fetchAmount,
+    [EventType.onUnstaking]: fetchData,
+    [EventType.onWithdrawOPSFund]: fetchData,
   });
 
-  return { contract, amount, totalPledge, loading, withdraw };
+  return { contract, amount, cost, record, totalPledge, isInvestor, loading, withdraw };
 }

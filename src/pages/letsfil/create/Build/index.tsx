@@ -1,6 +1,7 @@
 import { Form, Input, Select } from 'antd';
 import { history, useModel } from '@umijs/max';
 
+import { minerID } from '@/utils/validators';
 import { periods, sectors } from '@/constants';
 
 export default function CreateBuild() {
@@ -16,8 +17,8 @@ export default function CreateBuild() {
   return (
     <>
       <Form form={form} layout="vertical" initialValues={data ?? {}} onFinish={handleSubmit}>
-        <Form.Item label="Miner ID" name="minerID" rules={[{ required: true, message: '请输入Miner ID' }]}>
-          <Input placeholder="如：F053746" />
+        <Form.Item label="Miner ID" name="minerID" rules={[{ required: true, message: '请输入Miner ID' }, { validator: minerID }]}>
+          <Input maxLength={32} placeholder="如：F053746" />
         </Form.Item>
 
         <Form.Item label="单个扇区大小" name="sectorSize" rules={[{ required: true, message: '请选择单个扇区大小' }]}>

@@ -2,20 +2,26 @@ export const DEFAULT_NAME = "Let's Fil";
 
 export const defaultLocale = 'zh-CN';
 
-export const RUN_ENV = process.env.RUN_ENV;
-
 export const API_URL = process.env.API_URL ?? '';
 
 export const RPC_URL = process.env.RPC_URL ?? '';
 
+export const RUN_ENV = process.env.RUN_ENV ?? 'hp';
+
 // hyperspace - testnet
-const ADDR_HP = '0x2921c393f4bC2bAd5f674A0672e75493A2e2D508';
+// const ADDR_HP = '0x8C934Cc2979b549491529BcD6bb44a16bdE658EC';
+const ADDR_HP = '0x1070b09e24a385B4D4260Ba9750A64899772aBB5';
 // 2k - testnet
 const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
 /**
  * Raise Facory Contract Address
  */
-export const RAISE_ADDRESS = RUN_ENV === 'hp' ? ADDR_HP : ADDR_2K;
+export const RAISE_ADDRESS = RUN_ENV === '2k' ? ADDR_2K : ADDR_HP;
+
+/**
+ * Miner Util Address
+ */
+export const MINER_ADDRESS = '0xCCCd4886d1403358871C7649869159B556E6397C';
 
 console.log('[RUN_ENV]: ', RUN_ENV);
 
@@ -24,7 +30,7 @@ const SCAN_URL_HP = 'https://hyperspace.filfox.info/en/address';
 /**
  * Miner Overview address
  */
-export const SCAN_URL = RUN_ENV === 'hp' ? SCAN_URL_HP : SCAN_URL_MAIN;
+export const SCAN_URL = RUN_ENV === '2k' ? SCAN_URL_MAIN : SCAN_URL_HP;
 
 export const SUPPORTED_CHAINS = [
   '0x13a', // 314, // Filecoin - Mainnet

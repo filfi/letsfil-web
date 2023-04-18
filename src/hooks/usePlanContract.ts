@@ -140,6 +140,33 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   };
 
   /**
+   * 获取募集计划ID
+   */
+  const getRaiseID = withConnect(
+    withContract(async (contract) => {
+      return await contract?.raiseID();
+    }),
+  );
+
+  /**
+   * 获取募集计划信息
+   */
+  const getRaiseInfo = withConnect(
+    withContract(async (contract) => {
+      return await contract?.raiseInfo();
+    }),
+  );
+
+  /**
+   * 获取节点信息
+   */
+  const getNodeInfo = withConnect(
+    withContract(async (contract) => {
+      return await contract?.nodeInfo();
+    }),
+  );
+
+  /**
    * 获取募集计划状态
    */
   const getRaiseState = withConnect(
@@ -324,7 +351,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   );
 
   /**
-   * 获取已募集金额
+   * 获取质押总额
    */
   const pledgeTotalAmount = withConnect(
     withContract(async (contract) => {
@@ -333,11 +360,20 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   );
 
   /**
-   * 获取募集金额
+   * 获取质押金额
    */
   const pledgeAmount = withConnect(
     withContract(async (contract, address: string) => {
       return await contract?.pledgeRecord(address);
+    }),
+  );
+
+  /**
+   * 获取质押累计金额
+   */
+  const pledgeRecord = withConnect(
+    withContract(async (contract, address: string) => {
+      return await contract?.pledgeRecordCalc(address);
     }),
   );
 
@@ -475,6 +511,9 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
     getRaiseFund,
     closeRaisePlan,
     depositOPSFund,
+    getRaiseID,
+    getNodeInfo,
+    getRaiseInfo,
     getNodeState,
     getRaiseState,
     changeOpsPayer,
@@ -485,6 +524,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
     servicerWithdraw,
     investorWithdraw,
     pledgeAmount,
+    pledgeRecord,
     pledgeTotalAmount,
     getRaiserAvailableReward,
     getRaiserPendingReward,

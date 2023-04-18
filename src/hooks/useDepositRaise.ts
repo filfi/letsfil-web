@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import useAccounts from './useAccounts';
+import { isEqual } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
@@ -13,8 +14,14 @@ export default function useDepositRaise(address: MaybeRef<string | undefined>) {
   const contract = usePlanContract(address);
 
   const [amount, setAmount] = useState(0);
+  const [raiser, setRaiser] = useState('');
+  const isRaiser = useMemo(() => isEqual(accounts[0], raiser), [accounts, raiser]);
 
-  const fetchAmount = async () => {
+  const fetchData = async () => {
+    const info = await contract.getRaiseInfo();
+
+    setRaiser(info?.sponsor ?? '');
+
     if (accounts[0]) {
       const raise = await contract.getRaiseFund();
 
@@ -27,12 +34,12 @@ export default function useDepositRaise(address: MaybeRef<string | undefined>) {
   });
 
   useEffect(() => {
-    fetchAmount();
+    fetchData();
   }, [address, accounts]);
 
   useEmittHandler({
-    [EventType.onWithdrawRaiseFund]: fetchAmount,
+    [EventType.onWithdrawRaiseFund]: fetchData,
   });
 
-  return { contract, amount, loading, withdraw };
+  return { contract, amount, raiser, isRaiser, loading, withdraw };
 }
