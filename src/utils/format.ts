@@ -29,7 +29,7 @@ export function formatAddr(addr?: unknown) {
 }
 
 export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumberish = 18) {
-  return BigNumber(ethers.utils.formatUnits(`${amount || '0'}`, unitName)).toNumber();
+  return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
 }
 
 export function formatAmount(amount?: BigNumber.Value, decimalPlaces = 4) {

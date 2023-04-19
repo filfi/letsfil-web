@@ -1,7 +1,7 @@
 import { Form, Input, Select } from 'antd';
 import { history, useModel } from '@umijs/max';
 
-import { minerID } from '@/utils/validators';
+import { createIntRangeValidator, minerID } from '@/utils/validators';
 import { periods, sectors } from '@/constants';
 
 export default function CreateBuild() {
@@ -45,7 +45,7 @@ export default function CreateBuild() {
           label="封装期限"
           name="sealPeriod"
           help="募集成功后需在该期限内封装完毕并投入生产，否则会产生罚金"
-          rules={[{ required: true, message: '请输入天数，不大于30' }]}
+          rules={[{ required: true, message: '请输入天数，不大于30' }, { validator: createIntRangeValidator([0, 30], '请输入天数，不大于30') }]}
         >
           <Input type="number" suffix="天" max={30} min={0} placeholder="请输入天数，不大于30" />
         </Form.Item>

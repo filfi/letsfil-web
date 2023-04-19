@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { useRequest, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
-import { accAdd } from '@/utils/utils';
 import { getPlansByAddr } from '@/apis/raise';
+import { accAdd, isEqual } from '@/utils/utils';
 import useAccounts from '@/hooks/useAccounts';
 import PageHeader from '@/components/PageHeader';
 import usePlanContract from '@/hooks/usePlanContract';
@@ -37,20 +37,31 @@ export default function Account() {
 
   const getServicerReward = async (address: string) => {
     const contract = getContract(address);
-    const used = await contract?.gotSpReward();
-    const usable = await contract?.spRewardAvailableLeft();
-    const pending = await contract?.spWillReleaseReward();
+    const raiseInfo = await contract?.raiseInfo();
 
-    return accAdd(accAdd(toNumber(used), toNumber(usable)), toNumber(pending));
+    if (isEqual(accounts[0], raiseInfo?.spAddress)) {
+      const used = await contract?.gotSpReward();
+      const usable = await contract?.spRewardAvailableLeft();
+      const pending = await contract?.spWillReleaseReward();
+
+      return accAdd(accAdd(toNumber(used), toNumber(usable)), toNumber(pending));
+    }
+
+    return 0;
   };
 
   const getRaiserReward = async (address: string) => {
     const contract = getContract(address);
-    const used = await contract?.gotRaiserReward();
-    const usable = await contract?.raiserRewardAvailableLeft();
-    const pending = await contract?.raiserWillReleaseReward();
+    const raiseInfo = await contract?.raiseInfo();
 
-    return accAdd(accAdd(toNumber(used), toNumber(usable)), toNumber(pending));
+    if (isEqual(accounts[0], raiseInfo?.sponsor)) {
+      const used = await contract?.gotRaiserReward();
+      const usable = await contract?.raiserRewardAvailableLeft();
+      const pending = await contract?.raiserWillReleaseReward();
+      return accAdd(accAdd(toNumber(used), toNumber(usable)), toNumber(pending));
+    }
+
+    return 0;
   };
 
   const getTotalReward = async (address: string) => {
@@ -65,33 +76,40 @@ export default function Account() {
   const getUsableReward = async (address: string) => {
     const contract = getContract(address);
     const invest = await contract?.availableRewardOf(accounts[0]);
-    const raiser = await contract?.raiserRewardAvailableLeft();
-    const servcer = await contract?.spRewardAvailableLeft();
 
-    return accAdd(accAdd(toNumber(raiser), toNumber(servcer)), toNumber(invest));
+    let raiser = 0;
+    let servicer = 0;
+
+    const raiseInfo = await contract?.raiseInfo();
+    if (isEqual(accounts[0], raiseInfo?.sponsor)) {
+      raiser = await contract?.raiserRewardAvailableLeft();
+    }
+    if (isEqual(accounts[0], raiseInfo?.spAddress)) {
+      servicer = await contract?.spRewardAvailableLeft();
+    }
+
+    return accAdd(accAdd(toNumber(raiser), toNumber(servicer)), toNumber(invest));
+  };
+
+  const fetchSum = async (handle: typeof getTotalReward) => {
+    if (!accounts[0] || !data || !data.length) return 0;
+
+    const rewards = await Promise.all(data.map((item) => handle(item.raise_address)));
+
+    return rewards.reduce((sum, curr) => accAdd(sum, curr), 0);
   };
 
   const fetchTotalIncome = async () => {
-    if (!accounts[0] || !data || !data.length) return;
+    const sum = await fetchSum(getTotalReward);
 
-    const rewards = await Promise.all(data.map(async (item) => getTotalReward(item.raise_address)));
-
-    const sum = rewards.reduce((sum, curr) => accAdd(sum, curr), 0);
-
-    console.log('[rewards]: ', rewards);
     console.log('[total]: ', sum);
 
     setTotal(sum);
   };
 
   const fetchUsableIncome = async () => {
-    if (!accounts[0] || !data || !data.length) return;
+    const sum = await fetchSum(getUsableReward);
 
-    const rewards = await Promise.all(data.map(async (item) => getUsableReward(item.raise_address)));
-
-    const sum = rewards.reduce((sum, curr) => accAdd(sum, curr), 0);
-
-    console.log('[available rewards]: ', rewards);
     console.log('[total available]: ', sum);
 
     setUsable(sum);
@@ -112,10 +130,11 @@ export default function Account() {
             <Skeleton active loading={loading}>
               <div className="card-body">
                 <div className="mb-4 d-flex align-items-center justify-content-between">
-                  <div>
+                  <div className="flex-shrink-0">
                     <IncomeIcon />
-
-                    <span className="ms-2">总收益</span>
+                  </div>
+                  <div className="flex-grow-1 ms-3">
+                    <h5 className="card-title mb-0">总收益</h5>
                   </div>
                 </div>
 
@@ -132,9 +151,12 @@ export default function Account() {
             <Skeleton active loading={loading}>
               <div className="card-body">
                 <div className="mb-4 d-flex align-items-center justify-content-between">
-                  <div>
+                  <div className="flex-shrink-0">
                     <WithdrawIcon />
-                    <span className="ms-2">待提取</span>
+                  </div>
+                  <div className="flex-grow-1 ms-3">
+                    <h5 className="card-title mb-1">待提取收益</h5>
+                    <p className="card-text mb-0 text-gray-dark">请到参与的各计划中分别提取</p>
                   </div>
                 </div>
 

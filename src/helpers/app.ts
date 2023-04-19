@@ -48,7 +48,7 @@ export function withGas<R = any, P extends unknown[] = any>(service: (gas: strin
   };
 }
 
-export function withTx<P extends unknown[] = any>(service: (...args: P) => Promise<any>) {
+export function withTx<P extends unknown[] = any>(service: (...args: P) => Promise<ethers.providers.TransactionResponse | undefined>) {
   return async (...args: P) => {
     const tx = await service(...args);
 
@@ -70,7 +70,7 @@ export function withTx<P extends unknown[] = any>(service: (...args: P) => Promi
 export function genRaiseID(minerId: number | string) {
   const mid = U.parseMinerID(minerId);
 
-  return ethers.BigNumber.from(mid).mul(Math.pow(10, 10)).add(dayjs().unix());
+  return BigNumber.from(mid).mul(Math.pow(10, 10)).add(dayjs().unix());
 }
 
 /**
@@ -83,11 +83,11 @@ export function transformRaiseInfo(data: API.Base) {
     id: genRaiseID(data.minerID),
     targetAmount: ethers.utils.parseEther(`${data.targetAmount}`),
     securityFund: ethers.utils.parseEther(`${data.securityFund}`),
-    securityFundRate: BigNumber.from(`${data.securityFundRate * 100}`),
-    deadline: BigNumber.from(`${dayjs(data.deadline).unix()}`),
-    raiserShare: BigNumber.from(data.raiserShare),
-    investorShare: BigNumber.from(data.investorShare),
-    servicerShare: BigNumber.from(data.servicerShare),
+    securityFundRate: data.securityFundRate * 100,
+    deadline: dayjs(data.deadline).unix(),
+    raiserShare: +data.raiserShare,
+    investorShare: +data.investorShare,
+    servicerShare: +data.servicerShare,
     sponsor: data.sponsor,
     raiseCompany: data.raiseCompany,
     spAddress: data.spAddress,
@@ -104,11 +104,22 @@ export function transformNodeInfo(data: API.Base) {
   return {
     minerID: +U.parseMinerID(data.minerID),
     nodeSize: BigNumber.from(`${U.pb2byte(data.nodeSize)}`),
-    sectorSize: BigNumber.from(data.sectorSize),
-    sealPeriod: BigNumber.from(`${U.day2sec(data.sealPeriod)}`),
-    nodePeriod: BigNumber.from(`${U.day2sec(data.nodePeriod)}`),
+    sectorSize: data.sectorSize,
+    sealPeriod: U.day2sec(data.sealPeriod),
+    nodePeriod: U.day2sec(data.nodePeriod),
     opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
     opsSecurityFundPayer: data.sponsor,
-    realSealAmount: BigNumber.from('0'),
+    realSealAmount: 0,
+  };
+}
+
+/**
+ * 将表单数据转换成 ExtraInfo
+ * @param data 表单数据
+ */
+export function transformExtraInfo(data: API.Base) {
+  // 节点信息
+  return {
+    minRaiseRate: +data.minRaiseRate,
   };
 }

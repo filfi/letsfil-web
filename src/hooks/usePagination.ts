@@ -62,14 +62,18 @@ export default function usePagination<R = any, P extends any[] = any>(service: I
     return run(...p);
   };
 
-  const changePage = (page: number) => {
+  const change = (page: number, pageSize: number) => {
     const [p, ...other] = params ?? [];
-    return run(...([{ ...p, page }, ...other] as P));
+
+    return run(...([{ ...p, page, pageSize }, ...other] as P));
+  };
+
+  const changePage = (page: number) => {
+    return change(page, pageSize);
   };
 
   const changePageSize = (pageSize: number) => {
-    const [p, ...other] = params ?? [];
-    return run(...([{ ...p, pageSize }, ...other] as P));
+    return change(page, pageSize);
   };
 
   useMount(() => {
@@ -92,6 +96,7 @@ export default function usePagination<R = any, P extends any[] = any>(service: I
     loading,
     run,
     refresh,
+    change,
     changePage,
     changePageSize,
   };

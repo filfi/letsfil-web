@@ -4,7 +4,7 @@ import { useModel } from '@umijs/max';
 
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import WithdrawModal from '@/components/WithdrawModal';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 
@@ -21,7 +21,7 @@ const InvestorIncome: React.FC<{ address?: string }> = ({ address }) => {
 
   const { contract, reward, available, isInvestor } = useRewardInvestor(address);
 
-  const { loading, run: handleWithdraw } = useLoadingify(async (address: string) => {
+  const [loading, onWithdraw] = useProcessify(async (address: string) => {
     await contract.investorWithdraw(address, ethers.utils.parseEther(`${available}`));
   });
 
@@ -64,7 +64,7 @@ const InvestorIncome: React.FC<{ address?: string }> = ({ address }) => {
           </div>
         </div>
 
-        <WithdrawModal ref={modal} onConfirm={handleWithdraw} title={`提取 ${formatAmount(available)} FIL`} />
+        <WithdrawModal ref={modal} onConfirm={onWithdraw} title={`提取 ${formatAmount(available)} FIL`} />
       </>
     );
   }

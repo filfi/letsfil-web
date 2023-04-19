@@ -1,40 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import * as U from '@/utils/utils';
 import * as F from '@/utils/format';
-// import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
-import usePlanContract from '@/hooks/usePlanContract';
+import useDepositInvest from '@/hooks/useDepositInvest';
 
 function formatIncome(rate?: number | string) {
   return F.formatPercent(rate).replace(/%$/, '');
 }
 
-const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
-  // const { accounts } = useAccounts();
+const RaiseInfo: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { getProvider } = useProvider();
-  const [amount, setAmount] = useState(0);
 
-  const plan = usePlanContract(data?.raise_address);
-
-  const fetchAmounts = async () => {
-    if (!data?.raise_address) return;
-
-    const amount = await plan.pledgeTotalAmount();
-
-    setAmount(F.toNumber(amount));
-  };
-
-  useEffect(() => {
-    fetchAmounts();
-  }, [data?.raise_address]);
+  const { totalPledge } = useDepositInvest(data?.raise_address);
 
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
   const actual = useMemo(() => F.toNumber(data?.actual_amount), [data]);
-  const percent = useMemo(() => (total > 0 ? amount / total : 0), [total, amount]);
-  // const isRaiser = useMemo(() => U.isEqual(data?.raiser, accounts[0]), [data, accounts]);
+  const percent = useMemo(() => (total > 0 ? totalPledge / total : 0), [total, totalPledge]);
   const provider = useMemo(() => (data?.service_id ? getProvider(data.service_id) : undefined), [data]);
-  // const isProvider = useMemo(() => U.isEqual(data?.service_provider_address, accounts[0]), [data, accounts]);
 
   return (
     <>
@@ -71,72 +54,74 @@ const RaiseInfo: React.FC<{ data?: API.Base }> = ({ data }) => {
         </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="table">
-          <tbody>
-            <tr>
-              <th>发起人</th>
-              <td width="32%">
-                {data?.sponsor_company && (
-                  <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0">
-                      <img src={require('../imgs/avatar.png')} height={32} alt="Avatar" />
+      {data && (
+        <div className="table-responsive">
+          <table className="table">
+            <tbody>
+              <tr>
+                <th>发起人</th>
+                <td width="32%">
+                  {!!data.sponsor_company && (
+                    <div className="d-flex align-items-center">
+                      <div className="flex-shrink-0">
+                        <img src={require('../imgs/avatar.png')} height={32} alt="Avatar" />
+                      </div>
+                      <div className="flex-grow-1 ms-2">
+                        <p className="mb-0">{data.sponsor_company}</p>
+                        <p className="mb-0 text-gray-dark">{F.formatAddr(data?.raiser)}</p>
+                      </div>
                     </div>
-                    <div className="flex-grow-1 ms-2">
-                      <p className="mb-0">{data.sponsor_company}</p>
-                      <p className="mb-0 text-gray-dark">{F.formatAddr(data?.raiser)}</p>
+                  )}
+                </td>
+                <th>服务商</th>
+                <td width="32%">
+                  {provider && (
+                    <div className="d-flex align-items-center">
+                      <div className="flex-shrink-0">
+                        <img src={provider.logo_url} height={32} alt="Avatar" />
+                      </div>
+                      <div className="flex-grow-1 ms-2">
+                        <p className="mb-0">{provider.full_name}</p>
+                        {/* <p className="mb-0 text-gray-dark">{F.formatAddr(provider.wallet_address)}</p> */}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </td>
-              <th>服务商</th>
-              <td width="32%">
-                {provider && (
-                  <div className="d-flex align-items-center">
-                    <div className="flex-shrink-0">
-                      <img src={provider.logo_url} height={32} alt="Avatar" />
-                    </div>
-                    <div className="flex-grow-1 ms-2">
-                      <p className="mb-0">{provider.full_name}</p>
-                      {/* <p className="mb-0 text-gray-dark">{F.formatAddr(provider.wallet_address)}</p> */}
-                    </div>
-                  </div>
-                )}
-              </td>
-            </tr>
-            <tr>
-              <th>募集目标</th>
-              <td>{F.formatNum(total, '0a')} FIL</td>
-              <th>{data?.status > 3 ? '实际募集' : '最小募集比例'}</th>
-              <td>{data?.status > 3 ? `${F.formatNum(actual, '0a')} FIL` : `${data?.min_raise_rate ?? '-'}%`}</td>
-            </tr>
-            <tr>
-              <th>募集保证金</th>
-              <td>5%</td>
-              <th>运维保证金</th>
-              <td>5%</td>
-            </tr>
-            <tr>
-              <th>截止日期</th>
-              <td>{F.formatSecDate(data?.closing_time)}</td>
-              <th>距截止还有</th>
-              <td>{U.diffDays(data?.closing_time)}天</td>
-            </tr>
-            <tr>
-              <th>预期封装完成</th>
-              <td>{F.formatRemain(data?.end_seal_time, data?.seal_time_limit)}</td>
-              <th>封装时间</th>
-              <td>{U.sec2day(data?.seal_time_limit)}天</td>
-            </tr>
-            <tr>
-              <th>扇区到期(估)</th>
-              <td>{F.formatRemain(data?.end_seal_time, data?.seal_time_limit, data?.sector_period)}</td>
-              <th>扇区期限</th>
-              <td>{U.sec2day(data?.sector_period)}天</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <th>募集目标</th>
+                <td>{F.formatNum(total, '0a')} FIL</td>
+                <th>{data?.status > 3 ? '实际募集' : '最小募集比例'}</th>
+                <td>{data?.status > 3 ? `${F.formatNum(actual, '0a')} FIL` : `${data?.min_raise_rate ?? '-'}%`}</td>
+              </tr>
+              <tr>
+                <th>募集保证金</th>
+                <td>5%</td>
+                <th>运维保证金</th>
+                <td>5%</td>
+              </tr>
+              <tr>
+                <th>截止日期</th>
+                <td>{F.formatSecDate(data.closing_time)}</td>
+                <th>距截止还有</th>
+                <td>{U.diffDays(data.closing_time)}</td>
+              </tr>
+              <tr>
+                <th>预期封装完成</th>
+                <td>{F.formatSecDate(data.end_seal_time)}</td>
+                <th>封装时间</th>
+                <td>{U.sec2day(data.seal_time_limit)}天</td>
+              </tr>
+              <tr>
+                <th>扇区到期(估)</th>
+                <td>{F.formatRemain(data.end_seal_time, data.sector_period)}</td>
+                <th>扇区期限</th>
+                <td>{U.sec2day(data.sector_period)}天</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 };

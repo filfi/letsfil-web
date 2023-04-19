@@ -18,7 +18,7 @@ import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import { RaiseState } from '@/constants/state';
 import usePlanState from '@/hooks/usePlanState';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 import { ReactComponent as IconCheck } from '@/assets/icons/check-filled.svg';
@@ -67,7 +67,7 @@ export default function ConfirmOverview() {
     return `lotus-miner actor set-owner --really-do-it ${U.toF4Address(address)} <ownerAddress>`;
   };
 
-  const { loading: submitting, run: handleSubmit } = useLoadingify(async () => {
+  const [submitting, handleSubmit] = useProcessify(async () => {
     if (!data || !accounts[0]) return;
 
     if (!U.isEqual(accounts[0], data.service_provider_address)) {

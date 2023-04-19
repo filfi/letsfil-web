@@ -5,7 +5,6 @@ import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useEmittHandler from './useEmitHandler';
 import useDepositInvest from './useDepositInvest';
-import type { MaybeRef } from './usePlanContract';
 
 export default function useRewardInvestor(address: MaybeRef<string | undefined>) {
   const { accounts } = useAccounts();

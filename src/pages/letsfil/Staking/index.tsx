@@ -17,7 +17,7 @@ import { RaiseState } from '@/constants/state';
 import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 import usePlanState from '@/hooks/usePlanState';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import useDepositInvest from '@/hooks/useDepositInvest';
 import { SCAN_URL, planStatusText } from '@/constants';
@@ -51,7 +51,7 @@ export default function Staking() {
   const raiseId = useMemo(() => data?.raising_id, [data]);
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
   const remain = useMemo(() => U.accSub(total, totalPledge), [total, totalPledge]);
-  const disabled = useMemo(() => remain < 10, [remain]);
+  const readOnly = useMemo(() => remain < 10, [remain]);
 
   const amountValidator = useMemoizedFn(async (_: unknown, value: string) => {
     await number(_, value);
@@ -72,10 +72,11 @@ export default function Staking() {
   const onStaking = useMemoizedFn((res: API.Base) => {
     console.log('[onStaking]: ', res);
 
+    const amount = res.amount.toString();
     const raiseID = res.raiseID.toString();
 
     if (U.isEqual(raiseId, raiseID)) {
-      setInvested(form.getFieldValue('amount'));
+      setInvested(F.toNumber(amount));
       setTrue();
       refresh();
     }
@@ -91,7 +92,7 @@ export default function Staking() {
     [EventType.onStaking]: onStaking,
   });
 
-  const { loading: stakeLoading, run: handleStaking } = useLoadingify(async () => {
+  const [stakeLoading, handleStaking] = useProcessify(async () => {
     const amount = form.getFieldValue('amount');
 
     await contract.staking({
@@ -100,30 +101,25 @@ export default function Staking() {
   });
 
   const renderForm = () => {
-    if (planState === RaiseState.InProgress) {
-      return (
-        <Form form={form} layout="vertical" onFinish={handleStaking}>
-          <Form.Item required name="amount" label="输入投资额度" rules={[{ required: true, message: '请输入投资额度' }, { validator: amountValidator }]}>
-            <Input disabled={disabled} placeholder="最低10 FIL" suffix="FIL" />
-          </Form.Item>
-
-          <div className="d-flex flex-wrap gap-3">
-            <button type="button" className="btn btn-light btn-lg flex-fill" onClick={() => history.back()}>
-              取消
-            </button>
-
-            <SpinBtn type="submit" loading={stakeLoading} className="btn btn-primary btn-lg flex-fill">
-              {stakeLoading ? '正在处理' : '确认'}
-            </SpinBtn>
-          </div>
-        </Form>
-      );
-    }
+    const disabled = planState !== RaiseState.InProgress;
+    const stateText = planStatusText[planState];
 
     return (
-      <button type="button" className="btn btn-light btn-lg" disabled>
-        {planStatusText[planState]}
-      </button>
+      <Form form={form} layout="vertical" onFinish={handleStaking}>
+        <Form.Item required name="amount" label="输入投资额度" rules={[{ required: true, message: '请输入投资额度' }, { validator: amountValidator }]}>
+          <Input readOnly={disabled || readOnly} placeholder="最低10 FIL" suffix="FIL" />
+        </Form.Item>
+
+        <div className="d-flex flex-wrap gap-3">
+          <button type="button" className="btn btn-light btn-lg flex-fill" onClick={() => history.back()}>
+            取消
+          </button>
+
+          <SpinBtn type="submit" disabled={disabled} loading={stakeLoading} className="btn btn-primary btn-lg flex-fill">
+            {stakeLoading ? '正在处理' : disabled && stateText ? stateText : '确认'}
+          </SpinBtn>
+        </div>
+      </Form>
     );
   };
 

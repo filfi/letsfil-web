@@ -59,11 +59,6 @@ const routes: IBestAFSRoute[] = [
         component: './letsfil/Raising',
       },
       {
-        name: 'investing',
-        path: 'investing',
-        component: './letsfil/Investing',
-      },
-      {
         name: 'create',
         path: 'create',
         component: './letsfil/create/layout',

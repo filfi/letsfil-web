@@ -1,7 +1,8 @@
 import { useModel } from '@umijs/max';
-import { useMemoizedFn, useMount, useUnmount } from 'ahooks';
+import { useLockFn, useMemoizedFn, useMount, useUnmount } from 'ahooks';
 
 import * as S from '@/utils/storage';
+import { sleep } from '@/utils/utils';
 
 export default function useAccountEvents() {
   const { initialState, setInitialState } = useModel('@@initialState');
@@ -19,15 +20,22 @@ export default function useAccountEvents() {
     });
   };
 
+  const reload = useLockFn(async () => {
+    await sleep(60 / 1000);
+    location.reload();
+  });
+
   const onAccounts = useMemoizedFn((accounts: string[]) => {
     if (initialState?.connected) {
       setState({ accounts });
+      reload();
     }
   });
 
   const onChainChanged = useMemoizedFn((chainId: string) => {
     if (initialState?.connected) {
       setState({ chainId });
+      reload();
     }
   });
 

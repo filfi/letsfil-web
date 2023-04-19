@@ -4,7 +4,7 @@ import { useModel } from '@umijs/max';
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import useRewardServicer from '@/hooks/useRewardServicer';
 
 const withConfirm = <P extends unknown[]>(handler?: (...args: P) => void, amount?: string) => {
@@ -30,11 +30,11 @@ const ServicerIncome: React.FC<{ address?: string }> = ({ address }) => {
 
   const { contract, reward, available, isServicer } = useRewardServicer(address);
 
-  const { loading, run: handleWithdraw } = useLoadingify(async () => {
+  const [loading, withdraw] = useProcessify(async () => {
     await contract.servicerWithdraw(ethers.utils.parseEther(`${available}`));
   });
 
-  const onWithdraw = withConfirm(handleWithdraw, formatAmount(available));
+  const onWithdraw = withConfirm(withdraw, formatAmount(available));
 
   if (isServicer) {
     return (

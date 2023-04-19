@@ -173,8 +173,19 @@
   --bs-card-spacer-y: 16px;
   --bs-card-border-radius: 12px;
   --bs-card-border-color: var(--color-gray-200);
+  --bs-card-font-size: 14px;
+  --bs-card-title-font-size: 16px;
 
   box-shadow: 0 1px 3px rgb(16 24 40 / 10%), 0 1px 2px rgb(16 24 40 / 6%);
+}
+
+.card-title {
+  font-size: var(--bs-card-title-font-size);
+  font-weight: 500;
+}
+
+.card-text {
+  font-size: var(--bs-card-font-size);
 }
 @media screen and (min-width: 992px) {
   .card {
@@ -185,24 +196,121 @@
 
 /** pagination **/
 .pagination {
-  --bs-pagination-padding-x: 17px;
-  --bs-pagination-padding-y: 13px;
+  --bs-pagination-size: 34px;
+  --bs-pagination-padding-x: 8px;
+  --bs-pagination-padding-y: 8px;
   --bs-pagination-font-size: 14px;
   --bs-pagination-border-width: 0;
   --bs-pagination-border-radius: 50%;
+  --bs-pagination-focus-box-shadow: none;
+  --bs-pagination-bg: #fff;
   --bs-pagination-color: var(--color-gray-600);
-  --bs-pagination-active-color: var(--color-gray-600);
+  --bs-pagination-hover-bg: var(--color-gray-50);
+  --bs-pagination-hover-color: var(--color-gray-600);
   --bs-pagination-active-bg: var(--color-gray-50);
+  --bs-pagination-active-color: var(--color-gray-600);
+  // --bs-pagination-disabled-bg: var(--color-gray-25);
+  --bs-pagination-disabled-color: var(--color-gray-300);
 
-  .page-link {
-    margin: 0 4px;
-    line-height: 1;
-    border-radius: var(--bs-pagination-border-radius);
+  display: flex;
+
+  .ant-pagination-item,
+  .ant-pagination-next,
+  .ant-pagination-prev {
+    margin: 0;
+    display: block;
+    height: unset;
+    min-width: unset;
+    line-height: unset;
+    border: unset;
+    font-family: inherit;
+    font-weight: unset;
+    border-radius: unset;
+    background-color: unset;
+
+    &:not(.ant-pagination-item-active):hover {
+      background-color: unset;
+    }
   }
 
-  // .page-item:not(:first-child) .page-link {
-  //   margin-left: unset;
-  // }
+  .ant-pagination-item > a {
+    position: relative;
+    display: inline-flex;
+    width: var(--bs-pagination-size);
+    height: var(--bs-pagination-size);
+    appearance: none;
+    appearance: none;
+    align-items: center;
+    justify-content: center;
+    padding: var(--bs-pagination-padding-y) var(--bs-pagination-padding-x);
+    font-size: var(--bs-pagination-font-size);
+    color: var(--bs-pagination-color);
+    line-height: 1;
+    background-color: var(--bs-pagination-bg);
+    border: var(--bs-pagination-border-width) solid var(--bs-pagination-border-color);
+    border-radius: var(--bs-pagination-border-radius);
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+
+  .ant-pagination-next .ant-pagination-item-link,
+  .ant-pagination-prev .ant-pagination-item-link {
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    border: 1px solid var(--color-gray-300);
+
+    &:disabled,
+    &:disabled:hover {
+      color: var(--color-gray-300);
+      border-color: var(--color-gray-200);
+    }
+  }
+
+  .page-link {
+    display: inline-flex;
+    width: var(--bs-pagination-size);
+    height: var(--bs-pagination-size);
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .ant-pagination-item > a:hover {
+    z-index: 2;
+    color: var(--bs-pagination-hover-color);
+    background-color: var(--bs-pagination-hover-bg);
+    border-color: var(--bs-pagination-hover-border-color);
+  }
+
+  .ant-pagination-item > a:focus {
+    z-index: 3;
+    color: var(--bs-pagination-focus-color);
+    background-color: var(--bs-pagination-focus-bg);
+    outline: 0;
+    box-shadow: var(--bs-pagination-focus-box-shadow);
+  }
+
+  .ant-pagination-item-active > a {
+    z-index: 3;
+    color: var(--bs-pagination-active-color);
+    background-color: var(--bs-pagination-active-bg);
+    border-color: var(--bs-pagination-active-border-color);
+  }
+
+  .ant-pagination-item-disabled > a {
+    color: var(--bs-pagination-disabled-color);
+    pointer-events: none;
+    background-color: var(--bs-pagination-disabled-bg);
+    border-color: var(--bs-pagination-disabled-border-color);
+  }
+}
+@media screen and (min-width: 992px) {
+  .pagination {
+    --bs-pagination-size: 40px;
+  }
 }
 
 /** utilities **/

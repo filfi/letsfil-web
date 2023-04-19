@@ -39,7 +39,7 @@ export type Events<D extends Data = Data> = {
 
 const emitter = mitt<Events>();
 
-export function createDispatcher(event: keyof Events, keys?: string[]) {
+export function createDispatcher<D extends Data = Data>(event: keyof Events<D>, keys?: string[]) {
   return (...args: any[]) => {
     const data = keys?.reduce((d, key, i) => {
       return {

@@ -54,7 +54,7 @@ const Header: React.FC = () => {
   }, [headerHeight]);
 
   const closeCollapse = () => {
-    const instance = Collapse.getInstance(collapse.current);
+    const instance = Collapse.getOrCreateInstance(collapse.current!);
 
     instance?.hide();
   };

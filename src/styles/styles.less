@@ -45,6 +45,8 @@ a {
   .table {
     --bs-table-color: var(--color-gray-600);
 
+    color: var(--bs-table-color);
+
     td {
       padding: 24px;
       font-size: 14px;
@@ -70,6 +72,28 @@ a {
         border-top-right-radius: 12px;
       }
     }
+  }
+
+  .ant-table-wrapper .ant-table {
+    color: currentcolor;
+  }
+
+  .pagination .ant-pagination-prev {
+    margin-right: auto;
+  }
+
+  .pagination .ant-pagination-next {
+    margin-left: auto;
+  }
+
+  .pagination .ant-pagination-prev .ant-pagination-item-link::after {
+    content: '上一页';
+    margin-left: 4px;
+  }
+
+  .pagination .ant-pagination-next .ant-pagination-item-link::before {
+    content: '下一页';
+    margin-right: 4px;
   }
 
   .progress {
@@ -101,6 +125,19 @@ a {
     margin-bottom: 0;
     font-size: 14px;
     font-weight: 500;
+  }
+
+  input.ant-input[type='number'] {
+    appearance: none;
+    appearance: none;
+    appearance: textfield;
+  }
+
+  input.ant-input[type='number']::-webkit-inner-spin-button,
+  input.ant-input[type='number']::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+    appearance: none;
   }
 }
 

@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import ClipboardJS from 'clipboard';
 import { useModel } from '@umijs/max';
 import { useMemoizedFn } from 'ahooks';
 import { useMemo, useRef } from 'react';
@@ -7,7 +8,7 @@ import Modal from '@/components/Modal';
 import { isEqual } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import SpinBtn from '@/components/SpinBtn';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import PayforModal from '@/components/PayforModal';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import usePlanContract from '@/hooks/usePlanContract';
@@ -26,25 +27,10 @@ const Deposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
     if (isEqual(raiseID, raiseId)) {
       const url = `${location.origin}/letsfil/payfor/overview/${raiseID}`;
 
-      try {
-        await navigator.clipboard.writeText(url);
+      const content = ClipboardJS.copy(url);
 
-        Modal.alert({ icon: 'success', content: '链接已复制' });
-      } catch (e) {
-        Modal.alert({
-          icon: 'success',
-          title: '支付地址已变更',
-          content: (
-            <>
-              <p>代付链接：</p>
-              <p>
-                <a href={url} target="_blank" rel="noreferrer">
-                  {url}
-                </a>
-              </p>
-            </>
-          ),
-        });
+      if (content) {
+        Modal.alert({ content, icon: 'success', title: '链接已复制' });
       }
     }
   });
@@ -54,7 +40,7 @@ const Deposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
   });
 
   // 支付运维保证金
-  const { loading: paying, run: handlePay } = useLoadingify(async () => {
+  const [paying, handlePay] = useProcessify(async () => {
     if (!data || !data.ops_security_fund) return;
 
     await contract.depositOPSFund({
@@ -63,7 +49,7 @@ const Deposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
   });
 
   // 好友代付，修改支付地址
-  const { loading: payforing, run: handlePayfor } = useLoadingify(async (address: string) => {
+  const [payforing, handlePayfor] = useProcessify(async (address: string) => {
     await contract.changeOpsPayer(address);
   });
 

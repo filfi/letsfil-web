@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import usePlanContract from './usePlanContract';
-import type { MaybeRef } from './usePlanContract';
 
 export default function usePlanState(address: MaybeRef<string | undefined>) {
   const contract = usePlanContract(address);

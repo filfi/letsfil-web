@@ -1,6 +1,6 @@
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import usePlanContract from '@/hooks/usePlanContract';
 import { ReactComponent as MinusIcon } from '@/assets/icons/minus-circle.svg';
 
@@ -20,7 +20,7 @@ const Closer: React.FC<{ data?: API.Plan; loading?: boolean; onConfirm?: () => v
   const contract = usePlanContract(data?.raise_address);
 
   // 关闭计划
-  const { loading, run: handleClose } = useLoadingify(async () => {
+  const [loading, handleClose] = useProcessify(async () => {
     await contract.closeRaisePlan();
   });
 

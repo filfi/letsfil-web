@@ -1,8 +1,10 @@
 import 'dayjs/locale/zh-cn';
 import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
+import RelativeTime from 'dayjs/plugin/relativeTime';
 import { newDelegatedEthAddress } from '@glif/filecoin-address';
 
+dayjs.extend(RelativeTime);
 dayjs.locale('zh-cn');
 
 Object.defineProperty(window, '_dayjs', {
@@ -15,7 +17,10 @@ export const isStr = (v: unknown): v is string => typeof v === 'string';
 
 export const isDef = <T>(v: T | null | undefined): v is T => v !== null && v !== undefined;
 
-export const isFn = (val: unknown): val is () => void => typeof val === 'function';
+export const isRef = <T>(val: unknown): val is React.MutableRefObject<T> => Object.prototype.hasOwnProperty.call(val, 'current');
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export const isFn = (val: unknown): val is Function => typeof val === 'function';
 
 export function isEqual(a?: unknown, b?: unknown) {
   const _a = `${a ?? ''}`;
@@ -103,7 +108,7 @@ export function byte2pb(pb?: number | string) {
 }
 
 export function diffDays(seconds: number | string) {
-  return dayjs(+seconds * 1000).diff(dayjs(), 'days');
+  return dayjs(+seconds * 1000).fromNow();
 }
 
 export function parseMinerID(minerID: number | string) {

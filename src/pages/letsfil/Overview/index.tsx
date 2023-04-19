@@ -1,7 +1,7 @@
 import { ScrollSpy } from 'bootstrap';
 import { useParams } from '@umijs/max';
 import { useMemo, useState } from 'react';
-import { useMemoizedFn, useMount, useRequest, useUpdateEffect } from 'ahooks';
+import { useMemoizedFn, useRequest, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
@@ -31,8 +31,14 @@ import useEmittHandler from '@/hooks/useEmitHandler';
 import { ReactComponent as Share4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as Share6 } from '@/assets/icons/share-06.svg';
 
-async function initScrollSpy() {
-  return new ScrollSpy(document.querySelector('[data-bs-spy="scroll"]'));
+function updateScrollSpy() {
+  const el = document.querySelector('[data-bs-spy="scroll"]');
+
+  if (el) {
+    const spy = ScrollSpy.getOrCreateInstance(el);
+
+    spy.refresh();
+  }
 }
 
 export default function Overview() {
@@ -40,7 +46,7 @@ export default function Overview() {
 
   const { accounts } = useAccounts();
   const [address, setAddress] = useState<string>();
-  const { nodeState, planState } = usePlanState(address);
+  const { planState } = usePlanState(address);
 
   const service = async () => {
     if (params.id) {
@@ -88,8 +94,8 @@ export default function Overview() {
     }
   });
 
-  useMount(initScrollSpy);
   useUpdateEffect(onDataChange, [data]);
+  useUpdateEffect(updateScrollSpy, [planState]);
   useEmittHandler({
     [EventType.onStaking]: onStatusChange,
     [EventType.onUnstaking]: onStatusChange,
@@ -220,7 +226,7 @@ export default function Overview() {
                 <p className="mb-0">募集计划的时间进度</p>
               </div>
 
-              <TimeInfo data={data} nodeState={nodeState} planState={planState} />
+              <TimeInfo data={data} />
             </section>
             {planState === RaiseState.Successed && (
               <section id="statistics" className={styles.section}>

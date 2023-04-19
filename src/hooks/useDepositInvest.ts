@@ -7,8 +7,8 @@ import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useDepositOps from './useDepositOps';
 import useLoadingify from './useLoadingify';
+import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import type { MaybeRef } from './usePlanContract';
 
 export default function useDepositInvest(address: MaybeRef<string | undefined>) {
   const { accounts } = useAccounts();
@@ -18,10 +18,10 @@ export default function useDepositInvest(address: MaybeRef<string | undefined>) 
   const [record, setRecord] = useState(0);
   const [totalPledge, setTotalPledge] = useState(0);
   // 投资成本。若是运维保证金支付人，则减去运维保证金
-  const cost = useMemo(() => (isOpsPayer ? accSub(amount, opsAmount) : amount), [amount, opsAmount, isOpsPayer]);
+  const cost = useMemo(() => (isOpsPayer ? Math.max(accSub(amount, opsAmount), 0) : amount), [amount, opsAmount, isOpsPayer]);
   const isInvestor = useMemo(() => cost > 0, [cost]);
 
-  const fetchData = async () => {
+  const [fetching, fetchData] = useLoadingify(async () => {
     if (accounts[0]) {
       const amount = await contract.pledgeAmount(accounts[0]);
       const record = await contract.pledgeRecord(accounts[0]);
@@ -33,9 +33,9 @@ export default function useDepositInvest(address: MaybeRef<string | undefined>) 
     const total = await contract.pledgeTotalAmount();
 
     setTotalPledge(toNumber(total));
-  };
+  });
 
-  const { loading, run: withdraw } = useLoadingify(async () => {
+  const [loading, withdraw] = useProcessify(async () => {
     await contract.unStaking(ethers.utils.parseEther(`${cost}`));
   });
 
@@ -48,5 +48,16 @@ export default function useDepositInvest(address: MaybeRef<string | undefined>) 
     [EventType.onWithdrawOPSFund]: fetchData,
   });
 
-  return { contract, amount, cost, record, totalPledge, isInvestor, loading, withdraw };
+  return {
+    contract,
+    amount,
+    cost,
+    record,
+    totalPledge,
+    isInvestor,
+    fetching,
+    loading,
+    withdraw,
+    refresh: fetchData,
+  };
 }

@@ -1,7 +1,7 @@
 import A from '@/axios';
 
 export function providers() {
-  return A.get<void, { list: API.Base[] }>('/service-provier/list');
+  return A.get<void, { list: API.Provider[] }>('/service-provier/list');
 }
 
 export function plans(params: API.PagingParams & { sort?: string }) {
@@ -47,6 +47,6 @@ export function statChainInfo() {
   return A.get<void, API.Base>('/service-provier/get-filscan-stat-chain-info');
 }
 
-export function statAsset(id: string) {
+export function statAsset(id: number | string) {
   return A.get<string, API.Base>('/raising-plan/asset/report', { params: { raising_id: id } });
 }

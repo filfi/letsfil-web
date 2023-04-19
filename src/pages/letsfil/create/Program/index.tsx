@@ -87,7 +87,12 @@ export default function CreateProgram() {
           <Input maxLength={56} placeholder="如：XX科技有限公司" />
         </Form.Item>
 
-        <Form.Item label="封装节点大小" name="nodeSize" help="单位进制按1024算" rules={[{ required: true, message: '请输入封装节点大小' }]}>
+        <Form.Item
+          label="封装节点大小"
+          name="nodeSize"
+          help="单位进制按1024算"
+          rules={[{ required: true, message: '请输入封装节点大小', validator: validators.number }]}
+        >
           <Input suffix="PB" placeholder="请输入数目" />
         </Form.Item>
 

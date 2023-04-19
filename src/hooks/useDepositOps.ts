@@ -5,9 +5,9 @@ import { isEqual } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
+import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import usePlanContract from './usePlanContract';
-import type { MaybeRef } from './usePlanContract';
 
 export default function useDepositOps(address: MaybeRef<string | undefined>) {
   const { accounts } = useAccounts();
@@ -17,7 +17,7 @@ export default function useDepositOps(address: MaybeRef<string | undefined>) {
   const [opsPayer, setOpsPayer] = useState('');
   const isOpsPayer = useMemo(() => isEqual(accounts[0], opsPayer), [accounts, opsPayer]);
 
-  const fetchData = async () => {
+  const [fetching, fetchData] = useLoadingify(async () => {
     const info = await contract.getNodeInfo();
 
     setOpsPayer(info?.opsSecurityFundPayer ?? '');
@@ -27,9 +27,9 @@ export default function useDepositOps(address: MaybeRef<string | undefined>) {
 
       setAmount(toNumber(ops));
     }
-  };
+  });
 
-  const { loading, run: withdraw } = useLoadingify(async () => {
+  const [loading, withdraw] = useProcessify(async () => {
     await contract.withdrawOPSFund();
   });
 
@@ -41,5 +41,14 @@ export default function useDepositOps(address: MaybeRef<string | undefined>) {
     [EventType.onWithdrawOPSFund]: fetchData,
   });
 
-  return { contract, amount, opsPayer, isOpsPayer, loading, withdraw };
+  return {
+    contract,
+    amount,
+    opsPayer,
+    isOpsPayer,
+    fetching,
+    loading,
+    withdraw,
+    refresh: fetchData,
+  };
 }

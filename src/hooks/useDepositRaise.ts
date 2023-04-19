@@ -5,9 +5,9 @@ import { isEqual } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
+import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import usePlanContract from './usePlanContract';
-import type { MaybeRef } from './usePlanContract';
 
 export default function useDepositRaise(address: MaybeRef<string | undefined>) {
   const { accounts } = useAccounts();
@@ -17,7 +17,7 @@ export default function useDepositRaise(address: MaybeRef<string | undefined>) {
   const [raiser, setRaiser] = useState('');
   const isRaiser = useMemo(() => isEqual(accounts[0], raiser), [accounts, raiser]);
 
-  const fetchData = async () => {
+  const [fetching, fetchData] = useLoadingify(async () => {
     const info = await contract.getRaiseInfo();
 
     setRaiser(info?.sponsor ?? '');
@@ -27,9 +27,9 @@ export default function useDepositRaise(address: MaybeRef<string | undefined>) {
 
       setAmount(toNumber(raise));
     }
-  };
+  });
 
-  const { loading, run: withdraw } = useLoadingify(async () => {
+  const [loading, withdraw] = useProcessify(async () => {
     await contract.withdrawRaiseFund();
   });
 
@@ -41,5 +41,14 @@ export default function useDepositRaise(address: MaybeRef<string | undefined>) {
     [EventType.onWithdrawRaiseFund]: fetchData,
   });
 
-  return { contract, amount, raiser, isRaiser, loading, withdraw };
+  return {
+    contract,
+    amount,
+    raiser,
+    isRaiser,
+    fetching,
+    loading,
+    withdraw,
+    refresh: fetchData,
+  };
 }

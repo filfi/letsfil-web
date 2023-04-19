@@ -6,6 +6,7 @@ specifiers:
   '@glif/filecoin-address': ^2.0.43
   '@metamask/onboarding': ^1.0.1
   '@popperjs/core': ^2.11.6
+  '@types/bootstrap': ^5.2.6
   '@types/numeral': ^2.0.2
   '@types/react': ^18.0.0
   '@types/react-dom': ^18.0.0
@@ -58,6 +59,7 @@ dependencies:
   react-render-html: 0.6.0
 
 devDependencies:
+  '@types/bootstrap': 5.2.6
   '@types/numeral': 2.0.2
   '@types/react': 18.0.33
   '@types/react-dom': 18.0.11
@@ -3435,7 +3437,6 @@ packages:
 
   /@popperjs/core/2.11.7:
     resolution: {integrity: sha512-Cr4OjIkipTtcXKjAsm8agyleBuDHvxzeBoa1v543lbv1YaIwQjESsVcmjiWiPEbC1FIeHOG/Op9kdCmAmiS3Kw==}
-    dev: false
 
   /@rc-component/context/1.3.0_react-dom@18.2.0:
     resolution: {integrity: sha512-6QdaCJ7Wn5UZLJs15IEfqy4Ru3OaL5ctqpQYWd5rlfV9wwzrzdt6+kgAQZV/qdB0MUPN4nhyBfRembQCIvBf+w==}
@@ -3788,6 +3789,12 @@ packages:
     dependencies:
       '@babel/types': 7.21.4
     dev: false
+
+  /@types/bootstrap/5.2.6:
+    resolution: {integrity: sha512-BlAc3YATdasbHoxMoBWODrSF6qwQO/E9X8wVxCCSa6rWjnaZfpkr2N6pUMCY6jj2+wf0muUtLySbvU9etX6YqA==}
+    dependencies:
+      '@popperjs/core': 2.11.7
+    dev: true
 
   /@types/d3-timer/2.0.1:
     resolution: {integrity: sha512-TF8aoF5cHcLO7W7403blM7L1T+6NF3XMyN3fxyUolq2uOcFeicG/khQg/dGxiCJWoAcmYulYN7LYSRKO54IXaA==}

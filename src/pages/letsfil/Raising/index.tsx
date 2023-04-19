@@ -1,6 +1,6 @@
 import { Table } from 'antd';
 import { useState } from 'react';
-import { history, Link } from '@umijs/max';
+import { history, Link, useModel } from '@umijs/max';
 import type { ColumnsType } from 'antd/es/table';
 
 import * as A from '@/apis/raise';
@@ -12,6 +12,7 @@ import PlanStatus from '@/components/PlanStatus';
 import usePagination from '@/hooks/usePagination';
 
 export default function Raising() {
+  const { isRaiser } = useModel('user');
   const [type, setType] = useState('all');
   const [sort, setSort] = useState('desc');
   const { accounts, withConnect } = useAccounts();
@@ -34,7 +35,14 @@ export default function Raising() {
     return A.plans(p);
   };
 
-  const { data, page, total, loading, pageSize, changePage } = usePagination(service, {
+  const {
+    data,
+    page,
+    total,
+    loading,
+    pageSize,
+    change: changePage,
+  } = usePagination(service, {
     refreshDeps: [accounts, type, sort],
   });
 
@@ -46,10 +54,11 @@ export default function Raising() {
     setType(e.target.value);
   };
 
-  const columns: ColumnsType<API.Base> = [
+  const columns: ColumnsType<API.Plan> = [
     {
       title: '募集商',
       dataIndex: 'sponsor_company',
+      render: (txt) => <span className="text-main">{txt}</span>,
     },
     {
       title: '年化收益',
@@ -95,10 +104,12 @@ export default function Raising() {
   return (
     <div className="container">
       <PageHeader title="Fil募集计划" desc="可查看市场上进行中的募集计划">
-        <button className="btn btn-primary" type="button" onClick={go}>
-          <i className="bi bi-plus-lg"></i>
-          <span className="ms-1">新建募集计划</span>
-        </button>
+        {isRaiser && (
+          <button className="btn btn-primary" type="button" onClick={go}>
+            <i className="bi bi-plus-lg"></i>
+            <span className="ms-1">新建募集计划</span>
+          </button>
+        )}
       </PageHeader>
 
       <div className="mb-4 d-flex justify-content-between">
@@ -146,17 +157,20 @@ export default function Raising() {
 
       {data?.length ? (
         <div className="card table-card mb-4 table-responsive">
-          <Table<API.Base>
-            className=""
+          <Table<API.Plan>
+            className="table mb-0"
             rowKey="raising_id"
             dataSource={data}
             columns={columns}
             loading={loading}
+            scroll={{ x: 1200 }}
             pagination={{
               total,
               pageSize,
               current: page,
+              responsive: true,
               position: ['bottomCenter'],
+              className: 'pagination my-3 px-4',
               onChange: changePage,
             }}
           />

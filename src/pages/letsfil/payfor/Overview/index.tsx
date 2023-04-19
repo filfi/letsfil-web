@@ -16,7 +16,7 @@ import { planStatusText } from '@/constants';
 import useAccounts from '@/hooks/useAccounts';
 import { RaiseState } from '@/constants/state';
 import usePlanState from '@/hooks/usePlanState';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import useEmittHandler from '@/hooks/useEmitHandler';
 
 export default function PayforOverview() {
@@ -61,7 +61,7 @@ export default function PayforOverview() {
     [EventType.onDepositOPSFund]: onDepositOPSFund,
   });
 
-  const { loading: submitting, run: handleSubmit } = useLoadingify(async () => {
+  const [submitting, handleSubmit] = useProcessify(async () => {
     if (!data || !accounts[0] || !data.ops_security_fund) return;
 
     if (!U.isEqual(accounts[0], data.ops_security_fund_address)) {
@@ -163,7 +163,7 @@ export default function PayforOverview() {
             </div>
 
             <div className="px-5 pb-5">
-              <SpinBtn className="btn btn-primary w-100" disabled={disabled} loading={submitting} onClick={handleSubmit}>
+              <SpinBtn className="btn btn-primary w-100" loading={submitting} disabled={loading || disabled} onClick={handleSubmit}>
                 {disabled ? statusText : isPaied ? '已支付' : submitting ? '正在支付' : '支付运维保证金'}
               </SpinBtn>
             </div>

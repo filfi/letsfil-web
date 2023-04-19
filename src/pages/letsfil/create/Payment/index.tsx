@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import ClipboardJS from 'clipboard';
 import { history, useModel } from '@umijs/max';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMemoizedFn, useMount, useRequest, useSessionStorageState, useUnmount } from 'ahooks';
@@ -14,7 +15,7 @@ import ShareBtn from '@/components/ShareBtn';
 import { normalizeKey } from '@/utils/storage';
 import { RaiseState } from '@/constants/state';
 import usePlanState from '@/hooks/usePlanState';
-import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
 import PayforModal from '@/components/PayforModal';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import useRaiseContract from '@/hooks/useRaiseContract';
@@ -33,7 +34,7 @@ export default function CreatePayment() {
   });
 
   const raise = useRaiseContract();
-  const { contract: plan, planState, setPlanState } = usePlanState(address);
+  const { contract, planState, setPlanState } = usePlanState(address);
 
   const isRaisePaied = useMemo(() => planState > RaiseState.NotStarted, [planState]);
   const isPlanPaied = useMemo(() => planState > RaiseState.WaitPayOPSSecurityFund, [planState]);
@@ -86,25 +87,10 @@ export default function CreatePayment() {
     if (U.isEqual(raiseID, raiseId)) {
       const url = `${location.origin}/letsfil/payfor/overview/${raiseId}`;
 
-      try {
-        await navigator.clipboard.writeText(url);
+      const content = ClipboardJS.copy(url);
 
-        Modal.alert({ icon: 'success', content: '链接已复制' });
-      } catch (e) {
-        Modal.alert({
-          icon: 'success',
-          title: '支付地址已变更',
-          content: (
-            <>
-              <p>代付链接：</p>
-              <p>
-                <a href={url} target="_blank" rel="noreferrer">
-                  {url}
-                </a>
-              </p>
-            </>
-          ),
-        });
+      if (content) {
+        Modal.alert({ content, icon: 'success', title: '链接已复制' });
       }
     }
   });
@@ -158,7 +144,7 @@ export default function CreatePayment() {
   });
 
   // 创建募集计划并支付募集保证金
-  const { loading: raiseLoading, run: handleRaisePay } = useLoadingify(async () => {
+  const [raiseLoading, handleRaisePay] = useProcessify(async () => {
     if (!data) return;
 
     // 募集计划信息
@@ -166,7 +152,7 @@ export default function CreatePayment() {
     // 节点信息
     const nodeInfo = H.transformNodeInfo(data);
     // 拓展信息
-    const extraInfo = { minRaiseRate: +data.minRaiseRate };
+    const extraInfo = H.transformExtraInfo(data);
 
     setRaiseId(raiseInfo.id.toString());
 
@@ -176,15 +162,15 @@ export default function CreatePayment() {
   });
 
   // 支付运维保证金
-  const { loading: opsLoading, run: handleOpsFund } = useLoadingify(async () => {
-    await plan.depositOPSFund({
+  const [opsLoading, handleOpsFund] = useProcessify(async () => {
+    await contract.depositOPSFund({
       value: ethers.utils.parseEther(`${amount}`),
     });
   });
 
   // 确认发起代付
-  const { loading: payforLoading, run: handlePayfor } = useLoadingify(async (address: string) => {
-    await plan.changeOpsPayer(address);
+  const [payforLoading, handlePayfor] = useProcessify(async (address: string) => {
+    await contract.changeOpsPayer(address);
   });
 
   return (

@@ -17,6 +17,15 @@ declare namespace API {
     list: T[];
   };
 
+  type Provider = {
+    full_name: string;
+    id: number;
+    introduction: string;
+    logo_url: string;
+    short_name: string;
+    wallet_address: string;
+  };
+
   interface Plan {
     actual_amount: string;
     begin_seal_time: number;

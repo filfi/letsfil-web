@@ -1,61 +1,46 @@
+import { useMemo } from 'react';
 import classNames from 'classnames';
-import { useEffect, useMemo, useState } from 'react';
 
 import { accDiv } from '@/utils/utils';
-import { formatRate } from '@/utils/format';
 import { planStatusText } from '@/constants';
 import { RaiseState } from '@/constants/state';
-import usePlanContract from '@/hooks/usePlanContract';
+import usePlanState from '@/hooks/usePlanState';
+import { formatRate, toNumber } from '@/utils/format';
+import useDepositInvest from '@/hooks/useDepositInvest';
 import { ReactComponent as IconInfo } from './imgs/info-circle.svg';
 import { ReactComponent as IconCheck } from './imgs/check-circle.svg';
 import { ReactComponent as IconMinus } from './imgs/minus-circle.svg';
 import { ReactComponent as IconGlass } from './imgs/hourglass-01.svg';
 
-const PlanStatus: React.FC<{ data?: API.Base }> = ({ data }) => {
-  const [total, setTotal] = useState(0);
-  const { getContract } = usePlanContract();
+const PlanStatus: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  const { planState } = usePlanState(data?.raise_address);
+  const { fetching, totalPledge: pledge } = useDepositInvest(data?.raise_address);
 
-  const state = useMemo(() => data?.status, [data]);
-  const progress = useMemo(() => {
-    if (data && data.target_amount) {
-      return accDiv(total, data.target_amount) * 100;
-    }
+  const total = useMemo(() => toNumber(data?.target_amount), [data]);
+  const progress = useMemo(() => (total > 0 ? accDiv(pledge, total) : 0), [total, pledge]);
 
-    return 0;
-  }, [data, total]);
-
-  const fetchAmount = async () => {
-    const contract = getContract(data?.raise_address);
-
-    if (contract) {
-      const amount = await contract.pledgeTotalAmount();
-
-      setTotal(amount?.toString() || 0);
-    }
-  };
-
-  useEffect(() => {
-    fetchAmount();
-  }, [data?.raise_address]);
-
-  if (state === RaiseState.InProgress) {
+  if (planState === RaiseState.InProgress) {
     return (
-      <div className="progress" role="progressbar" aria-label="Example 1px high" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-        <div className="progress-bar" style={{ width: `${progress}%` }}>
+      <div className="progress" role="progressbar" aria-label="RaisePlanProgress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress * 100}>
+        <div className="progress-bar" style={{ width: `${progress * 100}%` }}>
           <span style={{ fontSize: '12px', transform: 'scale(0.8)' }}>{formatRate(progress)}</span>
         </div>
       </div>
     );
   }
 
-  const cls = ['badge-warning', 'badge-warning', 'badge-warning', '', '', 'badge-success', 'badge-danger'][state];
-  const Icon = [IconGlass, IconGlass, IconGlass, null, IconMinus, IconCheck, IconInfo][state];
+  const cls = ['badge-warning', 'badge-warning', 'badge-warning', '', '', 'badge-success', 'badge-danger'][planState];
+  const Icon = [IconGlass, IconGlass, IconGlass, null, IconMinus, IconCheck, IconInfo][planState];
+
+  if (fetching) {
+    return <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>;
+  }
 
   return (
-    <div className={classNames('badge', cls)}>
+    <div className={classNames('badge d-inline-flex align-items-center', cls)}>
       {Icon ? <Icon /> : null}
 
-      <span className="ms-1">{planStatusText[state]}</span>
+      <span className="ms-1">{planStatusText[planState]}</span>
     </div>
   );
 };

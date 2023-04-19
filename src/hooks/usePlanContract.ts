@@ -3,22 +3,12 @@ import { ethers } from 'ethers';
 import { useMount, useUnmount } from 'ahooks';
 import MetaMaskOboarding from '@metamask/onboarding';
 
+import { isRef } from '@/utils/utils';
 import abi from '@/abis/plan.abi.json';
 import { withTx } from '@/helpers/app';
 import toastify from '@/utils/toastify';
 import useAccounts from './useAccounts';
 import { createDispatcher, EventType } from '@/utils/mitt';
-
-export type MaybeRef<T> = T | React.MutableRefObject<T>;
-
-export type Options = {
-  gas?: ethers.BigNumberish;
-  gasLimit?: ethers.BigNumberish;
-  gasPrice?: ethers.BigNumberish;
-  maxFeePerGas?: ethers.BigNumber;
-  maxPriorityFeePerGas?: ethers.BigNumberish;
-  value?: ethers.BigNumberish;
-};
 
 export enum PlanEventTypes {
   onStaking = 'eStaking',
@@ -35,8 +25,6 @@ export enum PlanEventTypes {
   onInvestorWithdraw = 'eInvestorWithdraw',
 }
 
-const isRef = <T>(val: unknown): val is React.MutableRefObject<T> => Object.prototype.hasOwnProperty.call(val, 'current');
-
 function getRefVal<T>(ref?: MaybeRef<T>) {
   if (ref && isRef(ref)) {
     return ref.current;
@@ -49,13 +37,11 @@ function createContract(address?: string) {
   if (MetaMaskOboarding.isMetaMaskInstalled() && address) {
     const provider = new ethers.providers.Web3Provider(window.ethereum!);
 
-    const signer = provider.getSigner();
-
-    return new ethers.Contract(address, abi, signer);
+    return new ethers.Contract(address, abi, provider.getSigner());
   }
 }
 
-const events = {
+const handlers = {
   // 质押
   onStaking: createDispatcher(EventType.onStaking, ['raiseID', 'from', 'to', 'amount']),
   // 解除质押
@@ -88,35 +74,35 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const { withConnect } = useAccounts();
 
   const bindEvents = () => {
-    contract.current?.on(PlanEventTypes.onStaking, events.onStaking);
-    contract.current?.on(PlanEventTypes.onUnstaking, events.onUnstaking);
-    contract.current?.on(PlanEventTypes.onRaiseFailed, events.onRaiseFailed);
-    contract.current?.on(PlanEventTypes.onChangeOpsPayer, events.onChangeOpsPayer);
-    contract.current?.on(PlanEventTypes.onCloseRaisePlan, events.onCloseRaisePlan);
-    contract.current?.on(PlanEventTypes.onDepositOPSFund, events.onDepositOPSFund);
-    contract.current?.on(PlanEventTypes.onStartRaisePlan, events.onStartRaisePlan);
-    contract.current?.on(PlanEventTypes.onWithdrawOPSFund, events.onWithdrawOPSFund);
-    contract.current?.on(PlanEventTypes.onWithdrawRaiseFund, events.onWithdrawRaiseFund);
-    contract.current?.on(PlanEventTypes.onRaiserWithdraw, events.onRaiserWithdraw);
-    contract.current?.on(PlanEventTypes.onServicerWithdraw, events.onServicerWithdraw);
-    contract.current?.on(PlanEventTypes.onInvestorWithdraw, events.onInvestorWithdraw);
+    contract.current?.on(PlanEventTypes.onStaking, handlers.onStaking);
+    contract.current?.on(PlanEventTypes.onUnstaking, handlers.onUnstaking);
+    contract.current?.on(PlanEventTypes.onRaiseFailed, handlers.onRaiseFailed);
+    contract.current?.on(PlanEventTypes.onChangeOpsPayer, handlers.onChangeOpsPayer);
+    contract.current?.on(PlanEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
+    contract.current?.on(PlanEventTypes.onDepositOPSFund, handlers.onDepositOPSFund);
+    contract.current?.on(PlanEventTypes.onStartRaisePlan, handlers.onStartRaisePlan);
+    contract.current?.on(PlanEventTypes.onWithdrawOPSFund, handlers.onWithdrawOPSFund);
+    contract.current?.on(PlanEventTypes.onWithdrawRaiseFund, handlers.onWithdrawRaiseFund);
+    contract.current?.on(PlanEventTypes.onRaiserWithdraw, handlers.onRaiserWithdraw);
+    contract.current?.on(PlanEventTypes.onServicerWithdraw, handlers.onServicerWithdraw);
+    contract.current?.on(PlanEventTypes.onInvestorWithdraw, handlers.onInvestorWithdraw);
   };
 
   useMount(bindEvents);
 
   useUnmount(() => {
-    contract.current?.off(PlanEventTypes.onStaking, events.onStaking);
-    contract.current?.off(PlanEventTypes.onUnstaking, events.onUnstaking);
-    contract.current?.off(PlanEventTypes.onRaiseFailed, events.onRaiseFailed);
-    contract.current?.off(PlanEventTypes.onChangeOpsPayer, events.onChangeOpsPayer);
-    contract.current?.off(PlanEventTypes.onCloseRaisePlan, events.onCloseRaisePlan);
-    contract.current?.off(PlanEventTypes.onDepositOPSFund, events.onDepositOPSFund);
-    contract.current?.off(PlanEventTypes.onStartRaisePlan, events.onStartRaisePlan);
-    contract.current?.off(PlanEventTypes.onWithdrawOPSFund, events.onWithdrawOPSFund);
-    contract.current?.off(PlanEventTypes.onWithdrawRaiseFund, events.onWithdrawRaiseFund);
-    contract.current?.off(PlanEventTypes.onRaiserWithdraw, events.onRaiserWithdraw);
-    contract.current?.off(PlanEventTypes.onServicerWithdraw, events.onServicerWithdraw);
-    contract.current?.off(PlanEventTypes.onInvestorWithdraw, events.onInvestorWithdraw);
+    contract.current?.off(PlanEventTypes.onStaking, handlers.onStaking);
+    contract.current?.off(PlanEventTypes.onUnstaking, handlers.onUnstaking);
+    contract.current?.off(PlanEventTypes.onRaiseFailed, handlers.onRaiseFailed);
+    contract.current?.off(PlanEventTypes.onChangeOpsPayer, handlers.onChangeOpsPayer);
+    contract.current?.off(PlanEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
+    contract.current?.off(PlanEventTypes.onDepositOPSFund, handlers.onDepositOPSFund);
+    contract.current?.off(PlanEventTypes.onStartRaisePlan, handlers.onStartRaisePlan);
+    contract.current?.off(PlanEventTypes.onWithdrawOPSFund, handlers.onWithdrawOPSFund);
+    contract.current?.off(PlanEventTypes.onWithdrawRaiseFund, handlers.onWithdrawRaiseFund);
+    contract.current?.off(PlanEventTypes.onRaiserWithdraw, handlers.onRaiserWithdraw);
+    contract.current?.off(PlanEventTypes.onServicerWithdraw, handlers.onServicerWithdraw);
+    contract.current?.off(PlanEventTypes.onInvestorWithdraw, handlers.onInvestorWithdraw);
   });
 
   const withContract = <R = any, P extends unknown[] = any>(service: (contract: ethers.Contract | undefined, ...args: P) => Promise<R>) => {
@@ -191,7 +177,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const depositOPSFund = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
+        withContract(async (contract, opts?: TxOptions) => {
           return await contract?.payOpsSecurityFund({
             ...opts,
           });
@@ -206,7 +192,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const changeOpsPayer = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, address: string, opts?: Options) => {
+        withContract(async (contract, address: string, opts?: TxOptions) => {
           return await contract?.specifyOpsPayer(address, {
             ...opts,
           });
@@ -221,7 +207,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const startRaisePlan = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
+        withContract(async (contract, opts?: TxOptions) => {
           return await contract?.startRaisePlan({
             ...opts,
           });
@@ -236,7 +222,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const closeRaisePlan = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
+        withContract(async (contract, opts?: TxOptions) => {
           return await contract?.closeRaisePlan({
             ...opts,
           });
@@ -251,7 +237,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const staking = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
+        withContract(async (contract, opts?: TxOptions) => {
           return await contract?.staking({
             ...opts,
           });
@@ -266,7 +252,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const unStaking = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, amount: ethers.BigNumber, opts?: Options) => {
+        withContract(async (contract, amount: ethers.BigNumber, opts?: TxOptions) => {
           return await contract?.unStaking(amount, {
             ...opts,
           });
@@ -281,7 +267,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const withdrawRaiseFund = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
+        withContract(async (contract, opts?: TxOptions) => {
           return await contract?.withdrawRaiseSecurityFund({
             ...opts,
           });
@@ -296,7 +282,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const withdrawOPSFund = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, opts?: Options) => {
+        withContract(async (contract, opts?: TxOptions) => {
           return await contract?.withdrawOPSSecurityFund({
             ...opts,
           });
@@ -311,7 +297,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const raiserWithdraw = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, amount: ethers.BigNumber, opts?: Options) => {
+        withContract(async (contract, amount: ethers.BigNumber, opts?: TxOptions) => {
           return await contract?.raiserWithdraw(amount, {
             ...opts,
           });
@@ -326,7 +312,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const servicerWithdraw = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, amount: ethers.BigNumber, opts?: Options) => {
+        withContract(async (contract, amount: ethers.BigNumber, opts?: TxOptions) => {
           return await contract?.spWithdraw(amount, {
             ...opts,
           });
@@ -341,7 +327,7 @@ export default function usePlanContract(address?: MaybeRef<string | undefined>) 
   const investorWithdraw = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, to: string, amount: ethers.BigNumber, opts?: Options) => {
+        withContract(async (contract, to: string, amount: ethers.BigNumber, opts?: TxOptions) => {
           return await contract?.investorWithdraw(to, amount, {
             ...opts,
           });

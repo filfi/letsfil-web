@@ -1,5 +1,6 @@
+import { useTitle } from 'ahooks';
 import classNames from 'classnames';
-import { FormattedMessage, history } from '@umijs/max';
+import { FormattedMessage, history, useModel } from '@umijs/max';
 
 import bg from './imgs/bg.png';
 import styles from './styles.less';
@@ -7,6 +8,7 @@ import usePageMeta from '@/hooks/usePageMeta';
 import useAuthHandler from '@/hooks/useAuthHandler';
 
 export default function Home() {
+  useTitle("首页 - Let's Fil", { restoreOnUnmount: true });
   usePageMeta({
     bodyStyle: {
       backgroundImage: `url(${bg})`,
@@ -15,8 +17,12 @@ export default function Home() {
     },
   });
 
-  const go = useAuthHandler(async (path: string) => {
-    history.push(path);
+  const { setUser } = useModel('user');
+
+  const go = useAuthHandler(async (role: User['role']) => {
+    setUser({ role });
+
+    history.push('/letsfil/raising');
   });
 
   return (
@@ -40,7 +46,7 @@ export default function Home() {
                   <FormattedMessage id="pages.home.raiser.title" />
                 </h4>
                 <p className={classNames('mb-0 d-grid', styles.btn)}>
-                  <button className="btn btn-dark btn-lg rounded-pill" type="button" onClick={() => go('/letsfil/raising')}>
+                  <button className="btn btn-dark btn-lg rounded-pill" type="button" onClick={() => go('raiser')}>
                     <span className="me-2">
                       <FormattedMessage id="pages.home.raiser.btn" />
                     </span>
@@ -57,7 +63,7 @@ export default function Home() {
                   <FormattedMessage id="pages.home.invest.title" />
                 </h4>
                 <p className={classNames('mb-0 d-grid', styles.btn)}>
-                  <button className="btn btn-dark btn-lg rounded-pill" type="button" onClick={() => go('/letsfil/investing')}>
+                  <button className="btn btn-dark btn-lg rounded-pill" type="button" onClick={() => go('investor')}>
                     <span className="me-2">
                       <FormattedMessage id="pages.home.invest.btn" />
                     </span>

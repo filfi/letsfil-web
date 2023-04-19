@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import { SUPPORTED_CHAINS } from '@/constants';
 import useAccountEvents from '@/hooks/useAccountEvents';
 import { mountPortal, unmountPortal } from '@/helpers/app';
+import useInputScrollAction from '@/hooks/useInputScrollAction';
 
 function getDom() {
   let dom = document.querySelector('#portal');
@@ -35,6 +36,7 @@ const BasicLayout: React.FC = () => {
   const showAlert = useMemo(() => initialState?.connected && initialState?.chainId && !SUPPORTED_CHAINS.includes(initialState.chainId), [initialState]);
 
   useAccountEvents();
+  useInputScrollAction();
 
   useMount(() => {
     // @ts-ignore

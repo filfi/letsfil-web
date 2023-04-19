@@ -9,21 +9,21 @@ import { providers } from '@/apis/raise';
 export type ProviderSelectProps = {
   value?: number | string;
   onChange?: (value: number | string) => void;
-  onSelect?: (value: number | string, item: API.Base) => void;
+  onSelect?: (value: number | string, item: API.Provider) => void;
 };
 
 const ProviderSelect: React.FC<ProviderSelectProps> = ({ value, onChange, onSelect }) => {
   const { data } = useRequest(providers);
 
-  const list = useMemo(() => data?.list.map((item, idx) => ({ ...item, id: item.id ?? idx })), [data]);
+  const list = useMemo(() => data?.list.map((item) => item), [data]);
 
-  const handleChange = (item: API.Base) => {
+  const handleChange = (item: API.Provider) => {
     onChange?.(item.id);
 
     onSelect?.(item.id, item);
   };
 
-  const renderItem = (item: API.Base, idx: number) => {
+  const renderItem = (item: API.Provider, idx: number) => {
     const active = isEqual(value, item.id);
 
     return (

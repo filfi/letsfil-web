@@ -25,7 +25,7 @@ const isDisabled = (val?: number | string) => {
   return Number.isNaN(v) || v <= 0;
 };
 
-const RaiseDeposit: React.FC<{ address?: string }> = ({ address }) => {
+const DepositRaise: React.FC<{ address?: string }> = ({ address }) => {
   const { initialState } = useModel('@@initialState');
 
   const { nodeState } = usePlanState(address);
@@ -73,4 +73,4 @@ const RaiseDeposit: React.FC<{ address?: string }> = ({ address }) => {
   return null;
 };
 
-export default RaiseDeposit;
+export default DepositRaise;

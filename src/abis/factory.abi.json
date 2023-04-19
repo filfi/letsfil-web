@@ -3,6 +3,185 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_managerProposed",
+        "type": "address"
+      }
+    ],
+    "name": "changeManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "targetAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "securityFund",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "securityFundRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "deadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "raiserShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "investorShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "servicerShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "sponsor",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "companyId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "spAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "raiseCompany",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct ILetsFilRaiseInfo.RaiseInfo",
+        "name": "_raiseInfo",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "nodeSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sectorSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sealPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nodePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "opsSecurityFund",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "opsSecurityFundPayer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "minerID",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "realSealAmount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ILetsFilRaiseInfo.NodeInfo",
+        "name": "_nodeInfo",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "minRaiseRate",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ILetsFilRaiseInfo.ExtendInfo",
+        "name": "_extendInfo",
+        "type": "tuple"
+      }
+    ],
+    "name": "createRaisePlan",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "planAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_raiseID",
+        "type": "uint256"
+      }
+    ],
+    "name": "endPlan",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_manager",
         "type": "address"
       }
@@ -187,185 +366,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_managerProposed",
-        "type": "address"
-      }
-    ],
-    "name": "changeManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "claimManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "targetAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "securityFund",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "securityFundRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deadline",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "raiserShare",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "investorShare",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "servicerShare",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "sponsor",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "companyId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "spAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "raiseCompany",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct ILetsFilRaiseInfo.RaiseInfo",
-        "name": "_raiseInfo",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "nodeSize",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sectorSize",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "sealPeriod",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "nodePeriod",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "opsSecurityFund",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "opsSecurityFundPayer",
-            "type": "address"
-          },
-          {
-            "internalType": "uint64",
-            "name": "minerID",
-            "type": "uint64"
-          },
-          {
-            "internalType": "uint256",
-            "name": "realSealAmount",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct ILetsFilRaiseInfo.NodeInfo",
-        "name": "_nodeInfo",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "minRaiseRate",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct ILetsFilRaiseInfo.ExtendInfo",
-        "name": "_extendInfo",
-        "type": "tuple"
-      }
-    ],
-    "name": "createRaisePlan",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "planAddress",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_raiseID",
-        "type": "uint256"
-      }
-    ],
-    "name": "endPlan",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
