@@ -39,13 +39,25 @@ export default function useAccountEvents() {
     }
   });
 
+  const onMessage = (e: API.Base) => {
+    console.log(e);
+  };
+
+  const onError = (e: any) => {
+    console.log(e);
+  };
+
   useMount(() => {
     window.ethereum?.on('accountsChanged', onAccounts);
     window.ethereum?.on('chainChanged', onChainChanged);
+    window.ethereum?.on('message', onMessage);
+    window.ethereum?.on('error', onError);
   });
 
   useUnmount(() => {
     window.ethereum?.removeListener('accountsChanged', onAccounts);
     window.ethereum?.removeListener('chainChanged', onChainChanged);
+    window.ethereum?.removeListener('message', onMessage);
+    window.ethereum?.removeListener('error', onError);
   });
 }

@@ -4,6 +4,7 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import * as S from '@/utils/storage';
+import Modal from '@/components/Modal';
 import useAccountEvents from './useAccountEvents';
 
 export default function useAccounts() {
@@ -32,18 +33,22 @@ export default function useAccounts() {
   const requestAccounts = async (): Promise<string[] | undefined> => {
     setState({ connecting: true });
 
-    const accounts = await window.ethereum?.request({ method: 'eth_requestAccounts' });
+    try {
+      const accounts = await window.ethereum?.request({ method: 'eth_requestAccounts' });
+      console.log(accounts);
+      const connected = !!(accounts && accounts[0]);
 
-    console.log(accounts);
-    const connected = !!(accounts && accounts[0]);
+      setState({
+        connected,
+        connecting: false,
+        accounts: accounts ?? [],
+      });
 
-    setState({
-      connected,
-      connecting: false,
-      accounts: accounts ?? [],
-    });
-
-    return accounts;
+      return accounts;
+    } catch (e: any) {
+      setState({ connecting: false });
+      Modal.alert({ icon: 'warn', title: '连接失败', content: e.message });
+    }
   };
 
   const getBalance = async (account: string) => {
