@@ -1,38 +1,73 @@
 import classNames from 'classnames';
 
 import styles from './styles.less';
+import { isDef } from '@/utils/utils';
 
 export type StepItem = {
-  title: React.ReactNode;
   desc?: React.ReactNode;
+  title?: React.ReactNode;
+  status?: 'active' | 'finish';
+};
+
+export type StepItemProps = Omit<StepItem, 'desc'> & {
+  children?: React.ReactNode;
 };
 
 export type StepsProps = {
+  size?: 'large';
   current?: number;
-  items: StepItem[];
   className?: string;
+  direction?: 'horizontal' | 'vertical';
+  items?: StepItem[];
+  children?: React.ReactNode;
 };
 
-const Steps: React.FC<StepsProps> = ({ className, current = 0, items }) => {
+export type StepsType = React.FC<StepsProps> & {
+  Item: React.FC<StepItemProps>;
+};
+
+const Item: React.FC<StepItemProps> = ({ title, children, status }) => {
   return (
-    <ol className={classNames(styles.steps, className)}>
-      {items.map((item, key) => (
-        <li
-          key={key}
-          className={classNames(styles.item, {
-            [styles.finish]: current > key,
-            [styles.active]: current === key,
-          })}
-        >
-          <span className={styles.dot}></span>
-          <div className={styles.content}>
-            <h5 className={styles.title}>{item.title}</h5>
-            <p className={styles.desc}>{item.desc}</p>
-          </div>
-        </li>
-      ))}
+    <li
+      className={classNames(styles.item, {
+        [styles.finish]: status === 'finish',
+        [styles.active]: status === 'active',
+      })}
+    >
+      <span className={styles.dot}></span>
+      <div className={styles.content}>
+        <h5 className={styles.title}>{title}</h5>
+
+        {children}
+      </div>
+    </li>
+  );
+};
+
+const Steps: StepsType = ({ className, children, current = 0, direction, size, items }) => {
+  return (
+    <ol
+      className={classNames(
+        styles.steps,
+        {
+          [styles.large]: size === 'large',
+          [styles.vertical]: direction !== 'horizontal',
+          [styles.horizontal]: direction === 'horizontal',
+        },
+        className,
+      )}
+    >
+      {isDef(children)
+        ? children
+        : items?.map((item, key) => (
+            <Item key={key} title={item.title} status={current > key ? 'finish' : current === key ? 'active' : undefined}>
+              <p className="mb-0">{item.desc}</p>
+            </Item>
+          ))}
     </ol>
   );
 };
+
+Steps.Item = Item;
 
 export default Steps;

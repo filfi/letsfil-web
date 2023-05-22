@@ -4,16 +4,18 @@
   justify-content: center;
   min-height: var(--header-height, 0);
 
-  &.fixed-top {
+  &.fixed-top,
+  &.sticky-top {
     z-index: 300;
   }
 }
 
 .navbar {
   --bs-navbar-color: var(--text-main);
-  --bs-navbar-hover-color: var(--color-gray-900);
-  --bs-navbar-active-color: var(--color-gray-900);
+  --bs-navbar-hover-color: var(--color-primary-900);
+  --bs-navbar-active-color: var(--color-primary-900);
   --bs-navbar-brand-padding-y: 0.5rem;
+  --bs-navbar-brand-margin-end: 0.5rem;
   --bs-navbar-nav-link-padding-x: 0.75rem;
   --bs-navbar-toggler-focus-width: 1px;
 
@@ -27,24 +29,19 @@
 
     box-shadow: 0 12px 16px -4px rgb(16 24 40 / 8%), 0 4px 6px -2px rgb(16 24 40 / 3%);
   }
-}
 
-.nav-link {
-  margin: var(--bs-nav-link-margin-y) var(--bs-nav-link-margin-x);
-  line-height: var(--bs-nav-link-line-height);
+  .nav-link {
+    margin: var(--bs-nav-link-margin-y) var(--bs-nav-link-margin-x);
+    line-height: var(--bs-nav-link-line-height);
 
-  &:not(.active) {
-    opacity: 0.7;
-  }
-
-  &.active {
-    background-color: var(--bs-nav-link-active-bg);
-    border-radius: var(--bs-nav-link-active-border-radius);
+    &:not(.active) {
+      opacity: 0.7;
+    }
   }
 }
 
 .navbar-nav {
-  --bs-nav-link-margin-x: 0.75rem;
+  --bs-nav-link-margin-x: 0;
   --bs-nav-link-margin-y: 0;
   --bs-nav-link-padding-x: 0.75rem;
   --bs-nav-link-padding-y: 0.5rem;
@@ -55,9 +52,9 @@
 }
 
 .assets-bar {
-  background: rgb(255 255 255 / 65%);
-  border: 1px solid #eaecf0;
-  border-radius: 20px;
+  // background: rgb(255 255 255 / 65%);
+  // border: 1px solid #eaecf0;
+  // border-radius: 20px;
 
   &-amount {
     font-size: 1rem;
@@ -96,21 +93,38 @@
     --bs-dropdown-min-width: 220px;
     --bs-dropdown-spacer: -50px;
     --bs-dropdown-border-radius: 20px;
+
+    inset: 100% auto auto 50%;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media screen and (max-width: 375px) {
+  .navbar .navbar-brand > svg {
+    width: 86px;
+    height: 36px;
   }
 }
 
 @media screen and (min-width: 992px) {
   .navbar {
-    --bs-navbar-brand-margin-end: 3rem;
+    --bs-navbar-brand-margin-end: 2rem;
 
-    .extra-bar {
+    .assets-bar {
       position: absolute;
-      right: 70px;
+      right: 0;
+      margin-right: calc(var(--bs-gutter-x) * 0.5);
     }
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .navbar {
+    --bs-navbar-brand-margin-end: 3rem;
   }
 
   .navbar-nav {
-    --bs-nav-link-active-bg: #f9fafb;
-    --bs-nav-link-active-border-radius: 6px;
+    --bs-nav-link-margin-x: 0.5rem;
+    --bs-nav-link-margin-y: 0;
   }
 }

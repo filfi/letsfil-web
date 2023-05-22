@@ -2,26 +2,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_managerProposed",
-        "type": "address"
-      }
-    ],
-    "name": "changeManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "claimManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "components": [
           {
             "internalType": "uint256",
@@ -35,22 +15,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "minRaiseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "securityFund",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "securityFundRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deadline",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "raiserShare",
+            "name": "raiseDays",
             "type": "uint256"
           },
           {
@@ -60,7 +35,22 @@
           },
           {
             "internalType": "uint256",
+            "name": "spFundShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "raiserShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "servicerShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "filFiShare",
             "type": "uint256"
           },
           {
@@ -69,27 +59,22 @@
             "type": "address"
           },
           {
-            "internalType": "uint256",
-            "name": "companyId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "spAddress",
-            "type": "address"
-          },
-          {
             "internalType": "string",
             "name": "raiseCompany",
             "type": "string"
           }
         ],
-        "internalType": "struct ILetsFilRaiseInfo.RaiseInfo",
+        "internalType": "struct ILetsFilPackInfo.RaiseInfo",
         "name": "_raiseInfo",
         "type": "tuple"
       },
       {
         "components": [
+          {
+            "internalType": "uint64",
+            "name": "minerId",
+            "type": "uint64"
+          },
           {
             "internalType": "uint256",
             "name": "nodeSize",
@@ -102,12 +87,12 @@
           },
           {
             "internalType": "uint256",
-            "name": "sealPeriod",
+            "name": "sealDays",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "nodePeriod",
+            "name": "nodeDays",
             "type": "uint256"
           },
           {
@@ -117,21 +102,16 @@
           },
           {
             "internalType": "address",
-            "name": "opsSecurityFundPayer",
+            "name": "spAddr",
             "type": "address"
           },
           {
-            "internalType": "uint64",
-            "name": "minerID",
-            "type": "uint64"
-          },
-          {
             "internalType": "uint256",
-            "name": "realSealAmount",
+            "name": "companyId",
             "type": "uint256"
           }
         ],
-        "internalType": "struct ILetsFilRaiseInfo.NodeInfo",
+        "internalType": "struct ILetsFilPackInfo.NodeInfo",
         "name": "_nodeInfo",
         "type": "tuple"
       },
@@ -139,11 +119,31 @@
         "components": [
           {
             "internalType": "uint256",
-            "name": "minRaiseRate",
+            "name": "oldId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "raiserOldShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spOldShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sponsorOldRewardShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spOldRewardShare",
             "type": "uint256"
           }
         ],
-        "internalType": "struct ILetsFilRaiseInfo.ExtendInfo",
+        "internalType": "struct ILetsFilPackInfo.ExtendInfo",
         "name": "_extendInfo",
         "type": "tuple"
       }
@@ -156,42 +156,18 @@
         "type": "address"
       }
     ],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_raiseID",
-        "type": "uint256"
-      }
-    ],
-    "name": "endPlan",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
     "stateMutability": "nonpayable",
     "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
   },
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
       {
         "indexed": false,
         "internalType": "address",
@@ -205,12 +181,6 @@
         "type": "address"
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "payValue",
-        "type": "uint256"
-      },
-      {
         "components": [
           {
             "internalType": "uint256",
@@ -224,22 +194,17 @@
           },
           {
             "internalType": "uint256",
+            "name": "minRaiseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "securityFund",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "securityFundRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "deadline",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "raiserShare",
+            "name": "raiseDays",
             "type": "uint256"
           },
           {
@@ -249,22 +214,27 @@
           },
           {
             "internalType": "uint256",
+            "name": "spFundShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "raiserShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "servicerShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "filFiShare",
             "type": "uint256"
           },
           {
             "internalType": "address",
             "name": "sponsor",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "companyId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "spAddress",
             "type": "address"
           },
           {
@@ -274,12 +244,17 @@
           }
         ],
         "indexed": false,
-        "internalType": "struct ILetsFilRaiseInfo.RaiseInfo",
+        "internalType": "struct ILetsFilPackInfo.RaiseInfo",
         "name": "raiseInfo",
         "type": "tuple"
       },
       {
         "components": [
+          {
+            "internalType": "uint64",
+            "name": "minerId",
+            "type": "uint64"
+          },
           {
             "internalType": "uint256",
             "name": "nodeSize",
@@ -292,12 +267,12 @@
           },
           {
             "internalType": "uint256",
-            "name": "sealPeriod",
+            "name": "sealDays",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
-            "name": "nodePeriod",
+            "name": "nodeDays",
             "type": "uint256"
           },
           {
@@ -307,22 +282,17 @@
           },
           {
             "internalType": "address",
-            "name": "opsSecurityFundPayer",
+            "name": "spAddr",
             "type": "address"
           },
           {
-            "internalType": "uint64",
-            "name": "minerID",
-            "type": "uint64"
-          },
-          {
             "internalType": "uint256",
-            "name": "realSealAmount",
+            "name": "companyId",
             "type": "uint256"
           }
         ],
         "indexed": false,
-        "internalType": "struct ILetsFilRaiseInfo.NodeInfo",
+        "internalType": "struct ILetsFilPackInfo.NodeInfo",
         "name": "nodeInfo",
         "type": "tuple"
       },
@@ -330,63 +300,99 @@
         "components": [
           {
             "internalType": "uint256",
-            "name": "minRaiseRate",
+            "name": "oldId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "raiserOldShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spOldShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sponsorOldRewardShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spOldRewardShare",
             "type": "uint256"
           }
         ],
         "indexed": false,
-        "internalType": "struct ILetsFilRaiseInfo.ExtendInfo",
+        "internalType": "struct ILetsFilPackInfo.ExtendInfo",
         "name": "extendInfo",
         "type": "tuple"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "raiseID",
-        "type": "uint256"
       }
     ],
-    "name": "eCreateRaisePlan",
+    "name": "CreateRaisePlan",
     "type": "event"
   },
   {
+    "anonymous": false,
     "inputs": [
       {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "name": "activePlan",
-    "outputs": [
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "toolAddr",
+        "type": "address"
       }
     ],
-    "name": "inactivePlan",
+    "name": "setToolAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -419,7 +425,7 @@
       },
       {
         "internalType": "address",
-        "name": "raiseAddress",
+        "name": "controlerAddr",
         "type": "address"
       }
     ],

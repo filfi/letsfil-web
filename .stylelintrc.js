@@ -9,5 +9,7 @@ module.exports = {
         severity: 'warning',
       },
     ],
+    'declaration-block-no-duplicate-properties': null,
+    'no-duplicate-selectors': null,
   },
 };

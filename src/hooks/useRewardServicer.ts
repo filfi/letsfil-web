@@ -1,50 +1,74 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { accAdd, isEqual } from '@/utils/utils';
 import useAccounts from './useAccounts';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
+import useLoadingify from './useLoadingify';
 import useEmittHandler from './useEmitHandler';
-import usePlanContract from './usePlanContract';
+import useRaiseContract from './useRaiseContract';
+import { accAdd, isEqual } from '@/utils/utils';
 
-export default function useRewardServicer(address: MaybeRef<string | undefined>) {
-  const { accounts } = useAccounts();
-  const contract = usePlanContract(address);
+export default function useRewardServicer(data?: API.Plan) {
+  const { account } = useAccounts();
+  const { getContract } = useRaiseContract();
 
-  const [record, setRecord] = useState(0);
-  const [pending, setPending] = useState(0);
-  const [available, setavailable] = useState(0);
+  const [record, setRecord] = useState(0); // 已提取
+  const [pending, setPending] = useState(0); // 待释放
+  const [available, setavailable] = useState(0); // 可提取
   const [servicer, setServicer] = useState('');
 
+  const isServicer = useMemo(() => isEqual(account, servicer), [account, servicer]);
   const reward = useMemo(() => accAdd(accAdd(record, available), pending), [record, available, pending]);
-  const isServicer = useMemo(() => isEqual(accounts[0], servicer), [accounts, servicer]);
 
-  const fetchAmount = async () => {
-    const info = await contract.getRaiseInfo();
-    const record = await contract.getServicerWithdrawnReward();
-    const pending = await contract.getServicerPendingReward();
-    const available = await contract.getServicerAvailableReward();
+  const fetchInfo = async () => {
+    if (!data) return;
 
+    const contract = getContract(data.raise_address);
+
+    const info = await contract?.getRaiseInfo(data?.raising_id);
     setServicer(info?.spAddress ?? '');
+  };
+
+  const [loading, fetchData] = useLoadingify(async () => {
+    if (!data) return;
+
+    let record = 0;
+    let pending = 0;
+    let available = 0;
+
+    const contract = getContract(data.raise_address);
+
+    if (isServicer) {
+      record = await contract?.gotSpReward(data.raising_id);
+      pending = await contract?.spWillReleaseReward(data.raising_id);
+      available = await contract?.spRewardAvailableLeft(data.raising_id);
+    }
+
     setRecord(toNumber(record));
     setPending(toNumber(pending));
     setavailable(toNumber(available));
-  };
+  });
 
   useEffect(() => {
-    fetchAmount();
-  }, [address]);
+    fetchInfo();
+  }, [data]);
+
+  useEffect(() => {
+    fetchData();
+  }, [isServicer]);
 
   useEmittHandler({
-    [EventType.onServicerWithdraw]: fetchAmount,
+    [EventType.onServicerWithdraw]: fetchData,
   });
 
   return {
-    contract,
+    account,
     record,
     reward,
     pending,
+    loading,
     available,
     isServicer,
+    refresh: fetchInfo,
   };
 }

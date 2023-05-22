@@ -16,6 +16,7 @@ export default function useAccounts() {
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const accounts = useMemo(() => initialState?.accounts ?? [], [initialState]);
+  const account = useMemo(() => accounts[0], [accounts]);
 
   const setState = (state: Partial<InitState>) => {
     setInitialState((d) => {
@@ -76,7 +77,7 @@ export default function useAccounts() {
     setState({ connected, connecting: false });
   }, [accounts]);
 
-  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string | undefined, ...args: P) => Promise<R>) => {
+  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string | undefined, ...args: P) => R) => {
     return async (...args: P) => {
       let account: string | undefined = accounts?.[0];
 
@@ -89,7 +90,7 @@ export default function useAccounts() {
     };
   };
 
-  const withConnect = <R = any, P extends unknown[] = any>(service: (...args: P) => Promise<R>) => {
+  const withConnect = <R = any, P extends unknown[] = any>(service: (...args: P) => R) => {
     return withAccount((_, ...args: P) => service(...args));
   };
 
@@ -106,6 +107,7 @@ export default function useAccounts() {
   };
 
   return {
+    account,
     accounts,
     buttonText,
     disabled,

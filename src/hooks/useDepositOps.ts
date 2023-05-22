@@ -7,43 +7,46 @@ import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import usePlanContract from './usePlanContract';
+import useRaiseContract from './useRaiseContract';
 
-export default function useDepositOps(address: MaybeRef<string | undefined>) {
-  const { accounts } = useAccounts();
-  const contract = usePlanContract(address);
+export default function useDepositOps(data?: API.Plan) {
+  const { account } = useAccounts();
+  const { getContract } = useRaiseContract();
 
   const [amount, setAmount] = useState(0);
   const [opsPayer, setOpsPayer] = useState('');
-  const isOpsPayer = useMemo(() => isEqual(accounts[0], opsPayer), [accounts, opsPayer]);
+  const isOpsPayer = useMemo(() => isEqual(account, opsPayer), [account, opsPayer]);
 
   const [fetching, fetchData] = useLoadingify(async () => {
-    const info = await contract.getNodeInfo();
+    if (!data) return;
 
+    const contract = getContract(data.raise_address);
+
+    const info = await contract?.nodeInfo(data.raising_id);
+    const ops = await contract?.opsSecurityFundRemain(data.raising_id);
+
+    setAmount(toNumber(ops));
     setOpsPayer(info?.opsSecurityFundPayer ?? '');
-
-    if (accounts[0]) {
-      const ops = await contract.getOpsFund();
-
-      setAmount(toNumber(ops));
-    }
   });
 
   const [loading, withdraw] = useProcessify(async () => {
-    await contract.withdrawOPSFund();
+    if (!data) return;
+    const contract = getContract(data.raise_address);
+
+    await contract?.withdrawOpsFund(data.raising_id);
   });
 
   useEffect(() => {
     fetchData();
-  }, [address, accounts]);
+  }, [data]);
 
   useEmittHandler({
-    [EventType.onWithdrawOPSFund]: fetchData,
+    [EventType.onWithdrawOpsFund]: fetchData,
   });
 
   return {
-    contract,
     amount,
+    account,
     opsPayer,
     isOpsPayer,
     fetching,

@@ -1,4 +1,4 @@
-import { message } from 'antd';
+// import { message } from 'antd';
 import { AxiosError } from 'axios';
 import type { AxiosResponse } from 'axios';
 
@@ -6,9 +6,16 @@ type Data = Record<string, any>;
 
 export function error(error: AxiosError<Data>) {
   const res = error.response;
-  let msg = res?.data?.data?.errorMessage ?? res?.data?.error?.message ?? res?.data?.msg ?? error.message ?? res?.statusText;
+  const code = res?.data?.code ?? res?.status;
+  // let msg = res?.data?.data?.errorMessage ?? res?.data?.error?.message ?? res?.data?.msg ?? error.message ?? res?.statusText;
 
-  message.error(msg);
+  switch (code) {
+    case 2000001:
+      // 用户不存在 ignore
+      break;
+    default:
+    // message.error(msg);
+  }
 
   return Promise.reject(error);
 }
@@ -28,5 +35,7 @@ export function response(res: AxiosResponse<Data>) {
     }
   }
 
-  return error(new AxiosError(res.data?.message ?? res.statusText, res.data?.code ?? res.status, res.config, res.request, res));
+  const msg = res.data?.error?.message ?? res.data?.message ?? res.data?.msg ?? res.statusText;
+
+  return error(new AxiosError(msg, res.data?.code ?? res.status, res.config, res.request, res));
 }

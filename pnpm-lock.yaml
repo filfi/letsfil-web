@@ -7,6 +7,7 @@ specifiers:
   '@metamask/onboarding': ^1.0.1
   '@popperjs/core': ^2.11.6
   '@types/bootstrap': ^5.2.6
+  '@types/lodash': ^4.14.194
   '@types/numeral': ^2.0.2
   '@types/react': ^18.0.0
   '@types/react-dom': ^18.0.0
@@ -25,6 +26,7 @@ specifiers:
   ethers: ^5.7.2
   husky: ^8.0.1
   lint-staged: ^13.0.3
+  lodash: ^4.17.21
   mitt: ^3.0.0
   numeral: ^2.0.6
   prettier: ^2.7.1
@@ -52,6 +54,7 @@ dependencies:
   clipboard: 2.0.11
   dayjs: 1.11.7
   ethers: 5.7.2
+  lodash: 4.17.21
   mitt: 3.0.0
   numeral: 2.0.6
   react-bootstrap: 2.7.2_muganf3bamzcr6fpgfc6mdlqky
@@ -60,6 +63,7 @@ dependencies:
 
 devDependencies:
   '@types/bootstrap': 5.2.6
+  '@types/lodash': 4.14.194
   '@types/numeral': 2.0.2
   '@types/react': 18.0.33
   '@types/react-dom': 18.0.11
@@ -3848,6 +3852,10 @@ packages:
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
     dev: false
+
+  /@types/lodash/4.14.194:
+    resolution: {integrity: sha512-r22s9tAS7imvBt2lyHC9B8AGwWnXaYb1tY09oyLkXDs4vArpYJzw09nj8MLx5VfciBPGIb+ZwG0ssYnEPJxn/g==}
+    dev: true
 
   /@types/minimist/1.2.2:
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}

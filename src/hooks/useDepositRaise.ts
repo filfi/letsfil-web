@@ -7,43 +7,47 @@ import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import usePlanContract from './usePlanContract';
+import useRaiseContract from './useRaiseContract';
 
-export default function useDepositRaise(address: MaybeRef<string | undefined>) {
-  const { accounts } = useAccounts();
-  const contract = usePlanContract(address);
+export default function useDepositRaise(data?: API.Plan) {
+  const { account } = useAccounts();
+  const { getContract } = useRaiseContract();
 
   const [amount, setAmount] = useState(0);
   const [raiser, setRaiser] = useState('');
-  const isRaiser = useMemo(() => isEqual(accounts[0], raiser), [accounts, raiser]);
+  const isRaiser = useMemo(() => isEqual(account, raiser), [account, raiser]);
 
   const [fetching, fetchData] = useLoadingify(async () => {
-    const info = await contract.getRaiseInfo();
+    if (!data) return;
 
+    const contract = getContract(data.raise_address);
+
+    const info = await contract?.raiseInfo(data.raising_id);
+    const raise = await contract?.securityFundRemain(data.raising_id);
+
+    setAmount(toNumber(raise));
     setRaiser(info?.sponsor ?? '');
-
-    if (accounts[0]) {
-      const raise = await contract.getRaiseFund();
-
-      setAmount(toNumber(raise));
-    }
   });
 
   const [loading, withdraw] = useProcessify(async () => {
-    await contract.withdrawRaiseFund();
+    if (!data) return;
+
+    const contract = getContract(data.raise_address);
+
+    await contract?.withdrawRaiseFund(data.raising_id);
   });
 
   useEffect(() => {
     fetchData();
-  }, [address, accounts]);
+  }, [data]);
 
   useEmittHandler({
     [EventType.onWithdrawRaiseFund]: fetchData,
   });
 
   return {
-    contract,
     amount,
+    account,
     raiser,
     isRaiser,
     fetching,

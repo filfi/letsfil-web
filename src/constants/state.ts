@@ -2,24 +2,64 @@
  * 募集计划状态
  */
 export enum RaiseState {
-  NotStarted, // 未开始
-  WaitPayOPSSecurityFund, // 等待缴纳运维保证金
-  WaitSeverSign, // 等待服务商签名
-  InProgress, // 募集进行中
-  Closed, // 募集关闭
-  Successed, // 募集成功
-  Failed, // 募集失败
+  /**
+   * 等待开始
+   */
+  WaitingStart = 0,
+  /**
+   * 募集中
+   */
+  Raising = 1,
+  /**
+   * 募集关闭
+   */
+  Closed = 2,
+  /**
+   * 募集成功
+   */
+  Success = 3,
+  /**
+   * 募集失败
+   */
+  Failure = 4,
+  /**
+   * 准备中
+   */
+  Pending = 10,
 }
 
 /**
  * 节点状态
  */
 export enum NodeState {
-  WaitingStart, // 未开始
-  Started, // 已开始
-  Delayed, // 已延迟
-  End, // 已结束
-  Success, // 成功
-  Failure, // 失败
-  Destroy, // 已销毁
+  /**
+   * 等待封装
+   */
+  WaitingStart = 0,
+  /**
+   * 封装已经开始
+   */
+  Started = 1,
+  /**
+   * 封装展期
+   */
+  Delayed = 2,
+  /**
+   * 封装结束
+   */
+  End = 3,
+  /**
+   * 已经销毁
+   */
+  Destroy = 4,
+  /**
+   * 封装成功
+   * @deprecated
+   */
+  Success = 5,
+  /**
+   * 封装失败
+   * @deprecated
+   */
+  Failed = 6,
 }

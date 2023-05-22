@@ -84,7 +84,7 @@ export default function usePagination<R = any, P extends any[] = any>(service: I
 
   useUpdateEffect(() => {
     changePage(1);
-  }, opts.refreshDeps);
+  }, [...(opts?.refreshDeps ?? [])]);
 
   return {
     page,

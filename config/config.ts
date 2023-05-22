@@ -17,8 +17,9 @@ export default defineConfig({
   routes,
 
   model: {},
-  title: "Let's Fil",
-  access: false,
+  access: {},
+  // valtio 数据流
+  valtio: {},
   deadCode: {},
   layout: false,
   locale: {
@@ -27,6 +28,7 @@ export default defineConfig({
     useLocalStorage: true,
   },
   request: {},
+  title: 'FilFi',
   initialState: {},
   moment2dayjs: {},
   cssLoaderModules: {

@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { useEffect, useMemo, useState } from 'react';
 
-import { accSub } from '@/utils/utils';
 import useAccounts from './useAccounts';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
@@ -9,50 +8,66 @@ import useDepositOps from './useDepositOps';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
+import { accDiv, accSub } from '@/utils/utils';
+import useRaiseContract from './useRaiseContract';
 
-export default function useDepositInvest(address: MaybeRef<string | undefined>) {
-  const { accounts } = useAccounts();
-  const { contract, amount: opsAmount, isOpsPayer } = useDepositOps(address);
+export default function useDepositInvest(data?: API.Plan) {
+  const { account } = useAccounts();
+  const { getContract } = useRaiseContract();
+  const { amount: opsAmount, isOpsPayer } = useDepositOps(data);
 
-  const [amount, setAmount] = useState(0);
-  const [record, setRecord] = useState(0);
-  const [totalPledge, setTotalPledge] = useState(0);
+  const [total, setTotal] = useState(0); // 募集目标
+  const [amount, setAmount] = useState(0); // 用户质押金额
+  const [record, setRecord] = useState(0); // 用户累计质押金额
+  const [totalPledge, setTotalPledge] = useState(0); // 计划总质押
   // 投资成本。若是运维保证金支付人，则减去运维保证金
   const cost = useMemo(() => (isOpsPayer ? Math.max(accSub(amount, opsAmount), 0) : amount), [amount, opsAmount, isOpsPayer]);
   const isInvestor = useMemo(() => cost > 0, [cost]);
+  const percent = useMemo(() => (total > 0 ? accDiv(totalPledge, total) : 0), [total, totalPledge]);
 
   const [fetching, fetchData] = useLoadingify(async () => {
-    if (accounts[0]) {
-      const amount = await contract.pledgeAmount(accounts[0]);
-      const record = await contract.pledgeRecord(accounts[0]);
+    if (!data) return;
+
+    const contract = getContract(data.raise_address);
+
+    if (account) {
+      const amount = await contract?.pledgeTotalAmount(data.raising_id);
+      const record = await contract?.pledgeTotalCalcAmount(data.raising_id);
 
       setAmount(toNumber(amount));
       setRecord(toNumber(record));
     }
 
-    const total = await contract.pledgeTotalAmount();
-
-    setTotalPledge(toNumber(total));
+    const raise = await contract?.raiseInfo(data.raising_id);
+    const pledge = await contract?.pledgeTotalAmount(data.raising_id);
+    setTotalPledge(toNumber(pledge));
+    setTotal(toNumber(raise?.targetAmount));
   });
 
   const [loading, withdraw] = useProcessify(async () => {
-    await contract.unStaking(ethers.utils.parseEther(`${cost}`));
+    if (!data) return;
+
+    const contract = getContract(data.raise_address);
+    await contract?.unStaking(ethers.utils.parseEther(`${cost}`));
   });
 
   useEffect(() => {
     fetchData();
-  }, [address, accounts]);
+  }, [account, data]);
 
   useEmittHandler({
+    [EventType.onStaking]: fetchData,
     [EventType.onUnstaking]: fetchData,
-    [EventType.onWithdrawOPSFund]: fetchData,
+    [EventType.onWithdrawOpsFund]: fetchData,
   });
 
   return {
-    contract,
     amount,
+    account,
     cost,
     record,
+    percent,
+    total,
     totalPledge,
     isInvestor,
     fetching,

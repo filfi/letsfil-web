@@ -15,8 +15,8 @@ export const SUPPORTED_CHAINS = [
 ];
 
 // hyperspace - testnet
-// const ADDR_HP = '0x2eBfBE660C97b5Fa8d2D1738b04E4f92d71d0951'; // 5200
-const ADDR_HP = '0x36955BEcd4E638077a8dd2949Bc503564786e3Ed'; // 5000
+const ADDR_HP = '0x8a3A3E3e2591a4FFE56d146811524261a64e3Db8'; // 5200
+// const ADDR_HP = '0xB8C16A48e8DAcE169D938B114f653795715c8339'; // 5000
 // 2k - testnet
 const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
 /**
@@ -33,7 +33,6 @@ export const SCAN_URL = RUN_ENV === 'hp' ? SCAN_URL_HP : SCAN_URL_MAIN;
 
 export const sectors = [32, 64];
 export const periods = [180, 360, 540];
-export const planStatusText = ['未缴纳募集保证金', '未缴纳运维保证金', '等待服务商签名', '募集进行中', '计划已关闭', '募集成功', '募集失败'];
 
 export const locales = [
   {

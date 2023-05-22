@@ -84,12 +84,24 @@ export function disabledDate(date: number | string | Date | dayjs.Dayjs) {
 }
 
 export function day2sec(days: number | string) {
-  return +days * 24 * 60 * 60;
+  return +days * 86400;
 }
 
 export function sec2day(days?: number | string) {
   if (days) {
-    return +days / 60 / 60 / 24;
+    return +(+days / 86400).toFixed(1).replace(/\.0$/, '');
+  }
+
+  return 0;
+}
+
+export function gb2byte(gb: number | string) {
+  return +gb * 1024 * 1024 * 1024;
+}
+
+export function byte2gb(gb?: number | string) {
+  if (gb) {
+    return +gb / 1024 / 1024 / 1024;
   }
 
   return 0;
@@ -107,8 +119,12 @@ export function byte2pb(pb?: number | string) {
   return 0;
 }
 
-export function diffDays(seconds: number | string) {
-  return dayjs(+seconds * 1000).fromNow();
+export function diffDays(seconds?: number | string) {
+  if (seconds) {
+    return dayjs(+seconds * 1000).fromNow();
+  }
+
+  return '';
 }
 
 export function parseMinerID(minerID: number | string) {
@@ -121,4 +137,17 @@ export function toF4Address(addr?: string) {
   }
 
   return '';
+}
+
+export function randomRange(min: number, max: number) {
+  return ~~(Math.random() * (max - min) + min);
+}
+
+export function randomAvatar() {
+  const colors = ['9b8afb'];
+
+  const index = randomRange(0, colors.length);
+  const color = colors[index];
+
+  return `https://via.placeholder.com/120/${color}/ffffff.jpg?text=Logo`;
 }

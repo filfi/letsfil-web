@@ -40,29 +40,37 @@ declare global {
      */
     targetAmount: BigNumberish;
     /**
+     * 最小募集比例 1000 -> 10%
+     */
+    minRaiseRate: BigNumberish;
+    /**
      * 募集保证金
      */
     securityFund: BigNumberish;
     /**
-     * 保证金比例 100以内的数字，10 -> 10%
+     * 募集天数 单位天
      */
-    securityFundRate: BigNumberish;
+    raiseDays: BigNumberish;
     /**
-     * 募集截止时间，秒时间戳
-     */
-    deadline: BigNumberish;
-    /**
-     * 募集者权益 100以内的数字，10 -> 10%
+     * 募集者权益 1000 -> 10%
      */
     raiserShare: BigNumberish;
     /**
-     * 投资者权益 100以内的数字，10 -> 10%
+     * 运维保证金权益比例 350 -> 3.5%
+     */
+    spFundShare: BigNumberish;
+    /**
+     * 投资者权益 1000 -> 10%
      */
     investorShare: BigNumberish;
     /**
-     * 服务商权益 100以内的数字，10 -> 10%
+     * 服务商权益 1000 -> 10%
      */
     servicerShare: BigNumberish;
+    /**
+     * FilFi协议权益 1000 -> 10%
+     */
+    filFiShare: BigNumberish;
     /**
      * 发起账户
      */
@@ -71,14 +79,6 @@ declare global {
      * 发起单位
      */
     raiseCompany: string;
-    /**
-     * 服务商ID
-     */
-    companyId: BigNumberish;
-    /**
-     * 服务商签名地址
-     */
-    spAddress: string;
   }
 
   /**
@@ -88,35 +88,35 @@ declare global {
     /**
      * Miner ID
      */
-    minerID: BigNumberish;
+    minerId: BigNumberish;
     /**
      * 节点大小   1073741824 = 1GiB = 1024MiB = 1024*1024KiB = 1024*1024*1024 byte
      */
     nodeSize: BigNumberish;
     /**
-     * 扇区大小   1073741824 = 1GiB = 1024MiB = 1024*1024KiB = 1024*1024*1024 byte
+     * 扇区大小   284982949，单位bytes
      */
     sectorSize: BigNumberish;
     /**
-     * 封装周期 秒数
+     * 封装周期 天
      */
-    sealPeriod: BigNumberish;
+    sealDays: BigNumberish;
     /**
-     * 运行周期 秒数
+     * 运行周期 天
      */
-    nodePeriod: BigNumberish;
-    /**
-     * 真实封装数量
-     */
-    realSealAmount: BigNumberish;
+    nodeDays: BigNumberish;
     /**
      * 运维保证金
      */
     opsSecurityFund: BigNumberish;
     /**
-     * 缴纳运维保证金地址
+     * 服务商钱包地址
      */
-    opsSecurityFundPayer: string;
+    spAddr: string;
+    /**
+     * 发起单位id
+     */
+    companyId: BigNumberish;
   }
 
   /**
@@ -124,8 +124,24 @@ declare global {
    */
   interface ExtraInfo {
     /**
-     * 最小募集比例
+     * CC转DC旧资产包id,没有则传0
      */
-    minRaiseRate: BigNumberish;
+    oldId: BigNumberish;
+    /**
+     * 旧资产包中发起人的质押币分配比例，8000表示80%
+     */
+    raiserOldShare: BigNumberish;
+    /**
+     * 旧资产包中服务商的质押币分配比例，8000表示80%
+     */
+    spOldShare: BigNumberish;
+    /**
+     * 旧资产包中发起人的收益分配比例，8000表示80%
+     */
+    sponsorOldRewardShare: BigNumberish;
+    /**
+     * 旧资产包中服务商的收益分配比例，8000表示80%
+     */
+    spOldRewardShare: BigNumberish;
   }
 }

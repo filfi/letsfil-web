@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { omit } from 'lodash';
 import { createRef } from 'react';
 import { ethers, BigNumber } from 'ethers';
 
@@ -73,25 +74,62 @@ export function genRaiseID(minerId: number | string) {
   return BigNumber.from(mid).mul(Math.pow(10, 10)).add(dayjs().unix());
 }
 
+export function transformParams(data: API.Base) {
+  const { sectorSize, targetAmount, minRaiseRate, raiseSecurityFund, opsSecurityFund, opsSecurityFundRate, ffiProtocolFee, ...props } = data;
+  const _params = omit(props, ['amount', 'amountType']);
+
+  return {
+    ..._params,
+    minRaiseRate: +minRaiseRate,
+    sectorSize: U.gb2byte(sectorSize),
+    opsSecurityFundRate: +opsSecurityFundRate,
+    ffiProtocolFee: ethers.utils.parseEther(`${ffiProtocolFee}`).toString(),
+    opsSecurityFund: ethers.utils.parseEther(`${opsSecurityFund}`).toString(),
+    raiseSecurityFund: ethers.utils.parseEther(`${raiseSecurityFund}`).toString(),
+    targetAmount: ethers.utils.parseEther(`${targetAmount}`).toString(),
+  };
+}
+
+export function transformModel(data: API.Base) {
+  const { sectorSize, targetAmount, raiseSecurityFund, opsSecurityFund, ffiProtocolFee, ...props } = data;
+
+  const amount = +ethers.utils.formatEther(targetAmount);
+
+  return {
+    ...props,
+    amount,
+    targetAmount: amount,
+    sectorSize: U.byte2gb(sectorSize),
+    ffiProtocolFee: +ethers.utils.formatEther(ffiProtocolFee),
+    opsSecurityFund: +ethers.utils.formatEther(opsSecurityFund),
+    raiseSecurityFund: +ethers.utils.formatEther(raiseSecurityFund),
+  };
+}
+
 /**
  * 将表单数据转换成 RaiseInfo
  * @param data 表单数据
  */
-export function transformRaiseInfo(data: API.Base) {
+export function transformRaiseInfo(data: API.Plan): RaiseInfo {
+  const infriority = U.accSub(100, data.raiser_coin_share); // 劣后部分
+  const ffiRate = U.accMul(infriority, 0.08); // filfi协议部分
+  const servicerRate = data.op_server_share; // 服务商部分
+  const raiserRate = U.accSub(U.accSub(infriority, servicerRate), ffiRate); // 发起人部分
+  const spRate = U.accMul(data.raiser_coin_share, U.accDiv(data.ops_security_fund_rate, 100));
   // 募集计划信息
   return {
-    id: genRaiseID(data.minerID),
-    targetAmount: ethers.utils.parseEther(`${data.targetAmount}`),
-    securityFund: ethers.utils.parseEther(`${data.securityFund}`),
-    securityFundRate: data.securityFundRate * 100,
-    deadline: dayjs(data.deadline).unix(),
-    raiserShare: +data.raiserShare,
-    investorShare: +data.investorShare,
-    servicerShare: +data.servicerShare,
-    sponsor: data.sponsor,
-    raiseCompany: data.raiseCompany,
-    spAddress: data.spAddress,
-    companyId: data.companyId,
+    id: data.raising_id,
+    targetAmount: data.target_amount,
+    minRaiseRate: data.min_raise_rate * 100,
+    securityFund: data.raise_security_fund,
+    raiseDays: data.raise_days,
+    filFiShare: ffiRate * 100,
+    spFundShare: spRate * 100,
+    raiserShare: raiserRate * 100,
+    servicerShare: servicerRate * 100,
+    investorShare: data.raiser_coin_share * 100,
+    sponsor: data.raiser,
+    raiseCompany: data.sponsor_company,
   };
 }
 
@@ -99,17 +137,17 @@ export function transformRaiseInfo(data: API.Base) {
  * 将表单数据转换成 NodeInfo
  * @param data 表单数据
  */
-export function transformNodeInfo(data: API.Base) {
+export function transformNodeInfo(data: API.Plan): NodeInfo {
   // 节点信息
   return {
-    minerID: +U.parseMinerID(data.minerID),
-    nodeSize: BigNumber.from(`${U.pb2byte(data.nodeSize)}`),
-    sectorSize: data.sectorSize,
-    sealPeriod: U.day2sec(data.sealPeriod),
-    nodePeriod: U.day2sec(data.nodePeriod),
-    opsSecurityFund: ethers.utils.parseEther(`${data.securityFund}`),
-    opsSecurityFundPayer: data.sponsor,
-    realSealAmount: 0,
+    minerId: +U.parseMinerID(data.miner_id),
+    nodeSize: data.target_power,
+    sectorSize: `${data.sector_size}`,
+    sealDays: data.seal_days,
+    nodeDays: data.sector_period,
+    opsSecurityFund: data.ops_security_fund,
+    spAddr: data.service_provider_address,
+    companyId: data.service_id,
   };
 }
 
@@ -117,9 +155,27 @@ export function transformNodeInfo(data: API.Base) {
  * 将表单数据转换成 ExtraInfo
  * @param data 表单数据
  */
-export function transformExtraInfo(data: API.Base) {
-  // 节点信息
+export function transformExtraInfo(data: API.Plan): ExtraInfo {
+  // 拓展信息
+
+  if (data.miner_type === 2) {
+    const spPowerRate = Math.max(U.accSub(100, data.raise_his_power_rate), 0);
+    const spPledgeRate = Math.max(U.accSub(100, data.raise_his_initial_pledge_rate), 0);
+
+    return {
+      oldId: +U.parseMinerID(data.miner_id),
+      spOldShare: spPledgeRate * 100,
+      raiserOldShare: data.raise_his_initial_pledge_rate * 100,
+      spOldRewardShare: spPowerRate * 100,
+      sponsorOldRewardShare: data.raise_his_power_rate * 100,
+    };
+  }
+
   return {
-    minRaiseRate: +data.minRaiseRate,
+    oldId: 0,
+    spOldShare: 0,
+    raiserOldShare: 0,
+    spOldRewardShare: 0,
+    sponsorOldRewardShare: 0,
   };
 }

@@ -39,95 +39,68 @@ const routes: IBestAFSRoute[] = [
     component: './Home',
   },
   {
-    name: 'lending',
-    path: '/lending',
-    component: './Lending',
-  },
-  {
     name: 'account',
     path: '/account',
-    component: './Account',
-  },
-  {
-    name: 'letsfil',
-    path: '/letsfil',
-    component: './letsfil/layout',
+    component: './account/layout',
     routes: [
       {
-        name: 'raising',
-        path: 'raising',
-        component: './letsfil/Raising',
+        name: 'plans',
+        path: 'plans',
+        component: './account/Plans',
       },
       {
-        name: 'create',
-        path: 'create',
-        component: './letsfil/create/layout',
-        routes: [
-          {
-            name: 'program',
-            path: 'program',
-            component: './letsfil/create/Program',
-          },
-          {
-            name: 'allocation',
-            path: 'allocation',
-            component: './letsfil/create/Allocation',
-          },
-          {
-            name: 'build',
-            path: 'build',
-            component: './letsfil/create/Build',
-          },
-          {
-            name: 'confirm',
-            path: 'confirm',
-            component: './letsfil/create/Confirm',
-          },
-          {
-            name: 'payment',
-            path: 'payment',
-            component: './letsfil/create/Payment',
-          },
-          { path: '/letsfil/create', redirect: '/letsfil/create/program' },
-        ],
+        name: 'assets',
+        path: 'assets',
+        component: './account/Assets',
       },
       {
-        name: 'payfor',
-        path: 'payfor',
-        component: './letsfil/payfor/layout',
-        routes: [
-          {
-            name: 'payforOverview',
-            path: 'overview/:id',
-            component: './letsfil/payfor/Overview',
-          },
-        ],
+        name: 'stats',
+        path: 'stats',
+        component: './account/Stats',
       },
-      {
-        name: 'confirm',
-        path: 'confirm',
-        component: './letsfil/confirm/layout',
-        routes: [
-          {
-            name: 'confirmOverview',
-            path: 'overview/:id',
-            component: './letsfil/confirm/Overview',
-          },
-        ],
-      },
-      {
-        name: 'overview',
-        path: 'overview/:id',
-        component: './letsfil/Overview',
-      },
-      {
-        name: 'staking',
-        path: 'staking/:id',
-        component: './letsfil/Staking',
-      },
-      { path: '/letsfil', redirect: '/letsfil/raising' },
+      { path: '/account', redirect: '/account/plans' },
     ],
   },
+  {
+    name: 'raising',
+    path: 'raising',
+    component: './Raising',
+  },
+  {
+    name: 'create',
+    path: 'create',
+    component: './create/layout',
+    routes: [
+      {
+        name: 'storage',
+        path: 'storage',
+        component: './create/Storage',
+      },
+      {
+        name: 'program',
+        path: 'program',
+        component: './create/Program',
+      },
+      {
+        name: 'benefit',
+        path: 'benefit',
+        component: './create/Benefit',
+      },
+      {
+        name: 'result',
+        path: 'result/:id',
+        component: './create/Result',
+      },
+      { path: '/create', redirect: '/create/storage' },
+    ],
+  },
+  {
+    name: 'overview',
+    path: 'overview/:id',
+    component: './Overview',
+  },
+  // other 404
+  { path: '*', redirect: '/' },
 ];
 
 export default routes;

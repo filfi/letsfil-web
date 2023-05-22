@@ -1,40 +1,70 @@
-.container {
-  max-width: 752px;
-}
+.section {
+  --section-padding-y: 48px;
+  --section-title-size: 24px;
+  --section-summary-size: 16px;
 
-.hero {
-  --icon-size: 3.5rem;
-  --title-size: 2rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding-top: var(--section-padding-y);
+  padding-bottom: var(--section-padding-y);
 
   .title {
-    margin-bottom: 0;
-    font-size: var(--title-size);
-    font-weight: 700;
-    line-height: 1.25;
+    font-size: var(--section-title-size);
+  }
+
+  .summary {
+    font-size: var(--section-summary-size);
   }
 }
 
-.btn {
-  display: block;
-  max-width: 15rem;
-  margin-left: auto;
-  margin-right: auto;
+.banner {
+  --banner-bg: var(--color-primary-25);
+  --banner-color: var(--color-primary-900);
+
+  color: var(--banner-color);
+  background-color: var(--banner-bg);
+}
+
+.grid {
+  --grid-icon-size: 48px;
+  --grid-title-size: 20px;
+
+  :global {
+    .card {
+      --bs-card-color: var(--bs-gray-600);
+      --bs-card-cap-font-size: var(--grid-title-size);
+      --bs-card-border-width: 0;
+      --bs-card-border-radius: 0;
+    }
+
+    .card-icon {
+      width: var(--grid-icon-size);
+      height: var(--grid-icon-size);
+    }
+
+    .card-title {
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+  }
 }
 
 @media screen and (min-width: 768px) {
-  .hero {
-    --icon-size: 5.5rem;
-    --title-size: 3rem;
+  .section {
+    --section-padding-y: 64px;
+    --section-title-size: 30px;
+    --section-summary-size: 18px;
   }
 }
 
 @media screen and (min-width: 992px) {
-  .hero {
-    --icon-size: 7.625rem;
-    --title-size: 4.5rem;
+  .section {
+    --section-padding-y: 80px;
+    --section-title-size: 36px;
+    --section-summary-size: 20px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .section {
+    --section-padding-y: 96px;
   }
 }

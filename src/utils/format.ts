@@ -2,10 +2,14 @@ import dayjs from 'dayjs';
 import numeral from 'numeral';
 import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
-import { accAdd } from './utils';
+import { accAdd, sec2day } from './utils';
+
+export function formatFix(val?: number | string) {
+  return `${val ?? ''}`.replace(/(?:\.0*|(\.\d+?)0+)$/, '$1');
+}
 
 export function formatNum(num: number | string, fmt: string, runding?: numeral.RoundingFunction) {
-  return numeral(num).format(fmt, runding);
+  return formatFix(numeral(num).format(fmt, runding));
 }
 
 export function formatByte(byte: number | string, fmt = '0ib') {
@@ -33,7 +37,7 @@ export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumbe
 }
 
 export function formatAmount(amount?: BigNumber.Value, decimalPlaces = 4) {
-  return BigNumber(amount ?? 0).toFormat(decimalPlaces, BigNumber.ROUND_HALF_EVEN);
+  return formatFix(BigNumber(amount ?? 0).toFormat(decimalPlaces, BigNumber.ROUND_HALF_EVEN));
 }
 
 export function formatEther(amount?: ethers.BigNumberish, decimalPlaces?: number) {
@@ -44,6 +48,10 @@ export function formatDate(date: number | string | Date | dayjs.Dayjs, fmt = 'YY
   return dayjs(date).format(fmt);
 }
 
+export function formatUnixNow(date: number | string | Date | dayjs.Dayjs) {
+  return dayjs(date).fromNow();
+}
+
 export function formatPercent(progress?: ethers.BigNumberish) {
   return formatRate(toNumber(progress, 6));
 }
@@ -52,16 +60,22 @@ export function formatRemain(...args: (number | string)[]) {
   if (args.every(Boolean)) {
     const sum = args.reduce<number>((sum, cur) => accAdd(sum, cur), 0);
 
-    return formatDate(sum * 1000, 'lll');
+    return formatUnix(sum, 'lll');
   }
 
   return '-';
 }
 
-export function formatSecDate(sec?: number | string) {
+export function formatUnixDate(sec?: number | string) {
   if (sec) {
-    return formatDate(+sec * 1000, 'lll');
+    return formatUnix(+sec, 'lll');
   }
 
   return '-';
+}
+
+export function formatSecDays(sec?: number | string) {
+  const days = sec2day(sec);
+
+  return formatNum(days, '0.0');
 }

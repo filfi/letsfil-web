@@ -1,41 +1,34 @@
 import classNames from 'classnames';
-import { Collapse } from 'bootstrap';
+import { Tooltip } from 'bootstrap';
+import { useMount, useScroll } from 'ahooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useBoolean, useClickAway, useEventListener, useResponsive, useScroll } from 'ahooks';
-import { FormattedMessage, Link, NavLink, history, setLocale, useIntl, useLocation, useModel } from '@umijs/max';
+import { FormattedMessage, Link, NavLink, useModel } from '@umijs/max';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
-import { locales } from '@/constants';
 import useAccounts from '@/hooks/useAccounts';
 import { formatAddr, formatEther } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
-import { ReactComponent as NodeIcon } from '@/assets/icons/fil-node.svg';
-import { ReactComponent as Filecoin } from '@/assets/icons/filecoin-fill.svg';
+import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
+import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
+
+const headerHeight = 80;
 
 const Header: React.FC = () => {
   // refs
   const header = useRef<HTMLDivElement>(null);
-  const collapse = useRef<HTMLDivElement>(null);
 
   // models
   const { initialState } = useModel('@@initialState');
 
   // states
   const [balance, setBalance] = useState<any>();
-  const [expand, { setTrue, setFalse }] = useBoolean(false);
 
   // hooks
-  const { locale } = useIntl();
   const position = useScroll();
-  const location = useLocation();
-  const resposive = useResponsive();
-  const { accounts, getBalance, handleConnect, handleDisconnect } = useAccounts();
+  const { accounts, getBalance, handleConnect /* handleDisconnect */ } = useAccounts();
 
-  const percent = useMemo(() => Math.min((position?.top ?? 0) / 80, 1), [position]);
-  const localeLabel = useMemo(() => locales.find((_) => _.locale === locale)?.abbr, [locale]);
-  const maxHeight = useMemo(() => (resposive.xl ? 160 : resposive.lg ? 120 : 80), [resposive]);
-  const headerHeight = useMemo(() => maxHeight - (maxHeight - 80) * percent, [maxHeight, percent]);
+  const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
   const fetchBalance = async () => {
     if (!accounts[0]) return;
@@ -49,103 +42,150 @@ const Header: React.FC = () => {
     fetchBalance();
   }, [accounts]);
 
-  useEffect(() => {
-    document.documentElement.style.setProperty('--header-height', headerHeight + 'px');
-  }, [headerHeight]);
+  useMount(() => {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
+  });
 
-  const closeCollapse = () => {
-    const instance = Collapse.getOrCreateInstance(collapse.current!);
+  // const disconnect = () => {
+  //   handleDisconnect();
 
-    instance?.hide();
-  };
-
-  const handleLocale = (locale: string) => {
-    setLocale(locale);
-  };
-
-  const disconnect = () => {
-    handleDisconnect();
-
-    history.replace('/');
-  };
-
-  useClickAway(closeCollapse, header);
-  useEffect(closeCollapse, [location.pathname]);
-  useEventListener('show.bs.collapse', setTrue, { target: collapse });
-  useEventListener('hidden.bs.collapse', setFalse, { target: collapse });
+  //   history.replace('/');
+  // };
 
   return (
-    <header
-      ref={header}
-      className={classNames('header fixed-top', { shadow: expand })}
-      style={{
-        backgroundColor: expand ? '#fff' : `rgba(255, 255, 255, ${percent})`,
-        boxShadow: `0 3px 10px rgba(0, 0, 0, ${percent * 0.15})`,
-      }}
-    >
+    <header ref={header} className={classNames('header fixed-top bg-white')} style={{ boxShadow: `0 3px 10px rgba(0, 0, 0, ${percent * 0.15})` }}>
       <nav className="navbar navbar-expand-lg">
         <div className="container position-relative">
           <Link className="navbar-brand" to="/">
             <Brand />
           </Link>
 
-          <div className="extra-bar">
+          <div className="btn-group assets-bar" role="group" aria-label="Assets Bar">
             {initialState?.connected ? (
-              <div className="d-flex assets-bar">
-                <div className="d-none d-sm-flex align-items-center px-2">
-                  <Filecoin />
-                  <span className="assets-bar-amount mx-2">{formatEther(balance)}</span>
-                  <span className="assets-bar-unit">FIL</span>
-                </div>
-
-                {initialState.processing ? (
-                  <SpinBtn className="assets-bar-extra p-2 ms-0 processing" loading>
+              <>
+                {initialState?.processing ? (
+                  <SpinBtn className="btn btn-outline-light" loading>
                     <FormattedMessage id="notify.transaction.processing" />
                   </SpinBtn>
                 ) : (
-                  <div className="dropdown">
-                    <button type="button" className="assets-bar-extra p-2 ms-0" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
-                      <span>{formatAddr(accounts[0])}</span>
-                    </button>
+                  <div className="btn btn-outline-light d-inline-flex align-items-center">
+                    <span className="lh-1">
+                      <IconWallet />
+                    </span>
 
-                    <div className="dropdown-menu dropdown-menu-end">
-                      <div className="d-flex align-items-center mb-3">
-                        <NodeIcon />
-                        <span className="ms-2">{formatAddr(accounts[0])}</span>
-                      </div>
+                    <span className="ms-1">{formatEther(balance)} FIL</span>
 
-                      <div className="d-flex justify-content-between">
-                        <Link className="btn btn-secondary" to="/account">
-                          收益概况
-                        </Link>
-                        <button type="button" className="btn btn-secondary" onClick={disconnect}>
-                          断开连接
-                        </button>
-                      </div>
-                    </div>
+                    <span className="vr mx-2 d-none d-md-inline"></span>
+
+                    <span className="d-none d-md-inline">{formatAddr(accounts[0])}</span>
                   </div>
                 )}
-              </div>
+                <Link to="/account" className="btn btn-outline-light">
+                  <span className="lh-1">
+                    <IconUser />
+                  </span>
+                </Link>
+              </>
             ) : (
-              <SpinBtn className="btn btn-light btn-connect rounded-pill" loading={initialState?.connecting} onClick={handleConnect}>
+              <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={handleConnect}>
                 <FormattedMessage id="actions.button.connect" />
               </SpinBtn>
             )}
           </div>
 
+          <div id="navbarOffcanvas" className="offcanvas offcanvas-start" tabIndex={-1} aria-labelledby="navbar offcanvas">
+            <div className="offcanvas-header">
+              <h4 className="offcanvas-title">
+                <Brand />
+              </h4>
+              <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div className="offcanvas-body">
+              <ul className="nav navbar-nav">
+                <li className="nav-item">
+                  <a className="nav-link" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="即将上线">
+                    <FormattedMessage id="menu.lending" />
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/">
+                    <FormattedMessage id="menu.miner" />
+                  </NavLink>
+                </li>
+                <li className="nav-item dropdown">
+                  <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+                    <span className="me-2">
+                      <FormattedMessage id="menu.storage" />
+                    </span>
+
+                    <span className="bi bi-chevron-down align-middle fw-600 text-gray-dark"></span>
+                  </a>
+
+                  <div className="dropdown-menu border-0 shadow rounded-4">
+                    <div className="d-flex flex-column gap-2">
+                      <a className="dropdown-item d-flex px-4 py-3">
+                        <span className="me-3">Borrow FIL</span>
+                        <span className="badge ms-auto">coming soon</span>
+                      </a>
+                      <a className="dropdown-item d-flex px-4 py-3">
+                        <span className="me-3">Raise FIL</span>
+                        <span className="badge ms-auto">coming soon</span>
+                      </a>
+                      <a className="dropdown-item d-flex px-4 py-3">
+                        <span className="me-3">SP Foundry</span>
+                        <span className="badge ms-auto">coming soon</span>
+                      </a>
+                    </div>
+                  </div>
+                </li>
+                <li className="nav-item dropdown">
+                  <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+                    <span className="me-2">
+                      <FormattedMessage id="menu.dao" />
+                    </span>
+
+                    <span className="bi bi-chevron-down align-middle fw-600 text-gray-dark"></span>
+                  </a>
+
+                  <div className="dropdown-menu border-0 shadow rounded-4">
+                    <div className="d-flex flex-column gap-2">
+                      <a className="dropdown-item d-flex px-4 py-3">
+                        <span className="me-3">FilFi DAO Guide</span>
+                        <span className="badge ms-auto">coming soon</span>
+                      </a>
+                      <a className="dropdown-item d-flex px-4 py-3">
+                        <span className="me-3">Ambassador</span>
+                        <span className="badge ms-auto">coming soon</span>
+                      </a>
+                      <a className="dropdown-item d-flex px-4 py-3">
+                        <span className="me-3">Governance process</span>
+                        <span className="badge ms-auto">coming soon</span>
+                      </a>
+                    </div>
+                  </div>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="https://docs.filfi.io/en/introduction.html" target="_blank" rel="noreferrer">
+                    <FormattedMessage id="menu.docs" />
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <button
             className="navbar-toggler"
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarCollapse"
-            aria-controls="navbarSupportedContent"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#navbarOffcanvas"
+            aria-controls="navbarOffcanvas"
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div ref={collapse} id="navbarCollapse" className="collapse navbar-collapse">
+          {/* <div ref={collapse} id="navbarCollapse" className="collapse navbar-collapse">
             <ul className="nav navbar-nav flex-grow-1 mb-3 mb-lg-0">
               <li className="nav-item">
                 <NavLink className="nav-link" to="/">
@@ -153,33 +193,12 @@ const Header: React.FC = () => {
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink className="nav-link" to="/lending">
-                  <FormattedMessage id="menu.lending" />
+                <NavLink className="nav-link" to="/raising">
+                  <FormattedMessage id="menu.raising" />
                 </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/letsfil">
-                  <FormattedMessage id="menu.letsfil" />
-                </NavLink>
-              </li>
-              <li className="nav-item dropdown ms-lg-auto">
-                <a className="nav-link text-main me-lg-0 opacity-100" href="#" aria-expanded="false" data-bs-toggle="dropdown" data-bs-auto-close="true">
-                  {localeLabel}
-                </a>
-
-                <ul className="dropdown-menu dropdown-menu-lg-end">
-                  {locales.map((item) => (
-                    <li key={item.locale}>
-                      <button className="dropdown-item" type="button" onClick={() => handleLocale(item.locale)}>
-                        <span>{item.icon}</span>
-                        <span className="ms-3">{item.label}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
       </nav>
     </header>
