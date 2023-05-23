@@ -12,6 +12,7 @@ import useLoadingify from '@/hooks/useLoadingify';
 import useDepositInvest from '@/hooks/useDepositInvest';
 import { formatEther, formatNum, formatRate } from '@/utils/format';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
+import useRaiseState from '@/hooks/useRaiseState';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
   return (...args: P) => {
@@ -77,15 +78,12 @@ const Item: React.FC<{
   getProvider?: (id?: number | string) => API.Provider | undefined;
 }> = ({ data, getProvider, onEdit, onHide, onDelete, onStart }) => {
   const { percent } = useDepositInvest(data);
-  const isSuccess = useMemo(() => data.status === RaiseState.Success, [data.status]);
-  const isSealing = useMemo(() => isSuccess && data.begin_seal_time, [isSuccess, data.begin_seal_time]);
-  const isFinished = useMemo(() => isSuccess && data.end_seal_time, [isSuccess, data.end_seal_time]);
-  const isSigned = useMemo(() => data.sp_sign_status === 1, [data.sp_sign_status]);
-  const isOpsPaid = useMemo(() => data.sp_margin_status === 1, [data.sp_margin_status]);
-  const isRaisePaid = useMemo(() => data.raise_margin_status === 1, [data.raise_margin_status]);
+  const { isFinished, isOpsPaid, isRaisePaid, isRaiser, isSealing, isSigned, isSuccess } = useRaiseState(data);
+
   const rate = useMemo(() => accMul(data.raiser_coin_share, 0.95), [data.raiser_coin_share]);
   const sealDays = useMemo(() => calcSealDays(data), [data]);
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
+  const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
 
   const [hiding, hideAction] = useLoadingify(async () => {
     await onHide?.();
@@ -191,7 +189,7 @@ const Item: React.FC<{
             <h4 className="card-title mb-0 text-truncate">{data.sponsor_company}发起的募集计划</h4>
           </div>
           <div className="flex-shrink-0 ms-auto">
-            <ShareBtn className="btn btn-light border-0 shadow-none" text="">
+            <ShareBtn className="btn btn-light border-0 shadow-none" text={shareUrl}>
               <IconShare />
             </ShareBtn>
           </div>
@@ -233,7 +231,7 @@ const Item: React.FC<{
         <div className="card-footer d-flex align-items-center gap-3">
           <div className="flex-shrink-0 me-auto">{renderStatus()}</div>
           <div className="d-flex flex-shrink-0 justify-content-between gap-2">
-            {renderActions()}
+            {isRaiser && renderActions()}
             <Link className="btn btn-primary" to={`/overview/${data.raising_id}`}>
               <span className="bi bi-eye"></span>
               <span className="ms-1">查看</span>

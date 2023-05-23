@@ -75,12 +75,27 @@ export function genRaiseID(minerId: number | string) {
 }
 
 export function transformParams(data: API.Base) {
-  const { sectorSize, targetAmount, minRaiseRate, raiseSecurityFund, opsSecurityFund, opsSecurityFundRate, ffiProtocolFee, ...props } = data;
+  const {
+    sectorSize,
+    targetAmount,
+    minRaiseRate,
+    raiseDays,
+    sealDays,
+    sectorPeriod,
+    raiseSecurityFund,
+    opsSecurityFund,
+    opsSecurityFundRate,
+    ffiProtocolFee,
+    ...props
+  } = data;
   const _params = omit(props, ['amount', 'amountType']);
 
   return {
     ..._params,
+    sealDays: +sealDays,
+    raiseDays: +raiseDays,
     minRaiseRate: +minRaiseRate,
+    sectorPeriod: +sectorPeriod,
     sectorSize: U.gb2byte(sectorSize),
     opsSecurityFundRate: +opsSecurityFundRate,
     ffiProtocolFee: ethers.utils.parseEther(`${ffiProtocolFee}`).toString(),

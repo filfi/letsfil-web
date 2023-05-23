@@ -40,7 +40,9 @@ function calcRaiseDepost(target: number, period: number, seals: number) {
   const fee = accMul(amount, 0.003);
 
   // 加总
-  return accAdd(accAdd(accAdd(accAdd(rInterest, sInterest), dInterest), pInterest), fee);
+  const total = accAdd(accAdd(accAdd(accAdd(rInterest, sInterest), dInterest), pInterest), fee);
+
+  return Number.isNaN(total) ? 0 : total;
 }
 
 export default function CreateProgram() {
@@ -88,7 +90,7 @@ export default function CreateProgram() {
   };
 
   const minRateValidator = async (rule: unknown, value: string) => {
-    await validators.createNumRangeValidator([50, 99], '最小50%，最大99%')(rule, value);
+    await validators.createNumRangeValidator([0, 99], '最小0%，最大99%')(rule, value);
 
     // TODO: min validate
     // if (value) {
@@ -147,8 +149,8 @@ export default function CreateProgram() {
         }}
         onFinish={handleSubmit}
       >
-        <div className="letsfil-form">
-          <div className="letsfil-item border-bottom">
+        <div className="ffi-form">
+          <div className="ffi-item border-bottom">
             <Form.Item name="planOpen">
               <FormRadio
                 grid
@@ -160,8 +162,8 @@ export default function CreateProgram() {
             </Form.Item>
           </div>
 
-          <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label">募集目标</h4>
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">募集目标</h4>
             <p className="text-gray">填写FIL的募集数量，过低目标不利于硬件设备的充分利用。存储算力是指QAP(Quality-Adjusted Power)</p>
 
             <Form.Item className="mb-2" name="amountType">
@@ -211,8 +213,8 @@ export default function CreateProgram() {
             </div>
           </div>
 
-          <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label">募集时间</h4>
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">募集时间</h4>
             <p className="text-gray">募集计划启动后的持续时间，此间开放FIL投资。启动时间由发起人决定。</p>
 
             <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
@@ -228,8 +230,8 @@ export default function CreateProgram() {
             </Form.Item>
           </div>
 
-          <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label">封装时间</h4>
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">封装时间</h4>
             <p className="text-gray">
               承诺的封装时间，超期会对发起人产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。
               <a className="text-underline" href="#time-modal" data-bs-toggle="modal">
@@ -244,13 +246,14 @@ export default function CreateProgram() {
                   { label: '5天', value: 5 },
                   { label: '7天', value: 7 },
                   { label: '10天', value: 10 },
+                  { label: '14天', value: 14 },
                 ]}
               />
             </Form.Item>
           </div>
 
-          <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label">发起人保证金</h4>
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">发起人保证金</h4>
             <p className="text-gray">
               根据募集计划自动计算，募集计划成功上链之后放开存入。封装工作完成后，发起人即可取回保证金。
               <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
@@ -273,8 +276,8 @@ export default function CreateProgram() {
             </div>
           </div>
 
-          <div className="letsfil-item">
-            <h4 className="letsfil-label">协议手续费</h4>
+          <div className="ffi-item">
+            <h4 className="ffi-label">协议手续费</h4>
             <p className="text-gray">创建新的募集计划会产生“FilFi协议手续费”，费用为实际募集金额*0.3%，募集不成功不产生手续费。</p>
 
             <Form.Item name="ffiProtocolFeePayMeth">
@@ -312,8 +315,8 @@ export default function CreateProgram() {
 
         <div className="border-top my-4"></div>
 
-        <div className="letsfil-form">
-          <div className="letsfil-form-actions">
+        <div className="ffi-form">
+          <div className="ffi-form-actions">
             <button className="btn btn-light btn-lg" type="button" onClick={history.back}>
               上一步
             </button>

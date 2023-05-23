@@ -41,7 +41,7 @@ const FormRadio: RadioType = ({ className, children, checkbox, disabled, grid, i
 
   if (type === 'button') {
     return (
-      <div className={classNames('letsfil-check letsfil-check-btn', className)} role="group">
+      <div className={classNames('ffi-check ffi-check-btn', className)} role="group">
         {renderChildren()}
       </div>
     );
@@ -50,10 +50,10 @@ const FormRadio: RadioType = ({ className, children, checkbox, disabled, grid, i
   return (
     <div
       className={classNames(
-        'list-group letsfil-check',
+        'list-group ffi-check',
         {
-          'letsfil-check-grid': grid,
-          'letsfil-check-checkbox': checkbox,
+          'ffi-check-grid': grid,
+          'ffi-check-checkbox': checkbox,
         },
         className,
       )}

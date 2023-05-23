@@ -1,8 +1,13 @@
 import { Avatar } from 'antd';
 import { useMemo } from 'react';
+import { useRequest } from 'ahooks';
+import { history } from '@umijs/max';
 
-import { formatEther } from '@/utils/format';
-import { accSub, sec2day } from '@/utils/utils';
+import { count } from '@/apis/raise';
+import useAccounts from '@/hooks/useAccounts';
+import useRaiseSeals from '@/hooks/useRaiseSeals';
+import useRaiseReward from '@/hooks/useRaiseReward';
+import { formatAmount, formatEther } from '@/utils/format';
 
 export type WorkingCardProps = {
   data: API.Plan;
@@ -10,8 +15,18 @@ export type WorkingCardProps = {
 };
 
 const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
-  const days = useMemo(() => (data.end_seal_time ? sec2day(Math.max(accSub(Date.now() / 1000, data.end_seal_time), 0)) : 0), [data.end_seal_time]);
+  const { withConnect } = useAccounts();
+  const { reward } = useRaiseReward(data);
+  const { running } = useRaiseSeals(data);
+
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
+  const { data: counter } = useRequest(() => count(data.raising_id), { refreshDeps: [data.raising_id] });
+
+  const handleView = withConnect(async (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
+
+    history.push(`/overview/${data.raising_id}`);
+  });
 
   return (
     <>
@@ -19,12 +34,12 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
         <div className="card-header d-flex gap-3">
           <div>
             <span className="text-gray-dark">累计收益</span>
-            <span className="ms-3 fs-24 fw-600">0</span>
+            <span className="ms-3 fs-24 fw-600">{formatAmount(reward)}</span>
             <span className="ms-1 text-gray-dark">FIL</span>
           </div>
           <div className="ms-auto">
             <span className="text-gray-dark">分配给</span>
-            <span className="ms-3 fs-24 fw-600">0</span>
+            <span className="ms-3 fs-24 fw-600">{counter?.investor_count ?? '-'}</span>
             <span className="ms-1">地址</span>
           </div>
         </div>
@@ -32,9 +47,11 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
           <p className="my-3 d-flex gap-3">
             <span className="text-gray-dark">募集计划</span>
             <span className="ms-auto">
-              <span>{data.sponsor_company}发起的募集计划</span>
+              <a className="text-underline" href="#" onClick={handleView}>
+                {data.sponsor_company}发起的募集计划
+              </a>
               <span className="mx-1">·</span>
-              <span>已运行{days}天</span>
+              <span>已运行{running}天</span>
             </span>
           </p>
           <p className="my-3 d-flex gap-3">
@@ -44,11 +61,15 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
         </div>
         <div className="card-footer d-flex gap-3">
           <div>
-            <Avatar src={provider?.logo_url} size={24} />
-            <span className="ms-2">{provider?.short_name}</span>
-            <span className="mx-1">·</span>
-            <span className="mx-1">保证金</span>
-            <span>{data.ops_security_fund_rate}%</span>
+            <span className="d-inline-block">
+              <Avatar src={provider?.logo_url} size={24} />
+            </span>
+            <span className="align-middle">
+              <span className="ms-2">{provider?.short_name}</span>
+              <span className="mx-1">·</span>
+              <span className="mx-1">保证金</span>
+              <span>{data.ops_security_fund_rate}%</span>
+            </span>
           </div>
           <div className="ms-auto my-auto">
             <span className="badge badge-success">提供技术服务</span>

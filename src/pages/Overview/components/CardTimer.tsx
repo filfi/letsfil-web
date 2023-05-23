@@ -35,6 +35,7 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
     isSealing,
     isDelayed,
     isFinished,
+    isDestroyed,
     isSigned,
     isOpsPaid,
     isRaisePaid,
@@ -96,13 +97,13 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [sealing, sealAction] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.startSeal(data.raising_id);
+    await contract?.startSeal(data.raising_id);
   });
 
   const [starting, handleStart] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.startRaisePlan(data.raising_id);
+    await contract?.startRaisePlan(data.raising_id);
   });
 
   const handleSeal = () => {
@@ -131,23 +132,39 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.servicerSign();
+    await contract?.servicerSign();
   });
 
   const renderAction = () => {
     // 准备中
-    if (isPending && isRaiser) {
-      return (
-        <>
-          <div>
-            <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} onClick={handleCreate}>
-              发起人签名
-            </SpinBtn>
-          </div>
+    if (isPending) {
+      if (isRaiser) {
+        return (
+          <>
+            <div>
+              <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} onClick={handleCreate}>
+                发起人签名
+              </SpinBtn>
+            </div>
 
-          <p className="mb-0">与相关方共识后签名，链上部署后不可修改，但您依然可以创建新的募集计划。</p>
-        </>
-      );
+            <p className="mb-0">与相关方共识后签名，链上部署后不可修改，但您依然可以创建新的募集计划。</p>
+          </>
+        );
+      }
+
+      if (isServicer) {
+        return (
+          <>
+            <div>
+              <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
+                技术服务商签名
+              </SpinBtn>
+            </div>
+
+            <p className="mb-0">等待发起人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
+          </>
+        );
+      }
     }
 
     // 待开始
@@ -174,18 +191,12 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
         return (
           <>
             <div>
-              <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={isPending || !isOpsPaid} onClick={handleSign}>
+              <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} onClick={handleSign}>
                 技术服务商签名
               </SpinBtn>
             </div>
 
-            {isPending ? (
-              <p className="mb-0">等待发起人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
-            ) : isOpsPaid ? (
-              <p className="mb-0">签名即同意募集计划中的约定，您签名后募集计划方可启动。</p>
-            ) : (
-              <p className="mb-0">存入技术运维保证金后签名按钮生效。签名后发起人即可启动募集计划。</p>
-            )}
+            <p className="mb-0">签名即同意募集计划中的约定，您签名后募集计划方可启动。</p>
           </>
         );
       }
@@ -210,7 +221,7 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
   };
 
   // 封装结束
-  if (!data || isFinished) {
+  if (!data || isFinished || isDestroyed) {
     return null;
   }
 

@@ -20,9 +20,13 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 const EVENTS_MAP: Record<string, string> = {
   CloseRaisePlan: '关闭募集计划',
   StartRaisePlan: '发起人启动募集',
+  SpSignWithMiner: '技术服务商签名',
+  EStartSeal: '启动封装',
+  ESealProgress: '封装中',
   ERaiseSuccess: '募集成功',
   ECreateAssetPack: '发起人签名',
   ERaiseSecurityFund: '存入发起人保证金',
+  EStackFromInvestor: '投资人存入FIL',
   EDepositOPSSecurityFund: '存入技术运维保证金',
 };
 
@@ -57,7 +61,7 @@ const SectionEvents: React.FC<{ data?: API.Plan }> = ({ data }) => {
       title: '链上消息',
       dataIndex: 'tx',
       render: withEmpty((hash) => (
-        <a className="fw-bold" href={`${SCAN_URL}/${hash}`} target="_blank" rel="noreferrer">
+        <a className="fw-bold" href={`${SCAN_URL}/message/${hash}`} target="_blank" rel="noreferrer">
           {formatAddr(hash)}
         </a>
       )),

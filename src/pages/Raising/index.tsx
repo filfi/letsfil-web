@@ -42,6 +42,9 @@ export default function Markets() {
 
   return (
     <div className="container">
+      <p>
+        <br />
+      </p>
       <Skeleton active loading={loading}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
@@ -51,10 +54,10 @@ export default function Markets() {
           <>
             {isArrs(raises) && (
               <>
-                <div className="my-4 my-lg-5">
+                <div className="mb-3 mb-lg-4">
                   <h3 className="mb-1 fs-18 fw-600">开放募集中</h3>
                 </div>
-                <div className="row row-cols-1 g-3 g-lg-4">
+                <div className="row row-cols-1 g-3 g-lg-4 mb-4 mb-lg-5">
                   {raises.map((item) => (
                     <div key={item.raise_address} className={classNames('col', styles.item)}>
                       <RaisingCard data={item} getProvider={getProvider} />
@@ -66,10 +69,10 @@ export default function Markets() {
 
             {isArrs(seals) && (
               <>
-                <div className="my-4 my-lg-5">
+                <div className="mb-3 mb-lg-4">
                   <h3 className="mb-1 fs-18 fw-600">正在封装扇区</h3>
                 </div>
-                <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4">
+                <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 mb-4 mb-lg-5">
                   {seals.map((item) => (
                     <div key={item.raise_address} className={classNames('col', styles.item)}>
                       <SealingCard data={item} getProvider={getProvider} />
@@ -81,7 +84,7 @@ export default function Markets() {
 
             {isArrs(workes) && (
               <>
-                <div className="my-4 my-lg-5">
+                <div className="mb-3 mb-lg-4">
                   <h3 className="mb-1 fs-18 fw-600">募集成功，已投入生产</h3>
                   <p className="text-gray-dark">募得的FIL做为质押币，完全用于建设联合节点，按照募集计划的约定，智能合约持续分配收益。</p>
                 </div>

@@ -5,7 +5,7 @@ import type { RadioButtonProps } from './types';
 
 export const Button: React.FC<RadioButtonProps> = ({ className, itemKey, checked, label, icon, name, value, onChange }) => {
   return (
-    <div className={classNames(className)}>
+    <>
       <input
         type="radio"
         className="btn-check"
@@ -21,7 +21,7 @@ export const Button: React.FC<RadioButtonProps> = ({ className, itemKey, checked
 
         <span>{label}</span>
       </label>
-    </div>
+    </>
   );
 };
 

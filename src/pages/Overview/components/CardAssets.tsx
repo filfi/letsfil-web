@@ -16,7 +16,7 @@ const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [loading, handleStaking] = useProcessify(async ({ amount }: { amount: string }) => {
     if (!data) return;
 
-    await contract.staking(data.raising_id, {
+    await contract?.staking(data.raising_id, {
       value: ethers.utils.parseEther(`${amount}`),
     });
 
@@ -124,7 +124,7 @@ const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
           </p>
         </div>
         <div className="card-body">
-          <Form className="letsfil-form" form={form} onFinish={handleStaking}>
+          <Form className="ffi-form" form={form} onFinish={handleStaking}>
             <Form.Item name="amount" rules={[{ required: true, message: '请输入数量' }, { validator: number }]}>
               <Input
                 type="number"

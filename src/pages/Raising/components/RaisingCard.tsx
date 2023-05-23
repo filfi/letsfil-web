@@ -26,7 +26,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
   // 投资人部分
   const investRate = useMemo(() => accMul(priorityRate, accDiv(accSub(100, opsRatio), 100)), [priorityRate, opsRatio]);
 
-  const handleJoin = withConnect(() => {
+  const handleJoin = withConnect(async () => {
     history.push(`/overview/${data.raising_id}`);
   });
 

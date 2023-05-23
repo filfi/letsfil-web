@@ -433,9 +433,8 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
    * 获取质押累计金额
    */
   const pledgeRecord = withConnect(
-    withContract(async (/* contract, id: BigNumberish, address: string */) => {
-      // return await contract?.pledgeRecordCalc(address);
-      return 0;
+    withContract(async (contract, id: BigNumberish, address: string) => {
+      return await contract?.pledgeRecordCalc(id, address);
     }),
   );
 
@@ -512,7 +511,16 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 获取服务商可领取的收益
+   * 获取累计罚金
+   */
+  const getTotalFines = withConnect(
+    withContract(async (contract, id: BigNumberish) => {
+      return await contract?.spFine(id);
+    }),
+  );
+
+  /**
+   * 获取总收益
    */
   const totalRewardAmount = withConnect(
     withContract(async (contract, id: BigNumberish) => {
@@ -521,7 +529,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 获取服务商待释放的收益
+   * 获取待释放的总收益
    */
   const totalReleasedRewardAmount = withConnect(
     withContract(async (contract, id: BigNumberish) => {
@@ -590,6 +598,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     pledgeAmount,
     pledgeRecord,
     pledgeTotalAmount,
+    getTotalFines,
     getRaiserAvailableReward,
     getRaiserPendingReward,
     getRaiserWithdrawnReward,

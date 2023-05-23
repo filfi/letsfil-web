@@ -68,7 +68,7 @@ const SectionContract: React.FC<{ data?: API.Plan }> = ({ data }) => {
             className="btn btn-outline-light"
             target="_blank"
             rel="noreferrer"
-            href={data && data.raise_address ? `${SCAN_URL}/${data.raise_address}` : undefined}
+            href={data && data.raise_address ? `${SCAN_URL}/address/${data.raise_address}` : undefined}
           >
             <IconShare />
           </a>

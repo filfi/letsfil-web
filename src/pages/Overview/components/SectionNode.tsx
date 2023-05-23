@@ -16,7 +16,7 @@ const SectionNode: React.FC<{ data?: API.Plan }> = ({ data }) => {
               <NodeIcon fill="#1D2939" />
               <span className="card-title ms-3 mb-0 fw-600">{data?.miner_id}</span>
             </div>
-            <a className="ms-auto" href={`${SCAN_URL}/${data?.miner_id}`} target="_blank" rel="noreferrer">
+            <a className="ms-auto" href={`${SCAN_URL}/address/${data?.miner_id}`} target="_blank" rel="noreferrer">
               链上查看
             </a>
           </div>

@@ -77,7 +77,7 @@ export default function useAccounts() {
     setState({ connected, connecting: false });
   }, [accounts]);
 
-  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string | undefined, ...args: P) => R) => {
+  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string | undefined, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
       let account: string | undefined = accounts?.[0];
 
@@ -86,11 +86,11 @@ export default function useAccounts() {
         account = list?.[0];
       }
 
-      return service(account, ...args);
+      return await service(account, ...args);
     };
   };
 
-  const withConnect = <R = any, P extends unknown[] = any>(service: (...args: P) => R) => {
+  const withConnect = <R = any, P extends unknown[] = any>(service: (...args: P) => Promise<R>) => {
     return withAccount((_, ...args: P) => service(...args));
   };
 

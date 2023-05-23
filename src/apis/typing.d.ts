@@ -88,6 +88,19 @@ declare namespace API {
     tx_hash: string;
   }
 
+  type Event = {
+    CreatedAt: string;
+    DeletedAt: string;
+    ID: number;
+    UpdatedAt: string;
+    asset_pack_id: number;
+    contract_address: string;
+    event_sign: string;
+    height: number;
+    pyload: string;
+    tx: string;
+  };
+
   type MinerAsset = {
     active_sector_count: number;
     available_balance: string;
@@ -105,16 +118,40 @@ declare namespace API {
     total_balance: string;
   };
 
-  type Event = {
+  type AssetPack = {
+    asset_pack_id: string;
+    miner_id: string;
+    pack_initial_pledge: string;
+    pack_power: string;
+    raising_id: number;
+    region: string;
+    sector_begin_expira: number;
+    sector_count: number;
+    sector_end_expira: number;
+    sector_size: number;
+  };
+
+  type Pack = {
     CreatedAt: string;
     DeletedAt: string;
     ID: number;
     UpdatedAt: string;
+    asset_pack_end_epoch: number;
     asset_pack_id: number;
-    contract_address: string;
-    event_sign: string;
-    height: number;
-    pyload: string;
-    tx: string;
+    asset_pack_name: string;
+    asset_pack_start_epoch: number;
+    asset_pack_status: number;
+    asset_pack_type: number;
+    manager_address: string;
+    max_expiration_epoch: number;
+    min_expiration_epoch: number;
+    miner_id: string;
+    raising_id: number;
+    sector_size: number;
+    stat_height: number;
+    sync_sector_statue: number;
+    total_pledge_amount: string;
+    total_power: string;
+    total_sector: number;
   };
 }

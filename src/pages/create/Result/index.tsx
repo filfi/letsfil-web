@@ -48,11 +48,11 @@ export default function CreateResult() {
 
   return (
     <>
-      <div className="letsfil-form">
+      <div className="ffi-form">
         <Result title="已保存" />
 
-        <div className="letsfil-item">
-          <h5 className="letsfil-label mb-5">
+        <div className="ffi-item">
+          <h5 className="ffi-label mb-5">
             <span>接下来做什么？</span>
             <a className="text-underline" href="#more-modal" data-bs-toggle="modal">
               了解更多
@@ -69,7 +69,7 @@ export default function CreateResult() {
                   <span className="fw-bold">发起人</span>
                   <span>签名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">与您的合作伙伴讨论充分募集计划，签名将完成链上部署，上链之后不可修改。</p>
+                <p className="mb-0 text-gray-dark">对募集计划达成共识，发起人签名完成链上部署，上链之后不可修改。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -126,7 +126,7 @@ export default function CreateResult() {
 
       <div className="border-top my-4"></div>
 
-      <div className="letsfil-form">
+      <div className="ffi-form">
         <div className="d-flex gap-3 gap-lg-4">
           <SpinBtn className="btn btn-light btn-lg flex-shrink-0" loading={loading} onClick={handleEdit}>
             重新修改
@@ -148,7 +148,7 @@ export default function CreateResult() {
                 <span className="fw-bold">发起人</span>
                 <span>签名</span>
               </p>
-              <p className="mb-0 text-gray-dark">与您的合作伙伴讨论充分募集计划，签名将完成链上部署，上链之后不可修改。</p>
+              <p className="mb-0 text-gray-dark">对募集计划达成共识，发起人签名完成链上部署，上链之后不可修改。</p>
             </div>
           </li>
           <li className="list-group-item d-flex gap-3 border-0 mb-3">

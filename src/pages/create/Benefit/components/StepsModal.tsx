@@ -55,8 +55,8 @@ const RaiseForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref:
 
   return (
     <Form form={form} size="large" layout="vertical" initialValues={values} onFinish={handleFinish}>
-      <div className="letsfil-form">
-        <div className="letsfil-item">
+      <div className="ffi-form">
+        <div className="ffi-item">
           <p className="mb-1 fw-500">出币方分成</p>
           <Form.Item
             className="mb-0"
@@ -68,7 +68,7 @@ const RaiseForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref:
         </div>
         <div className="row row-cols-1 row-cols-md-2 g-3">
           <div className="col">
-            <div className="letsfil-item">
+            <div className="ffi-item">
               <p className="mb-1 fw-500">投资人分成</p>
               <Form.Item noStyle name="raiserCionFirst">
                 <Input readOnly suffix="%" />
@@ -76,7 +76,7 @@ const RaiseForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref:
             </div>
           </div>
           <div className="col">
-            <div className="letsfil-item">
+            <div className="ffi-item">
               <p className="mb-1 fw-500">运维保证金分成</p>
               <Form.Item noStyle name="raiserCionLast" label="">
                 <Input readOnly suffix="%" />
@@ -108,8 +108,8 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
 
   return (
     <Form form={form} size="large" layout="vertical" initialValues={values} onFinish={handleFinish}>
-      <div className="letsfil-form">
-        <div className="letsfil-item">
+      <div className="ffi-form">
+        <div className="ffi-item">
           <p className="mb-1 fw-500">建设方分成</p>
           <Form.Item noStyle name="serverShare">
             <Input readOnly suffix="%" />
@@ -117,7 +117,7 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
         </div>
         <div className="row row-cols-1 row-cols-md-3 g-3">
           <div className="col">
-            <div className="letsfil-item mb-0">
+            <div className="ffi-item mb-0">
               <p className="mb-1 fw-500">技术运维服务费</p>
               <Form.Item
                 className="mb-0"
@@ -129,7 +129,7 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
             </div>
           </div>
           <div className="col">
-            <div className="letsfil-item mb-0">
+            <div className="ffi-item mb-0">
               <p className="mb-1 fw-500">发起人分成</p>
               <Form.Item noStyle name="raiserShare">
                 <Input readOnly suffix="%" />
@@ -137,7 +137,7 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
             </div>
           </div>
           <div className="col">
-            <div className="letsfil-ite mb-0">
+            <div className="ffi-ite mb-0">
               <p className="mb-1 fw-500">FilFi协议分成</p>
               <Form.Item className="mb-0" name="filfiShare" help="服务商 * 8%">
                 <Input readOnly suffix="%" />

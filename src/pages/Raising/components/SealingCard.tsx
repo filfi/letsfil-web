@@ -1,8 +1,7 @@
 import { Avatar } from 'antd';
 import { useMemo } from 'react';
-
+import useRaiseSeals from '@/hooks/useRaiseSeals';
 import { formatEther, formatRate } from '@/utils/format';
-import { accDiv, accMul, accSub, sec2day } from '@/utils/utils';
 
 export type SealingCardProps = {
   data: API.Plan;
@@ -10,10 +9,7 @@ export type SealingCardProps = {
 };
 
 const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
-  const period = useMemo(() => data.seal_days, [data.seal_days]);
-  const total = useMemo(() => (data.delay_seal_time ? accMul(period, 1.5) : 0), [data.delay_seal_time]);
-  const days = useMemo(() => (data.begin_seal_time ? sec2day(Math.max(accSub(Date.now() / 1000, data.begin_seal_time), 0)) : 0), [data.begin_seal_time]);
-  const percent = useMemo(() => (total > 0 ? accDiv(days, total) : 0), [days, total]);
+  const { percent, running } = useRaiseSeals(data);
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
 
   return (
@@ -34,18 +30,26 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
           </p>
           <p className="my-3 d-flex gap-3">
             <span className="text-gray-dark">封装进度</span>
-            <span className="ms-auto">
-              第{days}天 · {formatRate(percent)}
-            </span>
+            {data.begin_seal_time > 0 ? (
+              <span className="ms-auto">
+                第{running}天 · {formatRate(percent)}
+              </span>
+            ) : (
+              <span className="ms-auto text-gray">尚未开始</span>
+            )}
           </p>
           <p className="my-3 d-flex gap-3">
             <span className="text-gray-dark">技术服务</span>
             <span className="ms-auto">
-              <Avatar src={provider?.logo_url} size={20} />
-              <span className="mx-1">{provider?.short_name}</span>
-              <span className="mx-1">·</span>
-              <span className="mx-1">保证金</span>
-              <span>{data.ops_security_fund_rate}%</span>
+              <span className="d-inline-block">
+                <Avatar src={provider?.logo_url} size={20} />
+              </span>
+              <span className="align-middle">
+                <span className="mx-1">{provider?.short_name}</span>
+                <span className="mx-1">·</span>
+                <span className="mx-1">保证金</span>
+                <span>{data.ops_security_fund_rate}%</span>
+              </span>
             </span>
           </p>
         </div>

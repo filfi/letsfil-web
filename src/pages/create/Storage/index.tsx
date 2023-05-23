@@ -167,9 +167,9 @@ export default function CreateStorage() {
           <Input />
         </Form.Item>
 
-        <div className="letsfil-form">
-          <div className={classNames('letsfil-item border-bottom')}>
-            <h4 className="letsfil-label">完善发起人资料</h4>
+        <div className="ffi-form">
+          <div className={classNames('ffi-item border-bottom')}>
+            <h4 className="ffi-label">完善发起人资料</h4>
             <p className="text-gray">
               发起人的名称和Logo都会显示在募集计划中，使用有助于投资人识别的名称，也可以使用机构名称。名称允许修改，会产生Gas费，修改历史会在链上记录。
             </p>
@@ -196,8 +196,8 @@ export default function CreateStorage() {
             </div>
           </div>
 
-          {/* <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label mb-3">募集计划名称</h4>
+          {/* <div className="ffi-item border-bottom">
+            <h4 className="ffi-label mb-3">募集计划名称</h4>
 
             <Form.Item
               name="raisingName"
@@ -207,8 +207,8 @@ export default function CreateStorage() {
             </Form.Item>
           </div> */}
 
-          <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label">Filecoin存储节点</h4>
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">Filecoin存储节点</h4>
             <p className="text-gray">
               募集资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
               <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
@@ -241,8 +241,8 @@ export default function CreateStorage() {
             </Form.Item>
           </div>
 
-          <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label">Filecoin存储方案</h4>
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">Filecoin存储方案</h4>
             <p className="text-gray">选择封装扇区的参数</p>
 
             <Form.Item name="sectorSize" rules={[{ required: true, message: '请选择存储方案' }]}>
@@ -264,8 +264,8 @@ export default function CreateStorage() {
             </Form.Item>
           </div>
 
-          <div className="letsfil-item">
-            <h4 className="letsfil-label">技术服务商（SP Foundry）</h4>
+          <div className="ffi-item">
+            <h4 className="ffi-label">技术服务商（SP Foundry）</h4>
             <p className="text-gray">
               技术服务商提供扇区封装、技术运维、IDC数据中心整体解决方案，是存储节点长期健康运行的最终保障。
               <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">
@@ -284,8 +284,8 @@ export default function CreateStorage() {
 
         <div className="border-top my-4"></div>
 
-        <div className="letsfil-form">
-          <div className="letsfil-form-actions">
+        <div className="ffi-form">
+          <div className="ffi-form-actions">
             <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
               下一步
             </SpinBtn>

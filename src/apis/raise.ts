@@ -60,6 +60,10 @@ export function getGasFee() {
   return A.get<API.Base>('/service-provier/get-gas-fee');
 }
 
+export function count(raising_id: string) {
+  return A.get<{ investor_count: number }>('/raising-plan/v2/plan/investor/count', { raising_id });
+}
+
 export function statChainInfo() {
   return A.get<API.Base>('/service-provier/get-filscan-stat-chain-info');
 }

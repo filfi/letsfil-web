@@ -15,8 +15,8 @@ export const SUPPORTED_CHAINS = [
 ];
 
 // hyperspace - testnet
-const ADDR_HP = '0x8a3A3E3e2591a4FFE56d146811524261a64e3Db8'; // 5200
-// const ADDR_HP = '0xB8C16A48e8DAcE169D938B114f653795715c8339'; // 5000
+const ADDR_HP = '0x4096FA9Cc535aD8d43A70719ceFE066D2E526650'; // 5200
+// const ADDR_HP = '0x785EdAF0E6fbDD879ba7217299cADE0366031a75'; // 5000
 // 2k - testnet
 const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
 /**
@@ -24,8 +24,8 @@ const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
  */
 export const RAISE_ADDRESS = RUN_ENV === '2k' ? ADDR_2K : ADDR_HP;
 
-const SCAN_URL_MAIN = 'https://filfox.info/en/address';
-const SCAN_URL_HP = 'https://hyperspace.filfox.info/en/address';
+const SCAN_URL_MAIN = 'https://filfox.info/en';
+const SCAN_URL_HP = 'https://hyperspace.filfox.info/en';
 /**
  * Miner Overview address
  */

@@ -3,8 +3,8 @@ import { BigNumber } from 'ethers';
 import { camelCase } from 'lodash';
 import classNames from 'classnames';
 import { ScrollSpy } from 'bootstrap';
-import { history, useModel, useParams } from '@umijs/max';
-import { useMount, useRequest, useResponsive } from 'ahooks';
+import { NavLink, history, useModel, useParams } from '@umijs/max';
+import { useRequest, useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as A from '@/apis/raise';
@@ -14,7 +14,7 @@ import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import Breadcrumb from '@/components/Breadcrumb';
+// import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
@@ -64,7 +64,7 @@ export default function Overview() {
 
   const { data, refresh } = useRequest(service, { refreshDeps: [param.id] });
 
-  const { contract, isRaiser, isRaising, isStarted, isSuccess } = useRaiseState(data);
+  const { contract, isFinished, isRaiser, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
@@ -80,7 +80,7 @@ export default function Overview() {
     refresh();
   };
 
-  useMount(updateScrollSpy);
+  useUpdateEffect(updateScrollSpy, [data]);
 
   useEmittHandler<any>({
     [EventType.onStaking]: refresh,
@@ -121,7 +121,7 @@ export default function Overview() {
   const [, closeAction] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.closeRaisePlan(data.raising_id);
+    await contract?.closeRaisePlan(data.raising_id);
   });
 
   const handleDelete = () => {
@@ -174,16 +174,12 @@ export default function Overview() {
     if (isPending) {
       return (
         <>
-          <button type="button" className="btn btn-primary" onClick={handleEdit}>
-            <IconEdit />
+          <SpinBtn className="btn btn-primary" icon={<IconEdit />} onClick={handleEdit}>
+            修改募集计划
+          </SpinBtn>
 
-            <span className="align-middle ms-1">修改募集计划</span>
-          </button>
-
-          <SpinBtn className="btn btn-danger" loading={deleting} onClick={handleDelete}>
-            <IconTrash />
-
-            <span className="align-middle ms-1">删除</span>
+          <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={deleting} onClick={handleDelete}>
+            删除
           </SpinBtn>
 
           <ShareBtn className="btn btn-outline-light border-0" text={location.href} toast="链接已复制">
@@ -200,7 +196,7 @@ export default function Overview() {
           <span className="align-middle ms-1">分享</span>
         </ShareBtn>
 
-        <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/${param.id}`} target="_blank" rel="noreferrer">
+        <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
           <IconShare4 />
           <span className="align-middle ms-1">查看智能合约</span>
         </a>
@@ -268,11 +264,30 @@ export default function Overview() {
   return (
     <>
       <div className="container">
-        <Breadcrumb className="my-3 my-lg-4" items={[{ title: '募集计划' }]} />
+        {/* <Breadcrumb className="my-3 my-lg-4" items={[{ title: '募集计划' }]} /> */}
 
-        <PageHeader title={title} desc="依靠强大的FVM智能合约，合作共建Filecoin存储">
+        <PageHeader
+          className={classNames({ 'border-bottom': !isFinished, 'mb-3 pb-0': isFinished })}
+          title={title}
+          desc="依靠强大的FVM智能合约，合作共建Filecoin存储"
+        >
           <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div>
         </PageHeader>
+
+        {isFinished && (
+          <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
+            <li className="nav-item">
+              <NavLink className="nav-link" to={`/assets/${param.id}`}>
+                我的资产
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink className="nav-link" to={`/overview/${param.id}`}>
+                募集计划
+              </NavLink>
+            </li>
+          </ul>
+        )}
 
         <div className={classNames('d-flex flex-column flex-lg-row', styles.content)}>
           <div id="nav-pills" className={classNames('d-none d-lg-block flex-shrink-0', styles.tabs)}>
@@ -312,11 +327,13 @@ export default function Overview() {
                   智能合约
                 </a>
               </li>
-              <li className="nav-item">
-                <a className="nav-link" href="#events">
-                  活动
-                </a>
-              </li>
+              {isStarted && (
+                <li className="nav-item">
+                  <a className="nav-link" href="#events">
+                    活动
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
           <div className={classNames('flex-grow-1')} tabIndex={0} data-bs-spy="scroll" data-bs-target="#nav-pills" data-bs-smooth-scroll="true">
@@ -396,14 +413,16 @@ export default function Overview() {
 
               <SectionContract data={data} />
             </section>
-            <section id="events" className="section">
-              <div className="section-header">
-                <h4 className="section-title">活动</h4>
-                <p className="mb-0">募集计划发生的重要活动以及链上相关消息</p>
-              </div>
+            {isStarted && (
+              <section id="events" className="section">
+                <div className="section-header">
+                  <h4 className="section-title">活动</h4>
+                  <p className="mb-0">募集计划发生的重要活动以及链上相关消息</p>
+                </div>
 
-              <SectionEvents data={data} />
-            </section>
+                <SectionEvents data={data} />
+              </section>
+            )}
           </div>
           <div className={classNames('flex-shrink-0', styles.sidebar)}>{renderCard()}</div>
         </div>

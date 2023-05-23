@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import useAccounts from './useAccounts';
 import { isEqual } from '@/utils/utils';
+import useAccounts from './useAccounts';
 import useLoadingify from './useLoadingify';
 import useRaiseContract from './useRaiseContract';
 import { NodeState, RaiseState } from '@/constants/state';
 
 export default function useRaiseState(data?: API.Plan) {
   const { account } = useAccounts();
-  const contract = useRaiseContract(data?.raise_address);
+  const { getContract } = useRaiseContract();
 
   const [nodeState, setNodeState] = useState(10);
   const [raiseState, setRaiseState] = useState(10);
+
+  const contract = useMemo(() => getContract(data?.raise_address), [data?.raise_address]);
 
   // 等待上链
   const isPending = useMemo(() => raiseState === 10, [raiseState]);
@@ -29,10 +31,10 @@ export default function useRaiseState(data?: API.Plan) {
   const isFailed = useMemo(() => raiseState === RaiseState.Failure, [raiseState]);
   // 封装中
   const isSealing = useMemo(() => isSuccess && nodeState === NodeState.Started, [isSuccess, nodeState]);
-  // 封装完成
-  const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
   // 已延期
   const isDelayed = useMemo(() => isSuccess && nodeState === NodeState.Delayed, [isSuccess, nodeState]);
+  // 封装完成
+  const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
   // 已销毁（节点运行结束）
   const isDestroyed = useMemo(() => isSuccess && nodeState === NodeState.Destroy, [isSuccess, nodeState]);
 
@@ -50,8 +52,8 @@ export default function useRaiseState(data?: API.Plan) {
   const [loading, fetchContract] = useLoadingify(async () => {
     if (!data) return;
 
-    const nodeState = await contract.getNodeState(data.raising_id);
-    const raiseState = await contract.getRaiseState(data.raising_id);
+    const nodeState = await contract?.nodeState(data.raising_id);
+    const raiseState = await contract?.raiseState(data.raising_id);
 
     setNodeState(nodeState ?? 10);
     setRaiseState(raiseState ?? 10);
@@ -59,7 +61,7 @@ export default function useRaiseState(data?: API.Plan) {
 
   useEffect(() => {
     fetchContract();
-  }, [account, data?.raise_address]);
+  }, [account, data]);
 
   return {
     contract,

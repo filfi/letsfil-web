@@ -1,6 +1,6 @@
 import { useTitle } from 'ahooks';
 import classNames from 'classnames';
-import { Link, history, useModel } from '@umijs/max';
+import { Link, history } from '@umijs/max';
 
 import styles from './styles.less';
 import useAccounts from '@/hooks/useAccounts';
@@ -15,12 +15,9 @@ export default function Home() {
   useTitle('首页 - FilFi', { restoreOnUnmount: true });
 
   const { withConnect } = useAccounts();
-  const [, setModel] = useModel('stepform');
 
-  const handleCreate = withConnect(() => {
-    setModel(undefined);
-
-    history.push('/create');
+  const handleCreate = withConnect(async () => {
+    history.push('/account');
   });
 
   return (
@@ -31,15 +28,14 @@ export default function Home() {
             <div className="col">
               <p className="mb-4">
                 <span className="badge badge-primary ps-1">
-                  <span className="badge badge-primary bg-white lh-sm">FilFi</span>
-                  <span className="mx-2">创新的“募集计划”，在投资者和SP之间重建信任</span>
-                  <span className="bi bi-arrow-right"></span>
+                  <span className="badge badge-primary bg-white lh-sm">FilFi联合节点</span>
+                  <span className="ms-2">创新的“募集计划”让投资者和SP重建信任</span>
                 </span>
               </p>
               <h1 className={classNames('mb-4 fw-600', styles.title)}>
-                Filecoin首个100%<span className="text-danger">智能合约</span>管理的存储节点联合建设方案
+                Filecoin首个100%<span className="text-danger">智能合约</span>管理的存储节点<span className="text-danger">联合建设</span>方案
               </h1>
-              <p className={classNames('mb-4 mb-lg-5', styles.summary)}>麻烦事交给智能合约，安心领取收益</p>
+              <p className={classNames('mb-4 mb-lg-5', styles.summary)}>履约交给智能合约，安心领取收益</p>
               <div className="d-flex flex-column flex-sm-row px-3 px-lg-0 gap-3 mb-3">
                 <Link className="btn btn-primary btn-lg" to="/raising">
                   选择募集计划

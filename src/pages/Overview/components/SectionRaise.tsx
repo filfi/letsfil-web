@@ -1,21 +1,20 @@
 import { useMemo } from 'react';
 
 import * as F from '@/utils/format';
-import { accDiv, accMul } from '@/utils/utils';
 import useRaiseState from '@/hooks/useRaiseState';
+import { accDiv, accMul, accSub } from '@/utils/utils';
 import useDepositInvest from '@/hooks/useDepositInvest';
-
-function formatIncome(rate?: number | string) {
-  return F.formatPercent(rate).replace(/%$/, '');
-}
 
 const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { percent, totalPledge } = useDepositInvest(data);
   const { isStarted, isSuccess } = useRaiseState(data);
 
   const total = useMemo(() => F.toNumber(data?.target_amount), [data]);
+  const priority = useMemo(() => data?.raiser_coin_share ?? 0, [data?.raiser_coin_share]);
+  const opsRate = useMemo(() => data?.ops_security_fund_rate ?? 0, [data?.ops_security_fund_rate]);
   const minAmount = useMemo(() => accMul(total, accDiv(data?.min_raise_rate ?? 0, 100)), [total, data?.min_raise_rate]);
   const opsAmount = useMemo(() => (data ? accMul(total, accDiv(data.ops_security_fund_rate, 100)) : 0), [total, data?.ops_security_fund_rate]);
+  const raiseRate = useMemo(() => accMul(priority, accDiv(Math.max(accSub(100, opsRate), 0), 100)), [priority, opsRate]);
 
   return (
     <>
@@ -40,12 +39,13 @@ const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
               <p className="mb-1 text-gray-dark">投资人获得收益</p>
               <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
-                  <span className="fs-3">{formatIncome(data?.income_rate || 0)}</span>
+                  <span className="fs-3">{raiseRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
-                {/* <span className="badge badge-primary ms-auto">
-                  {isRaiser ? data?.raiser_share : isProvider ? data?.servicer_share : data?.investor_share}% · 年化
-                </span> */}
+                <span className="badge badge-primary ms-auto">
+                  <span className="bi bi-calculator"></span>
+                  <span className="ms-1">年化{F.formatNum(F.toNumber(data?.income_rate, 6), '0.00%')}</span>
+                </span>
               </p>
             </div>
           </div>

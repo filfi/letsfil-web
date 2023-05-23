@@ -20,7 +20,7 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [raising, handleRaisePay] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.depositRaiseFund(data.raising_id, {
+    await contract?.depositRaiseFund(data.raising_id, {
       value: data.raise_security_fund,
     });
   });
@@ -28,7 +28,7 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [opsLoading, handleOpsPay] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.depositOpsFund(data.raising_id, {
+    await contract?.depositOpsFund(data.raising_id, {
       value: data.ops_security_fund,
     });
   });

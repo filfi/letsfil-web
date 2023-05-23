@@ -204,9 +204,9 @@ export default function CreateBenefit() {
         }}
         onFinish={handleSubmit}
       >
-        <div className="letsfil-form">
-          <div className="letsfil-item border-bottom">
-            <h4 className="letsfil-label">技术运维保证金</h4>
+        <div className="ffi-form">
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">技术运维保证金</h4>
             <p className="text-gray">
               发起人要求技术服务商存入保证金，保证金将做为劣后质押币，与投资人的质押币一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押币的比例不低于5%，提高占比要求，可提高对投资人的吸引力。
               <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
@@ -263,8 +263,8 @@ export default function CreateBenefit() {
             </div>
           </div>
 
-          <div className="letsfil-item">
-            <h4 className="letsfil-label">算力/收益分配方案</h4>
+          <div className="ffi-item">
+            <h4 className="ffi-label">算力/收益分配方案</h4>
             <p className="text-gray">
               新增存储算力获得的收益，智能合约严格执行分配方案。点击修改按钮调整分配方案。
               <a className="text-underline" href="#build-modal" data-bs-toggle="modal">
@@ -314,8 +314,8 @@ export default function CreateBenefit() {
             <>
               <div className="border-top my-4" />
 
-              <div className="letsfil-item">
-                <h4 className="letsfil-label">{model.minerId}历史资产的归属</h4>
+              <div className="ffi-item">
+                <h4 className="ffi-label">{model.minerId}历史资产的归属</h4>
                 <p className="text-gray">
                   检测到 f1234567
                   是已经存在的节点，历史资产收益不计入此募集计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的收益分成比例不低于10%）。历史资产的质押币100%归属发起人。
@@ -408,8 +408,8 @@ export default function CreateBenefit() {
 
         <div className="border-top my-4"></div>
 
-        <div className="letsfil-form">
-          <div className="letsfil-form-actions">
+        <div className="ffi-form">
+          <div className="ffi-form-actions">
             <button className="btn btn-light btn-lg" type="button" onClick={history.back}>
               上一步
             </button>

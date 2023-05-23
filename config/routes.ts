@@ -99,6 +99,11 @@ const routes: IBestAFSRoute[] = [
     path: 'overview/:id',
     component: './Overview',
   },
+  {
+    name: 'assets',
+    path: 'assets/:id',
+    component: './Assets',
+  },
   // other 404
   { path: '*', redirect: '/' },
 ];

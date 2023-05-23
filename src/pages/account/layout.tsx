@@ -1,7 +1,6 @@
 import { Avatar } from 'antd';
 import { useRef } from 'react';
 import { useTitle } from 'ahooks';
-import classNames from 'classnames';
 import { NavLink, Outlet } from '@umijs/max';
 
 import styles from './layout.less';
@@ -34,7 +33,7 @@ export default function AccountLayout() {
         </div>
 
         <div className="mb-4">
-          <ul className={classNames('nav nav-tabs', styles.tabs)}>
+          <ul className="nav nav-tabs ffi-tabs">
             <li className="nav-item">
               <NavLink className="nav-link" to="/account/assets">
                 算力资产
