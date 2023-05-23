@@ -219,15 +219,15 @@ export default function Assets() {
                     className="accordion-button"
                     type="button"
                     data-bs-toggle="collapse"
-                    data-bs-target="#miner-info"
+                    data-bs-target="#activity"
                     aria-expanded="true"
-                    aria-controls="miner-info"
+                    aria-controls="activity"
                   >
                     <span className="bi bi-activity"></span>
                     <span className="ms-2 fs-16 fw-600">活动</span>
                   </button>
                 </h4>
-                <div id="miner-info" className="accordion-collapse collapse show" aria-labelledby="Miner Info">
+                <div id="activity" className="accordion-collapse collapse show" aria-labelledby="Activity">
                   <div className="accordion-body p-0">
                     <Table className="table" columns={columns} pagination={false} />
                   </div>
