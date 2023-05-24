@@ -33,7 +33,7 @@ export function investList({ address, ...params }: API.PagingParams & { address:
     total: number;
     list: {
       all_list: API.Plan[];
-      invest_list: API.Plan[];
+      invest_list: number[];
     };
   }>('/raising-plan/invest/list', { ...params, invest_address: address });
 }

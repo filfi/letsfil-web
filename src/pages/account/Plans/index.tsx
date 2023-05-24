@@ -8,7 +8,6 @@ import { Link, history, useModel } from '@umijs/max';
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Item from './components/Item';
-import { sleep } from '@/utils/utils';
 import useUser from '@/hooks/useUser';
 import Dialog from '@/components/Dialog';
 import Result from '@/components/Result';
@@ -16,6 +15,7 @@ import { catchify } from '@/utils/hackify';
 import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
 import { transformModel } from '@/helpers/app';
+import { isEqual, sleep } from '@/utils/utils';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseContract from '@/hooks/useRaiseContract';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
@@ -40,9 +40,10 @@ export default function AccountPlans() {
   const { data, loading, refresh } = useRequest(service);
   const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data?.total, loading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
-  const invests = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
+  const investIds = useMemo(() => data?.list?.invest_list, [data?.list.invest_list]);
   const raises = useMemo(() => filter(lists, { raiser: account }), [lists, account]);
   const services = useMemo(() => filter(lists, { service_provider_address: account }), [lists, account]);
+  const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
 
   const handleCreate = () => {
     setModel(undefined);

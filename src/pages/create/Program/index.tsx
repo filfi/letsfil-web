@@ -20,7 +20,7 @@ import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
  * @param seals 封装期限
  * @returns
  */
-function calcRaiseDepost(target: number, period: number, seals: number) {
+export function calcRaiseDepost(target: number, period: number, seals: number) {
   // 延长期
   const delay = accDiv(seals, 2);
   // 计算金额
@@ -50,11 +50,12 @@ export default function CreateProgram() {
   const [data, setData] = useModel('stepform');
 
   const amount = Form.useWatch('amount', form);
-  const seals = Form.useWatch('sealDays', form);
-  const period = Form.useWatch('raiseDays', form);
-  const target = Form.useWatch('targetAmount', form);
+  // const seals = Form.useWatch('sealDays', form);
+  // const period = Form.useWatch('raiseDays', form);
+  // const target = Form.useWatch('targetAmount', form);
   const minRate = Form.useWatch('minRaiseRate', form);
   const amountType = Form.useWatch('amountType', form);
+  const deposit = Form.useWatch('raiseSecurityFund', form);
   const { perPledge, loading: fetching } = useChainInfo();
 
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
@@ -75,10 +76,10 @@ export default function CreateProgram() {
   const evalMin = useMemo(() => accMul(evalMax, rate), [evalMax, rate]);
 
   // 发起人保证金
-  const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
+  // const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
 
   const amountValidator = async (rule: unknown, value: string) => {
-    await validators.number(rule, value);
+    await validators.integer(rule, value);
 
     if (value) {
       const val = amountType === 0 ? +amount : evalMax;
@@ -102,9 +103,9 @@ export default function CreateProgram() {
     // }
   };
 
-  useUpdateEffect(() => {
-    form.setFieldValue('raiseSecurityFund', deposit);
-  }, [deposit]);
+  // useUpdateEffect(() => {
+  //   form.setFieldValue('raiseSecurityFund', deposit);
+  // }, [deposit]);
   useUpdateEffect(() => {
     const val = Number.isNaN(+amount) ? 0 : +amount;
     // 按金额
@@ -112,7 +113,7 @@ export default function CreateProgram() {
       form.setFieldsValue({
         targetAmount: val,
         targetPower: `${Math.floor(pb2byte(accDiv(val, perPledge)))}`,
-        // raiseSecurityFund: accMul(val, 0.05),
+        raiseSecurityFund: accMul(val, 0.05),
         ffiProtocolFee: accMul(val, 0.003),
       });
     } else {
@@ -121,7 +122,7 @@ export default function CreateProgram() {
       form.setFieldsValue({
         targetAmount: amount,
         targetPower: `${pb2byte(amount)}`,
-        // raiseSecurityFund: accMul(amount, 0.05),
+        raiseSecurityFund: accMul(amount, 0.05),
         ffiProtocolFee: accMul(amount, 0.003),
       });
     }

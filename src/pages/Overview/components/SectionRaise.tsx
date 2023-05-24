@@ -42,10 +42,10 @@ const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
                   <span className="fs-3">{raiseRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
-                <span className="badge badge-primary ms-auto">
+                <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
                   <span className="ms-1">年化{F.formatNum(F.toNumber(data?.income_rate, 6), '0.00%')}</span>
-                </span>
+                </a>
               </p>
             </div>
           </div>
