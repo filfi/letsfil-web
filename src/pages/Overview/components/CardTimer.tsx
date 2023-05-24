@@ -201,7 +201,7 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 loading={signing}
                 disabled={initialState?.processing}
                 data-bs-toggle="modal"
-                data-bs-target="signer-confirm"
+                data-bs-target="#signer-confirm"
               >
                 技术服务商签名
               </SpinBtn>
@@ -290,24 +290,28 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
       </div>
 
       <Modal.Alert id="signer-confirm" footerClassName="border-0" title="移交Owner地址" confirmText="签名" confirmLoading={signing} onConfirm={handleSign}>
-        <p className="mb-0 fs-16 fw-500">
-          <span>在安全环境下执行以下命令，将Owner地址修改为智能合约地址。</span>
-          <a className="text-underline" href="#">
-            如何收回Owner地址？
-          </a>
-        </p>
+        <div className="p-3">
+          <p className="mb-0 fs-16 fw-500">
+            <span>在安全环境下执行以下命令，将Owner地址修改为智能合约地址。</span>
+            <a className="text-underline" href="#">
+              如何收回Owner地址？
+            </a>
+          </p>
 
-        <div className="p-2 border rounded-1 my-4">
-          <div className="d-flex bg-dark rounded-1 p-3">
-            <span className="flex-shrink-0 text-white fw-600">$</span>
-            <div className="flex-grow-1 mx-2 text-wrap">lotus-miner actor set-owner --really-do-it {data.raise_address} &lt;ownerAddress&gt;</div>
-            <ShareBtn className="btn p-1" text={`lotus-miner actor set-owner --really-do-it ${data.raise_address} <ownerAddress>`}>
-              <IconCopy />
-            </ShareBtn>
+          <div className="p-2 border rounded-1 my-4">
+            <div className="d-flex align-items-start bg-dark rounded-1 p-2">
+              <span className="flex-shrink-0 text-white fw-600">$</span>
+              <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">
+                lotus-miner actor set-owner --really-do-it {data.raise_address} &lt;ownerAddress&gt;
+              </div>
+              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it ${data.raise_address} <ownerAddress>`}>
+                <IconCopy />
+              </ShareBtn>
+            </div>
           </div>
-        </div>
 
-        <p className="mb-0 fs-16 fw-500">执行成功后点击“签名”按钮。</p>
+          <p className="mb-0 fs-16 fw-500">执行成功后点击“签名”按钮。</p>
+        </div>
       </Modal.Alert>
     </>
   );
