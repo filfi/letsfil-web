@@ -16,7 +16,7 @@ const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [loading, handleStaking] = useProcessify(async ({ amount }: { amount: string }) => {
     if (!data) return;
 
-    await contract?.staking(data.raising_id, {
+    await contract.staking(data.raising_id, {
       value: ethers.utils.parseEther(`${amount}`),
     });
 

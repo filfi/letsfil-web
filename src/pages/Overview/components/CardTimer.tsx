@@ -97,13 +97,13 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [sealing, sealAction] = useProcessify(async () => {
     if (!data) return;
 
-    await contract?.startSeal(data.raising_id);
+    await contract.startSeal(data.raising_id);
   });
 
   const [starting, handleStart] = useProcessify(async () => {
     if (!data) return;
 
-    await contract?.startRaisePlan(data.raising_id);
+    await contract.startRaisePlan(data.raising_id);
   });
 
   const handleSeal = () => {
@@ -132,7 +132,7 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
 
-    await contract?.servicerSign();
+    await contract.servicerSign();
   });
 
   const renderAction = () => {

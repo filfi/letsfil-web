@@ -8,20 +8,20 @@ import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Empty from '@/components/Empty';
 import useProvider from '@/hooks/useProvider';
-import { RaiseState } from '@/constants/state';
 import RaisingCard from './components/RaisingCard';
 import SealingCard from './components/SealingCard';
 import WorkingCard from './components/WorkingCard';
+import { NodeState, RaiseState } from '@/constants/state';
 
 const isArrs = function <V>(v: V | undefined): v is V {
   return Array.isArray(v) && v.length > 0;
 };
 
 const isRaising = (data: API.Plan) => data.status === RaiseState.Raising;
-const isSealing = (data: API.Plan) => data.status === RaiseState.Success && !data.end_seal_time;
-const isWorking = (data: API.Plan) => data.status === RaiseState.Success && data.end_seal_time > 0;
+const isSealing = (data: API.Plan) => data.status === RaiseState.Success && data.sealed_status === NodeState.Started;
+const isWorking = (data: API.Plan) => data.status === RaiseState.Success && data.sealed_status === NodeState.End;
 
-export default function Markets() {
+export default function Raising() {
   useTitle('募集计划 - FilFi', { restoreOnUnmount: true });
 
   const { getProvider } = useProvider();

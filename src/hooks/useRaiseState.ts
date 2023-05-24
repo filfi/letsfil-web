@@ -8,12 +8,10 @@ import { NodeState, RaiseState } from '@/constants/state';
 
 export default function useRaiseState(data?: API.Plan) {
   const { account } = useAccounts();
-  const { getContract } = useRaiseContract();
+  const contract = useRaiseContract(data?.raise_address);
 
   const [nodeState, setNodeState] = useState(10);
   const [raiseState, setRaiseState] = useState(10);
-
-  const contract = useMemo(() => getContract(data?.raise_address), [data?.raise_address]);
 
   // 等待上链
   const isPending = useMemo(() => raiseState === 10, [raiseState]);
@@ -52,8 +50,8 @@ export default function useRaiseState(data?: API.Plan) {
   const [loading, fetchContract] = useLoadingify(async () => {
     if (!data) return;
 
-    const nodeState = await contract?.nodeState(data.raising_id);
-    const raiseState = await contract?.raiseState(data.raising_id);
+    const nodeState = await contract.getNodeState(data.raising_id);
+    const raiseState = await contract.getRaiseState(data.raising_id);
 
     setNodeState(nodeState ?? 10);
     setRaiseState(raiseState ?? 10);

@@ -2,17 +2,17 @@ import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
-import { accMul } from '@/utils/utils';
 import Dialog from '@/components/Dialog';
 import { catchify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import { RaiseState } from '@/constants/state';
+import useAccounts from '@/hooks/useAccounts';
+import { accMul, isEqual } from '@/utils/utils';
 import useLoadingify from '@/hooks/useLoadingify';
 import useDepositInvest from '@/hooks/useDepositInvest';
+import { NodeState, RaiseState } from '@/constants/state';
 import { formatEther, formatNum, formatRate } from '@/utils/format';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
-import useRaiseState from '@/hooks/useRaiseState';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
   return (...args: P) => {
@@ -69,6 +69,40 @@ function calcSealDays(data: API.Plan) {
   return r;
 }
 
+function useStates(data: API.Plan) {
+  const { account } = useAccounts();
+
+  const raiser = useMemo(() => data.raiser, [data.raiser]);
+  const payer = useMemo(() => data.ops_security_fund_addr, [data.ops_security_fund_addr]);
+  const servicer = useMemo(() => data.service_provider_address, [data.service_provider_address]);
+  const isSigned = useMemo(() => data.sp_sign_status === 1, [data.sp_sign_status]);
+  const isOpsPaid = useMemo(() => data.sp_margin_status === 1, [data.sp_margin_status]);
+  const isRaisePaid = useMemo(() => data.raise_margin_status === 1, [data.raise_margin_status]);
+
+  const isPayer = useMemo(() => isEqual(payer, account), [payer, account]);
+  const isRaiser = useMemo(() => isEqual(raiser, account), [raiser, account]);
+  const isServicer = useMemo(() => isEqual(servicer, account), [servicer, account]);
+
+  const isSuccess = useMemo(() => data.status === RaiseState.Success, [data.status]);
+  const isSealing = useMemo(() => isSuccess && data.sealed_status === NodeState.Started, [data.sealed_status, isSuccess]);
+  const isFinished = useMemo(() => isSuccess && data.sealed_status === NodeState.End, [data.sealed_status, isSuccess]);
+
+  return {
+    payer,
+    raiser,
+    servicer,
+    isPayer,
+    isRaiser,
+    isServicer,
+    isOpsPaid,
+    isRaisePaid,
+    isSigned,
+    isSuccess,
+    isSealing,
+    isFinished,
+  };
+}
+
 const Item: React.FC<{
   data: API.Plan;
   onEdit?: () => void;
@@ -78,7 +112,7 @@ const Item: React.FC<{
   getProvider?: (id?: number | string) => API.Provider | undefined;
 }> = ({ data, getProvider, onEdit, onHide, onDelete, onStart }) => {
   const { percent } = useDepositInvest(data);
-  const { isFinished, isOpsPaid, isRaisePaid, isRaiser, isSealing, isSigned, isSuccess } = useRaiseState(data);
+  const { isRaiser, isOpsPaid, isRaisePaid, isSigned, isSuccess, isSealing, isFinished } = useStates(data);
 
   const rate = useMemo(() => accMul(data.raiser_coin_share, 0.95), [data.raiser_coin_share]);
   const sealDays = useMemo(() => calcSealDays(data), [data]);
@@ -221,10 +255,14 @@ const Item: React.FC<{
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">技术服务</span>
             <span className="fw-500">
-              <Avatar size={24} src={provider?.logo_url} />
-              <span className="ms-1">{provider?.short_name}</span>
-              <span className="mx-1">·</span>
-              <span>保证金{data.ops_security_fund_rate}%</span>
+              <span className="d-inline-block">
+                <Avatar size={20} src={provider?.logo_url} />
+              </span>
+              <span className="align-middle ms-1">
+                <span>{provider?.short_name}</span>
+                <span className="mx-1">·</span>
+                <span>保证金{data.ops_security_fund_rate}%</span>
+              </span>
             </span>
           </div>
         </div>

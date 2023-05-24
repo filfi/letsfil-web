@@ -121,7 +121,7 @@ export default function Overview() {
   const [, closeAction] = useProcessify(async () => {
     if (!data) return;
 
-    await contract?.closeRaisePlan(data.raising_id);
+    await contract.closeRaisePlan(data.raising_id);
   });
 
   const handleDelete = () => {

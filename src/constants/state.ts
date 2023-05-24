@@ -52,14 +52,4 @@ export enum NodeState {
    * 已经销毁
    */
   Destroy = 4,
-  /**
-   * 封装成功
-   * @deprecated
-   */
-  Success = 5,
-  /**
-   * 封装失败
-   * @deprecated
-   */
-  Failed = 6,
 }
