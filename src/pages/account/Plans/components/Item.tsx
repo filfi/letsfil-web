@@ -55,11 +55,7 @@ function calcSealDays(data: API.Plan) {
     return r;
   }
 
-  if (data.seal_days < 7) {
-    r.push('< 7 天');
-  } else {
-    r.push(`${data.seal_days} 天`);
-  }
+  r.push(`< ${data.seal_days} 天`);
 
   // 封装中
   if (data.begin_seal_time) {

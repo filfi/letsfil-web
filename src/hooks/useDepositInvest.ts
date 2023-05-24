@@ -31,8 +31,10 @@ export default function useDepositInvest(data?: API.Plan) {
     const contract = getContract(data.raise_address);
 
     if (account) {
-      const amount = await contract?.pledgeTotalAmount(data.raising_id);
-      const record = await contract?.pledgeTotalCalcAmount(data.raising_id);
+      const info = await contract?.investorInfo(data.raising_id, account);
+
+      const amount = info?.pledgeAmount;
+      const record = info?.pledgeCalcAmount;
 
       setAmount(toNumber(amount));
       setRecord(toNumber(record));

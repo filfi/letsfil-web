@@ -14,7 +14,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
         <IconHD />
 
         <h4 className="card-title mb-0 mx-2">
-          {data.asset_pack_name}@{data.miner_id}
+          {data.asset_pack_id}@{data.miner_id}
         </h4>
 
         <ShareBtn className="btn border-0 p-0 ms-auto">

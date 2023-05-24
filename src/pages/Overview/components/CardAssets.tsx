@@ -48,9 +48,9 @@ const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
             </p>
           </div>
         </div>
-        <div className="card-footer">
+        {/* <div className="card-footer">
           <SpinBtn className="btn btn-primary btn-lg w-100">取回</SpinBtn>
-        </div>
+        </div> */}
       </div>
     );
   }
