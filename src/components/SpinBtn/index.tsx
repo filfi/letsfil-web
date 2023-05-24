@@ -12,13 +12,11 @@ export type SpinBtnProps = Omit<BtnProps, 'type'> & {
 const SpinBtn: React.FC<SpinBtnProps> = ({ children, disabled, loading, icon, type = 'button', ...props }) => {
   const renderIcon = () => {
     if (loading) {
-      <span className="d-inline-block me-2">
-        <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
-      </span>;
+      return <span className="spinner-grow spinner-grow-sm align-middle me-2" role="status" aria-hidden="true"></span>;
     }
 
     if (isDef(icon)) {
-      <span className="d-inline-block me-2">{icon}</span>;
+      return <span className="d-inline-block align-middle me-2">{icon}</span>;
     }
 
     return null;

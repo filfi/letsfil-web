@@ -17,7 +17,6 @@ export enum RaiseEventTypes {
   onDestroyNode = 'DestroyNode',
   onRaiseFailed = 'RaiseFailed',
   onCloseRaisePlan = 'CloseRaisePlan',
-  // onChangeOpsPayer = 'SpecifyOpsPayer',
   onServicerSigned = 'SpSignWithMiner',
   onStartRaisePlan = 'StartRaisePlan',
   onDepositOpsFund = 'DepositOpsSecurityFund',
@@ -99,6 +98,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
 
   const bindEvents = () => {
     contract?.on(RaiseEventTypes.onStaking, handlers.onStaking);
+    contract?.on(RaiseEventTypes.onStartSeal, handlers.onStartSeal);
     contract?.on(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
     contract?.on(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
     contract?.on(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
@@ -119,10 +119,10 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
 
   const unbindEvent = () => {
     contract?.off(RaiseEventTypes.onStaking, handlers.onStaking);
+    contract?.off(RaiseEventTypes.onStartSeal, handlers.onStartSeal);
     contract?.off(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
     contract?.off(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
     contract?.off(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
-    // contract?.off(RaiseEventTypes.onChangeOpsPayer, handlers.onChangeOpsPayer);
     contract?.off(RaiseEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
     contract?.off(RaiseEventTypes.onDepositOpsFund, handlers.onDepositOpsFund);
     contract?.off(RaiseEventTypes.onDepositRaiseFund, handlers.onDepositRaiseFund);

@@ -18,16 +18,29 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 }
 
 const EVENTS_MAP: Record<string, string> = {
-  CloseRaisePlan: '关闭募集计划',
-  StartRaisePlan: '发起人启动募集',
-  SpSignWithMiner: '技术服务商签名',
-  EStartSeal: '启动封装',
-  ESealProgress: '封装中',
+  SpSignWithMiner: '服务商签名',
+  ERaiseSecurityFund: '缴纳募集保证金',
+  EDepositOPSSecurityFund: '缴纳运维保证金',
+  EWithdrawRaiseSecurityFund: '退回募集保证金',
+  EWithdrawOPSSecurityFund: '退回运维保证金',
+  StartRaisePlan: '开始募集',
+  CloseRaisePlan: '关闭募集',
+  ERaiseFailed: '募集失败',
   ERaiseSuccess: '募集成功',
-  ECreateAssetPack: '发起人签名',
-  ERaiseSecurityFund: '存入发起人保证金',
-  EStackFromInvestor: '投资人存入FIL',
-  EDepositOPSSecurityFund: '存入技术运维保证金',
+  EStackFromInvestor: '投资者质押',
+  EUnstackFromInverstor: '投资者赎回',
+  EInverstorWithdrawProfit: '投资者提取收益',
+  ESPWithdraw: '服务商提取收益',
+  ERaiseWithdraw: '募集发起人提取收益',
+  EPushBlockReward: '推送区块奖励',
+  EPushHistoryAssetPack: '推送历史资产包',
+  ESealProgress: '封装进度',
+  EStartSeal: '开始封装',
+  ESealEnd: '封装结束',
+  EPushSpFine: '推送服务商罚金',
+  ENodeDestroy: '节点销毁',
+  ESpecifyOpsPayer: '指定运维付款人',
+  ECreateAssetPack: '创建资产包/募集计',
 };
 
 function renderName(event: string) {

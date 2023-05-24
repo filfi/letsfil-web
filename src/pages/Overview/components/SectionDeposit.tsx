@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import classNames from 'classnames';
+import { useModel } from '@umijs/max';
 
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
@@ -12,6 +13,7 @@ import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
 
 const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  const { initialState } = useModel('@@initialState');
   const { contract, isOpsPaid, isPending, isRaising, isRaisePaid, isRaiser, isServicer, raiseState, raiser, servicer } = useRaiseState(data);
 
   const opsPayable = useMemo(() => isServicer && raiseState < RaiseState.Raising, [isServicer, raiseState]);
@@ -61,7 +63,7 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
             {isRaisePaid && <span className="ms-auto badge badge-success">来自{formatAddr(raiser)}</span>}
           </div>
           <p className="mb-0">
-            {isRaisePaid && isRaising ? (
+            {isRaising ? (
               <span>当募集目标未达成，或发起方主动终止，此保证金赔偿投资人存入FIL的利息损失。</span>
             ) : (
               <span>保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</span>
@@ -85,7 +87,13 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
           {isOpsPaid ? (
             <IconChecked />
           ) : opsPayable ? (
-            <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} disabled={isPending} loading={opsLoading} onClick={handleOpsPay}>
+            <SpinBtn
+              className="btn btn-primary ms-auto"
+              style={{ minWidth: 120 }}
+              loading={opsLoading}
+              disabled={initialState?.processing || isPending}
+              onClick={handleOpsPay}
+            >
               存入
             </SpinBtn>
           ) : null}

@@ -24,6 +24,7 @@ specifiers:
   cross-env: ^7.0.3
   dayjs: ^1.11.7
   ethers: ^5.7.2
+  eventemitter3: ^5.0.1
   husky: ^8.0.1
   lint-staged: ^13.0.3
   lodash: ^4.17.21
@@ -54,6 +55,7 @@ dependencies:
   clipboard: 2.0.11
   dayjs: 1.11.7
   ethers: 5.7.2
+  eventemitter3: 5.0.1
   lodash: 4.17.21
   mitt: 3.0.0
   numeral: 2.0.6
@@ -6772,6 +6774,10 @@ packages:
     dependencies:
       d: 1.0.1
       es5-ext: 0.10.62
+    dev: false
+
+  /eventemitter3/5.0.1:
+    resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
     dev: false
 
   /events/3.3.0:

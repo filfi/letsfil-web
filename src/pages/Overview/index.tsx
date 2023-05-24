@@ -26,6 +26,7 @@ import CardCalc from './components/CardCalc';
 import CardTimer from './components/CardTimer';
 import CardAssets from './components/CardAssets';
 import CardRaiser from './components/CardRaiser';
+import Calculator from './components/Calculator';
 import SectionCoin from './components/SectionCoin';
 import SectionNode from './components/SectionNode';
 import SectionRaise from './components/SectionRaise';
@@ -408,7 +409,7 @@ export default function Overview() {
             <section id="contract" className="section">
               <div className="section-header">
                 <h4 className="section-title">智能合约</h4>
-                <p className="mb-0">募集计划是部署在Filecoin上的智能合约，存储节点的质押币和收益分配完全由智能合约管理。</p>
+                <p className="mb-0">募集计划完全由Filecoin上的智能合约管理</p>
               </div>
 
               <SectionContract data={data} />
@@ -427,6 +428,8 @@ export default function Overview() {
           <div className={classNames('flex-shrink-0', styles.sidebar)}>{renderCard()}</div>
         </div>
       </div>
+
+      <Calculator />
     </>
   );
 }
