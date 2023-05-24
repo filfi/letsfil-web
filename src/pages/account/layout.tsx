@@ -54,6 +54,10 @@ export default function AccountLayout() {
 
         <Outlet />
       </div>
+
+      <p>
+        <br />
+      </p>
     </>
   );
 }

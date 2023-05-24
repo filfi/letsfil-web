@@ -29,7 +29,7 @@ export default function AccountAssets() {
           {isEmpty ? (
             <Empty title="暂无数据" />
           ) : (
-            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4">
+            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-4 my-lg-5">
               {list?.map((item) => (
                 <div key={item.asset_pack_id} className="col">
                   <PackCard data={item} />
@@ -38,12 +38,6 @@ export default function AccountAssets() {
             </div>
           )}
         </Skeleton>
-        <p>
-          <br />
-        </p>
-        <p>
-          <br />
-        </p>
       </div>
     </>
   );

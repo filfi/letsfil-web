@@ -85,22 +85,9 @@ export default function AccountPlans() {
     const contract = getContract(data.raise_address);
 
     await contract?.startRaisePlan(data.raising_id);
-  });
 
-  const renderItem = (item: API.Plan) => {
-    return (
-      <div key={item.raising_id} className="col">
-        <Item
-          data={item}
-          getProvider={getProvider}
-          onEdit={() => handleEdit(item)}
-          onHide={() => handleDelete(item)}
-          onDelete={() => handleDelete(item)}
-          onStart={() => handleStart(item)}
-        />
-      </div>
-    );
-  };
+    refresh();
+  });
 
   return (
     <>
@@ -126,21 +113,61 @@ export default function AccountPlans() {
             {isArrs(raises) && (
               <>
                 <h3 className={classNames('my-4 my-lg-5', styles.title)}>我发起的募集计划</h3>
-                <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">{raises.map(renderItem)}</div>
+                <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
+                  {raises.map((item) => (
+                    <div className="col" key={item.raising_id}>
+                      <Item
+                        data={item}
+                        getProvider={getProvider}
+                        onEdit={() => handleEdit(item)}
+                        onHide={() => handleDelete(item)}
+                        onDelete={() => handleDelete(item)}
+                        onStart={() => handleStart(item)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 
             {isArrs(invests) && (
               <>
                 <h3 className={classNames('my-4 my-lg-5', styles.title)}>我投资的募集计划</h3>
-                <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">{invests.map(renderItem)}</div>
+                <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
+                  {invests.map((item) => (
+                    <div className="col" key={item.raising_id}>
+                      <Item
+                        invest
+                        data={item}
+                        getProvider={getProvider}
+                        onEdit={() => handleEdit(item)}
+                        onHide={() => handleDelete(item)}
+                        onDelete={() => handleDelete(item)}
+                        onStart={() => handleStart(item)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </>
             )}
 
             {isArrs(services) && (
               <>
                 <h3 className={classNames('my-4 my-lg-5', styles.title)}>{user?.name}提供技术服务的募集计划</h3>
-                <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">{services.map(renderItem)}</div>
+                <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
+                  {services.map((item) => (
+                    <div className="col" key={item.raising_id}>
+                      <Item
+                        data={item}
+                        getProvider={getProvider}
+                        onEdit={() => handleEdit(item)}
+                        onHide={() => handleDelete(item)}
+                        onDelete={() => handleDelete(item)}
+                        onStart={() => handleStart(item)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </>

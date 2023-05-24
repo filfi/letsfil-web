@@ -4,13 +4,13 @@ import { useModel } from '@umijs/max';
 import { useEffect, useMemo, useState } from 'react';
 
 import * as H from '@/helpers/app';
-import { day2sec } from '@/utils/utils';
 import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
+import { day2sec, toF4Address } from '@/utils/utils';
 import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
@@ -304,7 +304,7 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
               <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">
                 lotus-miner actor set-owner --really-do-it {data.raise_address} &lt;ownerAddress&gt;
               </div>
-              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it ${data.raise_address} <ownerAddress>`}>
+              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it ${toF4Address(data.raise_address)} <ownerAddress>`}>
                 <IconCopy />
               </ShareBtn>
             </div>
