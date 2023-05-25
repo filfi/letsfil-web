@@ -118,7 +118,7 @@ const Item: React.FC<{
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
   getProvider?: (id?: number | string) => API.Provider | undefined;
-}> = ({ data, invest, getProvider, onEdit, onHide, onDelete, onStart }) => {
+}> = ({ data, invest, getProvider, onEdit, /* onHide, */ onDelete, onStart }) => {
   const { pack } = useRaiseSeals(data);
   const { amount, percent } = useDepositInvest(data);
   const { isRaiser, isOpsPaid, isRaisePaid, isSigned, isStarted, isSuccess, isSealing, isDelayed, isFinished } = useStates(data);
@@ -128,9 +128,9 @@ const Item: React.FC<{
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
 
-  const [hiding, hideAction] = useLoadingify(async () => {
-    await onHide?.();
-  });
+  // const [hiding, hideAction] = useLoadingify(async () => {
+  //   await onHide?.();
+  // });
 
   const [deleting, deleteAction] = useLoadingify(async () => {
     await onDelete?.();
@@ -140,7 +140,7 @@ const Item: React.FC<{
     await onStart?.();
   });
 
-  const handleHide = withConfirm(data, hideAction);
+  // const handleHide = withConfirm(data, hideAction);
   const handleDelete = withConfirm(data, deleteAction);
 
   const renderAssets = () => {
@@ -239,7 +239,7 @@ const Item: React.FC<{
   const renderActions = () => {
     const editable = RaiseState.Pending === data.status;
     const deletable = RaiseState.Pending === data.status;
-    const hidable = [RaiseState.Closed, RaiseState.Failure].includes(data.status);
+    // const hidable = [RaiseState.Closed, RaiseState.Failure].includes(data.status);
     const startable = data.status === RaiseState.WaitingStart && isRaisePaid && isOpsPaid && isSigned;
 
     return (
@@ -253,16 +253,16 @@ const Item: React.FC<{
           >
             删除
           </SpinBtn>
-        ) : hidable ? (
-          <SpinBtn
-            className="btn btn-outline-danger border-0 shadow-none"
-            loading={hiding}
-            icon={<span className="bi bi-eye-slash"></span>}
-            onClick={handleHide}
-          >
-            隐藏
-          </SpinBtn>
-        ) : null}
+        ) : // ) : hidable ? (
+        //   <SpinBtn
+        //     className="btn btn-outline-danger border-0 shadow-none"
+        //     loading={hiding}
+        //     icon={<span className="bi bi-eye-slash"></span>}
+        //     onClick={handleHide}
+        //   >
+        //     隐藏
+        //   </SpinBtn>
+        null}
 
         {editable && (
           <button className="btn btn-outline-light" type="button" onClick={onEdit}>

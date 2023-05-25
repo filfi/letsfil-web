@@ -6,7 +6,7 @@ import Steps from '@/components/Steps';
 import useRaiseState from '@/hooks/useRaiseState';
 
 const SectionTimeline: React.FC<{ data?: API.Plan }> = ({ data }) => {
-  const { isFinished, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted } = useRaiseState(data);
+  const { isClosed, isFailed, isFinished, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted } = useRaiseState(data);
 
   const isStart = useMemo(() => !!(data?.begin_time && isStarted), [isStarted, data?.begin_time]);
 
@@ -19,8 +19,8 @@ const SectionTimeline: React.FC<{ data?: API.Plan }> = ({ data }) => {
           {isStart ? F.formatUnixDate(data.begin_time) : '尚未开启'}
         </Steps.Item>
 
-        <Steps.Item title="募集计划截止" status={isSealing ? 'finish' : isRaising || isSuccess ? 'active' : undefined}>
-          {isStart ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
+        <Steps.Item title="募集计划截止" status={isSuccess ? 'finish' : isClosed || isFailed || isRaising ? 'active' : undefined}>
+          {data.closing_time ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
         </Steps.Item>
 
         <Steps.Item
@@ -32,7 +32,7 @@ const SectionTimeline: React.FC<{ data?: API.Plan }> = ({ data }) => {
           }
           status={isFinished ? 'finish' : isSealing ? 'active' : undefined}
         >
-          {isSealing ? F.formatRemain(data.closing_time, U.day2sec(data.seal_days)) : `预计 ${data.seal_days} 天`}
+          {isFinished ? F.formatUnixDate(data.end_seal_time) : `预计 ${data.seal_days} 天`}
         </Steps.Item>
 
         <Steps.Item title="节点生产阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>

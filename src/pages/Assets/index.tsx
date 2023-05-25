@@ -52,7 +52,7 @@ export default function Assets() {
   return (
     <>
       <div className="container">
-        <PageHeader className="mb-3 pb-0" title={title} desc="依靠强大的FVM智能合约，合作共建Filecoin存储">
+        <PageHeader className="mb-3 pb-0" title={title} desc={`算力包：${param.id}`}>
           {/* <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div> */}
         </PageHeader>
 

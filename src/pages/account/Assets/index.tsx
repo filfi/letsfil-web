@@ -22,14 +22,11 @@ export default function AccountAssets() {
   return (
     <>
       <div className="container">
-        <p>
-          <br />
-        </p>
         <Skeleton active loading={loading}>
           {isEmpty ? (
             <Empty title="暂无数据" />
           ) : (
-            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-4 my-lg-5">
+            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-3">
               {list?.map((item) => (
                 <div key={item.asset_pack_id} className="col">
                   <PackCard data={item} />

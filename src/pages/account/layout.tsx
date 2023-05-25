@@ -44,11 +44,11 @@ export default function AccountLayout() {
                 募集计划
               </NavLink>
             </li>
-            <li className="nav-item">
+            {/* <li className="nav-item">
               <NavLink className="nav-link" to="/account/stats">
                 投资报告
               </NavLink>
-            </li>
+            </li> */}
           </ul>
         </div>
 

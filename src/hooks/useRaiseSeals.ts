@@ -15,7 +15,9 @@ export default function useRaiseSeals(data?: API.Plan) {
   const { data: pack } = useRequest(service, { refreshDeps: [data?.raising_id] });
 
   const period = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]);
+  const power = useMemo(() => +`${pack?.pack_power ?? 0}`, [pack?.pack_power]);
   const actual = useMemo(() => toNumber(data?.actual_amount), [data?.actual_amount]);
+  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]);
   const pledge = useMemo(() => toNumber(pack?.pack_initial_pledge), [pack?.pack_initial_pledge]);
   const percent = useMemo(() => (actual > 0 ? accDiv(pledge, actual) : 0), [actual, pledge]);
   const running = useMemo(() => {
@@ -37,7 +39,11 @@ export default function useRaiseSeals(data?: API.Plan) {
 
   return {
     pack,
+    power,
+    actual,
+    target,
     period,
+    pledge,
     percent,
     remains,
     running,

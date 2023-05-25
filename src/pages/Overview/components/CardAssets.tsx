@@ -1,171 +1,155 @@
-import { ethers } from 'ethers';
 import { useMemo } from 'react';
-import { Form, Input } from 'antd';
+import { Link } from '@umijs/max';
 
-import { accSub } from '@/utils/utils';
-import SpinBtn from '@/components/SpinBtn';
-import { number } from '@/utils/validators';
-import { formatAmount } from '@/utils/format';
-import useProcessify from '@/hooks/useProcessify';
+import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
+import { accDiv, accMul, isDef } from '@/utils/utils';
+import { formatAmount, formatEther, formatNum, formatUnixDate } from '@/utils/format';
 
-const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
-  const [form] = Form.useForm();
-  const { amount, total, target } = useDepositInvest(data);
-  const { contract, isClosed, isFailed, isFinished, isRaising, isSealing, isSuccess } = useRaiseState(data);
-
-  const max = useMemo(() => {
-    if (target > 0 && target > total) {
-      return accSub(target, total);
-    }
-
-    return target;
-  }, [target, total]);
-
-  const amountValidator = async (rule: unknown, value: string) => {
-    await number(rule, value);
-
-    if (value) {
-      if (max && +value > max) {
-        return Promise.reject(`不能大于 ${formatAmount(max)} FIL`);
-      }
-
-      if (+value > 5000000) {
-        return Promise.reject('不能大于 5,000,000 FIL');
-      }
-    }
-  };
-
-  const [loading, handleStaking] = useProcessify(async ({ amount }: { amount: string }) => {
-    if (!data) return;
-
-    await contract.staking(data.raising_id, {
-      value: ethers.utils.parseEther(`${amount}`),
-    });
-
-    form.resetFields();
-  });
-
-  if (isClosed || isFailed) {
-    return (
-      <div className="card section-card">
-        <div className="card-body">
-          <div className="d-flex flex-wrap align-items-center mb-2">
-            <h5 className="card-title mb-0 me-auto pe-2">我的资产</h5>
-            <p className="mb-0 text-main">
-              <span className="fs-5 fw-600">{formatAmount(amount)}</span>
-              <span className="text-neutral ms-1">FIL</span>
-            </p>
-          </div>
-          <div className="d-flex flex-wrap align-items-center">
-            <div className="card-title mb-0 d-inline-flex align-items-center me-auto pe-2">
-              <h5 className="card-title mb-0">利息补偿</h5>
-              <span className="mx-1">·</span>
-              <a className="text-underline" href="#">
-                明细
-              </a>
-            </div>
-            <p className="mb-0 text-success">
-              <span className="fs-5 fw-600">+0</span>
-              <span className="text-neutral ms-1">FIL</span>
-            </p>
-          </div>
-        </div>
-        {/* <div className="card-footer">
-          <SpinBtn className="btn btn-primary btn-lg w-100">取回</SpinBtn>
-        </div> */}
-      </div>
-    );
+function formatByte(val?: number | string) {
+  if (isDef(val)) {
+    return formatNum(val, '0.0 ib').split(' ');
   }
+}
+
+const CardAssets: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
+  const { amount, total } = useDepositInvest(data);
+  const { isRaiser, isServicer, isFinished } = useRaiseState(data);
+  const { investRate, raiserRate, opsRate, servicerRate } = useRaiseRate(data);
+
+  const power = useMemo(() => +`${pack?.pack_power || '0'}`, [pack?.pack_power]);
+  const iRate = useMemo(() => (total > 0 ? accDiv(amount, total) : 0), [amount, total]);
+  const raiserPower = useMemo(() => accMul(power, accDiv(raiserRate, 100)), [power, raiserRate]);
+  const investPower = useMemo(() => accMul(accMul(power, accDiv(investRate, 100)), iRate), [power, investRate, iRate]);
+
+  const goDepositCard = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
+
+    const el = document.querySelector('#deposit');
+
+    el?.scrollIntoView({
+      behavior: 'smooth',
+    });
+  };
 
   if (isFinished) {
     return (
       <div className="card section-card">
-        <div className="card-body">
-          <h4 className="card-title fw-600 mb-3">我的资产</h4>
-
-          <div className="d-flex flex-wrap align-items-center mb-2">
-            <h5 className="card-title mb-0 me-auto pe-2">投资金额</h5>
-            <p className="mb-0 text-main">
-              <span className="fs-5 fw-600">{formatAmount(amount)}</span>
-              <span className="text-neutral ms-1">FIL</span>
-            </p>
-          </div>
-
-          <div className="d-flex flex-wrap align-items-center mb-2">
-            <h5 className="card-title mb-0 me-auto pe-2">获得存储算力</h5>
-            <p className="mb-0 text-main">
-              <span className="fs-5 fw-600">0</span>
-              <span className="text-neutral ms-1">TiB</span>
-            </p>
-          </div>
-
-          <div className="d-flex flex-wrap align-items-center">
-            <h5 className="card-title mb-0 me-auto pe-2">在 {data?.miner_id} 中的占比</h5>
-            <p className="mb-0 text-main">
-              <span className="fs-5 fw-600">0</span>
-              <span className="text-neutral ms-1">%</span>
-            </p>
-          </div>
+        <div className="card-header border-0 pt-4 pb-0">
+          <h4 className="card-title fw-600 mb-0">我的资产</h4>
         </div>
-        <div className="card-footer">
-          <SpinBtn className="btn btn-primary btn-lg w-100">在{data?.miner_id}上查看</SpinBtn>
-        </div>
-      </div>
-    );
-  }
-
-  if (isSuccess) {
-    return (
-      <div className="card section-card">
-        <div className="card-body">
-          <div className="d-flex flex-wrap align-items-center">
-            <h4 className="card-title mb-0 me-auto pe-2">我的资产</h4>
-            <p className="mb-0">
-              <span className="fs-5 fw-600">{formatAmount(amount)}</span>
-              <span className="text-neutral ms-1">FIL</span>
-            </p>
-          </div>
-        </div>
-        <div className="card-footer">
-          <SpinBtn className="btn btn-light btn-lg w-100" disabled>
-            {isSealing ? '正在封装' : '等待封装'}
-          </SpinBtn>
-        </div>
-      </div>
-    );
-  }
-
-  if (isRaising) {
-    return (
-      <div className="card section-card">
-        <div className="card-header d-flex flex-wrap align-items-center">
-          <h4 className="card-title mb-0 me-auto pe-2">我的资产</h4>
-          <p className="mb-0">
-            <span className="fs-5 fw-600">{formatAmount(amount)}</span>
-            <span className="text-neutral ms-1">FIL</span>
+        <div className="card-body py-2 fs-16 text-main">
+          <p className="d-flex align-items-center gap-3 my-3">
+            <span>存入金额</span>
+            <span className="ms-auto">
+              <span className="fs-20 fw-600">{formatAmount(amount)}</span>
+              <span className="ms-1 text-neutral">FIL</span>
+            </span>
+          </p>
+          <p className="d-flex align-items-center gap-3 my-3">
+            <span>实际投入</span>
+            <span className="ms-auto">
+              <span className="fs-20 fw-600">{formatAmount(amount)}</span>
+              <span className="ms-1 text-neutral">FIL</span>
+            </span>
+          </p>
+          <p className="d-flex align-items-center gap-3 my-3">
+            <span>获得算力</span>
+            <span className="ms-auto">
+              <span className="fs-20 fw-600">{formatByte(investPower)?.[0]}</span>
+              <span className="ms-1 text-neutral">{formatByte(investPower)?.[1]}</span>
+            </span>
+          </p>
+          <p className="d-flex align-items-center gap-3 my-3">
+            <span>到期时间</span>
+            <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+          </p>
+          <p className="d-flex align-items-center gap-3 my-3">
+            <span>最后释放</span>
+            <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
           </p>
         </div>
-        <div className="card-body">
-          <Form className="ffi-form" form={form} onFinish={handleStaking}>
-            <Form.Item name="amount" rules={[{ required: true, message: '请输入数量' }, { validator: amountValidator }]}>
-              <Input
-                type="number"
-                className="decimal lh-1 fw-500"
-                min={0}
-                max={max}
-                placeholder="输入数量"
-                suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
-              />
-            </Form.Item>
 
-            <p className="mb-0">
-              <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
-                存入
-              </SpinBtn>
-            </p>
-          </Form>
+        {isRaiser && (
+          <>
+            <div className="border-top w-75 mx-auto" />
+
+            <div className="card-header border-0 pt-4 pb-0">
+              <h4 className="card-title fw-600 mb-0">我的资产 · 发起人</h4>
+            </div>
+            <div className="card-body py-2 fs-16 text-main">
+              <p className="d-flex align-items-center gap-3 my-3">
+                <span>获得算力</span>
+                <span className="ms-auto">
+                  <span className="fs-20 fw-600">{formatByte(raiserPower)?.[0]}</span>
+                  <span className="ms-1 text-neutral">{formatByte(raiserPower)?.[1]}</span>
+                </span>
+              </p>
+              <p className="d-flex align-items-center gap-3 my-3">
+                <span>分配比例</span>
+                <span className="ms-auto">
+                  <span className="fs-20 fw-600">{raiserRate}</span>
+                  <span className="ms-1 text-neutral">%</span>
+                </span>
+              </p>
+              <p className="d-flex align-items-center gap-3 my-3">
+                <span>到期时间</span>
+                <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+              </p>
+            </div>
+          </>
+        )}
+
+        {isServicer && (
+          <>
+            <div className="border-top w-75 mx-auto" />
+
+            <div className="card-header border-0 pt-4 pb-0">
+              <h4 className="card-title fw-600 mb-0">我的资产 · 技术服务商</h4>
+            </div>
+            <div className="card-body py-2 fs-16 text-main">
+              <p className="d-flex align-items-center gap-3 my-3">
+                <span>保证金</span>
+                <span className="ms-auto">
+                  <span className="fs-20 fw-600">{formatEther(data?.ops_security_fund)}</span>
+                  <span className="ms-1 text-neutral">FIL</span>
+                </span>
+              </p>
+              <p className="d-flex align-items-center gap-3 my-3">
+                <span>分配比例 · 保证金部分</span>
+                <span className="ms-auto">
+                  <span className="fs-20 fw-600">{opsRate}</span>
+                  <span className="ms-1 text-neutral">%</span>
+                </span>
+              </p>
+              <p className="d-flex align-items-center gap-3 my-3">
+                <span>分配比例 · 技术服务费部分</span>
+                <span className="ms-auto">
+                  <span className="fs-20 fw-600">{servicerRate}</span>
+                  <span className="ms-1 text-neutral">%</span>
+                </span>
+              </p>
+              <p className="d-flex align-items-center gap-3 my-3">
+                <span>到期时间</span>
+                <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+              </p>
+            </div>
+          </>
+        )}
+        <div className="card-footer">
+          <div className="mb-3">
+            <Link className="btn btn-primary btn-lg w-100" to={`/assets/${data?.raising_id}`}>
+              领取收益
+            </Link>
+          </div>
+
+          <p className="mb-0 text-gray">
+            <span>我的保证金如何取回？ 取回按钮在</span>
+            <a className="text-underline" href="#" onClick={goDepositCard}>
+              发起人保证金卡片
+            </a>
+          </p>
         </div>
       </div>
     );

@@ -8,9 +8,10 @@ import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
+import useRaiseState from '@/hooks/useRaiseState';
 import { day2sec, toF4Address } from '@/utils/utils';
+import { formatEther, formatNum } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
@@ -24,7 +25,13 @@ const calcTime = (mill: number) => {
   };
 };
 
-const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
+function formatByte(val?: string) {
+  if (val) {
+    return formatNum(val, '0.0 ib').split(' ');
+  }
+}
+
+const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
   const { initialState } = useModel('@@initialState');
   const { createRaisePlan } = useFactoryContract();
   const {
@@ -232,8 +239,45 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
   };
 
   // 封装结束
-  if (!data || isFinished || isDestroyed) {
+  if (!data) {
     return null;
+  }
+
+  if (isFinished || isDestroyed) {
+    return (
+      <>
+        <div className="card section-card">
+          <div className="card-header d-flex align-items-center border-0">
+            <h4 className="card-title mb-0 me-2">募集计划·已完成</h4>
+            <span className="badge badge-success ms-auto">募集成功</span>
+            <span className="badge badge-success ms-2">封装完成</span>
+          </div>
+          <div className="card-body py-2 fs-16 text-main">
+            <p className="d-flex align-items-center gap-3 mb-2">
+              <span>封装容量</span>
+              <span className="ms-auto">
+                <span className="fs-20 fw-600">{formatByte(pack?.pack_power)?.[0]}</span>
+                <span className="ms-1 text-neutral">{formatByte(pack?.pack_power)?.[1]}</span>
+              </span>
+            </p>
+            <p className="d-flex align-items-center gap-3 mb-2">
+              <span>封装质押币</span>
+              <span className="ms-auto">
+                <span className="fs-20 fw-600">{formatEther(pack?.pack_initial_pledge)}</span>
+                <span className="ms-1 text-neutral">FIL</span>
+              </span>
+            </p>
+            {/* <p className="d-flex align-items-center gap-3 mb-2">
+              <span>剩余金额</span>
+              <span className="ms-auto">
+                <span className="fs-20 fw-600">0</span>
+                <span className="ms-1 text-neutral">FIL</span>
+              </span>
+            </p> */}
+          </div>
+        </div>
+      </>
+    );
   }
 
   return (
@@ -258,6 +302,11 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
             </h4>
             <div className="ms-auto">
               {isFailed ? <span className="badge badge-danger">募集未成功</span> : isSuccess ? <span className="badge badge-success">募集成功</span> : null}
+              {isDelayed ? (
+                <span className="badge badge-warning ms-2">封装延期</span>
+              ) : isSealing ? (
+                <span className="badge badge-primary ms-2">正在封装</span>
+              ) : null}
             </div>
           </div>
 
@@ -317,4 +366,4 @@ const CardTimer: React.FC<{ data?: API.Plan }> = ({ data }) => {
   );
 };
 
-export default CardTimer;
+export default CardRaise;

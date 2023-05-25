@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
-import * as U from '@/utils/utils';
+import { formatNum } from '@/utils/format';
+import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
-import { formatNum, toNumber } from '@/utils/format';
 
 const config: PieConfig = {
   data: [],
@@ -29,26 +29,7 @@ const config: PieConfig = {
 
 const SectionReward: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { isRaiser, isServicer } = useRaiseState(data);
-  const days = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]);
-  const rate = useMemo(() => toNumber(data?.income_rate, 6), [data?.income_rate]);
-  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]);
-  const reward = useMemo(() => U.accDiv(U.accMul(U.accMul(rate, target), days), 360), [days, rate, target]);
-  // 优先部分
-  const priorityRate = useMemo(() => data?.raiser_coin_share ?? 70, [data?.raiser_coin_share]);
-  // 劣后部分
-  const inferiorityRate = useMemo(() => U.accSub(100, priorityRate), [priorityRate]);
-  // 保证金占比
-  const opsRatio = useMemo(() => data?.ops_security_fund_rate ?? 5, [data?.ops_security_fund_rate]);
-  // 投资人部分
-  const investRate = useMemo(() => U.accMul(priorityRate, U.accDiv(U.accSub(100, opsRatio), 100)), [priorityRate, opsRatio]);
-  // 保证金部分
-  const opsRate = useMemo(() => U.accMul(priorityRate, U.accDiv(opsRatio, 100)), [priorityRate, opsRatio]);
-  // 服务商权益
-  const servicerRate = useMemo(() => data?.op_server_share ?? 5, [data?.op_server_share]);
-  // filfi 协议部分
-  const ffiRate = useMemo(() => U.accMul(inferiorityRate, 0.08), [inferiorityRate]);
-  // 发起人部分
-  const raiserRate = useMemo(() => U.accSub(U.accSub(inferiorityRate, ffiRate), servicerRate), [inferiorityRate, ffiRate, servicerRate]);
+  const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period, reward } = useRaiseRate(data);
 
   const pieData = useMemo(
     () => [
@@ -72,7 +53,7 @@ const SectionReward: React.FC<{ data?: API.Plan }> = ({ data }) => {
             <div className="col">
               <div className="reward-item mb-3">
                 <span className="reward-dot reward-dot-circle"></span>
-                <p className="reward-label">{days}天总奖励(估)</p>
+                <p className="reward-label">{period}天总奖励(估)</p>
                 <p className="reward-text">
                   <span className="text-decimal text-uppercase">{formatNum(reward, '0a')}</span>
                   <span className="ms-2 text-neutral">FIL</span>

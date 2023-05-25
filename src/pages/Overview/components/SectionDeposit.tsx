@@ -6,24 +6,24 @@ import { useModel } from '@umijs/max';
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import useProvider from '@/hooks/useProvider';
-import { RaiseState } from '@/constants/state';
-import useProcessify from '@/hooks/useProcessify';
+import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
+import useProcessify from '@/hooks/useProcessify';
+import { RaiseState } from '@/constants/state';
 import { formatAddr, formatEther } from '@/utils/format';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
-import { accSub } from '@/utils/utils';
 
 const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
-  const { getProvider } = useProvider();
   const { initialState } = useModel('@@initialState');
+  const { getProvider } = useProvider();
+  const { investRate } = useRaiseRate(data);
   const { contract, isOpsPaid, isPending, isRaising, isRaisePaid, isRaiser, isServicer, raiseState, raiser, servicer } = useRaiseState(data);
 
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
   const opsPayable = useMemo(() => isServicer && raiseState < RaiseState.Raising, [isServicer, raiseState]);
   const raiserPayable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
-  const investRate = useMemo(() => (data?.ops_security_fund_rate ? Math.max(accSub(100, data.ops_security_fund_rate), 0) : 0), [data?.ops_security_fund_rate]);
 
   const [raising, handleRaisePay] = useProcessify(async () => {
     if (!data) return;
@@ -74,9 +74,9 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
             ) : (
               <span>保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</span>
             )}
-            <a className="text-underline" href="#raiser-deposit" data-bs-toggle="modal">
+            {/* <a className="text-underline" href="#raiser-deposit" data-bs-toggle="modal">
               更多信息
-            </a>
+            </a> */}
           </p>
         </div>
       </div>
@@ -115,9 +115,9 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
           </div>
           <p className="mb-0">
             <span>与投资人等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</span>
-            <a className="text-underline" href="#sp-deposit" data-bs-toggle="modal">
+            {/* <a className="text-underline" href="#sp-deposit" data-bs-toggle="modal">
               更多信息
-            </a>
+            </a> */}
           </p>
         </div>
       </div>
@@ -133,9 +133,9 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">
             <span>技术运维保证金认购募集计划的份额，成为劣后质押币，与投资人的优先质押一同封装到存储节点中。</span>
-            <a className="text-underline" href="#">
+            {/* <a className="text-underline" href="#">
               了解更多
-            </a>
+            </a> */}
           </p>
 
           <div className="ffi-form">
@@ -184,7 +184,7 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
         </div>
       </Modal.Confirm>
 
-      <Modal.Alert id="raiser-deposit" title="发起人保证金">
+      {/* <Modal.Alert id="raiser-deposit" title="发起人保证金">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</p>
@@ -198,7 +198,7 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
             <p className="mb-0">与投资人等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
           </div>
         </div>
-      </Modal.Alert>
+      </Modal.Alert> */}
     </>
   );
 };

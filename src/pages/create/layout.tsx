@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTitle } from 'ahooks';
 import { Outlet, useLocation } from '@umijs/max';
 
-import Modal from '@/components/Modal';
+// import Modal from '@/components/Modal';
 import Steps from '@/components/Steps';
 import PageHeader from '@/components/PageHeader';
 
@@ -22,9 +22,9 @@ export default function Create() {
           desc={
             <>
               <span>依靠强大的FVM智能合约，合作共建Filecoin存储。</span>
-              <a className="text-underline" href="#create-tips" data-bs-toggle="modal">
+              {/* <a className="text-underline" href="#create-tips" data-bs-toggle="modal">
                 了解更多
-              </a>
+              </a> */}
             </>
           }
         ></PageHeader>
@@ -36,13 +36,13 @@ export default function Create() {
         <Outlet />
       </div>
 
-      <Modal.Alert id="create-tips" title="新建募集计划" confirmText="我知道了">
+      {/* <Modal.Alert id="create-tips" title="新建募集计划" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">依靠强大的FVM智能合约，合作共建Filecoin存储。</p>
           </div>
         </div>
-      </Modal.Alert>
+      </Modal.Alert> */}
     </>
   );
 }
