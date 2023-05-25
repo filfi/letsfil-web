@@ -1,6 +1,8 @@
 import { ethers } from 'ethers';
+import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
+import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
@@ -10,8 +12,30 @@ import useDepositInvest from '@/hooks/useDepositInvest';
 
 const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const [form] = Form.useForm();
-  const { amount } = useDepositInvest(data);
+  const { amount, total, target } = useDepositInvest(data);
   const { contract, isClosed, isFailed, isFinished, isRaising, isSealing, isSuccess } = useRaiseState(data);
+
+  const max = useMemo(() => {
+    if (target > 0 && target > total) {
+      return accSub(target, total);
+    }
+
+    return target;
+  }, [target, total]);
+
+  const amountValidator = async (rule: unknown, value: string) => {
+    await number(rule, value);
+
+    if (value) {
+      if (max && +value > max) {
+        return Promise.reject(`不能大于 ${formatAmount(max)} FIL`);
+      }
+
+      if (+value > 5000000) {
+        return Promise.reject('不能大于 5,000,000 FIL');
+      }
+    }
+  };
 
   const [loading, handleStaking] = useProcessify(async ({ amount }: { amount: string }) => {
     if (!data) return;
@@ -48,9 +72,9 @@ const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
             </p>
           </div>
         </div>
-        <div className="card-footer">
+        {/* <div className="card-footer">
           <SpinBtn className="btn btn-primary btn-lg w-100">取回</SpinBtn>
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -125,11 +149,12 @@ const CardAssets: React.FC<{ data?: API.Plan }> = ({ data }) => {
         </div>
         <div className="card-body">
           <Form className="ffi-form" form={form} onFinish={handleStaking}>
-            <Form.Item name="amount" rules={[{ required: true, message: '请输入数量' }, { validator: number }]}>
+            <Form.Item name="amount" rules={[{ required: true, message: '请输入数量' }, { validator: amountValidator }]}>
               <Input
                 type="number"
                 className="decimal lh-1 fw-500"
                 min={0}
+                max={max}
                 placeholder="输入数量"
                 suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
               />

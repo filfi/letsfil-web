@@ -106,17 +106,19 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-clock text-gray"></span>
                   <span className="mx-1">承诺封装时间</span>
-                  <span className="fw-bold">{data.seal_days < 7 ? '< 7' : data.seal_days}天</span>
+                  <span className="fw-bold">&lt; {data.seal_days}天</span>
                 </p>
 
                 <p className="mb-0 fs-16 text-gray-dark">
-                  <span className="text-gray">
-                    <Avatar src={provider?.logo_url} size={24} />
+                  <span className="d-inline-block text-gray">
+                    <Avatar src={provider?.logo_url} size={20} />
                   </span>
-                  <span className="mx-1">{provider?.short_name}</span>
-                  <span className="mx-1">·</span>
-                  <span className="mx-1">保证金配比</span>
-                  <span className="fw-bold">{opsRatio}%</span>
+                  <span className="align-middle">
+                    <span className="mx-1">{provider?.short_name}</span>
+                    <span className="mx-1">·</span>
+                    <span className="mx-1">保证金配比</span>
+                    <span className="fw-bold">{opsRatio}%</span>
+                  </span>
                 </p>
               </div>
             </div>

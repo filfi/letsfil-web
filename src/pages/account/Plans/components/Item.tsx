@@ -2,16 +2,19 @@ import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
+import Countdown from './Countdown';
 import Dialog from '@/components/Dialog';
 import { catchify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useAccounts from '@/hooks/useAccounts';
-import { accMul, isEqual } from '@/utils/utils';
 import useLoadingify from '@/hooks/useLoadingify';
+import useProcessify from '@/hooks/useProcessify';
+import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useDepositInvest from '@/hooks/useDepositInvest';
 import { NodeState, RaiseState } from '@/constants/state';
-import { formatEther, formatNum, formatRate } from '@/utils/format';
+import { accMul, accSub, isEqual, sec2day } from '@/utils/utils';
+import { formatAmount, formatByte, formatEther, formatNum, formatRate } from '@/utils/format';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
@@ -55,11 +58,7 @@ function calcSealDays(data: API.Plan) {
     return r;
   }
 
-  if (data.seal_days < 7) {
-    r.push('< 7 天');
-  } else {
-    r.push(`${data.seal_days} 天`);
-  }
+  r.push(`< ${data.seal_days} 天`);
 
   // 封装中
   if (data.begin_seal_time) {
@@ -83,8 +82,12 @@ function useStates(data: API.Plan) {
   const isRaiser = useMemo(() => isEqual(raiser, account), [raiser, account]);
   const isServicer = useMemo(() => isEqual(servicer, account), [servicer, account]);
 
+  const isPending = useMemo(() => data.status === RaiseState.Pending, [data.status]);
+  const isStarted = useMemo(() => data.status > RaiseState.WaitingStart && !isPending, [data.status, isPending]);
+  const isRaising = useMemo(() => data.status === RaiseState.Raising, [data.status]);
   const isSuccess = useMemo(() => data.status === RaiseState.Success, [data.status]);
   const isSealing = useMemo(() => isSuccess && data.sealed_status === NodeState.Started, [data.sealed_status, isSuccess]);
+  const isDelayed = useMemo(() => isSuccess && data.sealed_status === NodeState.Delayed, [data.sealed_status, isSuccess]);
   const isFinished = useMemo(() => isSuccess && data.sealed_status === NodeState.End, [data.sealed_status, isSuccess]);
 
   return {
@@ -97,22 +100,28 @@ function useStates(data: API.Plan) {
     isOpsPaid,
     isRaisePaid,
     isSigned,
+    isPending,
+    isStarted,
+    isRaising,
     isSuccess,
     isSealing,
+    isDelayed,
     isFinished,
   };
 }
 
 const Item: React.FC<{
   data: API.Plan;
+  invest?: boolean;
   onEdit?: () => void;
   onHide?: () => Promise<any>;
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
   getProvider?: (id?: number | string) => API.Provider | undefined;
-}> = ({ data, getProvider, onEdit, onHide, onDelete, onStart }) => {
-  const { percent } = useDepositInvest(data);
-  const { isRaiser, isOpsPaid, isRaisePaid, isSigned, isSuccess, isSealing, isFinished } = useStates(data);
+}> = ({ data, invest, getProvider, onEdit, onHide, onDelete, onStart }) => {
+  const { pack } = useRaiseSeals(data);
+  const { amount, percent } = useDepositInvest(data);
+  const { isRaiser, isOpsPaid, isRaisePaid, isSigned, isStarted, isSuccess, isSealing, isDelayed, isFinished } = useStates(data);
 
   const rate = useMemo(() => accMul(data.raiser_coin_share, 0.95), [data.raiser_coin_share]);
   const sealDays = useMemo(() => calcSealDays(data), [data]);
@@ -127,12 +136,42 @@ const Item: React.FC<{
     await onDelete?.();
   });
 
-  const [starting, handleStart] = useLoadingify(async () => {
+  const [starting, handleStart] = useProcessify(async () => {
     await onStart?.();
   });
 
   const handleHide = withConfirm(data, hideAction);
   const handleDelete = withConfirm(data, deleteAction);
+
+  const renderAssets = () => {
+    const showAssets = invest && isStarted;
+    const showPack = isFinished && pack;
+
+    if (showAssets || showPack) {
+      return (
+        <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
+          {showAssets && (
+            <div className="d-flex justify-content-between gap-3 py-2">
+              <span className="text-gray-dark">我的投入</span>
+              <span className="fw-500">{formatAmount(amount)} FIL</span>
+            </div>
+          )}
+          {showPack && (
+            <div className="d-flex justify-content-between gap-3 py-2">
+              <span className="text-gray-dark">我的资产</span>
+              <Link className="fw-500 text-underline" to={`/assets/${pack.raising_id}`}>
+                <span>{formatByte(pack.pack_power)}</span>
+                <span>@</span>
+                <span>{pack.miner_id}</span>
+              </Link>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   const renderStatus = () => {
     switch (data.status) {
@@ -147,22 +186,52 @@ const Item: React.FC<{
 
         return <span className="badge">待启动</span>;
       case RaiseState.Raising:
-        return <span className="badge badge-success">募集中</span>;
+        return (
+          <>
+            <span className="badge badge-success">募集中</span>
+            <span className="ms-2 fs-sm text-gray">
+              <Countdown time={data.closing_time} />
+            </span>
+          </>
+        );
       case RaiseState.Closed:
-        return <span className="badge">已关闭</span>;
+        return (
+          <>
+            <span className="badge">已关闭</span>
+            {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
+          </>
+        );
       case RaiseState.Failure:
-        return <span className="badge badge-danger">募集失败</span>;
+        return (
+          <>
+            <span className="badge badge-danger">募集失败</span>
+            {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
+          </>
+        );
       case RaiseState.Success:
         if (isFinished) {
-          return <span className="badge badge-primary">生产中</span>;
+          const sec = Math.max(accSub(Date.now() / 1000, data.end_seal_time), 0);
+          return (
+            <>
+              <span className="badge badge-primary">生产中</span>
+              <span className="ms-2 fs-sm text-gray">已运行 {sec2day(sec)} 天</span>
+            </>
+          );
         }
 
         if (isSealing) {
-          return <span className="badge badge-warning">封装中</span>;
+          return (
+            <>
+              <span className="badge badge-warning">封装中</span>
+              <span className="ms-2 fs-sm text-gray">
+                <Countdown time={isDelayed ? data.delay_seal_time : data.end_seal_time} />
+              </span>
+            </>
+          );
         }
 
         return <span className="badge">待封装</span>;
-      case 10:
+      case RaiseState.Pending:
         return <span className="badge">可编辑</span>;
     }
   };
@@ -266,6 +335,7 @@ const Item: React.FC<{
             </span>
           </div>
         </div>
+        {renderAssets()}
         <div className="card-footer d-flex align-items-center gap-3">
           <div className="flex-shrink-0 me-auto">{renderStatus()}</div>
           <div className="d-flex flex-shrink-0 justify-content-between gap-2">

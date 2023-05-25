@@ -40,7 +40,7 @@ const EVENTS_MAP: Record<string, string> = {
   EPushSpFine: '推送服务商罚金',
   ENodeDestroy: '节点销毁',
   ESpecifyOpsPayer: '指定运维付款人',
-  ECreateAssetPack: '创建资产包/募集计',
+  ECreateAssetPack: '创建资产包/募集计划',
 };
 
 function renderName(event: string) {

@@ -7,12 +7,12 @@ import { accDiv, accSub, sec2day } from '@/utils/utils';
 
 export default function useRaiseSeals(data?: API.Plan) {
   const service = async () => {
-    if (data?.miner_id) {
-      return await packInfo(data.miner_id);
+    if (data?.raising_id) {
+      return await packInfo(data.raising_id);
     }
   };
 
-  const { data: pack } = useRequest(service, { refreshDeps: [data?.miner_id] });
+  const { data: pack } = useRequest(service, { refreshDeps: [data?.raising_id] });
 
   const period = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]);
   const actual = useMemo(() => toNumber(data?.actual_amount), [data?.actual_amount]);

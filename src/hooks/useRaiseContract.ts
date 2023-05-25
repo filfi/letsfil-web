@@ -246,21 +246,6 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 指定保证金缴纳地址
-   */
-  // const changeOpsPayer = toastify(
-  //   withConnect(
-  //     withTx(
-  //       withContract(async (contract, address: string, opts?: TxOptions) => {
-  //         return await contract?.specifyOpsPayer(address, {
-  //           ...opts,
-  //         });
-  //       }),
-  //     ),
-  //   ),
-  // );
-
-  /**
    * 启动封装
    */
   const startSeal = toastify(

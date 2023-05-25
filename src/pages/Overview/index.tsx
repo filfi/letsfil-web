@@ -14,14 +14,13 @@ import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-// import Breadcrumb from '@/components/Breadcrumb';
 import PageHeader from '@/components/PageHeader';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import { NodeState, RaiseState } from '@/constants/state';
-import CardFAQ from './components/CardFAQ';
+// import CardFAQ from './components/CardFAQ';
 import CardCalc from './components/CardCalc';
 import CardTimer from './components/CardTimer';
 import CardAssets from './components/CardAssets';
@@ -249,24 +248,16 @@ export default function Overview() {
           <CardRaiser data={data} />
 
           <CardCalc data={data} />
-
-          <CardFAQ data={data} />
         </>
       );
     }
 
-    return (
-      <>
-        <CardFAQ data={data} />
-      </>
-    );
+    return null;
   };
 
   return (
     <>
       <div className="container">
-        {/* <Breadcrumb className="my-3 my-lg-4" items={[{ title: '募集计划' }]} /> */}
-
         <PageHeader
           className={classNames({ 'border-bottom': !isFinished, 'mb-3 pb-0': isFinished })}
           title={title}
@@ -430,6 +421,13 @@ export default function Overview() {
       </div>
 
       <Calculator />
+
+      <p>
+        <br />
+      </p>
+      <p>
+        <br />
+      </p>
     </>
   );
 }
