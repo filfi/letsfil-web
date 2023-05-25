@@ -56,6 +56,12 @@ export function formatPercent(progress?: ethers.BigNumberish, fmt = '0%') {
   return formatRate(toNumber(progress, 6), fmt);
 }
 
+export function formatPower(power?: number | string, fmt = '0.0 ib') {
+  if (typeof power !== 'undefined') {
+    return formatNum(power, fmt).split(' ');
+  }
+}
+
 export function formatRemain(...args: (number | string)[]) {
   if (args.every(Boolean)) {
     const sum = args.reduce<number>((sum, cur) => accAdd(sum, cur), 0);

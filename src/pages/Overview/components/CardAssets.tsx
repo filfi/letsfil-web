@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
+import { isDef } from '@/utils/utils';
+import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { accDiv, accMul, isDef } from '@/utils/utils';
 import { formatAmount, formatEther, formatNum, formatUnixDate } from '@/utils/format';
 
 function formatByte(val?: number | string) {
@@ -14,14 +14,11 @@ function formatByte(val?: number | string) {
 }
 
 const CardAssets: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
-  const { amount, total } = useDepositInvest(data);
+  const { amount } = useDepositInvest(data);
   const { isRaiser, isServicer, isFinished } = useRaiseState(data);
-  const { investRate, raiserRate, opsRate, servicerRate } = useRaiseRate(data);
+  const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
 
-  const power = useMemo(() => +`${pack?.pack_power || '0'}`, [pack?.pack_power]);
-  const iRate = useMemo(() => (total > 0 ? accDiv(amount, total) : 0), [amount, total]);
-  const raiserPower = useMemo(() => accMul(power, accDiv(raiserRate, 100)), [power, raiserRate]);
-  const investPower = useMemo(() => accMul(accMul(power, accDiv(investRate, 100)), iRate), [power, investRate, iRate]);
+  const { investPower, raiserPower } = useAssetPack(data, pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined);
 
   const goDepositCard = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();

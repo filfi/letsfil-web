@@ -95,6 +95,8 @@ export default function Overview() {
     [EventType.onDepositRaiseFund]: refresh,
     [EventType.onNodeStateChange]: refresh,
     [EventType.onRaiseStateChange]: refresh,
+    [EventType.onWithdrawOpsFund]: refresh,
+    [EventType.onWithdrawRaiseFund]: refresh,
   });
 
   const handleEdit = () => {

@@ -17,7 +17,7 @@ export type BannerCardProps = {
 
 const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider }) => {
   const { withConnect } = useAccounts();
-  const { percent } = useDepositInvest(data);
+  const { progress } = useDepositInvest(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
@@ -110,7 +110,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
                 </div>
               </div>
               <div className="cd-item cd-item-fill">
-                <span className="fw-600">{formatRate(percent)}</span>
+                <span className="fw-600">{formatRate(progress)}</span>
                 <span className="label">已募</span>
               </div>
             </div>

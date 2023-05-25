@@ -3,41 +3,41 @@ import classNames from 'classnames';
 import { Avatar, Input } from 'antd';
 import { useModel } from '@umijs/max';
 
+import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
+import { RaiseState } from '@/constants/state';
 import useProvider from '@/hooks/useProvider';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
-import { RaiseState } from '@/constants/state';
-import { formatAddr, formatEther } from '@/utils/format';
+import useDepositOps from '@/hooks/useDepositOps';
+import useDepositRaise from '@/hooks/useDepositRaise';
+import { accMul, accSub } from '@/utils/utils';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
 
-const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { initialState } = useModel('@@initialState');
-  const { getProvider } = useProvider();
-  const { investRate } = useRaiseRate(data);
-  const { contract, isOpsPaid, isPending, isRaising, isRaisePaid, isRaiser, isServicer, raiseState, raiser, servicer } = useRaiseState(data);
+  const { contract, raiseState, isRaisePaid, isRaiser, isPayer, raiser, isFailed, isPending, isProcess, isRaising, isWorking, isFinished, isDestroyed } =
+    useRaiseState(data);
+  const raise = useDepositRaise(data);
 
-  const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
-  const opsPayable = useMemo(() => isServicer && raiseState < RaiseState.Raising, [isServicer, raiseState]);
-  const raiserPayable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
+  const actual = useMemo(() => F.toNumber(data?.actual_amount), [data?.actual_amount]);
+  const total = useMemo(() => F.toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
+  const amount = useMemo(() => (data && !isPending ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, isPending, raise.amount]);
+  const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
+  const fine = useMemo(() => accSub(accSub(total, raise.amount), fee), [total, fee, raise.amount]); // 罚金
 
-  const [raising, handleRaisePay] = useProcessify(async () => {
+  const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
+  const withdrawable = useMemo(() => isRaiser && (isFailed || isFinished || isDestroyed), [isPayer, isFailed, isFinished, isDestroyed]);
+
+  const [paying, handlePay] = useProcessify(async () => {
     if (!data) return;
 
     await contract.depositRaiseFund(data.raising_id, {
       value: data.raise_security_fund,
-    });
-  });
-
-  const [opsLoading, handleOpsPay] = useProcessify(async () => {
-    if (!data) return;
-
-    await contract.depositOpsFund(data.raising_id, {
-      value: data.ops_security_fund,
     });
   });
 
@@ -53,9 +53,21 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
           </div>
 
           {isRaisePaid ? (
-            <IconChecked />
-          ) : raiserPayable ? (
-            <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} disabled={isPending} loading={raising} onClick={handleRaisePay}>
+            withdrawable ? (
+              <SpinBtn
+                className="btn btn-primary ms-auto"
+                style={{ minWidth: 120 }}
+                loading={raise.processing}
+                disabled={raise.amount <= 0 || initialState?.processing}
+                onClick={raise.withdraw}
+              >
+                取回
+              </SpinBtn>
+            ) : (
+              <IconChecked />
+            )
+          ) : payable ? (
+            <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} disabled={isPending} loading={paying} onClick={handlePay}>
               存入
             </SpinBtn>
           ) : null}
@@ -63,11 +75,35 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
         <div className="card-body">
           <div className="d-flex align-items-center mb-1">
             <p className="mb-0">
-              <span className="text-decimal">{formatEther(data?.raise_security_fund)}</span>
+              <span className="text-decimal">{F.formatAmount(amount)}</span>
               <span className="ms-1 text-gray">FIL</span>
             </p>
-            {isRaisePaid && <span className="ms-auto badge badge-success">来自{formatAddr(raiser)}</span>}
+            {isRaisePaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(raiser)}</span>}
           </div>
+          {(isProcess || isWorking) && (
+            <div className="bg-light my-2 px-3 py-2 rounded-3">
+              {isProcess && (
+                <p className="d-flex gap-3 my-2">
+                  <span className="text-gray-dark">
+                    <span>募集手续费</span>
+                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fee)}</span>
+                    <span className="ms-1">FIL</span>
+                  </span>
+                  {/* <a className="ms-auto text-underline" href="#">了解更多</a> */}
+                </p>
+              )}
+              {isWorking && (
+                <p className="d-flex gap-3 my-2">
+                  <span className="text-gray-dark">
+                    <span>累计罚金</span>
+                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fine)}</span>
+                    <span className="ms-1">FIL</span>
+                  </span>
+                  {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
+                </p>
+              )}
+            </div>
+          )}
           <p className="mb-0">
             {isRaising ? (
               <span>当募集目标未达成，或发起方主动终止，此保证金赔偿投资人存入FIL的利息损失。</span>
@@ -81,6 +117,48 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
         </div>
       </div>
 
+      {/* <Modal.Alert id="raiser-deposit" title="发起人保证金">
+        <div className="card border-0">
+          <div className="card-body">
+            <p className="mb-0">保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</p>
+          </div>
+        </div>
+      </Modal.Alert>
+
+      <Modal.Alert id="sp-deposit" title="技术运维保证金">
+        <div className="card border-0">
+          <div className="card-body">
+            <p className="mb-0">与投资人等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
+          </div>
+        </div>
+      </Modal.Alert> */}
+    </>
+  );
+};
+
+const ServiceCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  const { initialState } = useModel('@@initialState');
+  const { contract, raiseState, isOpsPaid, isPayer, payer, isPending, isFailed, isDestroyed } = useRaiseState(data);
+  const ops = useDepositOps(data);
+  const { investRate } = useRaiseRate(data);
+  const { getProvider } = useProvider();
+
+  const amount = useMemo(() => (data && !isPending ? ops.amount : F.toNumber(data?.ops_security_fund)), [data, isPending, ops.amount]);
+
+  const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
+  const payable = useMemo(() => isPayer && raiseState < RaiseState.Raising, [isPayer, raiseState]);
+  const withdrawable = useMemo(() => isPayer && (isFailed || isDestroyed), [isPayer, isFailed, isDestroyed]);
+
+  const [paying, handlePay] = useProcessify(async () => {
+    if (!data) return;
+
+    await contract.depositOpsFund(data.raising_id, {
+      value: data.ops_security_fund,
+    });
+  });
+
+  return (
+    <>
       <div className={classNames('card', { 'card-danger': data && !isPending && !isOpsPaid })}>
         <div className="card-header d-flex align-items-center">
           <div className="d-flex align-items-center me-auto">
@@ -91,12 +169,24 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
           </div>
 
           {isOpsPaid ? (
-            <IconChecked />
-          ) : opsPayable ? (
+            withdrawable ? (
+              <SpinBtn
+                className="btn btn-primary ms-auto"
+                style={{ minWidth: 120 }}
+                loading={ops.processing}
+                disabled={ops.amount <= 0 || initialState?.processing}
+                onClick={ops.withdraw}
+              >
+                取回
+              </SpinBtn>
+            ) : (
+              <IconChecked />
+            )
+          ) : payable ? (
             <SpinBtn
               className="btn btn-primary ms-auto"
               style={{ minWidth: 120 }}
-              loading={opsLoading}
+              loading={paying}
               disabled={initialState?.processing || isPending}
               data-bs-toggle="modal"
               data-bs-target="#deposit-confirm"
@@ -108,10 +198,10 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
         <div className="card-body">
           <div className="d-flex align-items-center mb-1">
             <p className="mb-0">
-              <span className="text-decimal">{formatEther(data?.ops_security_fund)}</span>
+              <span className="text-decimal">{F.formatAmount(amount)}</span>
               <span className="ms-1 text-gray">FIL</span>
             </p>
-            {isOpsPaid && <span className="ms-auto badge badge-success">来自{formatAddr(servicer)}</span>}
+            {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(payer)}</span>}
           </div>
           <p className="mb-0">
             <span>与投资人等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</span>
@@ -127,8 +217,8 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
         footerClassName="border-0"
         title="预存技术运维保证金"
         confirmText="存入"
-        confirmLoading={opsLoading}
-        onConfirm={handleOpsPay}
+        confirmLoading={paying}
+        onConfirm={handlePay}
       >
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">
@@ -178,27 +268,21 @@ const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
           <p className="mb-4 fs-16 fw-500">预存金额按照募集目标计算，募集结束后按照实际募集目标</p>
 
           <p className="mb-0">
-            <span className="fs-24 fw-600">{formatEther(data?.ops_security_fund)}</span>
+            <span className="fs-24 fw-600">{F.formatEther(data?.ops_security_fund)}</span>
             <span className="ms-1 text-gray">FIL</span>
           </p>
         </div>
       </Modal.Confirm>
+    </>
+  );
+};
 
-      {/* <Modal.Alert id="raiser-deposit" title="发起人保证金">
-        <div className="card border-0">
-          <div className="card-body">
-            <p className="mb-0">保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</p>
-          </div>
-        </div>
-      </Modal.Alert>
+const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  return (
+    <>
+      <RaiserCard data={data} />
 
-      <Modal.Alert id="sp-deposit" title="技术运维保证金">
-        <div className="card border-0">
-          <div className="card-body">
-            <p className="mb-0">与投资人等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
-          </div>
-        </div>
-      </Modal.Alert> */}
+      <ServiceCard data={data} />
     </>
   );
 };

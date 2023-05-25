@@ -1,18 +1,28 @@
-import { useMemo } from 'react';
+import { Avatar } from 'antd';
 import { useRequest } from 'ahooks';
-import { Avatar, Table } from 'antd';
+import { useMemo, useState } from 'react';
 import { Link, NavLink, useParams } from '@umijs/max';
-import type { ColumnsType } from 'antd/es/table';
 
+import styles from './styles.less';
+import * as F from '@/utils/format';
 import { getInfo } from '@/apis/raise';
 import { SCAN_URL } from '@/constants';
-import useProvider from '@/hooks/useProvider';
-import useRaiseSeals from '@/hooks/useRaiseSeals';
+import SpinBtn from '@/components/SpinBtn';
+import Activity from './components/Activity';
+import FormRadio from '@/components/FormRadio';
 import PageHeader from '@/components/PageHeader';
 import RewardChart from './components/RewardChart';
-import { formatByte, formatUnixDate } from '@/utils/format';
-import { ReactComponent as IconStar } from './imgs/icon-star.svg';
+import useProvider from '@/hooks/useProvider';
+import useAssetPack from '@/hooks/useAssetPack';
+import useLoadingify from '@/hooks/useLoadingify';
+import useRaiseSeals from '@/hooks/useRaiseSeals';
+import useRewardRaiser from '@/hooks/useRewardRaiser';
+import useRewardInvestor from '@/hooks/useRewardInvestor';
+import useRewardServicer from '@/hooks/useRewardServicer';
 import { ReactComponent as IconFil } from '@/assets/icons/filecoin.svg';
+import { ReactComponent as IconStar } from './imgs/icon-star.svg';
+import { ReactComponent as IconTool } from './imgs/icon-tool.svg';
+import { ReactComponent as IconUser } from './imgs/icon-users.svg';
 
 export default function Assets() {
   const param = useParams();
@@ -24,37 +34,57 @@ export default function Assets() {
 
   const { getProvider } = useProvider();
 
-  const { data } = useRequest(service, { refreshDeps: [param.id] });
+  const [role, setRole] = useState(0);
+  const { data, refresh } = useRequest(service, { refreshDeps: [param.id] });
   const { pack, remains } = useRaiseSeals(data);
+  const { isRaiser, isServicer, investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(
+    data,
+    pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,
+  );
+
+  const raiser = useRewardRaiser(data); // 发起人的收益
+  const investor = useRewardInvestor(data); // 投资人的收益
+  const servicer = useRewardServicer(data); // 服务商的收益
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
-  const columns: ColumnsType<API.Base> = [
-    {
-      title: '事件',
-      dataIndex: 'event',
-    },
-    {
-      title: '数量',
-      dataIndex: 'amount',
-    },
-    {
-      title: '时间',
-      dataIndex: 'time',
-    },
-    {
-      title: '消息',
-      dataIndex: 'hash',
-    },
-  ];
+  const power = useMemo(() => [investPower, raiserPower, servicerPower][role], [role, investPower, raiserPower, servicerPower]);
+  const pledge = useMemo(() => [investPledge, raiserPledge, servicerPledge][role], [role, investPledge, raiserPledge, servicerPledge]);
+  const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role], [role, investor.reward, raiser.reward, servicer.reward]);
+
+  const options = useMemo(() => {
+    const items = [{ icon: <IconUser />, label: '我是投资人', value: 0 }];
+
+    if (isRaiser) {
+      items.push({ icon: <IconStar />, label: '我是发起人', value: 1 });
+    }
+
+    if (isServicer) {
+      items.push({ icon: <IconTool />, label: '我是技术服务商', value: 2 });
+    }
+
+    return items;
+  }, [isRaiser, isServicer]);
+
+  const [processing, handleWithdraw] = useLoadingify(async () => {
+    if (!param.id) return;
+
+    if (role === 1) {
+      await raiser.withdraw();
+    } else if (role === 2) {
+      await servicer.withdraw();
+    } else {
+      await investor.withdraw();
+    }
+
+    refresh();
+  });
 
   return (
     <>
       <div className="container">
-        <PageHeader className="mb-3 pb-0" title={title} desc={`算力包：${param.id}`}>
-          {/* <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div> */}
-        </PageHeader>
+        <PageHeader className="mb-3 pb-0" title={title} desc={`算力包：${param.id}`} />
 
         <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
           <li className="nav-item">
@@ -84,7 +114,7 @@ export default function Assets() {
                 </div>
 
                 <div className="flex-shrink-0">
-                  <span className="text-gray-dark">承担技术运维</span>
+                  <span className="text-gray-dark">提供技术服务</span>
                 </div>
               </div>
             </div>
@@ -97,7 +127,7 @@ export default function Assets() {
 
                 <div className="flex-grow-1">
                   <p className="mb-1 fw-500">{data?.sponsor_company}发起的募集计划</p>
-                  <p className="mb-0 text-gray-dark">{formatUnixDate(data?.begin_time)}启动</p>
+                  <p className="mb-0 text-gray-dark">{F.formatUnixDate(data?.begin_time)}启动</p>
                 </div>
 
                 <div className="flex-shrink-0">
@@ -125,11 +155,11 @@ export default function Assets() {
                   <div className="accordion-body py-2">
                     <p className="d-flex gap-3 my-3">
                       <span className="text-gray-dark">最早到期</span>
-                      <span className="ms-auto fw-500">{formatUnixDate(pack?.sector_begin_expira)}</span>
+                      <span className="ms-auto fw-500">{F.formatUnixDate(pack?.sector_begin_expira, 'll')}</span>
                     </p>
                     <p className="d-flex gap-3 my-3">
                       <span className="text-gray-dark">最晚到期</span>
-                      <span className="ms-auto fw-500">{formatUnixDate(pack?.sector_end_expira)}</span>
+                      <span className="ms-auto fw-500">{F.formatUnixDate(pack?.sector_end_expira, 'll')}</span>
                     </p>
                     <p className="d-flex gap-3 my-3">
                       <span className="text-gray-dark">剩余时间</span>
@@ -169,7 +199,7 @@ export default function Assets() {
                     </p>
                     <p className="d-flex gap-3 my-3">
                       <span className="text-gray-dark">扇区大小</span>
-                      <span className="ms-auto fw-500">{pack ? <span className="badge badge-success">{formatByte(pack?.sector_size)}</span> : '-'}</span>
+                      <span className="ms-auto fw-500">{pack ? <span className="badge badge-success">{F.formatByte(pack?.sector_size)}</span> : '-'}</span>
                     </p>
                   </div>
                 </div>
@@ -177,18 +207,19 @@ export default function Assets() {
             </div>
           </div>
           <div className="col-12 col-lg-8 d-flex flex-column gap-3">
+            {(isRaiser || isServicer) && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
             <div className="card border-0" style={{ '--bs-card-bg': '#fffaeb' } as any}>
               <div className="card-body d-flex gap-3">
                 <IconFil width={48} height={48} />
 
                 <h4 className="my-auto">
-                  <span className="fs-36 fw-600">0</span>
+                  <span className="fs-36 fw-600">{F.formatAmount(reward)}</span>
                   <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
                 </h4>
 
-                <button className="btn btn-primary btn-lg ms-auto my-auto px-5" type="button">
+                <SpinBtn className="btn btn-primary btn-lg ms-auto my-auto px-5" loading={processing} disabled={reward <= 0} onClick={handleWithdraw}>
                   提取金额
-                </button>
+                </SpinBtn>
               </div>
             </div>
 
@@ -196,8 +227,8 @@ export default function Assets() {
               <div className="card-body">
                 <p className="mb-1 text-gray fw-500">持有算力(QAP)</p>
                 <p className="mb-0 fw-600">
-                  <span className="fs-24">0</span>
-                  <span className="ms-1 fs-sm fw-bold text-neutral">TiB</span>
+                  <span className="fs-24">{F.formatPower(power)?.[0]}</span>
+                  <span className="ms-1 fs-sm fw-bold text-neutral">{F.formatPower(power)?.[1]}</span>
                 </p>
               </div>
             </div>
@@ -206,7 +237,7 @@ export default function Assets() {
               <div className="card-body">
                 <p className="mb-1 text-gray fw-500">持有质押币</p>
                 <p className="mb-0 fw-600">
-                  <span className="fs-24">0</span>
+                  <span className="fs-24">{F.formatAmount(pledge)}</span>
                   <span className="ms-1 fs-sm fw-bold text-neutral">FIL</span>
                 </p>
               </div>
@@ -229,7 +260,7 @@ export default function Assets() {
                 </h4>
                 <div id="activity" className="accordion-collapse collapse show" aria-labelledby="Activity">
                   <div className="accordion-body p-0">
-                    <Table className="table" columns={columns} pagination={false} />
+                    <Activity />
                   </div>
                 </div>
               </div>

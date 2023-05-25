@@ -32,4 +32,5 @@ export type RadioProps<V = any> = {
 
 export type RadioType = React.FC<RadioProps> & {
   Item: React.FC<RadioItemProps>;
+  Button: React.FC<RadioButtonProps>;
 };

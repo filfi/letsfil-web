@@ -23,9 +23,10 @@ export default function useDepositInvest(data?: API.Plan) {
   const [backInterest, setBackInterest] = useState(0); // 退回利息
 
   const isInvestor = useMemo(() => record > 0, [record]);
-  const percent = useMemo(() => (target > 0 ? accDiv(total, target) : 0), [target, total]);
+  const ratio = useMemo(() => (total > 0 ? accDiv(amount, total) : 0), [amount, total]); // 投资占比
+  const progress = useMemo(() => (target > 0 ? accDiv(total, target) : 0), [target, total]); // 募集进度
 
-  const [fetching, fetchData] = useLoadingify(async () => {
+  const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;
 
     const contract = getContract(data.raise_address);
@@ -51,11 +52,12 @@ export default function useDepositInvest(data?: API.Plan) {
 
     const raise = await contract?.raiseInfo(data.raising_id);
     const pledge = await contract?.pledgeTotalAmount(data.raising_id);
+
     setTotal(toNumber(pledge));
     setTarget(toNumber(raise?.targetAmount));
   });
 
-  const [loading, unStaking] = useProcessify(async () => {
+  const [processing, unStaking] = useProcessify(async () => {
     if (!data) return;
 
     const contract = getContract(data.raise_address);
@@ -69,23 +71,22 @@ export default function useDepositInvest(data?: API.Plan) {
   useEmittHandler({
     [EventType.onStaking]: fetchData,
     [EventType.onUnstaking]: fetchData,
-    [EventType.onWithdrawOpsFund]: fetchData,
   });
 
   return {
     amount,
-    account,
     record,
+    ratio,
     total,
     target,
-    percent,
+    progress,
     interest,
     withdraw,
     backAmount,
     backInterest,
     isInvestor,
-    fetching,
     loading,
+    processing,
     unStaking,
     refresh: fetchData,
   };

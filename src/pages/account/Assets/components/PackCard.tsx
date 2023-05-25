@@ -1,13 +1,24 @@
-import { useMemo } from 'react';
+import { Link } from '@umijs/max';
+import { useRequest } from 'ahooks';
 
+import { isDef } from '@/utils/utils';
+import { getInfo } from '@/apis/raise';
 import ShareBtn from '@/components/ShareBtn';
-import { formatAmount, formatNum, toNumber } from '@/utils/format';
+import useAssetPack from '@/hooks/useAssetPack';
+import { formatAmount, formatNum } from '@/utils/format';
 import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
 
+function formatPower(val?: number | string) {
+  if (isDef(val)) {
+    return formatNum(val, '0.0 ib').split(' ');
+  }
+}
+
 const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
-  const amount = useMemo(() => toNumber(data.total_pledge_amount), [data.total_pledge_amount]);
-  const power = useMemo(() => formatNum(data.sector_size, '0.0 ib').split(' '), [data.sector_size]);
+  const { data: info } = useRequest(() => getInfo(data.raising_id), { refreshDeps: [data.raising_id] });
+
+  const { holdPower, holdPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
 
   return (
     <div className="card h-100">
@@ -26,29 +37,29 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">持有算力(QAP)</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{power[0]}</span>
-            <span className="text-gray-dark ms-1">{power[1]}</span>
+            <span className="fs-16 fw-600">{formatPower(holdPower)?.[0]}</span>
+            <span className="text-gray-dark ms-1">{formatPower(holdPower)?.[1]}</span>
           </span>
         </p>
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">持有质押币</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatAmount(amount)}</span>
+            <span className="fs-16 fw-600">{formatAmount(holdPledge)}</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">可提余额</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatAmount(amount)}</span>
+            <span className="fs-16 fw-600">{formatAmount(holdPledge)}</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>
       </div>
       <div className="card-footer d-flex">
-        <button type="button" className="btn btn-primary ms-auto" disabled={amount <= 0}>
+        <Link className="btn btn-primary ms-auto" to={`/assets/${data.raising_id}`}>
           提取收益
-        </button>
+        </Link>
       </div>
     </div>
   );

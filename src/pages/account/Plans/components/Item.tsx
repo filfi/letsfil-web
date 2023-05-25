@@ -120,7 +120,7 @@ const Item: React.FC<{
   getProvider?: (id?: number | string) => API.Provider | undefined;
 }> = ({ data, invest, getProvider, onEdit, /* onHide, */ onDelete, onStart }) => {
   const { pack } = useRaiseSeals(data);
-  const { amount, percent } = useDepositInvest(data);
+  const { amount, progress } = useDepositInvest(data);
   const { isRaiser, isOpsPaid, isRaisePaid, isSigned, isStarted, isSuccess, isSealing, isDelayed, isFinished } = useStates(data);
 
   const rate = useMemo(() => accMul(data.raiser_coin_share, 0.95), [data.raiser_coin_share]);
@@ -302,12 +302,12 @@ const Item: React.FC<{
             <span className="text-gray-dark">{isSuccess ? '实际募集' : '募集目标'}</span>
             <span className="fw-500">
               <span>{formatEther(data.target_amount)} FIL</span>
-              {percent > 0 && (
+              {progress > 0 && (
                 <>
                   <span> · </span>
                   <span>
                     {isSuccess ? '达到目标的' : '已募集'}
-                    {formatRate(percent)}
+                    {formatRate(progress)}
                   </span>
                 </>
               )}

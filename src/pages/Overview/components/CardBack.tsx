@@ -2,18 +2,11 @@
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useRaiseState from '@/hooks/useRaiseState';
-import useProcessify from '@/hooks/useProcessify';
 import useDepositInvest from '@/hooks/useDepositInvest';
 
 const CardBack: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data }) => {
-  const { amount, backAmount, backInterest } = useDepositInvest(data);
-  const { contract, isFailed, isFinished, isDestroyed } = useRaiseState(data);
-
-  const [loading, handleUnstake] = useProcessify(async () => {
-    if (!data) return;
-
-    await contract.unStaking(data.raising_id);
-  });
+  const { isFailed, isFinished, isDestroyed } = useRaiseState(data);
+  const { amount, backAmount, backInterest, processing, unStaking } = useDepositInvest(data);
 
   if (isFailed || isDestroyed || isFinished) {
     return (
@@ -47,7 +40,7 @@ const CardBack: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data })
             </p>
           </div>
           <div className="card-footer">
-            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={loading} onClick={handleUnstake}>
+            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={processing} onClick={unStaking}>
               取回
             </SpinBtn>
           </div>
