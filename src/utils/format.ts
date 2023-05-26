@@ -32,6 +32,10 @@ export function formatAddr(addr?: unknown) {
   return '';
 }
 
+export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode?: BigNumber.RoundingMode) {
+  return BigNumber(amount ?? 0).toFixed(decimalPlaces, mode);
+}
+
 export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumberish = 18) {
   return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
 }
@@ -50,10 +54,6 @@ export function formatDate(date: number | string | Date | dayjs.Dayjs, fmt = 'YY
 
 export function formatUnixNow(date: number | string | Date | dayjs.Dayjs) {
   return dayjs(date).fromNow();
-}
-
-export function formatPercent(progress?: ethers.BigNumberish, fmt = '0%') {
-  return formatRate(toNumber(progress, 6), fmt);
 }
 
 export function formatPower(power?: number | string, fmt = '0.0 ib') {

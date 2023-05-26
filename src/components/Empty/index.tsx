@@ -4,7 +4,7 @@ import { ReactComponent as Icon } from './imgs/emtpy.svg';
 const Empty: React.FC<{
   children?: React.ReactNode;
   title?: React.ReactNode;
-}> = ({ children, title = '没有募集计划' }) => {
+}> = ({ children, title = '暂无数据' }) => {
   return (
     <div className="text-center my-5">
       <Icon />

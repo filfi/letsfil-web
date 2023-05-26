@@ -26,9 +26,9 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
 
   const actual = useMemo(() => F.toNumber(data?.actual_amount), [data?.actual_amount]);
   const total = useMemo(() => F.toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
-  const amount = useMemo(() => (data && !isPending ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, isPending, raise.amount]);
+  const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
   const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
-  const fine = useMemo(() => accSub(accSub(total, raise.amount), fee), [total, fee, raise.amount]); // 罚金
+  const fine = useMemo(() => accSub(total, raise.amount, fee), [total, fee, raise.amount]); // 罚金
 
   const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
   const withdrawable = useMemo(() => isRaiser && (isFailed || isFinished || isDestroyed), [isPayer, isFailed, isFinished, isDestroyed]);
@@ -80,7 +80,7 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
             </p>
             {isRaisePaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(raiser)}</span>}
           </div>
-          {(isProcess || isWorking) && (
+          {(isProcess || isFailed || isWorking) && (
             <div className="bg-light my-2 px-3 py-2 rounded-3">
               {isProcess && (
                 <p className="d-flex gap-3 my-2">
@@ -92,7 +92,7 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
                   {/* <a className="ms-auto text-underline" href="#">了解更多</a> */}
                 </p>
               )}
-              {isWorking && (
+              {(isFailed || isWorking) && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>累计罚金</span>
@@ -143,7 +143,7 @@ const ServiceCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { investRate } = useRaiseRate(data);
   const { getProvider } = useProvider();
 
-  const amount = useMemo(() => (data && !isPending ? ops.amount : F.toNumber(data?.ops_security_fund)), [data, isPending, ops.amount]);
+  const amount = useMemo(() => (isOpsPaid ? ops.amount : F.toNumber(data?.ops_security_fund)), [data, ops.amount, isOpsPaid]);
 
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
   const payable = useMemo(() => isPayer && raiseState < RaiseState.Raising, [isPayer, raiseState]);

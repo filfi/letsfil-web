@@ -5,6 +5,7 @@ import { ethers, BigNumber } from 'ethers';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
+import { toFixed } from '@/utils/format';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
@@ -129,7 +130,7 @@ export function transformRaiseInfo(data: API.Plan): RaiseInfo {
   const infriority = U.accSub(100, data.raiser_coin_share); // 劣后部分
   const ffiRate = U.accMul(infriority, 0.08); // filfi协议部分
   const servicerRate = data.op_server_share; // 服务商部分
-  const raiserRate = U.accSub(U.accSub(infriority, servicerRate), ffiRate); // 发起人部分
+  const raiserRate = U.accSub(infriority, servicerRate, ffiRate); // 发起人部分
   const spRate = U.accMul(data.raiser_coin_share, U.accDiv(data.ops_security_fund_rate, 100));
   // 募集计划信息
   return {
@@ -193,4 +194,39 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
     spOldRewardShare: 0,
     sponsorOldRewardShare: 0,
   };
+}
+
+/**
+ * 计算募集保证金
+ * @param target 募集目标
+ * @param period 募集期限
+ * @param seals 封装期限
+ * @returns
+ */
+export function calcRaiseDepost(target: number, period: number, seals: number) {
+  // 年利率 = 1%
+  const yRate = 0.01;
+  // 协议罚金系数 = 0.1%
+  const ratio = 0.001;
+  // 罚息倍数 = FIL网络基础利率 * 3 = 年利率 * 3
+  const pim = U.accMul(yRate, 3);
+  // 展期天数
+  const delay = U.accDiv(seals, 2);
+  // 手续费 = 募集目标 * 0.3%
+  const fee = U.accMul(target, 0.003);
+  // 本金 = 募集目标 * (1 - 可以进入展期的最低比例)
+  const cost = U.accMul(target, U.accSub(1, 0.5));
+
+  // 募集期罚息 = (募集目标 + 运维保证金(最大=募集目标)) * 年利率 * 募集天数 / 365 + 手续费
+  const rInterest = U.accAdd(U.accMul(U.accAdd(target, target), yRate, U.accDiv(period, 365)), fee);
+  // 封装期罚息 = 募集目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
+  const sInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(seals, 365)), fee);
+  // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
+  const dInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(U.accAdd(seals, delay), 365)), U.accMul(cost, ratio, delay), fee);
+
+  // 结果取最大值
+  const result = Math.max(rInterest, sInterest, dInterest);
+
+  // 保留3位小数，向上舍入
+  return Number.isNaN(result) ? '0' : toFixed(result, 3, 2);
 }

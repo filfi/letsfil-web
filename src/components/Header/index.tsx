@@ -7,7 +7,7 @@ import { FormattedMessage, Link, NavLink, useModel } from '@umijs/max';
 import './styles.less';
 import SpinBtn from '../SpinBtn';
 import useAccounts from '@/hooks/useAccounts';
-import { formatAddr, formatEther } from '@/utils/format';
+import { /* formatAddr, */ formatEther } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
 import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
@@ -75,9 +75,9 @@ const Header: React.FC = () => {
 
                     <span className="ms-1">{formatEther(balance)} FIL</span>
 
-                    <span className="vr mx-2 d-none d-md-inline"></span>
+                    {/* <span className="vr mx-2 d-none d-md-inline"></span>
 
-                    <span className="d-none d-md-inline">{formatAddr(accounts[0])}</span>
+                    <span className="d-none d-md-inline">{formatAddr(accounts[0])}</span> */}
                   </div>
                 )}
                 <Link to="/account" className="btn btn-outline-light">

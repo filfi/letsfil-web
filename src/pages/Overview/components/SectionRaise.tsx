@@ -4,13 +4,15 @@ import * as F from '@/utils/format';
 import { accDiv, accMul } from '@/utils/utils';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
+import useIncomeRate from '@/hooks/useIncomeRate';
 
 const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  const { rate } = useIncomeRate(data?.raising_id);
   const { isStarted, isSuccess } = useRaiseState(data);
-  const { opsRatio, raiserRate, minRate, percent, actual, income, target } = useRaiseRate(data);
+  const { opsRate, raiserRate, minRate, percent, actual, target } = useRaiseRate(data);
 
   const minAmount = useMemo(() => accMul(target, minRate), [target, minRate]);
-  const opsAmount = useMemo(() => accMul(target, accDiv(opsRatio, 100)), [opsRatio, target]);
+  const opsAmount = useMemo(() => accMul(target, accDiv(opsRate, 100)), [opsRate, target]);
 
   return (
     <>
@@ -40,7 +42,7 @@ const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 </span>
                 <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
-                  <span className="ms-1">年化{F.formatRate(income, '0.00%')}</span>
+                  <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
                 </a>
               </p>
             </div>

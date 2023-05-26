@@ -8,42 +8,11 @@ import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
 import useChainInfo from '@/hooks/useChainInfo';
 import * as validators from '@/utils/validators';
+// import { calcRaiseDepost } from '@/helpers/app';
+import { accDiv, accMul, pb2byte } from '@/utils/utils';
 import { formatAmount, formatNum } from '@/utils/format';
-import { accAdd, accDiv, accMul, pb2byte } from '@/utils/utils';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
-
-/**
- * 计算募集保证金
- * @param target 募集目标
- * @param period 募集期限
- * @param seals 封装期限
- * @returns
- */
-export function calcRaiseDepost(target: number, period: number, seals: number) {
-  // 延长期
-  const delay = accDiv(seals, 2);
-  // 计算金额
-  const amount = accDiv(target, 2);
-  // 利率
-  const rate = accDiv(0.01, 365);
-
-  // 募集期罚息 = 金额 * 利率 * 募集期限
-  const rInterest = accMul(accMul(amount, rate), period);
-  // 封装期罚息 = 金额 * 利率 * 2 * 封装期限
-  const sInterest = accMul(accMul(accMul(amount, rate), 2), seals);
-  // 延长期罚息 = 金额 * 利率 * 2 * 延长期限
-  const dInterest = accMul(accMul(accMul(amount, rate), 2), delay);
-  // 协议罚金 = 金额 * 1‰ * 募集期限
-  const pInterest = accMul(accMul(amount, 0.001), period);
-  // 募集手续费 = 金额 * 3‰
-  const fee = accMul(amount, 0.003);
-
-  // 加总
-  const total = accAdd(accAdd(accAdd(accAdd(rInterest, sInterest), dInterest), pInterest), fee);
-
-  return Number.isNaN(total) ? 0 : total;
-}
 
 export default function CreateProgram() {
   const [form] = Form.useForm();
@@ -75,7 +44,7 @@ export default function CreateProgram() {
 
   const evalMin = useMemo(() => accMul(evalMax, rate), [evalMax, rate]);
 
-  // TODO: 发起人保证金
+  // TODO: deposit
   // const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
 
   const amountValidator = async (rule: unknown, value: string) => {
@@ -296,14 +265,14 @@ export default function CreateProgram() {
                 items={[
                   {
                     value: 1,
-                    icon: <IconFIL />, // <img src={require('@/assets/paytype-fil.png')} />,
+                    icon: <IconFIL />,
                     label: '使用 FIL 支付',
                     desc: '募集成功后从“发起人保证金”中自动扣减',
                   },
                   {
                     value: 2,
                     disabled: true,
-                    icon: <IconFFI />, // <img src={require('@/assets/paytype-ffi.png')} />,
+                    icon: <IconFFI />,
                     label: '使用 FFI 支付',
                     desc: (
                       <span>

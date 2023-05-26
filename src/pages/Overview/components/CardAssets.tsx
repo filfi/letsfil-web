@@ -3,9 +3,10 @@ import { Link } from '@umijs/max';
 import { isDef } from '@/utils/utils';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRate from '@/hooks/useRaiseRate';
+import useDepositOps from '@/hooks/useDepositOps';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { formatAmount, formatEther, formatNum, formatUnixDate } from '@/utils/format';
+import { formatAmount, formatNum, formatUnixDate } from '@/utils/format';
 
 function formatByte(val?: number | string) {
   if (isDef(val)) {
@@ -15,6 +16,7 @@ function formatByte(val?: number | string) {
 
 const CardAssets: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
   const { amount } = useDepositInvest(data);
+  const { amount: opsAmount } = useDepositOps(data);
   const { isRaiser, isServicer, isFinished } = useRaiseState(data);
   const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
 
@@ -109,7 +111,7 @@ const CardAssets: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data,
               <p className="d-flex align-items-center gap-3 my-3">
                 <span>保证金</span>
                 <span className="ms-auto">
-                  <span className="fs-20 fw-600">{formatEther(data?.ops_security_fund)}</span>
+                  <span className="fs-20 fw-600">{formatAmount(opsAmount)}</span>
                   <span className="ms-1 text-neutral">FIL</span>
                 </span>
               </p>

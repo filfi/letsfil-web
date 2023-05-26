@@ -64,6 +64,10 @@ export function getGasFee() {
   return A.get<API.Base>('/service-provier/get-gas-fee');
 }
 
+export function getIncomeRate(raising_id: string) {
+  return A.get<{ ec_income_rate: number }>('/raising-plan/v2/income', { raising_id });
+}
+
 export function count(raising_id: string) {
   return A.get<{ investor_count: number }>('/raising-plan/v2/plan/investor/count', { raising_id });
 }

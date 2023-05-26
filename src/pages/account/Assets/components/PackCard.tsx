@@ -18,7 +18,7 @@ function formatPower(val?: number | string) {
 const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const { data: info } = useRequest(() => getInfo(data.raising_id), { refreshDeps: [data.raising_id] });
 
-  const { holdPower, holdPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
+  const { holdPower, investPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
 
   return (
     <div className="card h-100">
@@ -44,14 +44,14 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">持有质押币</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatAmount(holdPledge)}</span>
+            <span className="fs-16 fw-600">{formatAmount(investPledge)}</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">可提余额</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatAmount(holdPledge)}</span>
+            <span className="fs-16 fw-600">0</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>

@@ -31,7 +31,7 @@ const getValues = ({ ops = 5, raiser = 70, servicer = 5 }: { ops: number; raiser
     raiserCionLast: accMul(raiser, accDiv(ops, 100)),
     serverShare: remain,
     opServerShare: servicer,
-    raiserShare: Math.max(accSub(accSub(remain, filfi), servicer), 0),
+    raiserShare: Math.max(accSub(remain, filfi, servicer), 0),
     filfiShare: filfi,
   };
 };

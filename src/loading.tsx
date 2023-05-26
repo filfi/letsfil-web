@@ -1,12 +1,11 @@
-const Loading: React.FC = () => {
+import Loading from './components/Loading';
+
+const GlobalLoading: React.FC = () => {
   return (
-    <div className="position-fixed vw-100 vh-100 start-0 top-0 d-flex flex-column align-items-center justify-content-center">
-      <div className="spinner-grow text-primary m-3" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </div>
+    <Loading className="position-fixed vw-100 vh-100 start-0 top-0 align-items-center">
       <p className="text-center">Loading...</p>
-    </div>
+    </Loading>
   );
 };
 
-export default Loading;
+export default GlobalLoading;

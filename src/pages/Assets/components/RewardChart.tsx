@@ -1,9 +1,70 @@
-import { useState } from 'react';
+import dayjs from 'dayjs';
+import { find } from 'lodash';
+import { useRequest } from 'ahooks';
+import { useParams } from '@umijs/max';
+import { Column } from '@ant-design/plots';
+import { useMemo, useState } from 'react';
+import type { ColumnConfig } from '@ant-design/plots';
 
+import { dailyIncome } from '@/apis/packs';
+import { toNumber } from '@/utils/format';
 import FormRadio from '@/components/FormRadio';
 
-const RewardChart: React.FC<{ id?: string }> = ({}) => {
+const config: ColumnConfig = {
+  data: [],
+  height: 200,
+  xField: 'date',
+  yField: 'value',
+  color: '#9FD3FD',
+  xAxis: {
+    label: {
+      formatter(text) {
+        return dayjs(text).format('MM-DD');
+      },
+    },
+    tickLine: null,
+  },
+  yAxis: {
+    label: null,
+    line: null,
+    grid: null,
+  },
+};
+
+const RewardChart: React.FC = () => {
+  const param = useParams();
   const [size, setSize] = useState(7);
+
+  const service = async () => {
+    if (param.id) {
+      const res = await dailyIncome({ page: 1, page_size: size, asset_pack_id: param.id });
+
+      return res.list;
+    }
+  };
+
+  const { data, loading } = useRequest(service, { refreshDeps: [size, param.id] });
+
+  const dates = useMemo(
+    () =>
+      Array.from<string>({ length: size }).reduceRight((list, _, idx) => {
+        return list.concat(dayjs().subtract(idx, 'day').format('YYYY-MM-DD'));
+      }, [] as string[]),
+    [size],
+  );
+
+  const items = useMemo(
+    () =>
+      dates.map((date) => {
+        const item = find(data, { date });
+
+        return {
+          date,
+          value: toNumber(item?.release_reward),
+        };
+      }),
+    [data, dates],
+  );
 
   return (
     <div>
@@ -23,7 +84,9 @@ const RewardChart: React.FC<{ id?: string }> = ({}) => {
         />
       </div>
 
-      <div></div>
+      <div>
+        <Column {...config} loading={loading} data={items} />
+      </div>
     </div>
   );
 };

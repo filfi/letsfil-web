@@ -30,8 +30,10 @@ export default function useRewardInvestor(data?: API.Plan) {
     if (account) {
       total = await contract?.totalRewardOf(data.raising_id, account);
       reward = await contract?.availableRewardOf(data.raising_id, account);
-      // record = await contract?.withdrawRecord(data.raising_id, account);
       pending = await contract?.willReleaseOf(data.raising_id, account);
+      const info = await contract?.investorInfo(data.raising_id, account);
+
+      record = info?.withdrawAmount;
     }
 
     setTotal(toNumber(total));

@@ -4,10 +4,11 @@ import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 import { history } from '@umijs/max';
 
+import { formatRate } from '@/utils/format';
 import useAccounts from '@/hooks/useAccounts';
+import useIncomeRate from '@/hooks/useIncomeRate';
 import useDepositInvest from '@/hooks/useDepositInvest';
 import { accDiv, accMul, accSub } from '@/utils/utils';
-import { formatPercent, formatRate } from '@/utils/format';
 
 export type BannerCardProps = {
   data: API.Plan;
@@ -18,6 +19,7 @@ export type BannerCardProps = {
 const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider }) => {
   const { withConnect } = useAccounts();
   const { progress } = useDepositInvest(data);
+  const { rate } = useIncomeRate(data.raising_id);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
@@ -46,14 +48,14 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
           </div>
 
           <div className="row g-0 mb-3">
-            <div className="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div className="col-12 col-lg-10 col-xl-8 col-xxl-6">
               <h3 className="mb-3 fs-30 fw-600">
                 {data.sponsor_company}发起的募集计划@{data.miner_id}
               </h3>
 
               <div className="d-flex flex-md-column justify-content-between gap-2 mb-3">
                 <p className="mb-0 fs-16 fw-500">承诺封装时间 {data.seal_days}天</p>
-                <p className="mb-0 fs-16 fw-500">预估年化收益 {formatPercent(data.income_rate)}</p>
+                <p className="mb-0 fs-16 fw-500">预估年化收益 {formatRate(rate)}</p>
               </div>
 
               <div className="mb-3 d-flex gap-3">
