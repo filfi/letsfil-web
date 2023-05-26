@@ -1,5 +1,4 @@
 import { filter } from 'lodash';
-import { Skeleton } from 'antd';
 import { useMemo } from 'react';
 import classNames from 'classnames';
 import { useRequest, useTitle } from 'ahooks';
@@ -9,6 +8,7 @@ import styles from './styles.less';
 import Empty from '@/components/Empty';
 import useProvider from '@/hooks/useProvider';
 import BannerCard from './components/BannerCard';
+import LoadingView from '@/components/LoadingView';
 import RaisingCard from './components/RaisingCard';
 import SealingCard from './components/SealingCard';
 import WorkingCard from './components/WorkingCard';
@@ -35,8 +35,8 @@ export default function Raising() {
     });
   };
 
-  const { data, loading } = useRequest(service);
   const { data: banner } = useRequest(A.getBanner);
+  const { data, error, loading, refresh } = useRequest(service);
   const raises = useMemo(() => data?.list.filter(isRaising), [data?.list]);
   const seals = useMemo(() => filter(data?.list, isSealing), [data?.list]);
   const workes = useMemo(() => filter(data?.list, isWorking), [data?.list]);
@@ -44,10 +44,10 @@ export default function Raising() {
 
   return (
     <div className="container pt-4 pt-lg-5">
-      <Skeleton active loading={loading}>
+      <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
-            <Empty />
+            <Empty title="没有募集计划" />
           </div>
         ) : (
           <>
@@ -100,7 +100,7 @@ export default function Raising() {
             )}
           </>
         )}
-      </Skeleton>
+      </LoadingView>
 
       <p>
         <br />

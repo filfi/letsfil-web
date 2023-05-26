@@ -8,7 +8,7 @@ import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
 import useChainInfo from '@/hooks/useChainInfo';
 import * as validators from '@/utils/validators';
-import { calcRaiseDepost } from '@/helpers/app';
+// import { calcRaiseDepost } from '@/helpers/app';
 import { accDiv, accMul, pb2byte } from '@/utils/utils';
 import { formatAmount, formatNum } from '@/utils/format';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
@@ -19,11 +19,12 @@ export default function CreateProgram() {
   const [data, setData] = useModel('stepform');
 
   const amount = Form.useWatch('amount', form);
-  const seals = Form.useWatch('sealDays', form);
-  const period = Form.useWatch('raiseDays', form);
-  const target = Form.useWatch('targetAmount', form);
+  // const seals = Form.useWatch('sealDays', form);
+  // const period = Form.useWatch('raiseDays', form);
+  // const target = Form.useWatch('targetAmount', form);
   const minRate = Form.useWatch('minRaiseRate', form);
   const amountType = Form.useWatch('amountType', form);
+  const deposit = Form.useWatch('raiseSecurityFund', form);
   const { perPledge, loading: fetching } = useChainInfo();
 
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
@@ -43,7 +44,8 @@ export default function CreateProgram() {
 
   const evalMin = useMemo(() => accMul(evalMax, rate), [evalMax, rate]);
 
-  const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
+  // TODO: deposit
+  // const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await validators.integer(rule, value);
@@ -70,9 +72,9 @@ export default function CreateProgram() {
     // }
   };
 
-  useUpdateEffect(() => {
-    form.setFieldValue('raiseSecurityFund', deposit);
-  }, [deposit]);
+  // useUpdateEffect(() => {
+  //   form.setFieldValue('raiseSecurityFund', deposit);
+  // }, [deposit]);
   useUpdateEffect(() => {
     const val = Number.isNaN(+amount) ? 0 : +amount;
     // 按金额
@@ -80,7 +82,7 @@ export default function CreateProgram() {
       form.setFieldsValue({
         targetAmount: val,
         targetPower: `${Math.floor(pb2byte(accDiv(val, perPledge)))}`,
-        // raiseSecurityFund: accMul(val, 0.05),
+        raiseSecurityFund: accMul(val, 0.05),
         ffiProtocolFee: accMul(val, 0.003),
       });
     } else {
@@ -89,7 +91,7 @@ export default function CreateProgram() {
       form.setFieldsValue({
         targetAmount: amount,
         targetPower: `${pb2byte(amount)}`,
-        // raiseSecurityFund: accMul(amount, 0.05),
+        raiseSecurityFund: accMul(amount, 0.05),
         ffiProtocolFee: accMul(amount, 0.003),
       });
     }

@@ -227,8 +227,6 @@ export function calcRaiseDepost(target: number, period: number, seals: number) {
   // 结果取最大值
   const result = Math.max(rInterest, sInterest, dInterest);
 
-  if (!Number.isNaN(result)) {
-  }
-
+  // 保留3位小数，向上舍入
   return Number.isNaN(result) ? '0' : toFixed(result, 3, 2);
 }

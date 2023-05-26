@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Skeleton } from 'antd';
 import classNames from 'classnames';
 import { useRequest } from 'ahooks';
 import { camelCase, filter } from 'lodash';
@@ -17,6 +16,7 @@ import useProvider from '@/hooks/useProvider';
 import { transformModel } from '@/helpers/app';
 import { isEqual, sleep } from '@/utils/utils';
 import useProcessify from '@/hooks/useProcessify';
+import LoadingView from '@/components/LoadingView';
 import useRaiseContract from '@/hooks/useRaiseContract';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 
@@ -37,7 +37,7 @@ export default function AccountPlans() {
     }
   });
 
-  const { data, loading, refresh } = useRequest(service);
+  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
   const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data?.total, loading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
   const investIds = useMemo(() => data?.list?.invest_list, [data?.list.invest_list]);
@@ -91,7 +91,7 @@ export default function AccountPlans() {
 
   return (
     <>
-      <Skeleton active loading={loading}>
+      <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <Result icon={<IconSearch />} title="您还没有募集计划" desc="这里显示您的募集计划，包括您发起的募集计划和参加投资的募集计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
@@ -172,7 +172,7 @@ export default function AccountPlans() {
             )}
           </>
         )}
-      </Skeleton>
+      </LoadingView>
     </>
   );
 }

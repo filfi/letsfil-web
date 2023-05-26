@@ -24,7 +24,7 @@ export default function AccountAssets() {
       <div className="container">
         <Skeleton active loading={loading}>
           {isEmpty ? (
-            <Empty title="暂无数据" />
+            <Empty />
           ) : (
             <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-3">
               {list?.map((item) => (
