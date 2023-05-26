@@ -8,44 +8,11 @@ import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
 import useChainInfo from '@/hooks/useChainInfo';
 import * as validators from '@/utils/validators';
+import { calcRaiseDepost } from '@/helpers/app';
+import { accDiv, accMul, pb2byte } from '@/utils/utils';
 import { formatAmount, formatNum } from '@/utils/format';
-import { accAdd, accDiv, accMul, accSub, pb2byte } from '@/utils/utils';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
-
-/**
- * 计算募集保证金
- * @param target 募集目标
- * @param period 募集期限
- * @param seals 封装期限
- * @returns
- */
-export function calcRaiseDepost(target: number, period: number, seals: number) {
-  // 年利率 = 1%
-  const yRate = 0.01;
-  // 协议罚金系数 = 0.1%
-  const ratio = 0.001;
-  // 罚息倍数 = FIL网络基础利率 * 3 = 年利率 * 3
-  const pim = accMul(yRate, 3);
-  // 展期天数
-  const delay = accDiv(seals, 2);
-  // 手续费 = 募集目标 * 0.3%
-  const fee = accMul(target, 0.003);
-  // 本金 = 募集目标 * (1 - 可以进入展期的最低比例)
-  const cost = accMul(target, accSub(1, 0.5));
-
-  // 募集期罚息 = (募集目标 + 运维保证金(最大=募集目标)) * 年利率 * 募集天数 / 365 + 手续费
-  const rInterest = accAdd(accMul(accAdd(target, target), yRate, accDiv(period, 365)), fee);
-  // 封装期罚息 = 募集目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
-  const sInterest = accAdd(accMul(target, pim, yRate, accDiv(seals, 365)), fee);
-  // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
-  const dInterest = accAdd(accMul(target, pim, yRate, accDiv(accAdd(seals, delay), 365)), accMul(cost, ratio, delay), fee);
-
-  // 结果取最大值
-  const result = Math.max(rInterest, sInterest, dInterest);
-
-  return Number.isNaN(result) ? 0 : result;
-}
 
 export default function CreateProgram() {
   const [form] = Form.useForm();

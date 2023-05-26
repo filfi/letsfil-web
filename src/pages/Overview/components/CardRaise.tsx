@@ -59,7 +59,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     if (!data) return 0;
 
     if (isClosed || isFailed) {
-      if (data.closing_time > data.begin_time) {
+      if (data.begin_time && data.closing_time) {
         return data.closing_time - data.begin_time;
       }
     }
@@ -346,16 +346,16 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
         <div className="p-3">
           <p className="mb-0 fs-16 fw-500">
             <span>在安全环境下执行以下命令，将Owner地址修改为智能合约地址。</span>
-            <a className="text-underline" href="#">
+            {/* <a className="text-underline" href="#">
               如何收回Owner地址？
-            </a>
+            </a> */}
           </p>
 
           <div className="p-2 border rounded-1 my-4">
             <div className="d-flex align-items-start bg-dark rounded-1 p-2">
               <span className="flex-shrink-0 text-white fw-600">$</span>
               <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">
-                lotus-miner actor set-owner --really-do-it {data.raise_address} &lt;ownerAddress&gt;
+                lotus-miner actor set-owner --really-do-it {toF4Address(data.raise_address)} &lt;ownerAddress&gt;
               </div>
               <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it ${toF4Address(data.raise_address)} <ownerAddress>`}>
                 <IconCopy />

@@ -32,6 +32,10 @@ export function formatAddr(addr?: unknown) {
   return '';
 }
 
+export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode?: BigNumber.RoundingMode) {
+  return BigNumber(amount ?? 0).toFixed(decimalPlaces, mode);
+}
+
 export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumberish = 18) {
   return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
 }
