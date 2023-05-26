@@ -2,8 +2,8 @@ import { snakeCase } from 'lodash';
 import classNames from 'classnames';
 import { useUpdateEffect } from 'ahooks';
 import { Avatar, Form, Input } from 'antd';
-import { useEffect, useMemo } from 'react';
 import { history, useModel } from '@umijs/max';
+import { useEffect, useMemo, useRef } from 'react';
 
 import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
@@ -16,6 +16,7 @@ import { catchify } from '@/utils/hackify';
 import useProvider from '@/hooks/useProvider';
 import BenefitPie from './components/BenefitPie';
 import StepsModal from './components/StepsModal';
+import AssetsModal from './components/AssetsModal';
 import useLoadingify from '@/hooks/useLoadingify';
 import { formatEther, formatNum } from '@/utils/format';
 import { createNumRangeValidator } from '@/utils/validators';
@@ -92,6 +93,8 @@ const getTreeData = (amount: number = 70, deposit = 5, rate = 5) => {
 };
 
 export default function CreateBenefit() {
+  const modal = useRef<ModalAttrs>(null);
+
   const [form] = Form.useForm();
   const { getProvider } = useProvider();
   const [model, setModel] = useModel('stepform');
@@ -134,12 +137,11 @@ export default function CreateBenefit() {
     });
   };
 
-  const [loading, handleSubmit] = useLoadingify(async (vals: API.Base) => {
-    const data = { ...model, ...vals };
-    setModel(data);
+  const [loading, handleSubmit] = useLoadingify(async () => {
+    if (!model) return;
 
-    let raiseId = data.raisingId;
-    const params = H.transformParams(data);
+    let raiseId = model.raisingId;
+    const params = H.transformParams(model);
     const body = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
@@ -154,7 +156,7 @@ export default function CreateBenefit() {
       if (raiseId) {
         await A.update(raiseId, body);
       } else {
-        raiseId = H.genRaiseID(data.minerId).toString();
+        raiseId = H.genRaiseID(model.minerId).toString();
         await A.add({ ...body, raising_id: raiseId });
       }
     })();
@@ -170,6 +172,18 @@ export default function CreateBenefit() {
 
     history.push(`/create/result/${raiseId.toString()}`);
   });
+
+  const handleNext = (vals: API.Base) => {
+    const data = { ...model, ...vals };
+    setModel(data);
+
+    if (isEqual(data.minerType, 2)) {
+      modal.current?.show();
+      return;
+    }
+
+    handleSubmit();
+  };
 
   const renderTreeContent = (data: any) => {
     return (
@@ -202,7 +216,7 @@ export default function CreateBenefit() {
           opsSecurityFundAddr: provider?.wallet_address,
           ...model,
         }}
-        onFinish={handleSubmit}
+        onFinish={handleNext}
       >
         <div className="ffi-form">
           <div className="ffi-item border-bottom">
@@ -244,7 +258,7 @@ export default function CreateBenefit() {
                 <div className="mb-1 fw-500">优先质押币</div>
                 <Form.Item noStyle>
                   <Input
-                    className="text-end"
+                    className="bg-light text-end"
                     suffix="%"
                     readOnly
                     prefix={
@@ -365,7 +379,7 @@ export default function CreateBenefit() {
                   <div className="flex-full">
                     <Input
                       readOnly
-                      className="text-end"
+                      className="bg-light text-end"
                       prefix={
                         <div className="d-flex">
                           <Avatar size={24} src={provider?.logo_url} />
@@ -380,7 +394,7 @@ export default function CreateBenefit() {
                 <div className="d-flex flex-column flex-lg-row gap-3 gap-lg-4 ps-4 ps-lg-0 position-relative">
                   <div className="flex-full">
                     <Form.Item noStyle name="raiseHisInitialPledgeRate">
-                      <Input readOnly className="text-end" prefix={<span className="text-gray-dark">我的质押币</span>} suffix="%" />
+                      <Input className="bg-light text-end" readOnly prefix={<span className="text-gray-dark">我的质押币</span>} suffix="%" />
                     </Form.Item>
                   </div>
                   <div className={classNames('flex-shrink-0 py-2', styles.line)}>
@@ -389,7 +403,7 @@ export default function CreateBenefit() {
                   <div className="flex-full">
                     <Input
                       readOnly
-                      className="text-end"
+                      className="bg-light text-end"
                       prefix={
                         <div className="d-flex">
                           <Avatar size={24} src={provider?.logo_url} />
@@ -421,6 +435,8 @@ export default function CreateBenefit() {
       </Form>
 
       <StepsModal id="benefit-modal" ops={opsRate} raiser={raiserRate} servicer={servicerRate} onConfirm={handleSteps} />
+
+      <AssetsModal ref={modal} data={model} onConfirm={handleSubmit} />
 
       {/* <Modal.Alert id="build-modal" title="算力/收益分配方案" confirmText="我知道了">
         <div className="card border-0">

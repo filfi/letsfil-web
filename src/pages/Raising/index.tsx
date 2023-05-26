@@ -37,14 +37,15 @@ export default function Raising() {
 
   const { data: banner } = useRequest(A.getBanner);
   const { data, error, loading, refresh } = useRequest(service);
-  const raises = useMemo(() => data?.list.filter(isRaising), [data?.list]);
-  const seals = useMemo(() => filter(data?.list, isSealing), [data?.list]);
-  const workes = useMemo(() => filter(data?.list, isWorking), [data?.list]);
+  const list = useMemo(() => data?.list, [data?.list]);
+  const raises = useMemo(() => list?.filter(isRaising), [list]);
+  const seals = useMemo(() => filter(list, isSealing), [list]);
+  const workes = useMemo(() => filter(list, isWorking), [list]);
   const isEmpty = useMemo(() => !((data && data.total > 0) || banner), [banner, data]);
 
   return (
     <div className="container pt-4 pt-lg-5">
-      <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView data={list || banner} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
             <Empty title="没有募集计划" />

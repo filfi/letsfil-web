@@ -10,7 +10,7 @@ import useChainInfo from '@/hooks/useChainInfo';
 import * as validators from '@/utils/validators';
 // import { calcRaiseDepost } from '@/helpers/app';
 import { accDiv, accMul, pb2byte } from '@/utils/utils';
-import { formatAmount, formatNum } from '@/utils/format';
+import { formatAmount, formatNum, toFixed } from '@/utils/format';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
 
@@ -87,7 +87,7 @@ export default function CreateProgram() {
       });
     } else {
       // 按算力
-      const amount = accMul(val, perPledge);
+      const amount = toFixed(accMul(val, perPledge), 0);
       form.setFieldsValue({
         targetAmount: amount,
         targetPower: `${pb2byte(amount)}`,

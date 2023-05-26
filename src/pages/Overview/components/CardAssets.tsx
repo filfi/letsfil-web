@@ -17,7 +17,7 @@ function formatByte(val?: number | string) {
 const CardAssets: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
   const { amount } = useDepositInvest(data);
   const { amount: opsAmount } = useDepositOps(data);
-  const { isRaiser, isServicer, isFinished } = useRaiseState(data);
+  const { isRaiser, isServicer, isWorking } = useRaiseState(data);
   const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
 
   const { investPower, raiserPower } = useAssetPack(data, pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined);
@@ -32,7 +32,7 @@ const CardAssets: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data,
     });
   };
 
-  if (isFinished) {
+  if (data && isWorking) {
     return (
       <div className="card section-card">
         <div className="card-header border-0 pt-4 pb-0">

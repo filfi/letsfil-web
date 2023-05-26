@@ -85,6 +85,7 @@ export default function CreateStorage() {
       Dialog.alert({
         icon: 'error',
         title: '无效的节点',
+        content: e.message,
       });
       return;
     }

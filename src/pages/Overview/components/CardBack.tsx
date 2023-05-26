@@ -5,10 +5,10 @@ import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
 
 const CardBack: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data }) => {
-  const { isFailed, isFinished, isDestroyed } = useRaiseState(data);
+  const { isFailed, isWorking } = useRaiseState(data);
   const { amount, backAmount, backInterest, processing, unStaking } = useDepositInvest(data);
 
-  if (isFailed || isDestroyed || isFinished) {
+  if (isFailed || isWorking) {
     return (
       <>
         <div className="card section-card">
