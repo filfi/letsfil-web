@@ -7,10 +7,10 @@ import useRaiseState from '@/hooks/useRaiseState';
 
 const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { isStarted, isSuccess } = useRaiseState(data);
-  const { opsRatio, raiserRate, minRate, percent, actual, income, target } = useRaiseRate(data);
+  const { opsRate, raiserRate, minRate, percent, actual, income, target } = useRaiseRate(data);
 
   const minAmount = useMemo(() => accMul(target, minRate), [target, minRate]);
-  const opsAmount = useMemo(() => accMul(target, accDiv(opsRatio, 100)), [opsRatio, target]);
+  const opsAmount = useMemo(() => accMul(target, accDiv(opsRate, 100)), [opsRate, target]);
 
   return (
     <>

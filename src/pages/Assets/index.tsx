@@ -1,5 +1,5 @@
-import { Avatar } from 'antd';
 import { useRequest } from 'ahooks';
+import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
 import { Link, NavLink, useParams } from '@umijs/max';
 
@@ -16,6 +16,7 @@ import useProvider from '@/hooks/useProvider';
 import useAssetPack from '@/hooks/useAssetPack';
 import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
+import useRaiseState from '@/hooks/useRaiseState';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
@@ -37,7 +38,8 @@ export default function Assets() {
   const [role, setRole] = useState(0);
   const { data, refresh } = useRequest(service, { refreshDeps: [param.id] });
   const { pack, remains } = useRaiseSeals(data);
-  const { isRaiser, isServicer, investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(
+  const { isClosed, isFailed, isRaiser, isServicer } = useRaiseState(data);
+  const { investPower, raiserPower, servicerPower, investPledge } = useAssetPack(
     data,
     pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,
   );
@@ -49,9 +51,11 @@ export default function Assets() {
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
+  const pledge = useMemo(() => [investPledge, 0, 0][role], [role, investPledge]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role], [role, investPower, raiserPower, servicerPower]);
-  const pledge = useMemo(() => [investPledge, raiserPledge, servicerPledge][role], [role, investPledge, raiserPledge, servicerPledge]);
+  const total = useMemo(() => [investor.total, raiser.total, servicer.total][role], [role, investor.total, raiser.total, servicer.total]);
   const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role], [role, investor.reward, raiser.reward, servicer.reward]);
+  const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
 
   const options = useMemo(() => {
     const items = [{ icon: <IconUser />, label: '我是投资人', value: 0 }];
@@ -68,8 +72,6 @@ export default function Assets() {
   }, [isRaiser, isServicer]);
 
   const [processing, handleWithdraw] = useLoadingify(async () => {
-    if (!param.id) return;
-
     if (role === 1) {
       await raiser.withdraw();
     } else if (role === 2) {
@@ -127,7 +129,15 @@ export default function Assets() {
 
                 <div className="flex-grow-1">
                   <p className="mb-1 fw-500">{data?.sponsor_company}发起的募集计划</p>
-                  <p className="mb-0 text-gray-dark">{F.formatUnixDate(data?.begin_time)}启动</p>
+                  <p className="mb-0 text-gray-dark">
+                    {isClosed ? (
+                      <span className="badge">已关闭</span>
+                    ) : isFailed ? (
+                      <span className="badge badge-danger">募集失败</span>
+                    ) : (
+                      <span>{F.formatUnixDate(data?.begin_time)}启动</span>
+                    )}
+                  </p>
                 </div>
 
                 <div className="flex-shrink-0">
@@ -208,6 +218,7 @@ export default function Assets() {
           </div>
           <div className="col-12 col-lg-8 d-flex flex-column gap-3">
             {(isRaiser || isServicer) && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
+
             <div className="card border-0" style={{ '--bs-card-bg': '#fffaeb' } as any}>
               <div className="card-body d-flex gap-3">
                 <IconFil width={48} height={48} />
@@ -220,6 +231,29 @@ export default function Assets() {
                 <SpinBtn className="btn btn-primary btn-lg ms-auto my-auto px-5" loading={processing} disabled={reward <= 0} onClick={handleWithdraw}>
                   提取金额
                 </SpinBtn>
+              </div>
+            </div>
+
+            <div className="card card-body">
+              <div className="row row-cols-1 row-cols-lg-3 g-3">
+                <div className="col">
+                  <div className="ffi-form">
+                    <p className="mb-1 fw-500">线性待释放</p>
+                    <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(pending)} />
+                  </div>
+                </div>
+                <div className="col">
+                  <div className="ffi-form">
+                    <p className="mb-1 fw-500">锁定余额</p>
+                    <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value="0" />
+                  </div>
+                </div>
+                <div className="col">
+                  <div className="ffi-form">
+                    <p className="mb-1 fw-500">累计收益</p>
+                    <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
+                  </div>
+                </div>
               </div>
             </div>
 

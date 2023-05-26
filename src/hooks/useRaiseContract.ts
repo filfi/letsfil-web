@@ -49,9 +49,9 @@ function createContract(address?: string) {
 
   const provider = new ethers.providers.Web3Provider(window.ethereum!);
 
-  contract = new ethers.Contract(address, abi, provider.getSigner());
-  console.log('[Raise Contract]: ', contract);
-  return contract;
+  const _contract = new ethers.Contract(address, abi, provider.getSigner());
+  console.log('[Raise Contract]: ', _contract);
+  return _contract;
 }
 
 const handlers = {
@@ -139,7 +139,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
 
   const initContract = () => {
     if (!contract) {
-      createContract(getRefVal(address));
+      contract = createContract(getRefVal(address));
       bindEvents();
     }
   };

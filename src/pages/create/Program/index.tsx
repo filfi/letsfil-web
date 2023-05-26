@@ -9,7 +9,7 @@ import DaysInput from '@/components/DaysInput';
 import useChainInfo from '@/hooks/useChainInfo';
 import * as validators from '@/utils/validators';
 import { formatAmount, formatNum } from '@/utils/format';
-import { accAdd, accDiv, accMul, pb2byte } from '@/utils/utils';
+import { accAdd, accDiv, accMul, accSub, pb2byte } from '@/utils/utils';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
 
@@ -21,28 +21,30 @@ import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
  * @returns
  */
 export function calcRaiseDepost(target: number, period: number, seals: number) {
-  // 延长期
+  // 年利率 = 1%
+  const yRate = 0.01;
+  // 协议罚金系数 = 0.1%
+  const ratio = 0.001;
+  // 罚息倍数 = FIL网络基础利率 * 3 = 年利率 * 3
+  const pim = accMul(yRate, 3);
+  // 展期天数
   const delay = accDiv(seals, 2);
-  // 计算金额
-  const amount = accDiv(target, 2);
-  // 利率
-  const rate = accDiv(0.01, 365);
+  // 手续费 = 募集目标 * 0.3%
+  const fee = accMul(target, 0.003);
+  // 本金 = 募集目标 * (1 - 可以进入展期的最低比例)
+  const cost = accMul(target, accSub(1, 0.5));
 
-  // 募集期罚息 = 金额 * 利率 * 募集期限
-  const rInterest = accMul(accMul(amount, rate), period);
-  // 封装期罚息 = 金额 * 利率 * 2 * 封装期限
-  const sInterest = accMul(accMul(accMul(amount, rate), 2), seals);
-  // 延长期罚息 = 金额 * 利率 * 2 * 延长期限
-  const dInterest = accMul(accMul(accMul(amount, rate), 2), delay);
-  // 协议罚金 = 金额 * 1‰ * 募集期限
-  const pInterest = accMul(accMul(amount, 0.001), period);
-  // 募集手续费 = 金额 * 3‰
-  const fee = accMul(amount, 0.003);
+  // 募集期罚息 = (募集目标 + 运维保证金(最大=募集目标)) * 年利率 * 募集天数 / 365 + 手续费
+  const rInterest = accAdd(accMul(accMul(accAdd(target, target), yRate), accDiv(period, 365)), fee);
+  // 封装期罚息 = 募集目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
+  const sInterest = accAdd(accMul(accMul(accMul(target, pim), yRate), accDiv(seals, 365)), fee);
+  // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
+  const dInterest = accAdd(accAdd(accMul(accMul(accMul(target, pim), yRate), accDiv(accAdd(seals, delay), 365)), accMul(accMul(cost, ratio), delay)), fee);
 
-  // 加总
-  const total = accAdd(accAdd(accAdd(accAdd(rInterest, sInterest), dInterest), pInterest), fee);
+  // 结果取最大值
+  const result = Math.max(rInterest, sInterest, dInterest);
 
-  return Number.isNaN(total) ? 0 : total;
+  return Number.isNaN(result) ? 0 : result;
 }
 
 export default function CreateProgram() {
@@ -50,12 +52,11 @@ export default function CreateProgram() {
   const [data, setData] = useModel('stepform');
 
   const amount = Form.useWatch('amount', form);
-  // const seals = Form.useWatch('sealDays', form);
-  // const period = Form.useWatch('raiseDays', form);
-  // const target = Form.useWatch('targetAmount', form);
+  const seals = Form.useWatch('sealDays', form);
+  const period = Form.useWatch('raiseDays', form);
+  const target = Form.useWatch('targetAmount', form);
   const minRate = Form.useWatch('minRaiseRate', form);
   const amountType = Form.useWatch('amountType', form);
-  const deposit = Form.useWatch('raiseSecurityFund', form);
   const { perPledge, loading: fetching } = useChainInfo();
 
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
@@ -75,8 +76,7 @@ export default function CreateProgram() {
 
   const evalMin = useMemo(() => accMul(evalMax, rate), [evalMax, rate]);
 
-  // TODO: 发起人保证金
-  // const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
+  const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await validators.integer(rule, value);
@@ -103,9 +103,9 @@ export default function CreateProgram() {
     // }
   };
 
-  // useUpdateEffect(() => {
-  //   form.setFieldValue('raiseSecurityFund', deposit);
-  // }, [deposit]);
+  useUpdateEffect(() => {
+    form.setFieldValue('raiseSecurityFund', deposit);
+  }, [deposit]);
   useUpdateEffect(() => {
     const val = Number.isNaN(+amount) ? 0 : +amount;
     // 按金额
@@ -113,7 +113,7 @@ export default function CreateProgram() {
       form.setFieldsValue({
         targetAmount: val,
         targetPower: `${Math.floor(pb2byte(accDiv(val, perPledge)))}`,
-        raiseSecurityFund: accMul(val, 0.05),
+        // raiseSecurityFund: accMul(val, 0.05),
         ffiProtocolFee: accMul(val, 0.003),
       });
     } else {
@@ -122,7 +122,7 @@ export default function CreateProgram() {
       form.setFieldsValue({
         targetAmount: amount,
         targetPower: `${pb2byte(amount)}`,
-        raiseSecurityFund: accMul(amount, 0.05),
+        // raiseSecurityFund: accMul(amount, 0.05),
         ffiProtocolFee: accMul(amount, 0.003),
       });
     }
@@ -296,14 +296,14 @@ export default function CreateProgram() {
                 items={[
                   {
                     value: 1,
-                    icon: <IconFIL />, // <img src={require('@/assets/paytype-fil.png')} />,
+                    icon: <IconFIL />,
                     label: '使用 FIL 支付',
                     desc: '募集成功后从“发起人保证金”中自动扣减',
                   },
                   {
                     value: 2,
                     disabled: true,
-                    icon: <IconFFI />, // <img src={require('@/assets/paytype-ffi.png')} />,
+                    icon: <IconFFI />,
                     label: '使用 FFI 支付',
                     desc: (
                       <span>

@@ -35,7 +35,7 @@ export default function useRewardRaiser(data?: API.Plan) {
     if (!data) return;
 
     const contract = getContract(data.raise_address);
-    await contract?.spWithdraw(data.raising_id);
+    await contract?.raiserWithdraw(data.raising_id);
   });
 
   useEffect(() => {
