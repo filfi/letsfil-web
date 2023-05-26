@@ -48,7 +48,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
           </div>
 
           <div className="row g-0 mb-3">
-            <div className="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div className="col-12 col-lg-10 col-xl-8 col-xxl-6">
               <h3 className="mb-3 fs-30 fw-600">
                 {data.sponsor_company}发起的募集计划@{data.miner_id}
               </h3>

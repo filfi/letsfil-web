@@ -177,6 +177,8 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
           </>
         );
       }
+
+      return null;
     }
 
     // 待开始
@@ -218,6 +220,8 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
           </>
         );
       }
+
+      return null;
     }
 
     // 待封装

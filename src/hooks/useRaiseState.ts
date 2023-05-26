@@ -10,8 +10,8 @@ export default function useRaiseState(data?: API.Plan) {
   const { account } = useAccounts();
   const contract = useRaiseContract(data?.raise_address);
 
-  const [nodeState, setNodeState] = useState(10);
-  const [raiseState, setRaiseState] = useState(10);
+  const [nodeState, setNodeState] = useState(data?.status ?? -1);
+  const [raiseState, setRaiseState] = useState(data?.status ?? -1);
 
   // 等待上链
   const isPending = useMemo(() => raiseState === 10, [raiseState]);
@@ -57,8 +57,8 @@ export default function useRaiseState(data?: API.Plan) {
     const nodeState = await contract.getNodeState(data.raising_id);
     const raiseState = await contract.getRaiseState(data.raising_id);
 
-    setNodeState(nodeState ?? 10);
-    setRaiseState(raiseState ?? 10);
+    setNodeState(nodeState ?? data.status);
+    setRaiseState(raiseState ?? data.status);
   });
 
   useEffect(() => {
