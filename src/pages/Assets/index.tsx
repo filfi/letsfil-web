@@ -234,24 +234,26 @@ export default function Assets() {
               </div>
             </div>
 
-            <div className="card card-body">
-              <div className="row row-cols-1 row-cols-lg-3 g-3">
-                <div className="col">
-                  <div className="ffi-form">
-                    <p className="mb-1 fw-500">线性待释放</p>
-                    <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(pending)} />
+            <div className="card">
+              <div className="card-body">
+                <div className="row row-cols-1 row-cols-lg-3 g-3">
+                  <div className="col">
+                    <div className="ffi-form">
+                      <p className="mb-1 fw-500">线性待释放</p>
+                      <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(pending)} />
+                    </div>
                   </div>
-                </div>
-                <div className="col">
-                  <div className="ffi-form">
-                    <p className="mb-1 fw-500">锁定余额</p>
-                    <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value="0" />
+                  <div className="col">
+                    <div className="ffi-form">
+                      <p className="mb-1 fw-500">锁定余额</p>
+                      <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value="0" />
+                    </div>
                   </div>
-                </div>
-                <div className="col">
-                  <div className="ffi-form">
-                    <p className="mb-1 fw-500">累计收益</p>
-                    <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
+                  <div className="col">
+                    <div className="ffi-form">
+                      <p className="mb-1 fw-500">累计收益</p>
+                      <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
+                    </div>
                   </div>
                 </div>
               </div>

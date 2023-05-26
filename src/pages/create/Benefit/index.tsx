@@ -85,7 +85,7 @@ const getTreeData = (amount: number = 70, deposit = 5, rate = 5) => {
   data.children[0].children[1].rate = accMul(amount, accDiv(rate, 100));
   data.children[1].rate = sVal;
   data.children[1].children[0].rate = deposit;
-  data.children[1].children[1].rate = accSub(accSub(sVal, fVal), deposit);
+  data.children[1].children[1].rate = accSub(sVal, fVal, deposit);
   data.children[1].children[2].rate = fVal;
 
   return data;

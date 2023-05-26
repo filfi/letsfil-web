@@ -4,9 +4,10 @@ import { history } from '@umijs/max';
 import { useCountDown } from 'ahooks';
 
 import useAccounts from '@/hooks/useAccounts';
-import { accDiv, accMul, accSub } from '@/utils/utils';
+import useIncomeRate from '@/hooks/useIncomeRate';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { formatEther, formatPercent, formatRate } from '@/utils/format';
+import { accDiv, accMul, accSub } from '@/utils/utils';
+import { formatEther, formatRate } from '@/utils/format';
 
 export type RaisingCardProps = {
   data: API.Plan;
@@ -16,6 +17,7 @@ export type RaisingCardProps = {
 const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
   const { withConnect } = useAccounts();
   const { progress } = useDepositInvest(data);
+  const { rate } = useIncomeRate(data.raising_id);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
@@ -100,7 +102,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-calculator text-gray"></span>
                   <span className="mx-1">预估年化</span>
-                  <span className="fw-bold">{formatPercent(data.income_rate || 0)}</span>
+                  <span className="fw-bold">{formatRate(rate)}</span>
                 </p>
 
                 <p className="mb-0 fs-16 text-gray-dark">

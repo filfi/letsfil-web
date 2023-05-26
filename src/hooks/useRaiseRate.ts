@@ -5,12 +5,10 @@ import { toNumber } from '@/utils/format';
 
 export default function useRaiseRate(data?: API.Plan) {
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]);
-  const income = useMemo(() => toNumber(data?.income_rate, 6), [data?.income_rate]);
   const actual = useMemo(() => toNumber(data?.actual_amount), [data?.actual_amount]);
   const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]);
   const percent = useMemo(() => (target > 0 ? U.accDiv(actual, target) : 0), [actual, target]);
   const minRate = useMemo(() => U.accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]);
-  const reward = useMemo(() => U.accDiv(U.accMul(U.accMul(income, target), period), 360), [income, period, target]);
   // 优先部分
   const priorityRate = useMemo(() => data?.raiser_coin_share ?? 70, [data?.raiser_coin_share]);
   // 劣后部分
@@ -26,14 +24,12 @@ export default function useRaiseRate(data?: API.Plan) {
   // filfi 协议权益
   const ffiRate = useMemo(() => U.accMul(inferiorityRate, 0.08), [inferiorityRate]);
   // 发起人权益
-  const raiserRate = useMemo(() => U.accSub(U.accSub(inferiorityRate, ffiRate), servicerRate), [inferiorityRate, ffiRate, servicerRate]);
+  const raiserRate = useMemo(() => U.accSub(inferiorityRate, ffiRate, servicerRate), [inferiorityRate, ffiRate, servicerRate]);
 
   return {
     actual,
     target,
-    income,
     period,
-    reward,
     minRate,
     percent,
     priorityRate,

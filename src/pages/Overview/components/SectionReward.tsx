@@ -2,7 +2,9 @@ import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
 import { formatNum } from '@/utils/format';
+import { accDiv, accMul } from '@/utils/utils';
 import useRaiseRate from '@/hooks/useRaiseRate';
+import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseState from '@/hooks/useRaiseState';
 
 const config: PieConfig = {
@@ -28,8 +30,10 @@ const config: PieConfig = {
 };
 
 const SectionReward: React.FC<{ data?: API.Plan }> = ({ data }) => {
+  const { rate } = useIncomeRate(data?.raising_id);
   const { isRaiser, isServicer } = useRaiseState(data);
-  const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period, reward } = useRaiseRate(data);
+  const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period, target } = useRaiseRate(data);
+  const reward = useMemo(() => accDiv(accMul(target, rate, period), 360), [target, rate, period]);
 
   const pieData = useMemo(
     () => [

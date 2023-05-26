@@ -14,17 +14,17 @@ export default function useAssetPack(plan?: API.Plan, pack?: { pledge: string; p
   const power = useMemo(() => +`${pack?.power || 0}`, [pack?.power]);
   const pledge = useMemo(() => toNumber(pack?.pledge), [pack?.pledge]);
   // 投资人持有算力
-  const investPower = useMemo(() => accMul(accMul(power, accDiv(investRate, 100)), ratio), [power, ratio, investRate]);
+  const investPower = useMemo(() => accMul(power, accDiv(investRate, 100), ratio), [power, ratio, investRate]);
   // 发起人持有算力
   const raiserPower = useMemo(() => (isRaiser ? accMul(power, accDiv(raiserRate, 100)) : 0), [power, raiserRate, isRaiser]);
   // 服务商持有算力
   const servicerPower = useMemo(() => (isServicer ? accMul(power, accDiv(servicerRate, 100)) : 0), [power, servicerRate, isServicer]);
 
   // 投资人持有质押币
-  const investPledge = useMemo(() => accMul(accMul(pledge, accDiv(investRate, 100)), ratio), [pledge, ratio, investRate]);
+  const investPledge = useMemo(() => accMul(pledge, accDiv(investRate, 100), ratio), [pledge, ratio, investRate]);
 
   // 总持有算力
-  const holdPower = useMemo(() => accAdd(accAdd(investPower, raiserPower), servicerPower), [investPower, raiserPower, servicerPower]);
+  const holdPower = useMemo(() => accAdd(investPower, raiserPower, servicerPower), [investPower, raiserPower, servicerPower]);
 
   return {
     contract,

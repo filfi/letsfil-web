@@ -28,7 +28,7 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const total = useMemo(() => F.toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
   const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
   const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
-  const fine = useMemo(() => accSub(accSub(total, raise.amount), fee), [total, fee, raise.amount]); // 罚金
+  const fine = useMemo(() => accSub(total, raise.amount, fee), [total, fee, raise.amount]); // 罚金
 
   const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
   const withdrawable = useMemo(() => isRaiser && (isFailed || isFinished || isDestroyed), [isPayer, isFailed, isFinished, isDestroyed]);

@@ -35,11 +35,11 @@ export function calcRaiseDepost(target: number, period: number, seals: number) {
   const cost = accMul(target, accSub(1, 0.5));
 
   // 募集期罚息 = (募集目标 + 运维保证金(最大=募集目标)) * 年利率 * 募集天数 / 365 + 手续费
-  const rInterest = accAdd(accMul(accMul(accAdd(target, target), yRate), accDiv(period, 365)), fee);
+  const rInterest = accAdd(accMul(accAdd(target, target), yRate, accDiv(period, 365)), fee);
   // 封装期罚息 = 募集目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
-  const sInterest = accAdd(accMul(accMul(accMul(target, pim), yRate), accDiv(seals, 365)), fee);
+  const sInterest = accAdd(accMul(target, pim, yRate, accDiv(seals, 365)), fee);
   // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
-  const dInterest = accAdd(accAdd(accMul(accMul(accMul(target, pim), yRate), accDiv(accAdd(seals, delay), 365)), accMul(accMul(cost, ratio), delay)), fee);
+  const dInterest = accAdd(accMul(target, pim, yRate, accDiv(accAdd(seals, delay), 365)), accMul(cost, ratio, delay), fee);
 
   // 结果取最大值
   const result = Math.max(rInterest, sInterest, dInterest);

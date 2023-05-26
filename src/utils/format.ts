@@ -52,10 +52,6 @@ export function formatUnixNow(date: number | string | Date | dayjs.Dayjs) {
   return dayjs(date).fromNow();
 }
 
-export function formatPercent(progress?: ethers.BigNumberish, fmt = '0%') {
-  return formatRate(toNumber(progress, 6), fmt);
-}
-
 export function formatPower(power?: number | string, fmt = '0.0 ib') {
   if (typeof power !== 'undefined') {
     return formatNum(power, fmt).split(' ');

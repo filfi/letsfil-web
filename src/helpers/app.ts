@@ -129,7 +129,7 @@ export function transformRaiseInfo(data: API.Plan): RaiseInfo {
   const infriority = U.accSub(100, data.raiser_coin_share); // 劣后部分
   const ffiRate = U.accMul(infriority, 0.08); // filfi协议部分
   const servicerRate = data.op_server_share; // 服务商部分
-  const raiserRate = U.accSub(U.accSub(infriority, servicerRate), ffiRate); // 发起人部分
+  const raiserRate = U.accSub(infriority, servicerRate, ffiRate); // 发起人部分
   const spRate = U.accMul(data.raiser_coin_share, U.accDiv(data.ops_security_fund_rate, 100));
   // 募集计划信息
   return {

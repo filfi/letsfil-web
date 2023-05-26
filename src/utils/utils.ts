@@ -35,22 +35,24 @@ export function isEqual(a?: unknown, b?: unknown) {
 
 /**
  * 精确加
- * @param a
- * @param b
+ * @param args
  * @returns
  */
-export function accAdd(a: BigNumber.Value, b: BigNumber.Value) {
-  return BigNumber(a).plus(b).toNumber();
+export function accAdd(...args: BigNumber.Value[]) {
+  const [f, ...o] = args;
+
+  return o.reduce<BigNumber>((p, c) => p.plus(c), BigNumber(f)).toNumber();
 }
 
 /**
  * 精确减
- * @param a
- * @param b
+ * @param args
  * @returns
  */
-export function accSub(a: BigNumber.Value, b: BigNumber.Value) {
-  return BigNumber(a).minus(b).toNumber();
+export function accSub(...args: BigNumber.Value[]) {
+  const [f, ...o] = args;
+
+  return o.reduce<BigNumber>((p, c) => p.minus(c), BigNumber(f)).toNumber();
 }
 
 /**
@@ -59,18 +61,21 @@ export function accSub(a: BigNumber.Value, b: BigNumber.Value) {
  * @param b
  * @returns
  */
-export function accMul(a: BigNumber.Value, b: BigNumber.Value) {
-  return BigNumber(a).times(b).toNumber();
+export function accMul(...args: BigNumber.Value[]) {
+  const [f, ...o] = args;
+
+  return o.reduce<BigNumber>((p, c) => p.times(c), BigNumber(f)).toNumber();
 }
 
 /**
  * 精确除
- * @param a
- * @param b
+ * @param args
  * @returns
  */
-export function accDiv(a: BigNumber.Value, b: BigNumber.Value) {
-  return BigNumber(a).div(b).toNumber();
+export function accDiv(...args: BigNumber.Value[]) {
+  const [f, ...o] = args;
+
+  return o.reduce<BigNumber>((p, c) => p.div(c), BigNumber(f)).toNumber();
 }
 
 export async function sleep(delay = 200) {
