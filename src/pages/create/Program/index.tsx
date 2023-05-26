@@ -3,7 +3,7 @@ import { useUpdateEffect } from 'ahooks';
 import { Form, Input, Skeleton } from 'antd';
 import { history, useModel } from '@umijs/max';
 
-import Modal from '@/components/Modal';
+// import Modal from '@/components/Modal';
 import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
 import useChainInfo from '@/hooks/useChainInfo';
@@ -75,7 +75,7 @@ export default function CreateProgram() {
 
   const evalMin = useMemo(() => accMul(evalMax, rate), [evalMax, rate]);
 
-  // 发起人保证金
+  // TODO: 发起人保证金
   // const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
 
   const amountValidator = async (rule: unknown, value: string) => {
@@ -218,7 +218,11 @@ export default function CreateProgram() {
             <h4 className="ffi-label">募集时间</h4>
             <p className="text-gray">募集计划启动后的持续时间，此间开放FIL投资。启动时间由发起人决定。</p>
 
-            <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
+            <Form.Item
+              name="raiseDays"
+              // TODO: validators.integer
+              rules={[{ required: true, message: '请输入天数' }, { validator: validators.number }]}
+            >
               <DaysInput
                 options={[
                   { label: '7天', value: 7 },
@@ -235,12 +239,16 @@ export default function CreateProgram() {
             <h4 className="ffi-label">封装时间</h4>
             <p className="text-gray">
               承诺的封装时间，超期会对发起人产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。
-              <a className="text-underline" href="#time-modal" data-bs-toggle="modal">
+              {/* <a className="text-underline" href="#time-modal" data-bs-toggle="modal">
                 了解更多
-              </a>
+              </a> */}
             </p>
 
-            <Form.Item name="sealDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
+            <Form.Item
+              name="sealDays"
+              // TODO: validators.integer
+              rules={[{ required: true, message: '请输入天数' }, { validator: validators.number }]}
+            >
               <DaysInput
                 options={[
                   { label: '3天', value: 3 },
@@ -257,9 +265,9 @@ export default function CreateProgram() {
             <h4 className="ffi-label">发起人保证金</h4>
             <p className="text-gray">
               根据募集计划自动计算，募集计划成功上链之后放开存入。封装工作完成后，发起人即可取回保证金。
-              <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
+              {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
-              </a>
+              </a> */}
             </p>
 
             <Form.Item hidden name="raiseSecurityFund">
@@ -328,7 +336,7 @@ export default function CreateProgram() {
         </div>
       </Form>
 
-      <Modal.Alert id="time-modal" title="封装时间" confirmText="我知道了">
+      {/* <Modal.Alert id="time-modal" title="封装时间" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">承诺的封装时间，超期会对发起人产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。</p>
@@ -342,7 +350,7 @@ export default function CreateProgram() {
             <p className="mb-0">根据募集计划自动计算，募集计划成功上链之后放开存入。封装工作完成后，发起人即可取回保证金。</p>
           </div>
         </div>
-      </Modal.Alert>
+      </Modal.Alert> */}
     </>
   );
 }

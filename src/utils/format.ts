@@ -52,8 +52,14 @@ export function formatUnixNow(date: number | string | Date | dayjs.Dayjs) {
   return dayjs(date).fromNow();
 }
 
-export function formatPercent(progress?: ethers.BigNumberish) {
-  return formatRate(toNumber(progress, 6));
+export function formatPercent(progress?: ethers.BigNumberish, fmt = '0%') {
+  return formatRate(toNumber(progress, 6), fmt);
+}
+
+export function formatPower(power?: number | string, fmt = '0.0 ib') {
+  if (typeof power !== 'undefined') {
+    return formatNum(power, fmt).split(' ');
+  }
 }
 
 export function formatRemain(...args: (number | string)[]) {
@@ -66,9 +72,9 @@ export function formatRemain(...args: (number | string)[]) {
   return '-';
 }
 
-export function formatUnixDate(sec?: number | string) {
+export function formatUnixDate(sec?: number | string, fmt = 'lll') {
   if (sec) {
-    return formatUnix(+sec, 'lll');
+    return formatUnix(+sec, fmt);
   }
 
   return '-';

@@ -2,7 +2,7 @@ import classNames from 'classnames';
 
 import { Form, Input, Select } from 'antd';
 
-const Calculator: React.FC = () => {
+const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
   const [form] = Form.useForm();
 
   const handleCalc = async (vals: any) => {

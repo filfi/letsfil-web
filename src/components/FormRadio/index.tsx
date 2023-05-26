@@ -64,5 +64,6 @@ const FormRadio: RadioType = ({ className, children, checkbox, disabled, grid, i
 };
 
 FormRadio.Item = Item;
+FormRadio.Button = Button;
 
 export default FormRadio;

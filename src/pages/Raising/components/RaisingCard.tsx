@@ -15,7 +15,7 @@ export type RaisingCardProps = {
 
 const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
   const { withConnect } = useAccounts();
-  const { percent } = useDepositInvest(data);
+  const { progress } = useDepositInvest(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
@@ -87,7 +87,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 <span>FIL</span>
                 <span className="mx-2">·</span>
                 <span>已募</span>
-                <span className="ms-1 fw-bold">{formatRate(percent)}</span>
+                <span className="ms-1 fw-bold">{formatRate(progress)}</span>
               </p>
 
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-3">

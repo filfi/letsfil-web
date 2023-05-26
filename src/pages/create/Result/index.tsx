@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 import { Link, history, useModel, useParams } from '@umijs/max';
 
 import * as A from '@/apis/raise';
-import Modal from '@/components/Modal';
+// import Modal from '@/components/Modal';
 import Result from '@/components/Result';
 import { toastify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
@@ -54,9 +54,9 @@ export default function CreateResult() {
         <div className="ffi-item">
           <h5 className="ffi-label mb-5">
             <span>接下来做什么？</span>
-            <a className="text-underline" href="#more-modal" data-bs-toggle="modal">
+            {/* <a className="text-underline" href="#more-modal" data-bs-toggle="modal">
               了解更多
-            </a>
+            </a> */}
           </h5>
 
           <ul className="list-group list-group-flush text-main" role="group">
@@ -137,7 +137,7 @@ export default function CreateResult() {
         </div>
       </div>
 
-      <Modal.Alert id="more-modal" title="接下来做什么？" confirmText="我知道了">
+      {/* <Modal.Alert id="more-modal" title="接下来做什么？" confirmText="我知道了">
         <ul className="list-group list-group-flush text-main" role="group">
           <li className="list-group-item d-flex gap-3 border-0 mb-3">
             <div className="flex-shrink-0">
@@ -200,7 +200,7 @@ export default function CreateResult() {
             </div>
           </li>
         </ul>
-      </Modal.Alert>
+      </Modal.Alert> */}
     </>
   );
 }

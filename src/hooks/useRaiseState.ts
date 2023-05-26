@@ -17,6 +17,8 @@ export default function useRaiseState(data?: API.Plan) {
   const isPending = useMemo(() => raiseState === 10, [raiseState]);
   // 已开始
   const isStarted = useMemo(() => raiseState > RaiseState.WaitingStart && !isPending, [raiseState, isPending]);
+  // 处理中（封装和运行）
+  const isProcess = useMemo(() => raiseState >= RaiseState.Success && !isPending, [raiseState, isPending]);
   // 等待开始
   const isWaiting = useMemo(() => raiseState === RaiseState.WaitingStart, [raiseState]);
   // 募集中
@@ -33,6 +35,8 @@ export default function useRaiseState(data?: API.Plan) {
   const isDelayed = useMemo(() => isSuccess && nodeState === NodeState.Delayed, [isSuccess, nodeState]);
   // 封装完成
   const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
+  // 工作中（产生收益）
+  const isWorking = useMemo(() => isSuccess && nodeState >= NodeState.End, [isSuccess, nodeState]);
   // 已销毁（节点运行结束）
   const isDestroyed = useMemo(() => isSuccess && nodeState === NodeState.Destroy, [isSuccess, nodeState]);
 
@@ -76,9 +80,11 @@ export default function useRaiseState(data?: API.Plan) {
     isWaiting,
     isStarted,
     isSuccess,
+    isProcess,
     isPending,
     isRaising,
     isSealing,
+    isWorking,
     isDelayed,
     isFinished,
     isDestroyed,

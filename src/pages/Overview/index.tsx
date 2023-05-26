@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { BigNumber } from 'ethers';
 import { camelCase } from 'lodash';
 import classNames from 'classnames';
 import { ScrollSpy } from 'bootstrap';
@@ -7,10 +6,11 @@ import { NavLink, history, useModel, useParams } from '@umijs/max';
 import { useRequest, useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
-import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
 import { SCAN_URL } from '@/constants';
+import { packInfo } from '@/apis/packs';
 import { EventType } from '@/utils/mitt';
+import { del, getInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
@@ -19,13 +19,13 @@ import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
 import useEmittHandler from '@/hooks/useEmitHandler';
-import { NodeState, RaiseState } from '@/constants/state';
 // import CardFAQ from './components/CardFAQ';
 import CardCalc from './components/CardCalc';
-import CardTimer from './components/CardTimer';
+import CardBack from './components/CardBack';
+import CardRaise from './components/CardRaise';
 import CardAssets from './components/CardAssets';
-import CardRaiser from './components/CardRaiser';
 import Calculator from './components/Calculator';
+import CardStaking from './components/CardStaking';
 import SectionCoin from './components/SectionCoin';
 import SectionNode from './components/SectionNode';
 import SectionRaise from './components/SectionRaise';
@@ -56,42 +56,47 @@ export default function Overview() {
   const responsive = useResponsive();
   const [, setModel] = useModel('stepform');
 
-  const service = async () => {
-    if (param.id) {
-      return await A.getInfo(param.id);
-    }
-  };
-
-  const { data, refresh } = useRequest(service, { refreshDeps: [param.id] });
+  const { data, refresh: refreshData } = useRequest(
+    async () => {
+      if (param.id) {
+        return await getInfo(param.id);
+      }
+    },
+    { refreshDeps: [param.id] },
+  );
+  const { data: pack, refresh: refreshPack } = useRequest(
+    async () => {
+      if (param.id) {
+        return await packInfo(param.id);
+      }
+    },
+    { refreshDeps: [param.id] },
+  );
 
   const { contract, isFinished, isRaiser, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
-  const onNodeStateChange = ({ raiseID, state }: { raiseID: BigNumber; state: NodeState }) => {
-    console.log('[onNodeStateChange]: ', raiseID, state);
-
-    refresh();
-  };
-
-  const onRaiseStateChange = ({ raiseID, state }: { raiseID: BigNumber; state: RaiseState }) => {
-    console.log('[onRaiseStateChange]: ', raiseID, state);
-
-    refresh();
+  const refresh = () => {
+    refreshData();
+    refreshPack();
   };
 
   useUpdateEffect(updateScrollSpy, [data]);
 
   useEmittHandler<any>({
     [EventType.onStaking]: refresh,
+    [EventType.onUnstaking]: refresh,
     [EventType.onStartSeal]: refresh,
     [EventType.onDepositOpsFund]: refresh,
     [EventType.onServicerSigned]: refresh,
     [EventType.onStartRaisePlan]: refresh,
     [EventType.onCreateRaisePlan]: refresh,
     [EventType.onDepositRaiseFund]: refresh,
-    [EventType.onNodeStateChange]: onNodeStateChange,
-    [EventType.onRaiseStateChange]: onRaiseStateChange,
+    [EventType.onNodeStateChange]: refresh,
+    [EventType.onRaiseStateChange]: refresh,
+    [EventType.onWithdrawOpsFund]: refresh,
+    [EventType.onWithdrawRaiseFund]: refresh,
   });
 
   const handleEdit = () => {
@@ -113,7 +118,7 @@ export default function Overview() {
   const [deleting, deleteAction] = useLoadingify(async () => {
     if (!data) return;
 
-    await A.del(data.raising_id);
+    await del(data.raising_id);
 
     history.replace('/');
   });
@@ -226,11 +231,13 @@ export default function Overview() {
 
     return (
       <>
-        <CardTimer data={data} />
+        <CardRaise data={data} pack={pack} />
 
-        <CardAssets data={data} />
+        <CardStaking data={data} pack={pack} />
 
-        <CardRaiser data={data} />
+        <CardBack data={data} pack={pack} />
+
+        <CardAssets data={data} pack={pack} />
 
         <CardCalc data={data} />
       </>
@@ -241,11 +248,13 @@ export default function Overview() {
     if (responsive.lg) {
       return (
         <>
-          <CardTimer data={data} />
+          <CardRaise data={data} pack={pack} />
 
-          <CardAssets data={data} />
+          <CardStaking data={data} pack={pack} />
 
-          <CardRaiser data={data} />
+          <CardBack data={data} pack={pack} />
+
+          <CardAssets data={data} pack={pack} />
 
           <CardCalc data={data} />
         </>
@@ -261,7 +270,7 @@ export default function Overview() {
         <PageHeader
           className={classNames({ 'border-bottom': !isFinished, 'mb-3 pb-0': isFinished })}
           title={title}
-          desc="依靠强大的FVM智能合约，合作共建Filecoin存储"
+          desc={isFinished ? `算力包：${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储'}
         >
           <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div>
         </PageHeader>
@@ -420,7 +429,7 @@ export default function Overview() {
         </div>
       </div>
 
-      <Calculator />
+      <Calculator data={data} pack={pack} />
 
       <p>
         <br />

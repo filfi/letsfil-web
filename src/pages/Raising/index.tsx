@@ -8,6 +8,7 @@ import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Empty from '@/components/Empty';
 import useProvider from '@/hooks/useProvider';
+import BannerCard from './components/BannerCard';
 import RaisingCard from './components/RaisingCard';
 import SealingCard from './components/SealingCard';
 import WorkingCard from './components/WorkingCard';
@@ -35,16 +36,14 @@ export default function Raising() {
   };
 
   const { data, loading } = useRequest(service);
-  const isEmpty = useMemo(() => !data || data.total === 0, [data]);
+  const { data: banner } = useRequest(A.getBanner);
   const raises = useMemo(() => data?.list.filter(isRaising), [data?.list]);
   const seals = useMemo(() => filter(data?.list, isSealing), [data?.list]);
   const workes = useMemo(() => filter(data?.list, isWorking), [data?.list]);
+  const isEmpty = useMemo(() => !((data && data.total > 0) || banner), [banner, data]);
 
   return (
-    <div className="container">
-      <p>
-        <br />
-      </p>
+    <div className="container pt-4 pt-lg-5">
       <Skeleton active loading={loading}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
@@ -52,6 +51,8 @@ export default function Raising() {
           </div>
         ) : (
           <>
+            {banner && <BannerCard className={classNames('mb-5', styles.banner)} data={banner} getProvider={getProvider} />}
+
             {isArrs(raises) && (
               <>
                 <div className="mb-3 mb-lg-4">

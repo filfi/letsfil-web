@@ -8,7 +8,7 @@ import { history, useModel } from '@umijs/max';
 import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
 import styles from './styles.less';
-import Modal from '@/components/Modal';
+// import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
@@ -209,9 +209,9 @@ export default function CreateBenefit() {
             <h4 className="ffi-label">技术运维保证金</h4>
             <p className="text-gray">
               发起人要求技术服务商存入保证金，保证金将做为劣后质押币，与投资人的质押币一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押币的比例不低于5%，提高占比要求，可提高对投资人的吸引力。
-              <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
+              {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
-              </a>
+              </a> */}
             </p>
 
             <Form.Item hidden name="opsSecurityFund">
@@ -267,9 +267,9 @@ export default function CreateBenefit() {
             <h4 className="ffi-label">算力/收益分配方案</h4>
             <p className="text-gray">
               新增存储算力获得的收益，智能合约严格执行分配方案。点击修改按钮调整分配方案。
-              <a className="text-underline" href="#build-modal" data-bs-toggle="modal">
+              {/* <a className="text-underline" href="#build-modal" data-bs-toggle="modal">
                 了解更多
-              </a>
+              </a> */}
             </p>
 
             <Form.Item hidden name="raiserCoinShare">
@@ -317,11 +317,11 @@ export default function CreateBenefit() {
               <div className="ffi-item">
                 <h4 className="ffi-label">{model.minerId}历史资产的归属</h4>
                 <p className="text-gray">
-                  检测到 f1234567
+                  检测到 {model.minerId}{' '}
                   是已经存在的节点，历史资产收益不计入此募集计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的收益分成比例不低于10%）。历史资产的质押币100%归属发起人。
-                  <a className="text-underline" href="#assets-modal" data-bs-toggle="modal">
+                  {/* <a className="text-underline" href="#assets-modal" data-bs-toggle="modal">
                     了解更多
-                  </a>
+                  </a> */}
                 </p>
 
                 <div className="px-4 mb-4">
@@ -422,7 +422,7 @@ export default function CreateBenefit() {
 
       <StepsModal id="benefit-modal" ops={opsRate} raiser={raiserRate} servicer={servicerRate} onConfirm={handleSteps} />
 
-      <Modal.Alert id="build-modal" title="算力/收益分配方案" confirmText="我知道了">
+      {/* <Modal.Alert id="build-modal" title="算力/收益分配方案" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">新增的存储空间获得的Filecoin奖励，智能合约严格执行分配方案。点击修改按钮调整分配方案。</p>
@@ -449,7 +449,7 @@ export default function CreateBenefit() {
             </p>
           </div>
         </div>
-      </Modal.Alert>
+      </Modal.Alert> */}
     </>
   );
 }

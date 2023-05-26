@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import classNames from 'classnames';
 
 import * as F from '@/utils/format';
-import Modal from '@/components/Modal';
+// import Modal from '@/components/Modal';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRaiseReward from '@/hooks/useRaiseReward';
@@ -105,24 +105,24 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 <th>累计罚金</th>
                 <td>
                   <span className="me-auto">{F.formatAmount(fines)} FIL</span>
-                  {isDelayed && fines > 0 && (
+                  {/* {isDelayed && fines > 0 && (
                     <a className="text-underline" href="#fines-modal" data-bs-toggle="modal">
                       这是什么？
                     </a>
-                  )}
+                  )} */}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <Modal.Alert id="fines-modal" title="累计罚金" confirmText="我知道了">
+        {/* <Modal.Alert id="fines-modal" title="累计罚金" confirmText="我知道了">
           <div className="card">
             <div className="card-body">
               <p>累计罚金说明</p>
             </div>
           </div>
-        </Modal.Alert>
+        </Modal.Alert> */}
       </>
     );
   }

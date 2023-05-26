@@ -382,6 +382,19 @@ a {
   .accordion-button:not(.collapsed)::after {
     filter: grayscale(1);
   }
+
+  .ant-table {
+    border-radius: var(--bs-accordion-border-radius);
+  }
+
+  .ant-table-wrapper .ant-table-container,
+  .ant-table-wrapper .ant-table-container table > thead > tr > th {
+    border-radius: 0 !important;
+  }
+
+  .ant-table-wrapper .ant-table-tbody > tr:last-child > td {
+    border: none !important;
+  }
 }
 
 @media screen and (min-width: 768px) {

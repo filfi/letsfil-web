@@ -311,8 +311,8 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   const unStaking = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, amount: ethers.BigNumber, opts?: TxOptions) => {
-          return await contract?.unStaking(amount, {
+        withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
+          return await contract?.unStaking(id, {
             ...opts,
           });
         }),
@@ -356,8 +356,8 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   const raiserWithdraw = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, amount: ethers.BigNumber, opts?: TxOptions) => {
-          return await contract?.raiserWithdraw(amount, {
+        withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
+          return await contract?.raiserWithdraw(id, {
             ...opts,
           });
         }),
@@ -371,8 +371,8 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   const servicerWithdraw = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, amount: ethers.BigNumber, opts?: TxOptions) => {
-          return await contract?.spWithdraw(amount, {
+        withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
+          return await contract?.spWithdraw(id, {
             ...opts,
           });
         }),
@@ -386,8 +386,8 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   const investorWithdraw = toastify(
     withConnect(
       withTx(
-        withContract(async (contract, to: string, amount: ethers.BigNumber, opts?: TxOptions) => {
-          return await contract?.investorWithdraw(to, amount, {
+        withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
+          return await contract?.investorWithdraw(id, {
             ...opts,
           });
         }),
@@ -398,28 +398,27 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   /**
    * 获取质押总额
    */
-  const pledgeTotalAmount = withConnect(
+  const getTotalPledge = withConnect(
     withContract(async (contract, id: BigNumberish) => {
       return await contract?.pledgeTotalAmount(id);
     }),
   );
 
   /**
-   * 获取质押金额
+   * 获取投资人信息
    */
-  const pledgeAmount = withConnect(
-    withContract(async (/* contract, id: BigNumberish, address: string */) => {
-      // return await contract?.pledgeRecord(address);
-      return 0;
+  const getInvestorInfo = withConnect(
+    withContract(async (contract, id: BigNumberish, address: string) => {
+      return await contract?.investorInfo(id, address);
     }),
   );
 
   /**
-   * 获取质押累计金额
+   * 获取退回资产
    */
-  const pledgeRecord = withConnect(
+  const getBackAssets = withConnect(
     withContract(async (contract, id: BigNumberish, address: string) => {
-      return await contract?.pledgeRecordCalc(id, address);
+      return await contract?.getBack(id, address);
     }),
   );
 
@@ -438,6 +437,42 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   const getOpsFund = withConnect(
     withContract(async (contract, id: BigNumberish) => {
       return await contract?.opsSecurityFundRemain(id);
+    }),
+  );
+
+  /**
+   * 获取投资人可提取收益
+   */
+  const getInvestorAvailableReward = withConnect(
+    withContract(async (contract, id: BigNumberish, address: string) => {
+      return await contract?.availableRewardOf(id, address);
+    }),
+  );
+
+  /**
+   * 获取投资人已提取收益
+   */
+  const getInvestorWithdrawnRecord = withConnect(
+    withContract(async (contract, id: BigNumberish, address: string) => {
+      return await contract?.withdrawRecord(id, address);
+    }),
+  );
+
+  /**
+   * 获取投资人待释放收益
+   */
+  const getInvestorPendingReward = withConnect(
+    withContract(async (contract, id: BigNumberish, address: string) => {
+      return await contract?.willReleaseOf(id, address);
+    }),
+  );
+
+  /**
+   * 获取投资人总收益
+   */
+  const getInvestorTotalReward = withConnect(
+    withContract(async (contract, id: BigNumberish, address: string) => {
+      return await contract?.totalRewardOf(id, address);
     }),
   );
 
@@ -496,7 +531,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 获取累计罚金
+   * 获取节点总累计罚金
    */
   const getTotalFines = withConnect(
     withContract(async (contract, id: BigNumberish) => {
@@ -505,74 +540,30 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 获取总收益
+   * 获取节点总收益
    */
-  const totalRewardAmount = withConnect(
+  const getTotalReward = withConnect(
     withContract(async (contract, id: BigNumberish) => {
       return await contract?.totalRewardAmount(id);
     }),
   );
 
   /**
-   * 获取待释放的总收益
+   * 获取节点待释放的总收益
    */
-  const totalReleasedRewardAmount = withConnect(
+  const getTotalPendingReward = withConnect(
     withContract(async (contract, id: BigNumberish) => {
       return await contract?.totalReleasedRewardAmount(id);
-    }),
-  );
-
-  /**
-   * 获取投资人总收益
-   */
-  const totalRewardOf = withConnect(
-    withContract(async (contract, id: BigNumberish, address: string) => {
-      return await contract?.totalRewardOf(id, address);
-    }),
-  );
-
-  /**
-   * 获取投资人可提取收益
-   */
-  const availableRewardOf = withConnect(
-    withContract(async (contract, id: BigNumberish, address: string) => {
-      return await contract?.availableRewardOf(id, address);
-    }),
-  );
-
-  /**
-   * 获取投资人待释放收益
-   */
-  const pendingRewardOf = withConnect(
-    withContract(async (contract, id: BigNumberish, address: string) => {
-      return await contract?.willReleaseOf(id, address);
-    }),
-  );
-
-  /**
-   * 获取投资人提取记录
-   */
-  const withdrawRecord = withConnect(
-    withContract(async (contract, id: BigNumberish, address: string) => {
-      return await contract?.withdrawRecord(id, address);
     }),
   );
 
   return {
     staking,
     unStaking,
-    getContract,
-    getOpsFund,
-    getRaiseFund,
     closeRaisePlan,
     depositOpsFund,
     depositRaiseFund,
     servicerSign,
-    getNodeInfo,
-    getRaiseInfo,
-    getNodeState,
-    getRaiseState,
-    // changeOpsPayer,
     startSeal,
     startRaisePlan,
     withdrawOpsFund,
@@ -580,21 +571,28 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     raiserWithdraw,
     servicerWithdraw,
     investorWithdraw,
-    pledgeAmount,
-    pledgeRecord,
-    pledgeTotalAmount,
-    getTotalFines,
+    getContract,
+    getOpsFund,
+    getRaiseFund,
+    getNodeInfo,
+    getRaiseInfo,
+    getNodeState,
+    getRaiseState,
+    getBackAssets,
+    getInvestorInfo,
+    getTotalPledge,
+    getInvestorAvailableReward,
+    getInvestorWithdrawnRecord,
+    getInvestorPendingReward,
+    getInvestorTotalReward,
     getRaiserAvailableReward,
     getRaiserPendingReward,
     getRaiserWithdrawnReward,
     getServicerAvailableReward,
     getServicerPendingReward,
     getServicerWithdrawnReward,
-    totalRewardAmount,
-    totalReleasedRewardAmount,
-    totalRewardOf,
-    availableRewardOf,
-    pendingRewardOf,
-    withdrawRecord,
+    getTotalFines,
+    getTotalReward,
+    getTotalPendingReward,
   };
 }

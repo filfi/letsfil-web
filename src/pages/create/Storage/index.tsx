@@ -5,10 +5,10 @@ import { useUpdateEffect } from 'ahooks';
 import { history, useModel } from '@umijs/max';
 import type { InputProps } from 'antd';
 
-import Modal from '@/components/Modal';
 import useUser from '@/hooks/useUser';
 import { minerInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
+// import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
@@ -211,9 +211,9 @@ export default function CreateStorage() {
             <h4 className="ffi-label">Filecoin存储节点</h4>
             <p className="text-gray">
               募集资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
-              <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
+              {/* <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
                 什么是存储节点号？
-              </a>
+              </a> */}
             </p>
 
             <div className="d-flex gap-2">
@@ -268,9 +268,9 @@ export default function CreateStorage() {
             <h4 className="ffi-label">技术服务商（SP Foundry）</h4>
             <p className="text-gray">
               技术服务商提供扇区封装、技术运维、IDC数据中心整体解决方案，是存储节点长期健康运行的最终保障。
-              <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">
+              {/* <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">
                 如何成为技术服务商(SP Foundry)？
-              </a>
+              </a> */}
             </p>
 
             <Form.Item name="serviceId" rules={[{ required: true, message: '请选择技术服务商' }]}>
@@ -293,7 +293,7 @@ export default function CreateStorage() {
         </div>
       </Form>
 
-      <Modal.Alert id="minerId-modal" title="什么是存储节点号？" confirmText="我知道了">
+      {/* <Modal.Alert id="minerId-modal" title="什么是存储节点号？" confirmText="我知道了">
         <div className="card bg-transparent border-0">
           <div className="card-body">
             <p>节点号解释</p>
@@ -311,7 +311,7 @@ export default function CreateStorage() {
             <p className="mb-0">技术服务商</p>
           </div>
         </div>
-      </Modal.Alert>
+      </Modal.Alert> */}
     </>
   );
 }
