@@ -28,11 +28,7 @@ const LoadingView: React.FC<LoadingViewProps> = ({ data, error, loading, childre
   const empty = useMemo(() => isEmpty(data), [data]);
 
   if (empty && loading) {
-    return (
-      <div className="d-flex flex-column justify-content-center vh-75">
-        <Loading />
-      </div>
-    );
+    return <Loading className="vh-75" />;
   }
 
   if (error) {

@@ -6,22 +6,24 @@ import * as F from '@/utils/format';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRaiseReward from '@/hooks/useRaiseReward';
-import { accAdd, accDiv, sec2day } from '@/utils/utils';
+import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
 const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { fines } = useRaiseReward(data);
-  const { nodeState, isDelayed, isFinished } = useRaiseState(data);
-  const { pack, period, running, percent: rate } = useRaiseSeals(data);
+  const { nodeState, isFinished } = useRaiseState(data);
+  const { pack, period, sealdays, running, percent: rate } = useRaiseSeals(data);
 
+  const isDelayed = useMemo(() => data && data.delay_seal_time > 0, [data?.delay_seal_time]);
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
-  const percent = useMemo(() => (total > 0 ? accDiv(running, total) : 0), [running, total]);
+  const percent = useMemo(() => (total > 0 ? Math.min(accDiv(running, total), 1) : 0), [running, total]);
   const delay = useMemo(() => {
-    if (data?.delay_seal_time && data.end_seal_time) {
-      return data.delay_seal_time - data.end_seal_time;
+    if (data?.delay_seal_time) {
+      return accSub(Date.now() / 1000, data.begin_seal_time, day2sec(data.seal_days));
     }
+
     return 0;
-  }, [data?.delay_seal_time]);
+  }, [data]);
 
   if (nodeState > 0) {
     return (
@@ -32,7 +34,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
               className={classNames('indicator', { warning: isDelayed, success: isFinished })}
               style={{ left: isFinished ? 'calc(100% - 23px)' : `calc((100% - 46px) * ${percent})` }}
             >
-              <span className="indicator-label">{running} 天</span>
+              <span className="indicator-label">{isFinished ? sealdays : running} 天</span>
               <span className="indicator-caret"></span>
             </div>
             <div className="progress-stacked flex-fill">
@@ -104,7 +106,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 <td>{sec2day(delay)} 天</td>
                 <th>累计罚金</th>
                 <td>
-                  <span className="me-auto">{F.formatAmount(fines)} FIL</span>
+                  <span className="me-auto">{F.formatAmount(fines, 2, 2)} FIL</span>
                   {/* {isDelayed && fines > 0 && (
                     <a className="text-underline" href="#fines-modal" data-bs-toggle="modal">
                       这是什么？

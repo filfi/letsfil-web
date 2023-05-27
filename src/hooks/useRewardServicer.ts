@@ -11,6 +11,7 @@ import useRaiseContract from './useRaiseContract';
 export default function useRewardServicer(data?: API.Plan) {
   const { getContract } = useRaiseContract();
 
+  const [locked, setLocked] = useState(0);
   const [reward, setReward] = useState(0); // 可提取
   const [record, setRecord] = useState(0); // 已提取
   const [pending, setPending] = useState(0); // 待释放
@@ -24,10 +25,12 @@ export default function useRewardServicer(data?: API.Plan) {
 
     if (!contract) return;
 
+    const locked = await contract.spFundLock(data.raising_id);
     const reward = await contract.spRewardAvailableLeft(data.raising_id);
     const record = await contract.gotSpReward(data.raising_id);
     const pending = await contract.spWillReleaseReward(data.raising_id);
 
+    setLocked(toNumber(locked));
     setReward(toNumber(reward));
     setRecord(toNumber(record));
     setPending(toNumber(pending));
@@ -50,6 +53,7 @@ export default function useRewardServicer(data?: API.Plan) {
 
   return {
     total,
+    locked,
     record,
     reward,
     pending,

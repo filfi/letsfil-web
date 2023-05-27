@@ -41,6 +41,7 @@ import { ReactComponent as IconEdit } from '@/assets/icons/edit-05.svg';
 import { ReactComponent as IconTrash } from '@/assets/icons/trash-04.svg';
 import { ReactComponent as IconShare4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
+import useProvider from '@/hooks/useProvider';
 
 function updateScrollSpy() {
   const el = document.querySelector('[data-bs-spy="scroll"]');
@@ -78,6 +79,8 @@ export default function Overview() {
     },
     { refreshDeps: [param.id] },
   );
+
+  const { getProvider } = useProvider();
 
   const { contract, isFinished, isRaiser, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
@@ -358,7 +361,7 @@ export default function Overview() {
                   <p className="mb-0">开创链上协作新模式，专业化服务，负责任承诺。</p>
                 </div>
 
-                <SectionProvider data={data} />
+                <SectionProvider data={data} getProvider={getProvider} />
               </section>
               <section id="reward">
                 <div className="section">
@@ -403,7 +406,7 @@ export default function Overview() {
                   <p className="mb-0">保障募集计划执行，异常自动触发惩罚机制，保护投资人权益。</p>
                 </div>
 
-                <SectionDeposit data={data} />
+                <SectionDeposit data={data} getProvider={getProvider} />
               </section>
               <section id="timeline" className="section">
                 <div className="section-header">

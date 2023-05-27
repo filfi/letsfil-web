@@ -52,8 +52,9 @@ export default function useDepositInvest(data?: API.Plan) {
       setBackInterest(toNumber(backInterest));
     }
 
-    const raise = await contract?.raiseInfo(data.raising_id);
-    const pledge = await contract?.pledgeTotalAmount(data.raising_id);
+    const raise = await contract.raiseInfo(data.raising_id);
+    // const pledge = await contract.pledgeTotalAmount(data.raising_id);
+    const pledge = await contract.pledgeTotalCalcAmount(data.raising_id);
 
     setTotal(toNumber(pledge));
     setTarget(toNumber(raise?.targetAmount));

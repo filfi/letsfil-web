@@ -6,6 +6,7 @@ import { SCAN_URL } from '@/constants';
 import { getEvents } from '@/apis/raise';
 import usePagination from '@/hooks/usePagination';
 import { formatAddr, formatUnixNow } from '@/utils/format';
+import type { ItemProps } from './types';
 
 function withEmpty<D = any>(render: (value: any, row: D, index: number) => React.ReactNode) {
   return (value: any, row: D, index: number) => {
@@ -47,7 +48,7 @@ function renderName(event: string) {
   return EVENTS_MAP[event];
 }
 
-const SectionEvents: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionEvents: React.FC<ItemProps> = ({ data }) => {
   const service = async ({ page, pageSize }: any) => {
     if (data?.raising_id) {
       return await getEvents({ page, page_size: pageSize, raising_id: data.raising_id });

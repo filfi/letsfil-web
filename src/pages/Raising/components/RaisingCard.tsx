@@ -4,9 +4,9 @@ import { history } from '@umijs/max';
 import { useCountDown } from 'ahooks';
 
 import useAccounts from '@/hooks/useAccounts';
+import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { accDiv, accMul, accSub } from '@/utils/utils';
 import { formatEther, formatRate } from '@/utils/format';
 
 export type RaisingCardProps = {
@@ -18,15 +18,10 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
   const { withConnect } = useAccounts();
   const { progress } = useDepositInvest(data);
   const { rate } = useIncomeRate(data.raising_id);
+  const { opsRatio, investRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
-  // 优先部分
-  const priorityRate = useMemo(() => data?.raiser_coin_share ?? 70, [data?.raiser_coin_share]);
-  // 保证金占比
-  const opsRatio = useMemo(() => data?.ops_security_fund_rate ?? 5, [data?.ops_security_fund_rate]);
-  // 投资人部分
-  const investRate = useMemo(() => accMul(priorityRate, accDiv(accSub(100, opsRatio), 100)), [priorityRate, opsRatio]);
 
   const handleJoin = withConnect(async () => {
     history.push(`/overview/${data.raising_id}`);

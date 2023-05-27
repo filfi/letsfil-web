@@ -7,18 +7,19 @@ import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import { RaiseState } from '@/constants/state';
-import useProvider from '@/hooks/useProvider';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import useDepositOps from '@/hooks/useDepositOps';
 import useDepositRaise from '@/hooks/useDepositRaise';
-import { accMul, accSub } from '@/utils/utils';
+import useDepositInvest from '@/hooks/useDepositInvest';
+import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
+import type { ItemProps } from './types';
 
-const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const RaiserCard: React.FC<ItemProps> = ({ data }) => {
   const { initialState } = useModel('@@initialState');
   const { contract, raiseState, isRaisePaid, isRaiser, isPayer, raiser, isFailed, isPending, isProcess, isRaising, isWorking, isFinished, isDestroyed } =
     useRaiseState(data);
@@ -28,7 +29,7 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const total = useMemo(() => F.toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
   const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
   const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
-  const fine = useMemo(() => accSub(total, raise.amount, fee), [total, fee, raise.amount]); // 罚金
+  const fine = useMemo(() => Math.max(accSub(total, raise.amount, fee), 0), [total, fee, raise.amount]); // 罚金
 
   const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
   const withdrawable = useMemo(() => isRaiser && (isFailed || isFinished || isDestroyed), [isPayer, isFailed, isFinished, isDestroyed]);
@@ -86,7 +87,7 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>募集手续费</span>
-                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fee)}</span>
+                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fee, 4, 2)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
                   {/* <a className="ms-auto text-underline" href="#">了解更多</a> */}
@@ -96,7 +97,7 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>累计罚金</span>
-                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fine)}</span>
+                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fine, 4, 2)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
                   {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
@@ -136,18 +137,25 @@ const RaiserCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
   );
 };
 
-const ServiceCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
   const { initialState } = useModel('@@initialState');
-  const { contract, raiseState, isOpsPaid, isPayer, payer, isPending, isFailed, isDestroyed } = useRaiseState(data);
   const ops = useDepositOps(data);
-  const { investRate } = useRaiseRate(data);
-  const { getProvider } = useProvider();
-
-  const amount = useMemo(() => (isOpsPaid ? ops.amount : F.toNumber(data?.ops_security_fund)), [data, ops.amount, isOpsPaid]);
+  const { total } = useDepositInvest(data);
+  const { investRate, opsRatio } = useRaiseRate(data);
+  const { contract, raiseState, isOpsPaid, isPayer, payer, isPending, isFailed, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
   const payable = useMemo(() => isPayer && raiseState < RaiseState.Raising, [isPayer, raiseState]);
   const withdrawable = useMemo(() => isPayer && (isFailed || isDestroyed), [isPayer, isFailed, isDestroyed]);
+  const opsTotal = useMemo(() => F.toNumber(data?.ops_security_fund), [data?.ops_security_fund]); // 总保证金
+  const opsAmount = useMemo(() => (isOpsPaid ? ops.amount : opsTotal), [ops.amount, opsTotal, isOpsPaid]); // 保证金
+  const opsRealy = useMemo(() => accDiv(accMul(total, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [total, opsRatio]); // 保证金配额
+  const opsOver = useMemo(() => Math.max(accSub(opsTotal, opsRealy), 0), [opsTotal, opsRealy]); // 超配部分
+  const opsRemain = useMemo(
+    () => Math.max(accSub(accMul(opsTotal, accDiv(ops.sealed, total)), ops.fines, opsOver), 0),
+    [opsTotal, opsOver, ops.sealed, ops.fines],
+  ); // 保证金剩余
+  const opsInterest = useMemo(() => accMul(ops.totalInterest, accDiv(opsTotal, accAdd(opsTotal, total))), [opsTotal, ops.totalInterest, total]); // 利息补偿
 
   const [paying, handlePay] = useProcessify(async () => {
     if (!data) return;
@@ -198,11 +206,55 @@ const ServiceCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
         <div className="card-body">
           <div className="d-flex align-items-center mb-1">
             <p className="mb-0">
-              <span className="text-decimal">{F.formatAmount(amount)}</span>
+              <span className="text-decimal">{F.formatAmount(opsAmount)}</span>
               <span className="ms-1 text-gray">FIL</span>
             </p>
             {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(payer)}</span>}
           </div>
+          {isFailed ? (
+            <div className="bg-light my-2 px-3 py-2 rounded-3">
+              <p className="d-flex gap-3 my-2">
+                <span className="text-gray-dark">
+                  <span>利息补偿</span>
+                  <span className="ms-2 fw-bold text-danger">{F.formatAmount(opsInterest)}</span>
+                  <span className="ms-1">FIL</span>
+                </span>
+                {/* <a className="ms-auto text-underline" href="#">补偿明细</a> */}
+              </p>
+            </div>
+          ) : isDestroyed ? (
+            <div className="bg-light my-2 px-3 py-2 rounded-3">
+              <p className="d-flex gap-3 my-2">
+                <span className="text-gray-dark">
+                  <span>累计罚金</span>
+                  <span className="ms-2 fw-bold text-danger">{F.formatAmount(ops.fines, 4, 3)}</span>
+                  <span className="ms-1">FIL</span>
+                </span>
+                {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
+              </p>
+            </div>
+          ) : isSealing || isDelayed || isFinished ? (
+            <div className="bg-light my-2 px-3 py-2 rounded-3">
+              <p className="d-flex gap-3 my-2">
+                <span className="text-gray-dark">
+                  <span>超配部分</span>
+                  <span className="ms-2 fw-bold">{F.formatAmount(opsOver)}</span>
+                  <span className="ms-1">FIL</span>
+                </span>
+                {opsOver > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
+              </p>
+              {isFinished && (
+                <p className="d-flex gap-3 my-2">
+                  <span className="text-gray-dark">
+                    <span>封装剩余部分</span>
+                    <span className="ms-2 fw-bold">{F.formatAmount(opsRemain)}</span>
+                    <span className="ms-1">FIL</span>
+                  </span>
+                  {opsRemain > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
+                </p>
+              )}
+            </div>
+          ) : null}
           <p className="mb-0">
             <span>与投资人等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</span>
             {/* <a className="text-underline" href="#sp-deposit" data-bs-toggle="modal">
@@ -277,12 +329,12 @@ const ServiceCard: React.FC<{ data?: API.Plan }> = ({ data }) => {
   );
 };
 
-const SectionDeposit: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionDeposit: React.FC<ItemProps> = (props) => {
   return (
     <>
-      <RaiserCard data={data} />
+      <RaiserCard {...props} />
 
-      <ServiceCard data={data} />
+      <ServiceCard {...props} />
     </>
   );
 };

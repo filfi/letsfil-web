@@ -6,8 +6,9 @@ import ShareBtn from '@/components/ShareBtn';
 import useRaiseState from '@/hooks/useRaiseState';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg';
+import type { ItemProps } from './types';
 
-const SectionContract: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionContract: React.FC<ItemProps> = ({ data }) => {
   const { isPending, isRaiser, isSigned } = useRaiseState(data);
 
   const handleSign = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {

@@ -1,10 +1,15 @@
+import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import { useRequest } from 'ahooks';
 
-import { isDef } from '@/utils/utils';
+import { accAdd, isDef } from '@/utils/utils';
 import { getInfo } from '@/apis/raise';
 import ShareBtn from '@/components/ShareBtn';
 import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseState from '@/hooks/useRaiseState';
+import useRewardRaiser from '@/hooks/useRewardRaiser';
+import useRewardInvestor from '@/hooks/useRewardInvestor';
+import useRewardServicer from '@/hooks/useRewardServicer';
 import { formatAmount, formatNum } from '@/utils/format';
 import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
@@ -18,7 +23,25 @@ function formatPower(val?: number | string) {
 const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const { data: info } = useRequest(() => getInfo(data.raising_id), { refreshDeps: [data.raising_id] });
 
+  const raiser = useRewardRaiser(info);
+  const investor = useRewardInvestor(info);
+  const servicer = useRewardServicer(info);
+  const { isRaiser, isServicer } = useRaiseState(info);
   const { holdPower, investPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
+
+  const rewward = useMemo(() => {
+    let sum = investor.reward;
+
+    if (raiser) {
+      sum = accAdd(sum, raiser.reward);
+    }
+
+    if (servicer) {
+      sum = accAdd(sum, servicer.reward);
+    }
+
+    return sum;
+  }, [investor.reward, raiser.reward, servicer.reward, isRaiser, isServicer]);
 
   return (
     <div className="card h-100">
@@ -51,7 +74,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">可提余额</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">0</span>
+            <span className="fs-16 fw-600">{formatAmount(rewward)}</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>

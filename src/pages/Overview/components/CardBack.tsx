@@ -3,8 +3,9 @@ import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
+import type { ItemProps } from './types';
 
-const CardBack: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data }) => {
+const CardBack: React.FC<ItemProps> = ({ data }) => {
   const { isFailed, isWorking } = useRaiseState(data);
   const { amount, backAmount, backInterest, processing, unStaking } = useDepositInvest(data);
 

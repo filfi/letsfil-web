@@ -67,11 +67,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
       return data.closing_time;
     }
 
-    if (isDelayed) {
-      return data.delay_seal_time;
-    }
-
-    if (isSealing) {
+    if (isDelayed || isSealing) {
       return data.end_seal_time;
     }
 
@@ -292,12 +288,12 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
                   ? '募集计划已关闭'
                   : isRaising
                   ? '正在募集中！距离截止时间'
-                  : isSuccess && !isSealing
-                  ? '募集成功，等待封装'
-                  : isSealing
-                  ? '封装倒计时'
                   : isDelayed
                   ? '封装延期'
+                  : isSealing
+                  ? '封装倒计时'
+                  : isSuccess
+                  ? '募集成功，等待封装'
                   : '募集时间'}
               </h4>
               <div className="ms-auto">

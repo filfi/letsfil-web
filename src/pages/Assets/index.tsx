@@ -20,10 +20,10 @@ import useRaiseState from '@/hooks/useRaiseState';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
-import { ReactComponent as IconFil } from '@/assets/icons/filecoin.svg';
 import { ReactComponent as IconStar } from './imgs/icon-star.svg';
 import { ReactComponent as IconTool } from './imgs/icon-tool.svg';
 import { ReactComponent as IconUser } from './imgs/icon-users.svg';
+import { ReactComponent as IconFil } from '@/assets/icons/filecoin.svg';
 
 export default function Assets() {
   const param = useParams();
@@ -52,6 +52,7 @@ export default function Assets() {
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
   const pledge = useMemo(() => [investPledge, 0, 0][role], [role, investPledge]);
+  const locked = useMemo(() => (isServicer ? servicer.locked : 0), [servicer.locked, isServicer]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role], [role, investPower, raiserPower, servicerPower]);
   const total = useMemo(() => [investor.total, raiser.total, servicer.total][role], [role, investor.total, raiser.total, servicer.total]);
   const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role], [role, investor.reward, raiser.reward, servicer.reward]);
@@ -246,7 +247,7 @@ export default function Assets() {
                   <div className="col">
                     <div className="ffi-form">
                       <p className="mb-1 fw-500">锁定余额</p>
-                      <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value="0" />
+                      <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
                     </div>
                   </div>
                   <div className="col">
