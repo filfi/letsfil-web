@@ -3,8 +3,9 @@ import { SCAN_URL } from '@/constants';
 import { byte2gb } from '@/utils/utils';
 import { formatByte } from '@/utils/format';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
+import type { ItemProps } from './types';
 
-const SectionNode: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionNode: React.FC<ItemProps> = ({ data }) => {
   const size = useMemo(() => formatByte(data?.target_power ?? 0, '0 ib').split(' '), [data]);
 
   return (

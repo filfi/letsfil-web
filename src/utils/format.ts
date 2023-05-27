@@ -40,8 +40,8 @@ export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumbe
   return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
 }
 
-export function formatAmount(amount?: BigNumber.Value, decimalPlaces = 4) {
-  return formatFix(BigNumber(amount ?? 0).toFormat(decimalPlaces, BigNumber.ROUND_HALF_EVEN));
+export function formatAmount(amount?: BigNumber.Value, decimalPlaces = 4, mode: BigNumber.RoundingMode = 3) {
+  return formatFix(BigNumber(amount ?? 0).toFormat(decimalPlaces, mode));
 }
 
 export function formatEther(amount?: ethers.BigNumberish, decimalPlaces?: number) {

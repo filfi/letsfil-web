@@ -43,9 +43,9 @@ function getRefVal<T>(ref?: MaybeRef<T>) {
 function createContract(address?: string) {
   if (!address || !MetaMaskOboarding.isMetaMaskInstalled()) return;
 
-  if (contract && contract.address === address) {
-    return contract;
-  }
+  // if (contract && contract.address === address) {
+  //   return contract;
+  // }
 
   const provider = new ethers.providers.Web3Provider(window.ethereum!);
 

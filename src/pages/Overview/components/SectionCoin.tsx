@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
 import * as U from '@/utils/utils';
+import type { ItemProps } from './types';
 
 const config: PieConfig = {
   data: [],
@@ -25,7 +26,7 @@ const config: PieConfig = {
   },
 };
 
-const SectionCoin: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionCoin: React.FC<ItemProps> = ({ data }) => {
   // 保证金部分
   const opsRate = useMemo(() => data?.ops_security_fund_rate ?? 5, [data?.ops_security_fund_rate]);
   // 投资人部分

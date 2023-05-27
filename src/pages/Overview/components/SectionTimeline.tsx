@@ -4,8 +4,9 @@ import * as F from '@/utils/format';
 import * as U from '@/utils/utils';
 import Steps from '@/components/Steps';
 import useRaiseState from '@/hooks/useRaiseState';
+import type { ItemProps } from './types';
 
-const SectionTimeline: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
   const { isClosed, isFailed, isFinished, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted } = useRaiseState(data);
 
   const isStart = useMemo(() => !!(data?.begin_time && isStarted), [isStarted, data?.begin_time]);

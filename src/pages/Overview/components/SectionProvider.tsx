@@ -2,14 +2,12 @@ import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import classNames from 'classnames';
 
-import useProvider from '@/hooks/useProvider';
 import useRaiseState from '@/hooks/useRaiseState';
+import type { ItemProps } from './types';
 
-const SectionProvider: React.FC<{ data?: API.Plan }> = ({ data }) => {
-  const { getProvider } = useProvider();
-
+const SectionProvider: React.FC<ItemProps> = ({ data, getProvider }) => {
   const { isPending } = useRaiseState(data);
-  const provider = useMemo(() => getProvider(data?.service_id), [data]);
+  const provider = useMemo(() => getProvider?.(data?.service_id), [getProvider, data?.service_id]);
 
   return (
     <>

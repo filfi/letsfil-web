@@ -9,8 +9,9 @@ import { formatAmount } from '@/utils/format';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
+import type { ItemProps } from './types';
 
-const CardStaking: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data }) => {
+const CardStaking: React.FC<ItemProps> = ({ data }) => {
   const [form] = Form.useForm();
   const { amount, total, target } = useDepositInvest(data);
   const { contract, isRaising, isSealing } = useRaiseState(data);

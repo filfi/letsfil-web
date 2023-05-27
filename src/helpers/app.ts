@@ -127,23 +127,25 @@ export function transformModel(data: API.Base) {
  * @param data 表单数据
  */
 export function transformRaiseInfo(data: API.Plan): RaiseInfo {
+  const opsRatio = U.accDiv(data.ops_security_fund_rate, 100); // 保证金配比
   const infriority = U.accSub(100, data.raiser_coin_share); // 劣后部分
-  const ffiRate = U.accMul(infriority, 0.08); // filfi协议部分
   const servicerRate = data.op_server_share; // 服务商部分
+  const ffiRate = U.accMul(infriority, 0.08); // filfi协议部分
   const raiserRate = U.accSub(infriority, servicerRate, ffiRate); // 发起人部分
-  const spRate = U.accMul(data.raiser_coin_share, U.accDiv(data.ops_security_fund_rate, 100));
+  const spRate = U.accMul(data.raiser_coin_share, opsRatio); // 运维保证金部分
+  const investRate = U.accMul(data.raiser_coin_share, U.accSub(1, opsRatio)); // 投资人部分
   // 募集计划信息
   return {
     id: data.raising_id,
     targetAmount: data.target_amount,
-    minRaiseRate: data.min_raise_rate * 100,
+    minRaiseRate: U.accMul(data.min_raise_rate, 100),
     securityFund: data.raise_security_fund,
     raiseDays: data.raise_days,
-    filFiShare: ffiRate * 100,
-    spFundShare: spRate * 100,
-    raiserShare: raiserRate * 100,
-    servicerShare: servicerRate * 100,
-    investorShare: data.raiser_coin_share * 100,
+    filFiShare: U.accMul(ffiRate, 100),
+    spFundShare: U.accMul(spRate, 100),
+    raiserShare: U.accMul(raiserRate, 100),
+    investorShare: U.accMul(investRate, 100),
+    servicerShare: U.accMul(servicerRate, 100),
     sponsor: data.raiser,
     raiseCompany: data.sponsor_company,
   };
@@ -180,10 +182,10 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
 
     return {
       oldId: +U.parseMinerID(data.miner_id),
-      spOldShare: spPledgeRate * 100,
-      raiserOldShare: data.raise_his_initial_pledge_rate * 100,
-      spOldRewardShare: spPowerRate * 100,
-      sponsorOldRewardShare: data.raise_his_power_rate * 100,
+      spOldShare: U.accMul(spPledgeRate, 100),
+      raiserOldShare: U.accMul(data.raise_his_initial_pledge_rate, 100),
+      spOldRewardShare: U.accMul(spPowerRate, 100),
+      sponsorOldRewardShare: U.accMul(data.raise_his_power_rate, 100),
     };
   }
 

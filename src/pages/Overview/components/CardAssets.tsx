@@ -7,6 +7,7 @@ import useDepositOps from '@/hooks/useDepositOps';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
 import { formatAmount, formatNum, formatUnixDate } from '@/utils/format';
+import type { ItemProps } from './types';
 
 function formatByte(val?: number | string) {
   if (isDef(val)) {
@@ -14,7 +15,7 @@ function formatByte(val?: number | string) {
   }
 }
 
-const CardAssets: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
+const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
   const { amount } = useDepositInvest(data);
   const { amount: opsAmount } = useDepositOps(data);
   const { isRaiser, isServicer, isWorking } = useRaiseState(data);

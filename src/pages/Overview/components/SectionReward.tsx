@@ -7,6 +7,7 @@ import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
+import type { ItemProps } from './types';
 
 const config: PieConfig = {
   data: [],
@@ -30,7 +31,7 @@ const config: PieConfig = {
   },
 };
 
-const SectionReward: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionReward: React.FC<ItemProps> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
   const { target, total } = useDepositInvest(data);
   const { isSuccess, isRaiser, isServicer } = useRaiseState(data);
