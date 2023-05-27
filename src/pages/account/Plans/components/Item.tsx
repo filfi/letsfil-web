@@ -8,12 +8,13 @@ import { catchify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useAccounts from '@/hooks/useAccounts';
+import useRaiseRate from '@/hooks/useRaiseRate';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useDepositInvest from '@/hooks/useDepositInvest';
 import { NodeState, RaiseState } from '@/constants/state';
-import { accMul, accSub, isEqual, sec2day } from '@/utils/utils';
+import { accSub, isEqual, sec2day } from '@/utils/utils';
 import { formatAmount, formatByte, formatEther, formatNum, formatRate } from '@/utils/format';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
@@ -120,10 +121,10 @@ const Item: React.FC<{
   getProvider?: (id?: number | string) => API.Provider | undefined;
 }> = ({ data, invest, getProvider, onEdit, /* onHide, */ onDelete, onStart }) => {
   const { pack } = useRaiseSeals(data);
+  const { investRate } = useRaiseRate(data);
   const { amount, progress } = useDepositInvest(data);
   const { isRaiser, isOpsPaid, isRaisePaid, isSigned, isStarted, isSuccess, isSealing, isDelayed, isFinished } = useStates(data);
 
-  const rate = useMemo(() => accMul(data.raiser_coin_share, 0.95), [data.raiser_coin_share]);
   const sealDays = useMemo(() => calcSealDays(data), [data]);
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
@@ -210,11 +211,22 @@ const Item: React.FC<{
         );
       case RaiseState.Success:
         if (isFinished) {
-          const sec = Math.max(accSub(Date.now() / 1000, data.end_seal_time), 0);
+          const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time), 0);
           return (
             <>
               <span className="badge badge-primary">生产中</span>
               <span className="ms-2 fs-sm text-gray">已运行 {sec2day(sec)} 天</span>
+            </>
+          );
+        }
+
+        if (isDelayed) {
+          return (
+            <>
+              <span className="badge badge-warning">封装延期</span>
+              <span className="ms-2 fs-sm text-gray">
+                <Countdown time={data.end_seal_time} />
+              </span>
             </>
           );
         }
@@ -224,7 +236,7 @@ const Item: React.FC<{
             <>
               <span className="badge badge-warning">封装中</span>
               <span className="ms-2 fs-sm text-gray">
-                <Countdown time={isDelayed ? data.delay_seal_time : data.end_seal_time} />
+                <Countdown time={data.end_seal_time} />
               </span>
             </>
           );
@@ -315,7 +327,7 @@ const Item: React.FC<{
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">投资人分成比例</span>
-            <span className="fw-500">{rate}%</span>
+            <span className="fw-500">{investRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">{isFinished ? '实际封装时间' : '承诺封装时间'}</span>

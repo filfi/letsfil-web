@@ -10,6 +10,7 @@ import useRaiseContract from './useRaiseContract';
 export default function useDepositRaise(data?: API.Plan) {
   const { getContract } = useRaiseContract();
 
+  const [fines, setFines] = useState(0);
   const [amount, setAmount] = useState(0);
 
   const [loading, fetchData] = useLoadingify(async () => {
@@ -19,9 +20,11 @@ export default function useDepositRaise(data?: API.Plan) {
 
     if (!contract) return;
 
-    const raise = await contract.securityFundRemain(data.raising_id);
+    const fines = await contract.raiserFine(data.raising_id);
+    const amount = await contract.securityFundRemain(data.raising_id);
 
-    setAmount(toNumber(raise));
+    setFines(toNumber(fines));
+    setAmount(toNumber(amount));
   });
 
   const [processing, withdraw] = useProcessify(async () => {
@@ -41,6 +44,7 @@ export default function useDepositRaise(data?: API.Plan) {
   });
 
   return {
+    fines,
     amount,
     loading,
     processing,

@@ -84,7 +84,7 @@ const RewardChart: React.FC = () => {
         />
       </div>
 
-      <div className="w-100" style={{ height: 200 }}>
+      <div className="position-relative w-100" style={{ height: 200 }}>
         <Column {...config} loading={loading} data={items} />
       </div>
     </div>

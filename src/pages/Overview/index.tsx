@@ -7,6 +7,7 @@ import { useRequest, useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as H from '@/helpers/app';
+import { sleep } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { packInfo } from '@/apis/packs';
 import { EventType } from '@/utils/mitt';
@@ -14,6 +15,7 @@ import { del, getInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useProvider from '@/hooks/useProvider';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -41,7 +43,6 @@ import { ReactComponent as IconEdit } from '@/assets/icons/edit-05.svg';
 import { ReactComponent as IconTrash } from '@/assets/icons/trash-04.svg';
 import { ReactComponent as IconShare4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
-import useProvider from '@/hooks/useProvider';
 
 function updateScrollSpy() {
   const el = document.querySelector('[data-bs-spy="scroll"]');
@@ -86,7 +87,9 @@ export default function Overview() {
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
-  const refresh = () => {
+  const refresh = async () => {
+    await sleep(3e3);
+
     refreshData();
     refreshPack();
   };
@@ -136,6 +139,8 @@ export default function Overview() {
     if (!data) return;
 
     await contract.closeRaisePlan(data.raising_id);
+
+    await sleep(3e3);
   });
 
   const handleDelete = () => {

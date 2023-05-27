@@ -1,10 +1,9 @@
 import { Avatar } from 'antd';
 import { useMemo } from 'react';
+import { Link } from '@umijs/max';
 import { useRequest } from 'ahooks';
-import { history } from '@umijs/max';
 
 import { count } from '@/apis/raise';
-import useAccounts from '@/hooks/useAccounts';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseReward from '@/hooks/useRaiseReward';
 import { formatAmount, formatEther } from '@/utils/format';
@@ -15,18 +14,11 @@ export type WorkingCardProps = {
 };
 
 const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
-  const { withConnect } = useAccounts();
   const { reward } = useRaiseReward(data);
   const { running } = useRaiseSeals(data);
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
   const { data: counter } = useRequest(() => count(data.raising_id), { refreshDeps: [data.raising_id] });
-
-  const handleView = withConnect(async (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    e.preventDefault();
-
-    history.push(`/overview/${data.raising_id}`);
-  });
 
   return (
     <>
@@ -47,9 +39,9 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
           <p className="my-3 d-flex gap-3">
             <span className="text-gray-dark">募集计划</span>
             <span className="ms-auto">
-              <a className="text-underline" href="#" onClick={handleView}>
+              <Link className="text-underline" to={`/overview/${data.raising_id}`}>
                 {data.sponsor_company}发起的募集计划
-              </a>
+              </Link>
               <span className="mx-1">·</span>
               <span>已运行{running}天</span>
             </span>

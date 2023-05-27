@@ -13,7 +13,7 @@ import useProcessify from '@/hooks/useProcessify';
 import useDepositOps from '@/hooks/useDepositOps';
 import useDepositRaise from '@/hooks/useDepositRaise';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
+import { accAdd, accDiv, accMul, accSub, sleep } from '@/utils/utils';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
@@ -26,10 +26,8 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
   const raise = useDepositRaise(data);
 
   const actual = useMemo(() => F.toNumber(data?.actual_amount), [data?.actual_amount]);
-  const total = useMemo(() => F.toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
   const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
   const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
-  const fine = useMemo(() => Math.max(accSub(total, raise.amount, fee), 0), [total, fee, raise.amount]); // 罚金
 
   const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
   const withdrawable = useMemo(() => isRaiser && (isFailed || isFinished || isDestroyed), [isPayer, isFailed, isFinished, isDestroyed]);
@@ -40,6 +38,8 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
     await contract.depositRaiseFund(data.raising_id, {
       value: data.raise_security_fund,
     });
+
+    await sleep(3e3);
   });
 
   return (
@@ -97,7 +97,7 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>累计罚金</span>
-                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fine, 4, 2)}</span>
+                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(raise.fines, 4, 2)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
                   {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
@@ -163,6 +163,8 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
     await contract.depositOpsFund(data.raising_id, {
       value: data.ops_security_fund,
     });
+
+    await sleep(3e3);
   });
 
   return (
