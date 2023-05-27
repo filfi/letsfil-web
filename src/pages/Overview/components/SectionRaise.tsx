@@ -1,20 +1,23 @@
 import { useMemo } from 'react';
 
 import * as F from '@/utils/format';
-import { accDiv, accMul } from '@/utils/utils';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useDepositInvest from '@/hooks/useDepositInvest';
+import { accAdd, accDiv, accMul } from '@/utils/utils';
 
 const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
+  const { minRate, raiserRate } = useRaiseRate(data);
   const { isStarted, isSuccess } = useRaiseState(data);
   const { progress, target, total } = useDepositInvest(data);
-  const { minRate, opsRatio, raiserRate } = useRaiseRate(data);
 
   const minAmount = useMemo(() => accMul(target, minRate), [target, minRate]);
-  const opsAmount = useMemo(() => accMul(target, accDiv(opsRatio, 100)), [target, opsRatio]);
+  const opsAmount = useMemo(() => F.toNumber(data?.ops_security_fund), [data?.ops_security_fund]);
+  // 运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
+  const opsRatio = useMemo(() => (total > 0 ? accDiv(opsAmount, accAdd(total, opsAmount)) : 0), [opsAmount, total]);
+  const opsActual = useMemo(() => accMul(opsAmount, opsRatio), [opsAmount, opsRatio]);
 
   return (
     <>
@@ -86,7 +89,7 @@ const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">保证金配比</div>
-            <div className="col-8 table-cell">{F.formatAmount(opsAmount)} FIL</div>
+            <div className="col-8 table-cell">{F.formatAmount(opsActual)} FIL</div>
           </div>
         </div>
       </div>

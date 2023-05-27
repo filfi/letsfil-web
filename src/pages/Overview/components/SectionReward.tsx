@@ -32,10 +32,10 @@ const config: PieConfig = {
 
 const SectionReward: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
-  const { target } = useDepositInvest(data);
-  const { isRaiser, isServicer } = useRaiseState(data);
+  const { target, total } = useDepositInvest(data);
+  const { isSuccess, isRaiser, isServicer } = useRaiseState(data);
   const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
-  const reward = useMemo(() => accDiv(accMul(target, rate, period), 360), [target, rate, period]);
+  const reward = useMemo(() => accDiv(accMul(isSuccess ? total : target, rate, period), 360), [target, rate, period]);
 
   const pieData = useMemo(
     () => [

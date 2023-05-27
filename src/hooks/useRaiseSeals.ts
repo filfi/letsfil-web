@@ -20,6 +20,7 @@ export default function useRaiseSeals(data?: API.Plan) {
   const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]);
   const pledge = useMemo(() => toNumber(pack?.pack_initial_pledge), [pack?.pack_initial_pledge]);
   const percent = useMemo(() => (actual > 0 ? accDiv(pledge, actual) : 0), [actual, pledge]);
+  // 运行天数
   const running = useMemo(() => {
     let sec = 0;
     if (data?.begin_seal_time) {
@@ -28,6 +29,19 @@ export default function useRaiseSeals(data?: API.Plan) {
 
     return sec2day(Math.max(sec, 0));
   }, []);
+  // 封装天数
+  const sealdays = useMemo(() => {
+    let sec = 0;
+    if (data?.begin_seal_time) {
+      sec = accSub(Date.now() / 1000, data.begin_seal_time);
+
+      if (data.end_seal_time) {
+        sec = accSub(data.end_seal_time, data.begin_seal_time);
+      }
+    }
+    return sec2day(Math.max(sec, 0));
+  }, [data?.end_seal_time, data?.begin_seal_time]);
+  // 有效期剩余天数
   const remains = useMemo(() => {
     let sec = 0;
     if (pack?.sector_end_expira) {
@@ -47,5 +61,6 @@ export default function useRaiseSeals(data?: API.Plan) {
     percent,
     remains,
     running,
+    sealdays,
   };
 }

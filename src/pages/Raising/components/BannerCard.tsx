@@ -6,9 +6,9 @@ import { history } from '@umijs/max';
 
 import { formatRate } from '@/utils/format';
 import useAccounts from '@/hooks/useAccounts';
+import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { accDiv, accMul, accSub } from '@/utils/utils';
 
 export type BannerCardProps = {
   data: API.Plan;
@@ -20,15 +20,10 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
   const { withConnect } = useAccounts();
   const { progress } = useDepositInvest(data);
   const { rate } = useIncomeRate(data.raising_id);
+  const { investRate, opsRatio } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
-  // 优先部分
-  const priorityRate = useMemo(() => data?.raiser_coin_share ?? 70, [data?.raiser_coin_share]);
-  // 保证金占比
-  const opsRate = useMemo(() => data?.ops_security_fund_rate ?? 5, [data?.ops_security_fund_rate]);
-  // 投资人部分
-  const investRate = useMemo(() => accMul(priorityRate, accDiv(accSub(100, opsRate), 100)), [priorityRate, opsRate]);
 
   const handleJoin = withConnect(async () => {
     history.push(`/overview/${data.raising_id}`);
@@ -69,7 +64,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
                     </p>
                     <p className="mb-0 lh-sm">
                       <span className="mx-1 d-none d-md-inline">·</span>
-                      <span>保证金配比 {opsRate}%</span>
+                      <span>保证金配比 {opsRatio}%</span>
                     </p>
                   </div>
                   <p className="mb-0 lh-1">

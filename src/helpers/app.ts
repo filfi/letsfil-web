@@ -204,12 +204,12 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
  * @returns
  */
 export function calcRaiseDepost(target: number, period: number, seals: number) {
+  // 罚息倍数
+  const pim = 3;
   // 年利率 = 1%
   const yRate = 0.01;
   // 协议罚金系数 = 0.1%
   const ratio = 0.001;
-  // 罚息倍数 = FIL网络基础利率 * 3 = 年利率 * 3
-  const pim = U.accMul(yRate, 3);
   // 展期天数
   const delay = U.accDiv(seals, 2);
   // 手续费 = 募集目标 * 0.3%
@@ -222,7 +222,7 @@ export function calcRaiseDepost(target: number, period: number, seals: number) {
   // 封装期罚息 = 募集目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
   const sInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(seals, 365)), fee);
   // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
-  const dInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(U.accAdd(seals, delay), 365)), U.accMul(cost, ratio, delay), fee);
+  const dInterest = U.accAdd(U.accMul(cost, pim, yRate, U.accDiv(U.accAdd(seals, delay), 365)), U.accMul(cost, ratio, delay), fee);
 
   // 结果取最大值
   const result = Math.max(rInterest, sInterest, dInterest);

@@ -11,7 +11,7 @@ import { accAdd, accDiv, sec2day } from '@/utils/utils';
 const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { fines } = useRaiseReward(data);
   const { nodeState, isDelayed, isFinished } = useRaiseState(data);
-  const { pack, period, running, percent: rate } = useRaiseSeals(data);
+  const { pack, period, sealdays, running, percent: rate } = useRaiseSeals(data);
 
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
@@ -32,7 +32,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
               className={classNames('indicator', { warning: isDelayed, success: isFinished })}
               style={{ left: isFinished ? 'calc(100% - 23px)' : `calc((100% - 46px) * ${percent})` }}
             >
-              <span className="indicator-label">{running} 天</span>
+              <span className="indicator-label">{isFinished ? sealdays : running} 天</span>
               <span className="indicator-caret"></span>
             </div>
             <div className="progress-stacked flex-fill">
