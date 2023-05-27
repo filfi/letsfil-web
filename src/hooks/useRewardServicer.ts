@@ -22,9 +22,11 @@ export default function useRewardServicer(data?: API.Plan) {
 
     const contract = getContract(data.raise_address);
 
-    const reward = await contract?.spRewardAvailableLeft(data.raising_id);
-    const record = await contract?.gotSpReward(data.raising_id);
-    const pending = await contract?.spWillReleaseReward(data.raising_id);
+    if (!contract) return;
+
+    const reward = await contract.spRewardAvailableLeft(data.raising_id);
+    const record = await contract.gotSpReward(data.raising_id);
+    const pending = await contract.spWillReleaseReward(data.raising_id);
 
     setReward(toNumber(reward));
     setRecord(toNumber(record));

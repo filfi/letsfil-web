@@ -46,8 +46,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     isFailed,
     isSealing,
     isDelayed,
-    isFinished,
-    isDestroyed,
+    isWorking,
     isSigned,
     isOpsPaid,
     isRaisePaid,
@@ -243,11 +242,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
   };
 
   // 封装结束
-  if (!data) {
-    return null;
-  }
-
-  if (isFinished || isDestroyed) {
+  if (isWorking) {
     return (
       <>
         <div className="card section-card">
@@ -284,90 +279,94 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     );
   }
 
-  return (
-    <>
-      <div id="card-action" className="card section-card">
-        <div className="card-body d-flex flex-column gap-3">
-          <div className="d-flex align-items-center">
-            <h4 className="card-title mb-0 me-2">
-              {isFailed
-                ? '募集计划已结束'
-                : isClosed
-                ? '募集计划已关闭'
-                : isRaising
-                ? '正在募集中！距离截止时间'
-                : isSuccess && !isSealing
-                ? '募集成功，等待封装'
-                : isSealing
-                ? '封装倒计时'
-                : isDelayed
-                ? '封装延期'
-                : '募集时间'}
-            </h4>
-            <div className="ms-auto">
-              {isFailed ? <span className="badge badge-danger">募集未成功</span> : isSuccess ? <span className="badge badge-success">募集成功</span> : null}
-              {isDelayed ? (
-                <span className="badge badge-warning ms-2">封装延期</span>
-              ) : isSealing ? (
-                <span className="badge badge-primary ms-2">正在封装</span>
-              ) : null}
-            </div>
-          </div>
-
-          <div
-            className={classNames('d-flex justify-content-between text-center lh-1', {
-              'text-gray': isClosed || isFailed,
-              'text-main': !isClosed && !isFailed,
-            })}
-          >
-            <div className="">
-              <p className="h2 fw-bold mb-1">{displayTime.days}</p>
-              <p className="mb-0 text-gray">天</p>
-            </div>
-            <div className="">
-              <p className="h2 fw-bold mb-1">{displayTime.hours}</p>
-              <p className="mb-0 text-gray">小时</p>
-            </div>
-            <div className="">
-              <p className="h2 fw-bold mb-1">{displayTime.minutes}</p>
-              <p className="mb-0 text-gray">分</p>
-            </div>
-            <div className="">
-              <p className="h2 fw-bold mb-1">{displayTime.seconds}</p>
-              <p className="mb-0 text-gray">秒</p>
-            </div>
-          </div>
-
-          {renderAction()}
-        </div>
-      </div>
-
-      <Modal.Alert id="signer-confirm" footerClassName="border-0" title="移交Owner地址" confirmText="签名" confirmLoading={signing} onConfirm={handleSign}>
-        <div className="p-3">
-          <p className="mb-0 fs-16 fw-500">
-            <span>在安全环境下执行以下命令，将Owner地址修改为智能合约地址。</span>
-            {/* <a className="text-underline" href="#">
-              如何收回Owner地址？
-            </a> */}
-          </p>
-
-          <div className="p-2 border rounded-1 my-4">
-            <div className="d-flex align-items-start bg-dark rounded-1 p-2">
-              <span className="flex-shrink-0 text-white fw-600">$</span>
-              <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">
-                lotus-miner actor set-owner --really-do-it {toF4Address(data.raise_address)} &lt;ownerAddress&gt;
+  if (data) {
+    return (
+      <>
+        <div id="card-action" className="card section-card">
+          <div className="card-body d-flex flex-column gap-3">
+            <div className="d-flex align-items-center">
+              <h4 className="card-title mb-0 me-2">
+                {isFailed
+                  ? '募集计划已结束'
+                  : isClosed
+                  ? '募集计划已关闭'
+                  : isRaising
+                  ? '正在募集中！距离截止时间'
+                  : isSuccess && !isSealing
+                  ? '募集成功，等待封装'
+                  : isSealing
+                  ? '封装倒计时'
+                  : isDelayed
+                  ? '封装延期'
+                  : '募集时间'}
+              </h4>
+              <div className="ms-auto">
+                {isFailed ? <span className="badge badge-danger">募集未成功</span> : isSuccess ? <span className="badge badge-success">募集成功</span> : null}
+                {isDelayed ? (
+                  <span className="badge badge-warning ms-2">封装延期</span>
+                ) : isSealing ? (
+                  <span className="badge badge-primary ms-2">正在封装</span>
+                ) : null}
               </div>
-              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it ${toF4Address(data.raise_address)} <ownerAddress>`}>
-                <IconCopy />
-              </ShareBtn>
             </div>
-          </div>
 
-          <p className="mb-0 fs-16 fw-500">执行成功后点击“签名”按钮。</p>
+            <div
+              className={classNames('d-flex justify-content-between text-center lh-1', {
+                'text-gray': isClosed || isFailed,
+                'text-main': !isClosed && !isFailed,
+              })}
+            >
+              <div className="">
+                <p className="h2 fw-bold mb-1">{displayTime.days}</p>
+                <p className="mb-0 text-gray">天</p>
+              </div>
+              <div className="">
+                <p className="h2 fw-bold mb-1">{displayTime.hours}</p>
+                <p className="mb-0 text-gray">小时</p>
+              </div>
+              <div className="">
+                <p className="h2 fw-bold mb-1">{displayTime.minutes}</p>
+                <p className="mb-0 text-gray">分</p>
+              </div>
+              <div className="">
+                <p className="h2 fw-bold mb-1">{displayTime.seconds}</p>
+                <p className="mb-0 text-gray">秒</p>
+              </div>
+            </div>
+
+            {renderAction()}
+          </div>
         </div>
-      </Modal.Alert>
-    </>
-  );
+
+        <Modal.Alert id="signer-confirm" footerClassName="border-0" title="移交Owner地址" confirmText="签名" confirmLoading={signing} onConfirm={handleSign}>
+          <div className="p-3">
+            <p className="mb-0 fs-16 fw-500">
+              <span>在安全环境下执行以下命令，将Owner地址修改为智能合约地址。</span>
+              {/* <a className="text-underline" href="#">
+                如何收回Owner地址？
+              </a> */}
+            </p>
+
+            <div className="p-2 border rounded-1 my-4">
+              <div className="d-flex align-items-start bg-dark rounded-1 p-2">
+                <span className="flex-shrink-0 text-white fw-600">$</span>
+                <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">
+                  lotus-miner actor set-owner --really-do-it {toF4Address(data.raise_address)} &lt;ownerAddress&gt;
+                </div>
+                <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it ${toF4Address(data.raise_address)} <ownerAddress>`}>
+                  <IconCopy />
+                </ShareBtn>
+              </div>
+            </div>
+
+            <p className="mb-0 fs-16 fw-500">执行成功后点击“签名”按钮。</p>
+          </div>
+        </Modal.Alert>
+      </>
+    );
+  }
+
+  return null;
 };
 
 export default CardRaise;

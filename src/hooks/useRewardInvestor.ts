@@ -18,23 +18,17 @@ export default function useRewardInvestor(data?: API.Plan) {
   const [pending, setPending] = useState(0); // 待释放
 
   const [loading, fetchData] = useLoadingify(async () => {
-    if (!data) return;
-
-    let total = 0;
-    let reward = 0;
-    let record = 0;
-    let pending = 0;
+    if (!account || !data) return;
 
     const contract = getContract(data.raise_address);
 
-    if (account) {
-      total = await contract?.totalRewardOf(data.raising_id, account);
-      reward = await contract?.availableRewardOf(data.raising_id, account);
-      pending = await contract?.willReleaseOf(data.raising_id, account);
-      const info = await contract?.investorInfo(data.raising_id, account);
+    if (!contract) return;
 
-      record = info?.withdrawAmount;
-    }
+    const total = await contract.totalRewardOf(data.raising_id, account);
+    const reward = await contract.availableRewardOf(data.raising_id, account);
+    const pending = await contract.willReleaseOf(data.raising_id, account);
+    const info = await contract.investorInfo(data.raising_id, account);
+    const record = info?.withdrawAmount;
 
     setTotal(toNumber(total));
     setReward(toNumber(reward));

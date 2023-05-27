@@ -6,6 +6,7 @@ import { accDiv, accMul } from '@/utils/utils';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseState from '@/hooks/useRaiseState';
+import useDepositInvest from '@/hooks/useDepositInvest';
 
 const config: PieConfig = {
   data: [],
@@ -31,8 +32,9 @@ const config: PieConfig = {
 
 const SectionReward: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
+  const { target } = useDepositInvest(data);
   const { isRaiser, isServicer } = useRaiseState(data);
-  const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period, target } = useRaiseRate(data);
+  const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
   const reward = useMemo(() => accDiv(accMul(target, rate, period), 360), [target, rate, period]);
 
   const pieData = useMemo(

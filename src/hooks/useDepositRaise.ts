@@ -17,7 +17,9 @@ export default function useDepositRaise(data?: API.Plan) {
 
     const contract = getContract(data.raise_address);
 
-    const raise = await contract?.securityFundRemain(data.raising_id);
+    if (!contract) return;
+
+    const raise = await contract.securityFundRemain(data.raising_id);
 
     setAmount(toNumber(raise));
   });

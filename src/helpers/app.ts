@@ -77,16 +77,16 @@ export function genRaiseID(minerId: number | string) {
 
 export function transformParams(data: API.Base) {
   const {
-    sectorSize,
-    targetAmount,
-    minRaiseRate,
-    raiseDays,
     sealDays,
+    raiseDays,
+    sectorSize,
+    minRaiseRate,
     sectorPeriod,
-    raiseSecurityFund,
-    opsSecurityFund,
-    opsSecurityFundRate,
+    targetAmount,
     ffiProtocolFee,
+    opsSecurityFund,
+    raiseSecurityFund,
+    opsSecurityFundRate,
     ...props
   } = data;
   const _params = omit(props, ['amount', 'amountType']);

@@ -6,7 +6,7 @@ import { SCAN_URL } from '@/constants';
 import { listActivities } from '@/apis/packs';
 import useAccounts from '@/hooks/useAccounts';
 import usePagination from '@/hooks/usePagination';
-import { formatAddr, formatAmount, formatUnixDate } from '@/utils/format';
+import { formatAddr, formatEther, formatUnixDate } from '@/utils/format';
 
 const Activity: React.FC = () => {
   const param = useParams();
@@ -46,7 +46,7 @@ const Activity: React.FC = () => {
     {
       title: '数量',
       dataIndex: 'value',
-      render: (v) => formatAmount(v),
+      render: (v) => `${formatEther(v)} FIL`,
     },
     {
       title: '时间',

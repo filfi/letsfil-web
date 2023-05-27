@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
+import { isPlainObject } from 'lodash';
 
 import Empty from '../Empty';
 import Failed from '../Failed';
 import Loading from '../Loading';
-import { isDef } from '@/utils/utils';
+import { isDef, isStr } from '@/utils/utils';
 
 export type LoadingViewProps = {
   data?: any;
@@ -13,10 +14,20 @@ export type LoadingViewProps = {
   retry?: () => void;
 };
 
-const LoadingView: React.FC<LoadingViewProps> = ({ data, error, loading, children, retry }) => {
-  const isEmpty = useMemo(() => isDef(data) && data !== null, [data]);
+function isEmpty(data: unknown) {
+  if (Array.isArray(data) && data.length === 0) return true;
 
-  if (isEmpty && loading) {
+  if (isPlainObject(data) && Object.keys(data as object).length === 0) return true;
+
+  if (isStr(data) && data === '') return true;
+
+  return !isDef(data);
+}
+
+const LoadingView: React.FC<LoadingViewProps> = ({ data, error, loading, children, retry }) => {
+  const empty = useMemo(() => isEmpty(data), [data]);
+
+  if (empty && loading) {
     return (
       <div className="d-flex flex-column justify-content-center vh-75">
         <Loading />
@@ -32,10 +43,12 @@ const LoadingView: React.FC<LoadingViewProps> = ({ data, error, loading, childre
     );
   }
 
-  if (isEmpty) {
-    <div className="d-flex flex-column justify-content-center vh-75">
-      <Empty />
-    </div>;
+  if (empty) {
+    return (
+      <div className="d-flex flex-column justify-content-center vh-75">
+        <Empty />
+      </div>
+    );
   }
 
   return <>{children}</>;

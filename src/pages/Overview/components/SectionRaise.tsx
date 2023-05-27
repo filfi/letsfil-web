@@ -5,14 +5,16 @@ import { accDiv, accMul } from '@/utils/utils';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useIncomeRate from '@/hooks/useIncomeRate';
+import useDepositInvest from '@/hooks/useDepositInvest';
 
 const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
   const { isStarted, isSuccess } = useRaiseState(data);
-  const { opsRate, raiserRate, minRate, percent, actual, target } = useRaiseRate(data);
+  const { progress, target, total } = useDepositInvest(data);
+  const { minRate, opsRatio, raiserRate } = useRaiseRate(data);
 
   const minAmount = useMemo(() => accMul(target, minRate), [target, minRate]);
-  const opsAmount = useMemo(() => accMul(target, accDiv(opsRate, 100)), [opsRate, target]);
+  const opsAmount = useMemo(() => accMul(target, accDiv(opsRatio, 100)), [target, opsRatio]);
 
   return (
     <>
@@ -26,7 +28,7 @@ const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
                   <span className="fs-3 text-uppercase">{F.formatNum(target, '0.0a')}</span>
                   <span className="ms-1 text-neutral">FIL</span>
                 </span>
-                <span className="badge badge-success ms-auto">已募{F.formatRate(percent)}</span>
+                <span className="badge badge-success ms-auto">已募{F.formatRate(progress)}</span>
               </p>
             </div>
           </div>
@@ -76,8 +78,8 @@ const SectionRaise: React.FC<{ data?: API.Plan }> = ({ data }) => {
           <div className="row g-0">
             <div className="col-4 table-cell th">已募集</div>
             <div className="col-8 table-cell">
-              <span>{F.formatAmount(actual)} FIL</span>
-              {isStarted && !isSuccess && <span> · {F.formatRate(percent)}</span>}
+              <span>{F.formatAmount(total)} FIL</span>
+              {isStarted && !isSuccess && <span> · {F.formatRate(progress)}</span>}
             </div>
           </div>
         </div>

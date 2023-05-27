@@ -17,7 +17,9 @@ export default function useDepositOps(data?: API.Plan) {
 
     const contract = getContract(data.raise_address);
 
-    const ops = await contract?.opsSecurityFundRemain(data.raising_id);
+    if (!contract) return;
+
+    const ops = await contract.opsSecurityFundRemain(data.raising_id);
 
     setAmount(toNumber(ops));
   });

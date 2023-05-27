@@ -13,8 +13,8 @@ export default function useDepositInvest(data?: API.Plan) {
   const { account } = useAccounts();
   const { getContract } = useRaiseContract();
 
-  const [total, setTotal] = useState(0); // 质押总额
-  const [target, setTarget] = useState(0); // 募集目标
+  const [total, setTotal] = useState(toNumber(data?.actual_amount)); // 质押总额
+  const [target, setTarget] = useState(toNumber(data?.target_amount)); // 募集目标
   const [amount, setAmount] = useState(0); // 用户质押金额
   const [record, setRecord] = useState(0); // 用户累计质押金额
   const [interest, setInterest] = useState(0); // 用户罚息
@@ -31,9 +31,11 @@ export default function useDepositInvest(data?: API.Plan) {
 
     const contract = getContract(data.raise_address);
 
+    if (!contract) return;
+
     if (account) {
-      const info = await contract?.investorInfo(data.raising_id, account);
-      const back = await contract?.getBack(data.raising_id, account);
+      const info = await contract.investorInfo(data.raising_id, account);
+      const back = await contract.getBack(data.raising_id, account);
 
       const amount = info?.pledgeAmount;
       const record = info?.pledgeCalcAmount;
