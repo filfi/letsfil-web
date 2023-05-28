@@ -18,9 +18,9 @@ import BenefitPie from './components/BenefitPie';
 import StepsModal from './components/StepsModal';
 import AssetsModal from './components/AssetsModal';
 import useLoadingify from '@/hooks/useLoadingify';
-import { formatEther, formatNum } from '@/utils/format';
 import { createNumRangeValidator } from '@/utils/validators';
 import { accDiv, accMul, accSub, isEqual } from '@/utils/utils';
+import { formatEther, formatNum, toFixed } from '@/utils/format';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 
@@ -112,8 +112,11 @@ export default function CreateBenefit() {
   const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);
 
   useEffect(() => {
-    const amount = model?.targetAmount ?? 0;
-    form.setFieldValue('opsSecurityFund', accMul(amount, accDiv(pieVal, 100)));
+    const target = model?.targetAmount ?? 0;
+    // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
+    const amount = accDiv(accMul(target, accDiv(pieVal, 100)), accSub(1, accDiv(pieVal, 100)));
+
+    form.setFieldValue('opsSecurityFund', Number.isNaN(amount) ? 0 : toFixed(amount, 2, 2));
   }, [model?.targetAmount, pieVal]);
   useUpdateEffect(() => {
     if (provider) {

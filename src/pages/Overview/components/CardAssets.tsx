@@ -61,7 +61,7 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>已封装质押币</span>
                   <span className="ms-auto">
-                    <span className="fs-20 fw-600">{formatAmount(pledge)}</span>
+                    <span className="fs-20 fw-600">{formatAmount(pledge, 3, 2)}</span>
                     <span className="ms-1 text-neutral">FIL</span>
                   </span>
                 </p>
