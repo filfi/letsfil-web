@@ -1,11 +1,10 @@
 import { Avatar } from 'antd';
 import { useMemo } from 'react';
+import { Link } from '@umijs/max';
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
-import { history } from '@umijs/max';
 
 import { formatRate } from '@/utils/format';
-import useAccounts from '@/hooks/useAccounts';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useDepositInvest from '@/hooks/useDepositInvest';
@@ -17,17 +16,12 @@ export type BannerCardProps = {
 };
 
 const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider }) => {
-  const { withConnect } = useAccounts();
   const { progress } = useDepositInvest(data);
   const { rate } = useIncomeRate(data.raising_id);
   const { investRate, opsRatio } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
-
-  const handleJoin = withConnect(async () => {
-    history.push(`/overview/${data.raising_id}`);
-  });
 
   return (
     <>
@@ -112,9 +106,9 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
               </div>
             </div>
 
-            <button className="btn btn-lg btn-join" type="button" onClick={handleJoin}>
+            <Link className="btn btn-lg btn-join" to={`/overview/${data.raising_id}`}>
               立即参加
-            </button>
+            </Link>
           </div>
         </div>
       </div>

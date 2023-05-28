@@ -7,6 +7,7 @@ import { useRequest, useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as H from '@/helpers/app';
+import { sleep } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { packInfo } from '@/apis/packs';
 import { EventType } from '@/utils/mitt';
@@ -14,6 +15,7 @@ import { del, getInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useProvider from '@/hooks/useProvider';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -41,7 +43,6 @@ import { ReactComponent as IconEdit } from '@/assets/icons/edit-05.svg';
 import { ReactComponent as IconTrash } from '@/assets/icons/trash-04.svg';
 import { ReactComponent as IconShare4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
-import useProvider from '@/hooks/useProvider';
 
 function updateScrollSpy() {
   const el = document.querySelector('[data-bs-spy="scroll"]');
@@ -82,16 +83,18 @@ export default function Overview() {
 
   const { getProvider } = useProvider();
 
-  const { contract, isFinished, isRaiser, isRaising, isStarted, isSuccess } = useRaiseState(data);
+  const { contract, isPending, isFinished, isRaiser, isWaiting, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
-  const refresh = () => {
+  const refresh = async () => {
+    await sleep(3e3);
+
     refreshData();
     refreshPack();
   };
 
-  useUpdateEffect(updateScrollSpy, [data]);
+  useUpdateEffect(updateScrollSpy, [data, isStarted]);
 
   useEmittHandler<any>({
     [EventType.onStaking]: refresh,
@@ -136,6 +139,8 @@ export default function Overview() {
     if (!data) return;
 
     await contract.closeRaisePlan(data.raising_id);
+
+    await sleep(3e3);
   });
 
   const handleDelete = () => {
@@ -183,39 +188,33 @@ export default function Overview() {
   const renderActions = () => {
     if (!data) return null;
 
-    const isPending = data.status === 10;
-
-    if (isPending) {
-      return (
-        <>
-          <SpinBtn className="btn btn-primary" icon={<IconEdit />} onClick={handleEdit}>
-            修改募集计划
-          </SpinBtn>
-
-          <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={deleting} onClick={handleDelete}>
-            删除
-          </SpinBtn>
-
-          <ShareBtn className="btn btn-outline-light border-0" text={location.href} toast="链接已复制">
-            <IconShare6 />
-          </ShareBtn>
-        </>
-      );
-    }
-
     return (
       <>
+        {isPending && isRaiser && (
+          <>
+            <SpinBtn className="btn btn-primary" icon={<IconEdit />} onClick={handleEdit}>
+              修改募集计划
+            </SpinBtn>
+
+            <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={deleting} onClick={handleDelete}>
+              删除
+            </SpinBtn>
+          </>
+        )}
+
         <ShareBtn className="btn btn-light" text={location.href} toast="链接已复制">
           <IconShare6 />
           <span className="align-middle ms-1">分享</span>
         </ShareBtn>
 
-        <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
-          <IconShare4 />
-          <span className="align-middle ms-1">查看智能合约</span>
-        </a>
+        {!isPending && (
+          <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
+            <IconShare4 />
+            <span className="align-middle ms-1">查看智能合约</span>
+          </a>
+        )}
 
-        {isRaiser && (!isStarted || isRaising) && (
+        {isRaiser && (isWaiting || isRaising) && (
           <div className="dropdown">
             <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
               <span className="bi bi-three-dots-vertical fs-3"></span>

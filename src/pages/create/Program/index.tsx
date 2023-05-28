@@ -31,18 +31,26 @@ export default function CreateProgram() {
   // const minAmount = useMemo(() => Number.isNaN(+amount) ? 0 : accMul(amount, rate), [amount, rate]);
 
   const evalMax = useMemo(() => {
-    if (Number.isNaN(+amount) || perPledge === 0) return 0;
+    let val = 0;
 
-    // 按金额
-    if (amountType === 0) {
-      return accDiv(+amount, perPledge);
+    if (perPledge) {
+      // 按金额
+      if (amountType === 0) {
+        val = accDiv(+amount, perPledge);
+      } else {
+        // 按算力
+        val = accMul(+amount, perPledge);
+      }
     }
 
-    // 按算力
-    return accMul(+amount, perPledge);
+    return Number.isNaN(val) ? 0 : val;
   }, [amount, amountType, perPledge]);
 
-  const evalMin = useMemo(() => accMul(evalMax, rate), [evalMax, rate]);
+  const evalMin = useMemo(() => {
+    const val = accMul(evalMax, rate);
+
+    return Number.isNaN(val) ? 0 : val;
+  }, [evalMax, rate]);
 
   // TODO: deposit
   const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);

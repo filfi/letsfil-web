@@ -10,7 +10,7 @@ import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
-import { day2sec, toF4Address } from '@/utils/utils';
+import { day2sec, sleep, toF4Address } from '@/utils/utils';
 import { formatEther, formatNum } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
@@ -44,6 +44,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     isSuccess,
     isClosed,
     isFailed,
+    isWaitSeal,
     isSealing,
     isDelayed,
     isWorking,
@@ -99,18 +100,24 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     const extra = H.transformExtraInfo(data);
 
     await createRaisePlan(raise, node, extra);
+
+    await sleep(3e3);
   });
 
   const [sealing, sealAction] = useProcessify(async () => {
     if (!data) return;
 
     await contract.startSeal(data.raising_id);
+
+    await sleep(3e3);
   });
 
   const [starting, handleStart] = useProcessify(async () => {
     if (!data) return;
 
     await contract.startRaisePlan(data.raising_id);
+
+    await sleep(3e3);
   });
 
   const handleSeal = () => {
@@ -220,7 +227,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     }
 
     // 待封装
-    if (isSuccess && !isSealing && isRaiser) {
+    if (isWaitSeal && isRaiser) {
       return (
         <>
           <div>

@@ -25,7 +25,7 @@ export default function useRewardServicer(data?: API.Plan) {
 
     if (!contract) return;
 
-    const locked = await contract.spFundLock(data.raising_id);
+    const locked = await contract.spRewardLock(data.raising_id);
     const reward = await contract.spRewardAvailableLeft(data.raising_id);
     const record = await contract.gotSpReward(data.raising_id);
     const pending = await contract.spWillReleaseReward(data.raising_id);

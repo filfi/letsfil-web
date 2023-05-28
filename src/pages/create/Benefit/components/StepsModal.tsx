@@ -1,6 +1,6 @@
 import { useUpdateEffect } from 'ahooks';
 import { Form, FormInstance, Input } from 'antd';
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import Modal from '@/components/Modal';
 import { accDiv, accMul, accSub } from '@/utils/utils';
@@ -95,12 +95,17 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
   const [form] = Form.useForm();
   const servicer = Form.useWatch('opServerShare', form);
 
+  const priorityRate = useMemo(() => values?.raiserCoinShare ?? 70, [values?.raiserCoinShare]);
+  const inferRate = useMemo(() => accSub(100, priorityRate), [priorityRate]);
+  const raiserRate = useMemo(() => values?.raiserShare ?? 0, [values?.raiserShare]);
+  const filfiRate = useMemo(() => values?.filfiShare ?? 0, [values?.filfiShare]);
+  const opsMax = useMemo(() => accSub(inferRate, raiserRate, filfiRate), [inferRate, raiserRate, filfiRate]);
+
   useUpdateEffect(() => {
-    const raiser = values?.raiserCoinShare ?? 70;
     const amount = Number.isNaN(+servicer) ? 0 : +servicer;
 
-    form.setFieldsValue(getValues({ ops, raiser, servicer: amount }));
-  }, [ops, servicer, values?.raiserCoinShare]);
+    form.setFieldsValue(getValues({ ops, raiser: raiserRate, servicer: amount }));
+  }, [ops, servicer, raiserRate]);
 
   useImperativeHandle(ref, () => form, [form]);
 
@@ -125,9 +130,9 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
                 <Form.Item
                   className="mb-0"
                   name="opServerShare"
-                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, 100], '最小5%，最大100%') }]}
+                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, opsMax], '最小5%，最大100%') }]}
                 >
-                  <Input type="number" min={5} max={100} placeholder="请输入" suffix="%" />
+                  <Input type="number" min={5} max={opsMax} placeholder="请输入" suffix="%" />
                 </Form.Item>
               </div>
             </div>

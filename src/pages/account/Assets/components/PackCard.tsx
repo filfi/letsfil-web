@@ -52,7 +52,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
           {data.asset_pack_id}@{data.miner_id}
         </h4>
 
-        <ShareBtn className="btn border-0 p-0 ms-auto">
+        <ShareBtn className="btn border-0 p-0 ms-auto" text={`${location.origin}/assets/${data.raising_id}`}>
           <IconShare />
         </ShareBtn>
       </div>

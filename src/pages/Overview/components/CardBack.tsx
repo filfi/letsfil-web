@@ -7,9 +7,9 @@ import type { ItemProps } from './types';
 
 const CardBack: React.FC<ItemProps> = ({ data }) => {
   const { isFailed, isWorking } = useRaiseState(data);
-  const { amount, backAmount, backInterest, processing, unStaking } = useDepositInvest(data);
+  const { amount, backAmount, backInterest, processing, isInvestor, unStaking } = useDepositInvest(data);
 
-  if (isFailed || isWorking) {
+  if (isInvestor && (isFailed || isWorking)) {
     return (
       <>
         <div className="card section-card">

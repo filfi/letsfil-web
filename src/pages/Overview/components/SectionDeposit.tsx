@@ -13,7 +13,7 @@ import useProcessify from '@/hooks/useProcessify';
 import useDepositOps from '@/hooks/useDepositOps';
 import useDepositRaise from '@/hooks/useDepositRaise';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
+import { accAdd, accDiv, accMul, sleep } from '@/utils/utils';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
@@ -26,10 +26,8 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
   const raise = useDepositRaise(data);
 
   const actual = useMemo(() => F.toNumber(data?.actual_amount), [data?.actual_amount]);
-  const total = useMemo(() => F.toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
   const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
   const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
-  const fine = useMemo(() => Math.max(accSub(total, raise.amount, fee), 0), [total, fee, raise.amount]); // 罚金
 
   const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
   const withdrawable = useMemo(() => isRaiser && (isFailed || isFinished || isDestroyed), [isPayer, isFailed, isFinished, isDestroyed]);
@@ -40,6 +38,8 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
     await contract.depositRaiseFund(data.raising_id, {
       value: data.raise_security_fund,
     });
+
+    await sleep(3e3);
   });
 
   return (
@@ -96,8 +96,8 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
               {(isFailed || isWorking) && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
-                    <span>累计罚金</span>
-                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fine, 4, 2)}</span>
+                    <span>累计罚息</span>
+                    <span className="ms-2 fw-bold text-danger">-{F.formatAmount(raise.fines, 4, 2)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
                   {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
@@ -141,21 +141,14 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
   const { initialState } = useModel('@@initialState');
   const ops = useDepositOps(data);
   const { total } = useDepositInvest(data);
-  const { investRate, opsRatio } = useRaiseRate(data);
+  const { investRate } = useRaiseRate(data);
   const { contract, raiseState, isOpsPaid, isPayer, payer, isPending, isFailed, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
   const payable = useMemo(() => isPayer && raiseState < RaiseState.Raising, [isPayer, raiseState]);
   const withdrawable = useMemo(() => isPayer && (isFailed || isDestroyed), [isPayer, isFailed, isDestroyed]);
-  const opsTotal = useMemo(() => F.toNumber(data?.ops_security_fund), [data?.ops_security_fund]); // 总保证金
-  const opsAmount = useMemo(() => (isOpsPaid ? ops.amount : opsTotal), [ops.amount, opsTotal, isOpsPaid]); // 保证金
-  const opsRealy = useMemo(() => accDiv(accMul(total, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [total, opsRatio]); // 保证金配额
-  const opsOver = useMemo(() => Math.max(accSub(opsTotal, opsRealy), 0), [opsTotal, opsRealy]); // 超配部分
-  const opsRemain = useMemo(
-    () => Math.max(accSub(accMul(opsTotal, accDiv(ops.sealed, total)), ops.fines, opsOver), 0),
-    [opsTotal, opsOver, ops.sealed, ops.fines],
-  ); // 保证金剩余
-  const opsInterest = useMemo(() => accMul(ops.totalInterest, accDiv(opsTotal, accAdd(opsTotal, total))), [opsTotal, ops.totalInterest, total]); // 利息补偿
+  const opsAmount = useMemo(() => (isOpsPaid ? ops.amount : ops.total), [ops.amount, ops.total, isOpsPaid]); // 保证金
+  const opsInterest = useMemo(() => accMul(ops.totalInterest, accDiv(ops.total, accAdd(ops.total, total))), [ops.total, ops.totalInterest, total]); // 利息补偿
 
   const [paying, handlePay] = useProcessify(async () => {
     if (!data) return;
@@ -163,6 +156,8 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
     await contract.depositOpsFund(data.raising_id, {
       value: data.ops_security_fund,
     });
+
+    await sleep(3e3);
   });
 
   return (
@@ -216,7 +211,7 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>利息补偿</span>
-                  <span className="ms-2 fw-bold text-danger">{F.formatAmount(opsInterest)}</span>
+                  <span className="ms-2 fw-bold text-success">+{F.formatAmount(opsInterest)}</span>
                   <span className="ms-1">FIL</span>
                 </span>
                 {/* <a className="ms-auto text-underline" href="#">补偿明细</a> */}
@@ -227,7 +222,7 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>累计罚金</span>
-                  <span className="ms-2 fw-bold text-danger">{F.formatAmount(ops.fines, 4, 3)}</span>
+                  <span className="ms-2 fw-bold text-danger">-{F.formatAmount(ops.fines, 4, 3)}</span>
                   <span className="ms-1">FIL</span>
                 </span>
                 {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
@@ -238,19 +233,19 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>超配部分</span>
-                  <span className="ms-2 fw-bold">{F.formatAmount(opsOver)}</span>
+                  <span className="ms-2 fw-bold">{F.formatAmount(ops.over)}</span>
                   <span className="ms-1">FIL</span>
                 </span>
-                {opsOver > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
+                {ops.over > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
               </p>
               {isFinished && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>封装剩余部分</span>
-                    <span className="ms-2 fw-bold">{F.formatAmount(opsRemain)}</span>
+                    <span className="ms-2 fw-bold">{F.formatAmount(ops.remain)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
-                  {opsRemain > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
+                  {ops.remain > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
                 </p>
               )}
             </div>

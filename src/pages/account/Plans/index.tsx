@@ -86,6 +86,8 @@ export default function AccountPlans() {
 
     await contract?.startRaisePlan(data.raising_id);
 
+    await sleep(1e3);
+
     refresh();
   });
 

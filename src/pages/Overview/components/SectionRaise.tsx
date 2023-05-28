@@ -10,9 +10,9 @@ import { ItemProps } from './types';
 
 const SectionRaise: React.FC<ItemProps> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
-  const { minRate, opsRatio, raiserRate } = useRaiseRate(data);
   const { isStarted, isSuccess } = useRaiseState(data);
   const { progress, target, total } = useDepositInvest(data);
+  const { minRate, opsRatio, investRate } = useRaiseRate(data);
 
   const minAmount = useMemo(() => accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
@@ -41,7 +41,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
               <p className="mb-1 text-gray-dark">投资人获得收益</p>
               <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
-                  <span className="fs-3">{raiserRate}</span>
+                  <span className="fs-3">{investRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
                 <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
@@ -73,14 +73,14 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">最低目标</div>
-            <div className="col-8 table-cell">{F.formatAmount(minAmount)} FIL</div>
+            <div className="col-8 table-cell">{F.formatAmount(minAmount, 2)} FIL</div>
           </div>
         </div>
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">已募集</div>
             <div className="col-8 table-cell">
-              <span>{F.formatAmount(total)} FIL</span>
+              <span>{F.formatAmount(total, 2)} FIL</span>
               {isStarted && !isSuccess && <span> · {F.formatRate(progress)}</span>}
             </div>
           </div>
@@ -88,7 +88,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">保证金配比</div>
-            <div className="col-8 table-cell">{F.formatAmount(opsAmount, 4, 2)} FIL</div>
+            <div className="col-8 table-cell">{F.formatAmount(opsAmount, 2, 2)} FIL</div>
           </div>
         </div>
       </div>

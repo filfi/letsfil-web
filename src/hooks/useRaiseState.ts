@@ -29,6 +29,8 @@ export default function useRaiseState(data?: API.Plan) {
   const isSuccess = useMemo(() => raiseState === RaiseState.Success, [raiseState]);
   // 已失败
   const isFailed = useMemo(() => raiseState === RaiseState.Failure, [raiseState]);
+  // 等待封装
+  const isWaitSeal = useMemo(() => isSuccess && nodeState === NodeState.WaitingStart, [isSuccess, nodeState]);
   // 封装中
   const isSealing = useMemo(() => isSuccess && nodeState === NodeState.Started, [isSuccess, nodeState]);
   // 已延期
@@ -83,6 +85,7 @@ export default function useRaiseState(data?: API.Plan) {
     isProcess,
     isPending,
     isRaising,
+    isWaitSeal,
     isSealing,
     isWorking,
     isDelayed,
