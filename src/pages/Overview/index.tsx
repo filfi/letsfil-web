@@ -83,7 +83,7 @@ export default function Overview() {
 
   const { getProvider } = useProvider();
 
-  const { contract, isFinished, isRaiser, isRaising, isStarted, isSuccess } = useRaiseState(data);
+  const { contract, isPending, isFinished, isRaiser, isWaiting, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
@@ -94,7 +94,7 @@ export default function Overview() {
     refreshPack();
   };
 
-  useUpdateEffect(updateScrollSpy, [data]);
+  useUpdateEffect(updateScrollSpy, [data, isStarted]);
 
   useEmittHandler<any>({
     [EventType.onStaking]: refresh,
@@ -188,39 +188,33 @@ export default function Overview() {
   const renderActions = () => {
     if (!data) return null;
 
-    const isPending = data.status === 10;
-
-    if (isPending) {
-      return (
-        <>
-          <SpinBtn className="btn btn-primary" icon={<IconEdit />} onClick={handleEdit}>
-            修改募集计划
-          </SpinBtn>
-
-          <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={deleting} onClick={handleDelete}>
-            删除
-          </SpinBtn>
-
-          <ShareBtn className="btn btn-outline-light border-0" text={location.href} toast="链接已复制">
-            <IconShare6 />
-          </ShareBtn>
-        </>
-      );
-    }
-
     return (
       <>
+        {isPending && isRaiser && (
+          <>
+            <SpinBtn className="btn btn-primary" icon={<IconEdit />} onClick={handleEdit}>
+              修改募集计划
+            </SpinBtn>
+
+            <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={deleting} onClick={handleDelete}>
+              删除
+            </SpinBtn>
+          </>
+        )}
+
         <ShareBtn className="btn btn-light" text={location.href} toast="链接已复制">
           <IconShare6 />
           <span className="align-middle ms-1">分享</span>
         </ShareBtn>
 
-        <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
-          <IconShare4 />
-          <span className="align-middle ms-1">查看智能合约</span>
-        </a>
+        {!isPending && (
+          <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
+            <IconShare4 />
+            <span className="align-middle ms-1">查看智能合约</span>
+          </a>
+        )}
 
-        {isRaiser && (!isStarted || isRaising) && (
+        {isRaiser && (isWaiting || isRaising) && (
           <div className="dropdown">
             <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
               <span className="bi bi-three-dots-vertical fs-3"></span>

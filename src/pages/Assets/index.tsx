@@ -1,4 +1,4 @@
-import { useRequest } from 'ahooks';
+import { useRequest, useUpdateEffect } from 'ahooks';
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
 import { Link, NavLink, useParams } from '@umijs/max';
@@ -46,7 +46,8 @@ export default function Assets() {
     pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,
   );
 
-  const [role, setRole] = useState(isInvestor ? 0 : isRaiser ? 1 : isServicer ? 2 : 0);
+  const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
+  const [role, setRole] = useState(roles.findIndex(Boolean));
   const raiser = useRewardRaiser(data); // 发起人的收益
   const investor = useRewardInvestor(data); // 投资人的收益
   const servicer = useRewardServicer(data); // 服务商的收益
@@ -62,22 +63,22 @@ export default function Assets() {
   const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
 
   const options = useMemo(() => {
-    const items = [];
+    if (roles.filter(Boolean).length > 1) {
+      const items = [
+        { icon: <IconUser />, label: '我是投资人', value: 0 },
+        { icon: <IconStar />, label: '我是发起人', value: 1 },
+        { icon: <IconTool />, label: '我是技术服务商', value: 2 },
+      ];
 
-    if (isInvestor) {
-      items.push({ icon: <IconUser />, label: '我是投资人', value: 0 });
+      return items.filter((n, i) => roles[i]);
     }
 
-    if (isRaiser) {
-      items.push({ icon: <IconStar />, label: '我是发起人', value: 1 });
-    }
+    return [];
+  }, [roles]);
 
-    if (isServicer) {
-      items.push({ icon: <IconTool />, label: '我是技术服务商', value: 2 });
-    }
-
-    return items;
-  }, [isRaiser, isServicer]);
+  useUpdateEffect(() => {
+    setRole(roles.findIndex(Boolean));
+  }, [roles]);
 
   const [processing, handleWithdraw] = useLoadingify(async () => {
     if (role === 1) {
