@@ -58,7 +58,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
   const seconds = useMemo(() => {
     if (!data) return 0;
 
-    if (isClosed || isFailed) {
+    if (isClosed) {
       if (data.begin_time && data.closing_time) {
         return data.closing_time - data.begin_time;
       }
@@ -77,7 +77,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     }
 
     return day2sec(data.raise_days);
-  }, [data, isClosed, isFailed, isRaising, isDelayed, isSealing, isSuccess]);
+  }, [data, isClosed, isRaising, isDelayed, isSealing, isSuccess]);
 
   const [, formatted] = useCountDown({ targetDate });
   const raiseTime = useMemo(() => calcTime(seconds * 1000), [seconds]);

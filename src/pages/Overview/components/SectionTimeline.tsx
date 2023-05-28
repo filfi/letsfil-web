@@ -7,7 +7,7 @@ import useRaiseState from '@/hooks/useRaiseState';
 import type { ItemProps } from './types';
 
 const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
-  const { isClosed, isFailed, isFinished, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted } = useRaiseState(data);
+  const { isClosed, isFailed, isFinished, isDelayed, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted } = useRaiseState(data);
 
   const isStart = useMemo(() => !!(data?.begin_time && isStarted), [isStarted, data?.begin_time]);
 
@@ -20,20 +20,26 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
           {isStart ? F.formatUnixDate(data.begin_time) : '尚未开启'}
         </Steps.Item>
 
-        <Steps.Item title="募集计划截止" status={isSuccess ? 'finish' : isClosed || isFailed || isRaising ? 'active' : undefined}>
-          {data.closing_time ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
-        </Steps.Item>
+        {isClosed || isFailed ? (
+          <Steps.Item title={isClosed ? '募集关闭' : '募集失败'} status="finish">
+            {F.formatUnixDate(data.closing_time)}
+          </Steps.Item>
+        ) : (
+          <Steps.Item title="募集计划截止" status={isSuccess ? 'finish' : isRaising ? 'active' : undefined}>
+            {isRaising ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
+          </Steps.Item>
+        )}
 
         <Steps.Item
           title={
             <>
               <span>封装阶段截止</span>
-              {isSealing && <span className="fw-normal opacity-75">（预计 {U.diffDays(data.closing_time + U.day2sec(data.seal_days))}）</span>}
+              {isSealing && <span className="fw-normal opacity-75">（预计 {U.diffDays(data.end_seal_time)}）</span>}
             </>
           }
-          status={isFinished ? 'finish' : isSealing ? 'active' : undefined}
+          status={isFinished ? 'finish' : isSealing || isDelayed ? 'active' : undefined}
         >
-          {isFinished ? F.formatUnixDate(data.end_seal_time) : `预计 ${data.seal_days} 天`}
+          {isDelayed ? F.formatUnixDate(data.delay_seal_time) : isSealing ? F.formatUnixDate(data.end_seal_time) : `预计 ${data.seal_days} 天`}
         </Steps.Item>
 
         <Steps.Item title="节点生产阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>

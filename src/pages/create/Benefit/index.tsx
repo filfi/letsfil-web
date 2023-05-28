@@ -140,11 +140,13 @@ export default function CreateBenefit() {
     });
   };
 
-  const [loading, handleSubmit] = useLoadingify(async () => {
-    if (!model) return;
+  const [loading, handleSubmit] = useLoadingify(async (vals?: API.Base) => {
+    const data = vals ?? model;
 
-    let raiseId = model.raisingId;
-    const params = H.transformParams(model);
+    if (!data) return;
+
+    let raiseId = data.raisingId;
+    const params = H.transformParams(data);
     const body = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
@@ -159,7 +161,7 @@ export default function CreateBenefit() {
       if (raiseId) {
         await A.update(raiseId, body);
       } else {
-        raiseId = H.genRaiseID(model.minerId).toString();
+        raiseId = H.genRaiseID(data.minerId).toString();
         await A.add({ ...body, raising_id: raiseId });
       }
     })();
@@ -185,7 +187,7 @@ export default function CreateBenefit() {
       return;
     }
 
-    handleSubmit();
+    handleSubmit(data);
   };
 
   const renderTreeContent = (data: any) => {

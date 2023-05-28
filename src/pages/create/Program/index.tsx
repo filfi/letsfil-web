@@ -70,6 +70,8 @@ export default function CreateProgram() {
   const minRateValidator = async (rule: unknown, value: string) => {
     await validators.createNumRangeValidator([0, 99], '最小0%，最大99%')(rule, value);
 
+    await validators.integer(rule, value);
+
     // TODO: min validate
     // if (value) {
     //   const val = amountType === 0 ? minAmount : accMul(minAmount, perPledge);
