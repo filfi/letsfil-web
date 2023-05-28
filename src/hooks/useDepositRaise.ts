@@ -10,8 +10,8 @@ import useRaiseContract from './useRaiseContract';
 export default function useDepositRaise(data?: API.Plan) {
   const { getContract } = useRaiseContract();
 
-  const [fines, setFines] = useState(0);
-  const [amount, setAmount] = useState(0);
+  const [fines, setFines] = useState(0); // 罚息
+  const [amount, setAmount] = useState(0); // 当前保证金
 
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;
@@ -20,7 +20,7 @@ export default function useDepositRaise(data?: API.Plan) {
 
     if (!contract) return;
 
-    const fines = await contract.raiserFine(data.raising_id);
+    const fines = await contract.totalInterest(data.raising_id);
     const amount = await contract.securityFundRemain(data.raising_id);
 
     setFines(toNumber(fines));
