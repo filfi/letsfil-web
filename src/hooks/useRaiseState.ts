@@ -10,6 +10,7 @@ export default function useRaiseState(data?: API.Plan) {
   const { account } = useAccounts();
   const contract = useRaiseContract(data?.raise_address);
 
+  const [hasOwner, setHasOwner] = useState(false);
   const [raiseState, setRaiseState] = useState(data?.status ?? -1);
   const [nodeState, setNodeState] = useState(data?.sealed_status ?? -1);
 
@@ -56,9 +57,11 @@ export default function useRaiseState(data?: API.Plan) {
   const [loading, fetchContract] = useLoadingify(async () => {
     if (!data) return;
 
+    const hasOwner = await contract.getOwner();
     const nodeState = await contract.getNodeState(data.raising_id);
     const raiseState = await contract.getRaiseState(data.raising_id);
 
+    setHasOwner(hasOwner);
     setRaiseState(raiseState ?? data.status);
     setNodeState(nodeState ?? data.sealed_status);
   });
@@ -74,6 +77,7 @@ export default function useRaiseState(data?: API.Plan) {
     payer,
     raiser,
     servicer,
+    hasOwner,
     isPayer,
     isRaiser,
     isServicer,
