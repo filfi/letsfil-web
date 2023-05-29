@@ -279,8 +279,8 @@ const Item: React.FC<{
             <span className="fw-500">{investRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isFinished ? '实际封装时间' : '承诺封装时间'}</span>
-            <span className="fw-500">{state.isFinished ? sealDays.join(' / ') : sealDays.join(' · ')}</span>
+            <span className="text-gray-dark">{state.isWorking ? '实际封装时间' : '承诺封装时间'}</span>
+            <span className="fw-500">{state.isWorking ? sealDays.join(' / ') : sealDays.join(' · ')}</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">技术服务</span>

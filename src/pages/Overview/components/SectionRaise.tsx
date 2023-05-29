@@ -44,10 +44,13 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
                   <span className="fs-3">{investRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
-                <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
+                <span className="badge badge-primary ms-auto">
+                  <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
+                </span>
+                {/* <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
                   <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
-                </a>
+                </a> */}
               </p>
             </div>
           </div>

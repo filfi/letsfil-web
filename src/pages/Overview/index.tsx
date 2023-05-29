@@ -22,11 +22,11 @@ import LoadingView from '@/components/LoadingView';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import useRaiseActions from '@/hooks/useRaiseActions';
 // import CardFAQ from './components/CardFAQ';
-import CardCalc from './components/CardCalc';
+// import CardCalc from './components/CardCalc';
 import CardBack from './components/CardBack';
 import CardRaise from './components/CardRaise';
 import CardAssets from './components/CardAssets';
-import Calculator from './components/Calculator';
+// import Calculator from './components/Calculator';
 import CardStaking from './components/CardStaking';
 import SectionCoin from './components/SectionCoin';
 import SectionNode from './components/SectionNode';
@@ -232,7 +232,7 @@ export default function Overview() {
 
         <CardAssets data={data} pack={pack} />
 
-        <CardCalc data={data} />
+        {/* <CardCalc data={data} /> */}
       </>
     );
   };
@@ -249,7 +249,7 @@ export default function Overview() {
 
           <CardAssets data={data} pack={pack} />
 
-          <CardCalc data={data} />
+          {/* <CardCalc data={data} /> */}
         </>
       );
     }
@@ -424,7 +424,7 @@ export default function Overview() {
         </LoadingView>
       </div>
 
-      <Calculator data={data} pack={pack} />
+      {/* <Calculator data={data} pack={pack} /> */}
 
       <p>
         <br />

@@ -59,7 +59,7 @@ export default function useDepositInvest(data?: API.Plan) {
 
     setTotal(toNumber(pledge));
     setSealed(toNumber(sealed));
-    setTarget(toNumber(raise?.targetAmount));
+    setTarget(toNumber(raise?.targetAmount || data.target_amount));
   });
 
   const [processing, unStaking] = useProcessify(async () => {

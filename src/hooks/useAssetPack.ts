@@ -26,7 +26,7 @@ export default function useAssetPack(plan?: API.Plan, pack?: { pledge: string; p
   // 投资人持有质押币
   const investPledge = useMemo(() => (pledge < total ? accMul(pledge, ratio) : record), [pledge, ratio, record, total]);
   // 服务商持有质押币
-  const servicerPledge = useMemo(() => (isServicer ? Math.max(accSub(pledge, total), 0) : 0), [pledge, servicerRate, isServicer]);
+  const servicerPledge = useMemo(() => (isServicer ? Math.max(accSub(pledge, total), 0) : 0), [pledge, total, isServicer]);
 
   // 总持有算力
   const holdPower = useMemo(() => accAdd(investPower, raiserPower, servicerPower), [investPower, raiserPower, servicerPower]);

@@ -36,7 +36,7 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
   const { target, total } = useDepositInvest(data);
   const { isSuccess, isRaiser, isServicer } = useRaiseState(data);
   const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
-  const reward = useMemo(() => accDiv(accMul(isSuccess ? total : target, rate, period), 360), [target, rate, period]);
+  const reward = useMemo(() => accDiv(accMul(isSuccess ? total : target, rate, period), 360), [isSuccess, target, total, rate, period]);
 
   const pieData = useMemo(
     () => [
@@ -62,7 +62,7 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
                 <span className="reward-dot reward-dot-circle"></span>
                 <p className="reward-label">{period}天总奖励(估)</p>
                 <p className="reward-text">
-                  <span className="text-decimal text-uppercase">{formatNum(reward, '0a')}</span>
+                  <span className="text-decimal text-uppercase">{formatNum(reward, '0.0a')}</span>
                   <span className="ms-2 text-neutral">FIL</span>
                 </p>
               </div>

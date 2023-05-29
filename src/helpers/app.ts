@@ -209,6 +209,31 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
 }
 
 /**
+ * 计算各方权益配比
+ * @param priority 优先部分（出币方权益）
+ * @param spRate 技术运维服务费
+ * @param ratio 保证金配比
+ */
+export function calcEachEarn(priority = 70, spRate = 5, ratio = 5) {
+  const investRate = U.accMul(priority, U.accDiv(Math.max(U.accSub(100, ratio), 0), 100)); // 投资人分成
+  const opsRate = U.accMul(priority, U.accDiv(ratio, 100)); // 保证金分成
+  const inferior = U.accSub(100 - priority); // 建设方分成(劣后部分)
+  const ffiRate = U.accMul(inferior, 0.08); // FilFi协议费用（建设方 * 8%）
+  const raiserRate = Math.max(U.accSub(inferior, spRate, ffiRate), 0); // 发起人分成
+
+  return {
+    ratio,
+    priority,
+    investRate,
+    opsRate,
+    inferior,
+    spRate,
+    raiserRate,
+    ffiRate,
+  };
+}
+
+/**
  * 计算募集保证金
  * @param target 募集目标
  * @param period 募集期限
