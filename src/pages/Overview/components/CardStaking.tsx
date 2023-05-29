@@ -1,13 +1,11 @@
 import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { Form, Input } from 'antd';
-import { FormattedMessage, useModel } from '@umijs/max';
 
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
 import { accSub, sleep } from '@/utils/utils';
-import useAccounts from '@/hooks/useAccounts';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
@@ -15,8 +13,6 @@ import type { ItemProps } from './types';
 
 const CardStaking: React.FC<ItemProps> = ({ data }) => {
   const [form] = Form.useForm();
-  const { initialState } = useModel('@@initialState');
-  const { account, handleConnect } = useAccounts();
   const { amount, total, target } = useDepositInvest(data);
   const { contract, isRaising, isSealing } = useRaiseState(data);
 
@@ -92,16 +88,6 @@ const CardStaking: React.FC<ItemProps> = ({ data }) => {
             )}
           </div>
         </div>
-
-        {!account && (
-          <div className="card section-card">
-            <div className="card-body">
-              <SpinBtn className="btn btn-primary btn-lg w-100" loading={initialState?.connecting} onClick={handleConnect}>
-                <FormattedMessage id="actions.button.connect" />
-              </SpinBtn>
-            </div>
-          </div>
-        )}
       </>
     );
   }

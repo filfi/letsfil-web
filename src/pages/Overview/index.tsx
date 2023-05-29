@@ -7,22 +7,20 @@ import { useRequest, useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as H from '@/helpers/app';
+import { getInfo } from '@/apis/raise';
 import { sleep } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { packInfo } from '@/apis/packs';
 import { EventType } from '@/utils/mitt';
-import { catchify } from '@/utils/hackify';
-import { del, getInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useProvider from '@/hooks/useProvider';
 import PageHeader from '@/components/PageHeader';
-import LoadingView from '@/components/LoadingView';
-import useLoadingify from '@/hooks/useLoadingify';
-import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
+import LoadingView from '@/components/LoadingView';
 import useEmittHandler from '@/hooks/useEmitHandler';
+import useRaiseActions from '@/hooks/useRaiseActions';
 // import CardFAQ from './components/CardFAQ';
 import CardCalc from './components/CardCalc';
 import CardBack from './components/CardBack';
@@ -82,9 +80,10 @@ export default function Overview() {
     { refreshDeps: [param.id] },
   );
 
+  const actions = useRaiseActions(data);
   const { getProvider } = useProvider();
 
-  const { contract, isPending, isFinished, isRaiser, isWaiting, isRaising, isStarted, isSuccess } = useRaiseState(data);
+  const { isPending, isFinished, isRaiser, isWaiting, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
@@ -128,30 +127,6 @@ export default function Overview() {
     history.replace('/create');
   };
 
-  const [deleting, deleteAction] = useLoadingify(async () => {
-    if (!data) return;
-
-    const [e] = await catchify(del)(data.raising_id);
-
-    if (e) {
-      Dialog.alert({
-        icon: 'error',
-        title: '删除失败',
-        content: e.message,
-      });
-    }
-
-    history.replace('/');
-  });
-
-  const [, closeAction] = useProcessify(async () => {
-    if (!data) return;
-
-    await contract.closeRaisePlan(data.raising_id);
-
-    await sleep(3e3);
-  });
-
   const handleDelete = () => {
     const hide = Dialog.confirm({
       icon: 'delete',
@@ -160,7 +135,7 @@ export default function Overview() {
       onConfirm: () => {
         hide();
 
-        deleteAction();
+        actions.remove();
       },
     });
   };
@@ -186,10 +161,11 @@ export default function Overview() {
       ),
       confirmBtnVariant: 'danger',
       confirmText: '关闭并支付罚金',
-      onConfirm: () => {
+      confirmLoading: actions.closing,
+      onConfirm: async () => {
         hide();
 
-        closeAction();
+        await actions.close();
       },
     });
   };
@@ -201,11 +177,11 @@ export default function Overview() {
       <>
         {isPending && isRaiser && (
           <>
-            <SpinBtn className="btn btn-primary" icon={<IconEdit />} onClick={handleEdit}>
+            <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
               修改募集计划
             </SpinBtn>
 
-            <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={deleting} onClick={handleDelete}>
+            <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={actions.removing} onClick={handleDelete}>
               删除
             </SpinBtn>
           </>

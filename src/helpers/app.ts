@@ -2,13 +2,25 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { createRef } from 'react';
 import { ethers, BigNumber } from 'ethers';
+import MetaMaskOboarding from '@metamask/onboarding';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
+import abi from '@/abis/raise.abi.json';
 import { toFixed } from '@/utils/format';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
+
+export function createContract(address?: string) {
+  if (!address || !MetaMaskOboarding.isMetaMaskInstalled()) return;
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum!);
+
+  const _contract = new ethers.Contract(address, abi, provider.getSigner());
+  console.log('[Raise Contract]: ', _contract);
+  return _contract;
+}
 
 export async function callRPC(method: string, params: (number | string)[]) {
   const url = `${RPC_URL}/v1`;

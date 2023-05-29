@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
-import { FormattedMessage, Link, useModel } from '@umijs/max';
+import { Link } from '@umijs/max';
 
-import SpinBtn from '@/components/SpinBtn';
-import useAccounts from '@/hooks/useAccounts';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useDepositOps from '@/hooks/useDepositOps';
@@ -19,9 +17,6 @@ function formatByte(val?: number | string) {
 }
 
 const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
-  const { account, handleConnect } = useAccounts();
-  const { initialState } = useModel('@@initialState');
-
   const { amount } = useDepositOps(data);
   const { isRaiser, isServicer, isWorking } = useRaiseState(data);
   const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
@@ -165,16 +160,6 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
             </p>
           </div>
         </div>
-
-        {!account && (
-          <div className="card section-card">
-            <div className="card-body">
-              <SpinBtn className="btn btn-primary btn-lg w-100" loading={initialState?.connecting} onClick={handleConnect}>
-                <FormattedMessage id="actions.button.connect" />
-              </SpinBtn>
-            </div>
-          </div>
-        )}
       </>
     );
   }

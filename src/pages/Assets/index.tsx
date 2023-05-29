@@ -1,6 +1,6 @@
-import { useRequest, useUpdateEffect } from 'ahooks';
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
+import { useRequest, useUpdateEffect } from 'ahooks';
 import { Link, NavLink, useParams } from '@umijs/max';
 
 import styles from './styles.less';
@@ -55,7 +55,7 @@ export default function Assets() {
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
-  const locked = useMemo(() => (isServicer ? servicer.locked : 0), [servicer.locked, isServicer]);
+  const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
   const pledge = useMemo(() => [investPledge, 0, servicerPledge][role] ?? 0, [role, investPledge, servicerPledge]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
   const total = useMemo(() => [investor.total, raiser.total, servicer.total][role] ?? 0, [role, investor.total, raiser.total, servicer.total]);

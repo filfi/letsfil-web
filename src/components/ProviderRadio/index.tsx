@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import { Skeleton } from 'antd';
-import { useRequest } from 'ahooks';
 
 import FormRadio from '../FormRadio';
 import { isEqual } from '@/utils/utils';
-import { providers } from '@/apis/raise';
+import useProvider from '@/hooks/useProvider';
 
 export type ProviderRadioProps = {
   value?: number | string;
@@ -13,9 +12,9 @@ export type ProviderRadioProps = {
 };
 
 const ProviderSelect: React.FC<ProviderRadioProps> = ({ value, onChange, onSelect }) => {
-  const { data, loading } = useRequest(providers);
+  const { list, loading } = useProvider();
 
-  const items = useMemo(() => data?.list?.map((item) => item), [data]);
+  const items = useMemo(() => list?.map((item) => item), [list]);
 
   const handleChange = (item: API.Provider) => {
     onChange?.(item.id);

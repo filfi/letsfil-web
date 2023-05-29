@@ -13,11 +13,10 @@ import Result from '@/components/Result';
 import { catchify } from '@/utils/hackify';
 import useAccounts from '@/hooks/useAccounts';
 import useProvider from '@/hooks/useProvider';
-import { transformModel } from '@/helpers/app';
 import { isEqual, sleep } from '@/utils/utils';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
-import useRaiseContract from '@/hooks/useRaiseContract';
+import { createContract, transformModel } from '@/helpers/app';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 
 const isArrs = function <V>(v: V | undefined): v is V {
@@ -28,7 +27,6 @@ export default function AccountPlans() {
   const { user } = useUser();
   const { getProvider } = useProvider();
   const [, setModel] = useModel('stepform');
-  const { getContract } = useRaiseContract();
   const { account, withAccount } = useAccounts();
 
   const service = withAccount(async (address) => {
@@ -40,7 +38,7 @@ export default function AccountPlans() {
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
   const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data?.total, loading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
-  const investIds = useMemo(() => data?.list?.invest_list, [data?.list.invest_list]);
+  const investIds = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
   const raises = useMemo(() => filter(lists, { raiser: account }), [lists, account]);
   const services = useMemo(() => filter(lists, { service_provider_address: account }), [lists, account]);
   const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
@@ -82,7 +80,7 @@ export default function AccountPlans() {
   };
 
   const [, handleStart] = useProcessify(async (data: API.Plan) => {
-    const contract = getContract(data.raise_address);
+    const contract = createContract(data.raise_address);
 
     await contract?.startRaisePlan(data.raising_id);
 

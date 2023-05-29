@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 import { useModel } from '@umijs/max';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
@@ -10,9 +10,9 @@ import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
-import { day2sec, sleep, toF4Address } from '@/utils/utils';
 import { formatEther, formatNum } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
+import { day2sec, sleep, toF4Address } from '@/utils/utils';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
 const calcTime = (mill: number) => {
@@ -92,33 +92,35 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     setTargetDate(0);
   }, [seconds, isRaising, isDelayed, isSealing]);
 
-  const [creating, handleCreate] = useProcessify(async () => {
-    if (!data) return;
+  const [creating, handleCreate] = useProcessify(
+    useCallback(async () => {
+      if (!data) return;
 
-    const raise = H.transformRaiseInfo(data);
-    const node = H.transformNodeInfo(data);
-    const extra = H.transformExtraInfo(data);
+      const raise = H.transformRaiseInfo(data);
+      const node = H.transformNodeInfo(data);
+      const extra = H.transformExtraInfo(data);
 
-    await createRaisePlan(raise, node, extra);
+      await createRaisePlan(raise, node, extra);
+    }, [data]),
+  );
 
-    await sleep(3e3);
-  });
+  const [sealing, sealAction] = useProcessify(
+    useCallback(async () => {
+      if (!data) return;
 
-  const [sealing, sealAction] = useProcessify(async () => {
-    if (!data) return;
+      await contract.startSeal(data.raising_id);
+    }, [data]),
+  );
 
-    await contract.startSeal(data.raising_id);
+  const [starting, handleStart] = useProcessify(
+    useCallback(async () => {
+      if (!data) return;
 
-    await sleep(3e3);
-  });
+      await contract.startRaisePlan(data.raising_id);
 
-  const [starting, handleStart] = useProcessify(async () => {
-    if (!data) return;
-
-    await contract.startRaisePlan(data.raising_id);
-
-    await sleep(3e3);
-  });
+      await sleep(3e3);
+    }, [data]),
+  );
 
   const handleSeal = () => {
     const hide = Dialog.confirm({
@@ -143,11 +145,13 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     });
   };
 
-  const [signing, handleSign] = useProcessify(async () => {
-    if (!data) return;
+  const [signing, handleSign] = useProcessify(
+    useCallback(async () => {
+      if (!data) return;
 
-    await contract.servicerSign();
-  });
+      await contract.servicerSign();
+    }, [data]),
+  );
 
   const renderAction = () => {
     // 准备中

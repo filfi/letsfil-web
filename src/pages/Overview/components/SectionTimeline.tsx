@@ -7,7 +7,7 @@ import useRaiseState from '@/hooks/useRaiseState';
 import type { ItemProps } from './types';
 
 const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
-  const { isClosed, isFailed, isFinished, isDelayed, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted } = useRaiseState(data);
+  const { isClosed, isFailed, isFinished, isDelayed, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted, isWorking } = useRaiseState(data);
 
   const isStart = useMemo(() => !!(data?.begin_time && isStarted), [isStarted, data?.begin_time]);
 
@@ -26,7 +26,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
           </Steps.Item>
         ) : (
           <Steps.Item title="募集计划截止" status={isSuccess ? 'finish' : isRaising ? 'active' : undefined}>
-            {isRaising ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
+            {data.closing_time ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
           </Steps.Item>
         )}
 
@@ -39,11 +39,15 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
           }
           status={isFinished ? 'finish' : isSealing || isDelayed ? 'active' : undefined}
         >
-          {isDelayed ? F.formatUnixDate(data.delay_seal_time) : isSealing ? F.formatUnixDate(data.end_seal_time) : `预计 ${data.seal_days} 天`}
+          {data.delay_seal_time
+            ? F.formatUnixDate(data.delay_seal_time)
+            : data.end_seal_time
+            ? F.formatUnixDate(data.end_seal_time)
+            : `预计 ${data.seal_days} 天`}
         </Steps.Item>
 
         <Steps.Item title="节点生产阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
-          {isFinished ? '产出和分配收益' : `+${data.sector_period}天`}
+          {isWorking ? '产出和分配收益' : `+${data.sector_period}天`}
         </Steps.Item>
 
         <Steps.Item
@@ -54,7 +58,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
             </>
           }
         >
-          {isFinished ? (
+          {isWorking ? (
             <>
               <p className="mb-0">最早 {F.formatRemain(data.end_seal_time, U.day2sec(data.sector_period))}</p>
               <p className="mb-0">最晚 {F.formatRemain(data.end_seal_time, U.day2sec(data.sector_period))}</p>

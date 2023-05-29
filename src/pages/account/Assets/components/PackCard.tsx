@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import { useRequest } from 'ahooks';
 
-import { accAdd, isDef } from '@/utils/utils';
 import { getInfo } from '@/apis/raise';
+import { accAdd, isDef } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -27,7 +27,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const investor = useRewardInvestor(info);
   const servicer = useRewardServicer(info);
   const { isRaiser, isServicer } = useRaiseState(info);
-  const { holdPower, investPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
+  const { holdPower, holdPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
 
   const rewward = useMemo(() => {
     let sum = investor.reward;
@@ -67,7 +67,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">持有质押币</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatAmount(investPledge)}</span>
+            <span className="fs-16 fw-600">{formatAmount(holdPledge)}</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>

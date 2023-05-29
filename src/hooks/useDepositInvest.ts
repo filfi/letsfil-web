@@ -11,7 +11,7 @@ import { accDiv, accMul, accSub } from '@/utils/utils';
 
 export default function useDepositInvest(data?: API.Plan) {
   const { account } = useAccounts();
-  const { getContract } = useRaiseContract();
+  const contract = useRaiseContract(data?.raise_address);
 
   const [sealed, setSealed] = useState(0); // 已封装金额
   const [total, setTotal] = useState(toNumber(data?.actual_amount)); // 质押总额
@@ -24,22 +24,18 @@ export default function useDepositInvest(data?: API.Plan) {
   // const [backInterest, setBackInterest] = useState(0); // 退回利息
 
   const isInvestor = useMemo(() => record > 0, [record]);
-  const ratio = useMemo(() => (total > 0 ? accDiv(amount, total) : 0), [amount, total]); // 投资占比
-  const progress = useMemo(() => (target > 0 ? accDiv(total, target) : 0), [target, total]); // 募集进度
   const sealDays = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]); // 封装期限（天）
+  const ratio = useMemo(() => (total > 0 ? accDiv(record, total) : 0), [record, total]); // 投资占比
+  const progress = useMemo(() => (target > 0 ? accDiv(total, target) : 0), [target, total]); // 募集进度
   const remainAmount = useMemo(() => Math.max(accSub(total, sealed), 0), [total, sealed]); // 剩余未封装的金额
   const backInterest = useMemo(() => accMul(remainAmount, sealDays, 0.03), [sealDays, remainAmount]); // 利息补偿
 
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-
-    if (!contract) return;
-
     if (account) {
-      const info = await contract.investorInfo(data.raising_id, account);
-      const back = await contract.getBack(data.raising_id, account);
+      const info = await contract.getInvestorInfo(data.raising_id, account);
+      const back = await contract.getBackAssets(data.raising_id, account);
 
       const amount = info?.pledgeAmount;
       const record = info?.pledgeCalcAmount;
@@ -56,10 +52,10 @@ export default function useDepositInvest(data?: API.Plan) {
       // setBackInterest(toNumber(backInterest));
     }
 
-    const raise = await contract.raiseInfo(data.raising_id);
-    const sealed = await contract.sealedAmount(data.raising_id);
+    const raise = await contract.getRaiseInfo(data.raising_id);
+    const sealed = await contract.getSealedAmount(data.raising_id);
     // const pledge = await contract.pledgeTotalAmount(data.raising_id);
-    const pledge = await contract.pledgeTotalCalcAmount(data.raising_id);
+    const pledge = await contract.getTotalPledgeAmount(data.raising_id);
 
     setTotal(toNumber(pledge));
     setSealed(toNumber(sealed));
@@ -69,8 +65,7 @@ export default function useDepositInvest(data?: API.Plan) {
   const [processing, unStaking] = useProcessify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-    await contract?.unStaking(data.raising_id);
+    await contract.unStaking(data.raising_id);
   });
 
   useEffect(() => {

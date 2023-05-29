@@ -1,5 +1,6 @@
 import mitt from 'mitt';
 import { ethers } from 'ethers';
+import { debounce } from 'lodash';
 
 export enum EventType {
   onStaking = 'onStaking', // 质押
@@ -52,7 +53,7 @@ export type Events<D extends Data = Data> = {
 const emitter = mitt<Events>();
 
 export function createDispatcher<D extends Data = Data>(event: keyof Events<D>, keys?: string[]) {
-  return (...args: any[]) => {
+  return debounce((...args: any[]) => {
     const data = keys?.reduce((d, key, i) => {
       return {
         ...d,
@@ -61,7 +62,7 @@ export function createDispatcher<D extends Data = Data>(event: keyof Events<D>, 
     }, {});
 
     emitter.emit(event, data ?? ({} as any));
-  };
+  }, 200);
 }
 
 export default emitter;

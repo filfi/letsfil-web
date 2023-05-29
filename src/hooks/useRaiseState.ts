@@ -61,6 +61,11 @@ export default function useRaiseState(data?: API.Plan) {
     const nodeState = await contract.getNodeState(data.raising_id);
     const raiseState = await contract.getRaiseState(data.raising_id);
 
+    console.log('[raise id]', data.raising_id);
+    console.log('[address]: api -> %s, contract -> %s', data.raise_address, contract);
+    console.log('[raise state] api -> %o, contract -> %o', data.status, raiseState);
+    console.log('[node state]: api -> %o, contract -> %o', data.sealed_status, nodeState);
+
     setHasOwner(hasOwner);
     setRaiseState(raiseState ?? data.status);
     setNodeState(nodeState ?? data.sealed_status);

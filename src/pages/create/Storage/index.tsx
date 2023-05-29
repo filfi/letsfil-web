@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
-import { useUpdateEffect } from 'ahooks';
 import { history, useModel } from '@umijs/max';
-import type { InputProps } from 'antd';
+import { useDebounceFn, useUpdateEffect } from 'ahooks';
 
 import useUser from '@/hooks/useUser';
 import { minerInfo } from '@/apis/raise';
@@ -20,21 +19,11 @@ import useLoadingify from '@/hooks/useLoadingify';
 import AvatarInput from '@/components/AvatarInput';
 import ProviderSelect from '@/components/ProviderRadio';
 
-const MinerInput: React.FC<InputProps & { onMinerChange?: (minerId: string) => void }> = ({ onChange, onMinerChange, ...props }) => {
-  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    onChange?.(e);
-
-    onMinerChange?.(e.target.value);
-  };
-
-  return <Input {...props} onChange={handleChange} />;
-};
-
 export default function CreateStorage() {
   const [form] = Form.useForm();
   const { account } = useAccounts();
   const [model, setModel] = useModel('stepform');
-  const minerId = Form.useWatch('minerId', form);
+  // const minerId = Form.useWatch('minerId', form);
   const defaultAvatar = useRef(randomAvatar()).current;
   const { user, loading: fetching, createOrUpdate } = useUser();
 
@@ -56,41 +45,10 @@ export default function CreateStorage() {
     }
   }, [fetching, user]);
 
-  const onMinerChange = () => {
-    form.setFieldsValue({
-      minerType: 1,
-      hisBlance: '0',
-      hisPower: '0',
-      hisInitialPledge: '0',
-      hisSectorCount: 0,
-      raiseHisPowerRate: 0,
-      raiseHisInitialPledgeRate: 0,
-    });
-  };
-
-  const onServiceSelect = (_: unknown, item: API.Provider) => {
-    form.setFieldValue('serviceProviderAddress', item.wallet_address);
-  };
-
-  const [mining, handleMiner] = useLoadingify(async (ev: React.KeyboardEvent | React.MouseEvent) => {
-    ev.preventDefault();
-
-    const [invalid] = await catchify(form.validateFields)(['minerId']);
-
-    if (invalid) return;
-
-    const [e, res] = await catchify(minerInfo)(minerId);
-
-    if (e) {
-      Dialog.alert({
-        icon: 'error',
-        title: '无效的节点',
-        content: e.message,
-      });
-      return;
-    }
-
-    const isOld = res.sector_count > 0;
+  const [mining, getMiner] = useLoadingify(async (id: string) => {
+    const r = await catchify(minerInfo)(id);
+    const [, res] = r;
+    const isOld = res && res?.sector_count > 0;
 
     form.setFieldsValue({
       minerType: isOld ? 2 : 1,
@@ -101,7 +59,31 @@ export default function CreateStorage() {
       raiseHisPowerRate: isOld ? 90 : 0,
       raiseHisInitialPledgeRate: isOld ? 100 : 0,
     });
+
+    return r;
   });
+
+  const { run: validateMiner } = useDebounceFn(getMiner, { wait: 500 });
+
+  const minerValidator = async (rule: unknown, value: string) => {
+    await validators.minerID(rule, value);
+
+    const res = await validateMiner(value);
+
+    if (res?.[0]) {
+      return Promise.reject('无效节点，请重新输入');
+    }
+  };
+
+  const onServiceSelect = (_: unknown, item: API.Provider) => {
+    form.setFieldValue('serviceProviderAddress', item.wallet_address);
+  };
+
+  const handleMiner = async (ev: React.KeyboardEvent | React.MouseEvent) => {
+    ev.preventDefault();
+
+    await form.validateFields(['minerId']);
+  };
 
   const [loading, handleSubmit] = useLoadingify(async (vals: API.Base) => {
     const { sponsorCompany, sponsorLogo } = vals;
@@ -219,8 +201,8 @@ export default function CreateStorage() {
 
             <div className="d-flex gap-2">
               <div className="flex-fill">
-                <Form.Item name="minerId" rules={[{ required: true, message: '请输入节点号' }, { validator: validators.minerID }]}>
-                  <MinerInput placeholder="输入存储节点号，如f023456" onPressEnter={handleMiner} onMinerChange={onMinerChange} />
+                <Form.Item name="minerId" rules={[{ required: true, message: '请输入节点号' }, { validator: minerValidator }]}>
+                  <Input placeholder="输入存储节点号，如f023456" onPressEnter={handleMiner} />
                 </Form.Item>
               </div>
               <div>
