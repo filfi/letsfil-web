@@ -12,8 +12,8 @@ export default function useRaiseReward(data?: API.Plan) {
   const fetchData = async () => {
     if (!data) return;
 
-    const fines = await contract.getTotalFines(data.raising_id);
     const total = await contract.getTotalReward(data.raising_id);
+    const fines = await contract.getServicerFines(data.raising_id);
 
     setFines(toNumber(fines));
     setReward(toNumber(total));

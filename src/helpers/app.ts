@@ -17,9 +17,7 @@ export function createContract(address?: string) {
 
   const provider = new ethers.providers.Web3Provider(window.ethereum!);
 
-  const _contract = new ethers.Contract(address, abi, provider.getSigner());
-  console.log('[Raise Contract]: ', _contract);
-  return _contract;
+  return new ethers.Contract(address, abi, provider.getSigner());
 }
 
 export async function callRPC(method: string, params: (number | string)[]) {

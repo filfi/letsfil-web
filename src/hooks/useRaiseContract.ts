@@ -415,6 +415,13 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
+   * 获取实际配比运维保证金
+   */
+  const getOpsCalcFund = withContract(async (contract, id: BigNumberish) => {
+    return await contract?.opsCalcFund(id);
+  });
+
+  /**
    * 获取投资人可提取收益
    */
   const getInvestorAvailableReward = withContract(async (contract, id: BigNumberish, address: string) => {
@@ -550,6 +557,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     getOwner,
     getContract,
     getOpsFund,
+    getOpsCalcFund,
     getRaiseFund,
     getNodeInfo,
     getRaiseInfo,
