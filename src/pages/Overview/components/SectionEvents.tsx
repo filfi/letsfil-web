@@ -1,4 +1,5 @@
 import { Table } from 'antd';
+import { useMemo } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 
 import { isDef } from '@/utils/utils';
@@ -7,7 +8,6 @@ import { getEvents } from '@/apis/raise';
 import usePagination from '@/hooks/usePagination';
 import { formatAddr, formatUnixNow } from '@/utils/format';
 import type { ItemProps } from './types';
-import { useMemo } from 'react';
 
 function withEmpty<D = any>(render: (value: any, row: D, index: number) => React.ReactNode) {
   return (value: any, row: D, index: number) => {
@@ -20,34 +20,38 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 }
 
 const EVENTS_MAP: Record<string, string> = {
-  SpSignWithMiner: '服务商签名',
-  EPushPledgeReleased: '质押币释放',
-  ERaiseSecurityFund: '缴纳募集保证金',
-  EDepositOPSSecurityFund: '缴纳运维保证金',
-  EWithdrawRaiseSecurityFund: '退回募集保证金',
-  EWithdrawOPSSecurityFund: '退回运维保证金',
-  StartRaisePlan: '开始募集',
-  CloseRaisePlan: '关闭募集',
+  ESealEnd: '封装结束',
+  EStartSeal: '开始封装',
+  ESPWithdraw: '服务商提取收益',
+  ENodeDestroy: '扇区到期',
   ERaiseFailed: '募集失败',
   ERaiseSuccess: '募集成功',
+  ESealProgress: '正在封装',
+  ERaiseWithdraw: '发起人提取收益',
+  CloseRaisePlan: '关闭募集',
+  StartRaisePlan: '开始募集',
+  SpSignWithMiner: '服务商签名',
+  ECreateAssetPack: '发起人签名',
+  ESpecifyOpsPayer: '指定运维付款人',
+  ERaiseSecurityFund: '存入发起人保证金',
   EStackFromInvestor: '投资者质押',
   EUnstackFromInverstor: '投资者赎回',
+  EDepositOPSSecurityFund: '存入技术运维保证金',
   EInverstorWithdrawProfit: '投资者提取收益',
-  ESPWithdraw: '服务商提取收益',
-  ERaiseWithdraw: '募集发起人提取收益',
-  EPushBlockReward: '推送区块奖励',
-  EPushHistoryAssetPack: '推送历史资产包',
-  ESealProgress: '封装进度',
-  EStartSeal: '开始封装',
-  ESealEnd: '封装结束',
-  EPushSpFine: '推送服务商罚金',
-  ENodeDestroy: '节点销毁',
-  ESpecifyOpsPayer: '指定运维付款人',
-  ECreateAssetPack: '创建资产包/募集计划',
+  EWithdrawOPSSecurityFund: '提取运维保证金',
+  EWithdrawRaiseSecurityFund: '提取发起人保证金',
 };
 
 function renderName(event: string) {
   return EVENTS_MAP[event];
+}
+
+function sortEvents(a: API.Event, b: API.Event) {
+  if (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') {
+    return -1;
+  }
+
+  return 0;
 }
 
 const SectionEvents: React.FC<ItemProps> = ({ data }) => {
@@ -60,7 +64,7 @@ const SectionEvents: React.FC<ItemProps> = ({ data }) => {
   };
 
   const { data: list, loading } = usePagination(service, { pageSize: 100, refreshDeps: [data?.raising_id] });
-  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')), [list]);
+  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')).sort(sortEvents), [list]);
 
   const columns: ColumnsType<API.Base> = [
     {

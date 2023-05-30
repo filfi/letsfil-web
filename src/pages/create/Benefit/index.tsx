@@ -244,13 +244,13 @@ export default function CreateBenefit() {
                 <div className="mb-1 fw-500">劣后质押币(技术运维保证金)</div>
                 <Form.Item
                   name="opsSecurityFundRate"
-                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 94.56], '最小0%， 最大94.56%') }]}
+                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, 100], '最小5%， 最大100%') }]}
                 >
                   <Input
                     className="text-end"
                     type="number"
-                    min={0}
-                    max={94.56}
+                    min={5}
+                    max={100}
                     prefix={
                       <div className="d-flex">
                         <Avatar size={24} src={provider?.logo_url} />

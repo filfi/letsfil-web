@@ -47,7 +47,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
           <Form.Item
             className="mb-0"
             name="priority"
-            rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 94.6], '最小0%，最大94.6%') }]}
+            rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 94.56], '最小0%，最大94.6%') }]}
           >
             <Input type="number" min={0} max={94.6} placeholder="请输入" suffix="%" />
           </Form.Item>

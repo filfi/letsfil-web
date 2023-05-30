@@ -214,20 +214,24 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
  * @param spRate 技术运维服务费
  * @param ratio 保证金配比
  */
-export function calcEachEarn(priority = 70, spRate = 5, ratio = 5) {
-  const investRate = +toFixed(U.accMul(priority, U.accDiv(Math.max(U.accSub(100, ratio), 0), 100)), 2); // 投资人分成
-  const opsRate = +toFixed(U.accMul(priority, U.accDiv(ratio, 100)), 2); // 保证金分成
-  const inferior = U.accSub(100, priority); // 建设方分成(劣后部分)
+export function calcEachEarn(priority: number | string = 70, spRate: number | string = 5, ratio: number | string = 5) {
+  const _priority = Number.isNaN(+priority) ? 0 : +priority;
+  const _spRate = Number.isNaN(+spRate) ? 0 : +spRate;
+  const _ratio = Number.isNaN(+ratio) ? 0 : +ratio;
+
+  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), 2); // 投资人分成
+  const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), 2); // 保证金分成
+  const inferior = U.accSub(100, _priority); // 建设方分成(劣后部分)
   const ffiRate = +toFixed(U.accMul(inferior, 0.08), 2, 2); // FilFi协议费用（建设方 * 8%）
-  const raiserRate = Math.max(U.accSub(inferior, spRate, ffiRate), 0); // 发起人分成
+  const raiserRate = Math.max(U.accSub(inferior, _spRate, ffiRate), 0); // 发起人分成
 
   return {
     ratio,
-    priority,
+    priority: _priority,
     investRate,
     opsRate,
     inferior,
-    spRate,
+    spRate: _spRate,
     raiserRate,
     ffiRate,
   };
