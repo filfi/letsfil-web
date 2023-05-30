@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { useMemo } from 'react';
 
 import * as F from '@/utils/format';
@@ -6,10 +7,18 @@ import Steps from '@/components/Steps';
 import useRaiseState from '@/hooks/useRaiseState';
 import type { ItemProps } from './types';
 
+function isExpire(sec?: number) {
+  if (sec) {
+    return dayjs(sec * 1000).isBefore(Date.now());
+  }
+  return false;
+}
+
 const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
   const { isClosed, isFailed, isFinished, isDelayed, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted, isWorking } = useRaiseState(data);
 
   const isStart = useMemo(() => !!(data?.begin_time && isStarted), [isStarted, data?.begin_time]);
+  const endSec = useMemo(() => (data ? data.end_seal_time + U.day2sec(data.sector_period) : 0), [data]);
 
   if (!data) return null;
 
@@ -37,7 +46,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
               {isSealing && <span className="fw-normal opacity-75">（预计 {U.diffDays(data.end_seal_time)}）</span>}
             </>
           }
-          status={isFinished ? 'finish' : isSealing || isDelayed ? 'active' : undefined}
+          status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}
         >
           {data.delay_seal_time
             ? F.formatUnixDate(data.delay_seal_time)
@@ -57,6 +66,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
               {isFinished && <span className="fw-normal opacity-75">（{data.sector_period}天）</span>}
             </>
           }
+          status={isExpire(endSec) ? 'finish' : isDestroyed ? 'active' : undefined}
         >
           {isWorking ? (
             <>

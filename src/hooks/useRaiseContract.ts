@@ -304,7 +304,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.WithdrawSecurityFund(id, {
+          return await contract?.withdrawSecurityFund(id, {
             ...opts,
           });
         }),
@@ -319,7 +319,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.WithdrawOpsSecurityFund(id, {
+          return await contract?.withdrawOpsSecurityFund(id, {
             ...opts,
           });
         }),

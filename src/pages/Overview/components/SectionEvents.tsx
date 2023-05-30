@@ -7,6 +7,7 @@ import { getEvents } from '@/apis/raise';
 import usePagination from '@/hooks/usePagination';
 import { formatAddr, formatUnixNow } from '@/utils/format';
 import type { ItemProps } from './types';
+import { useMemo } from 'react';
 
 function withEmpty<D = any>(render: (value: any, row: D, index: number) => React.ReactNode) {
   return (value: any, row: D, index: number) => {
@@ -20,6 +21,7 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 
 const EVENTS_MAP: Record<string, string> = {
   SpSignWithMiner: '服务商签名',
+  EPushPledgeReleased: '质押币释放',
   ERaiseSecurityFund: '缴纳募集保证金',
   EDepositOPSSecurityFund: '缴纳运维保证金',
   EWithdrawRaiseSecurityFund: '退回募集保证金',
@@ -58,6 +60,7 @@ const SectionEvents: React.FC<ItemProps> = ({ data }) => {
   };
 
   const { data: list, loading } = usePagination(service, { pageSize: 100, refreshDeps: [data?.raising_id] });
+  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')), [list]);
 
   const columns: ColumnsType<API.Base> = [
     {
@@ -90,7 +93,7 @@ const SectionEvents: React.FC<ItemProps> = ({ data }) => {
 
   return (
     <>
-      <Table rowKey="ID" size="middle" className="table mb-0" loading={loading} columns={columns} dataSource={list} pagination={false} />
+      <Table rowKey="ID" size="middle" className="table mb-0" loading={loading} columns={columns} dataSource={dataSource} pagination={false} />
     </>
   );
 };

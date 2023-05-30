@@ -83,7 +83,7 @@ export default function Overview() {
   const actions = useRaiseActions(data);
   const { getProvider } = useProvider();
 
-  const { isPending, isFinished, isRaiser, isWaiting, isRaising, isStarted, isSuccess } = useRaiseState(data);
+  const { isPending, isRaiser, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
@@ -262,14 +262,14 @@ export default function Overview() {
       <div className="container">
         <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
           <PageHeader
-            className={classNames({ 'border-bottom': !isFinished, 'mb-3 pb-0': isFinished })}
+            className={classNames({ 'border-bottom': !isWorking, 'mb-3 pb-0': isWorking })}
             title={title}
-            desc={isFinished ? `算力包：${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储'}
+            desc={isWorking ? `算力包：${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储'}
           >
             <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div>
           </PageHeader>
 
-          {isFinished && (
+          {isWorking && (
             <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
               <li className="nav-item">
                 <NavLink className="nav-link" to={`/assets/${param.id}`}>

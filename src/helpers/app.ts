@@ -217,7 +217,7 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
 export function calcEachEarn(priority = 70, spRate = 5, ratio = 5) {
   const investRate = +toFixed(U.accMul(priority, U.accDiv(Math.max(U.accSub(100, ratio), 0), 100)), 2); // 投资人分成
   const opsRate = +toFixed(U.accMul(priority, U.accDiv(ratio, 100)), 2); // 保证金分成
-  const inferior = U.accSub(100 - priority); // 建设方分成(劣后部分)
+  const inferior = U.accSub(100, priority); // 建设方分成(劣后部分)
   const ffiRate = +toFixed(U.accMul(inferior, 0.08), 2, 2); // FilFi协议费用（建设方 * 8%）
   const raiserRate = Math.max(U.accSub(inferior, spRate, ffiRate), 0); // 发起人分成
 

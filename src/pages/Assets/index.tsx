@@ -39,7 +39,7 @@ export default function Assets() {
 
   const { getProvider } = useProvider();
   const { pack, remains } = useRaiseSeals(data);
-  const { isInvestor, processing: unstaking, unStaking } = useDepositInvest(data);
+  const { isInvestor } = useDepositInvest(data);
   const { isClosed, isFailed, isDestroyed, isRaiser, isServicer } = useRaiseState(data);
   const { investPower, raiserPower, servicerPower, investPledge, servicerPledge } = useAssetPack(
     data,
@@ -238,12 +238,7 @@ export default function Assets() {
                     <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
                   </h4>
 
-                  <SpinBtn
-                    className="btn btn-primary btn-lg ms-auto my-auto px-5"
-                    loading={withdrawing}
-                    disabled={reward <= 0 || unstaking}
-                    onClick={handleWithdraw}
-                  >
+                  <SpinBtn className="btn btn-primary btn-lg ms-auto my-auto px-5" loading={withdrawing} disabled={reward <= 0} onClick={handleWithdraw}>
                     提取余额
                   </SpinBtn>
                 </div>
@@ -260,7 +255,7 @@ export default function Assets() {
                     </div> */}
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">锁定余额</p>
+                        <p className="mb-1 fw-500">锁定收益</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
                       </div>
                     </div>
@@ -294,13 +289,13 @@ export default function Assets() {
                     </p>
                   </div>
 
-                  {isDestroyed && isInvestor && (
+                  {/* {isDestroyed && isInvestor && (
                     <div className="ms-auto my-auto">
                       <SpinBtn className="btn btn-primary btn-lg px-5" loading={unstaking} disabled={pledge <= 0 || withdrawing} onClick={unStaking}>
                         取回
                       </SpinBtn>
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
 
