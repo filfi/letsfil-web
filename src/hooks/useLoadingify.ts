@@ -21,6 +21,8 @@ export default function useLoadingify<R = any, P extends unknown[] = any>(handle
       await sleep(options.loadingDelay);
     }
 
+    setLoading(false);
+
     if (e) {
       throw e;
     }

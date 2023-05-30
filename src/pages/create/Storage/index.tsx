@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
-import { useDebounceFn, useUpdateEffect } from 'ahooks';
+import { useDebounceFn, useLockFn, useUpdateEffect } from 'ahooks';
 
 import useUser from '@/hooks/useUser';
 import { minerInfo } from '@/apis/raise';
@@ -74,15 +74,21 @@ export default function CreateStorage() {
     return r;
   });
 
-  const { run: validateMiner } = useDebounceFn(getMiner, { wait: 500 });
+  const { run: validateMiner } = useDebounceFn(useLockFn(getMiner), { wait: 500, trailing: true });
 
   const minerValidator = async (rule: unknown, value: string) => {
-    await validators.minerID(rule, value);
+    const [e] = await catchify(validators.minerID)(rule, value);
 
-    const res = await validateMiner(value);
+    if (e) {
+      return e;
+    }
 
-    if (res?.[0]) {
-      return Promise.reject('无效节点，请重新输入');
+    if (value) {
+      const res = await validateMiner(value);
+
+      if (res?.[0]) {
+        return Promise.reject('无效的节点，请重新输入');
+      }
     }
   };
 
@@ -212,7 +218,15 @@ export default function CreateStorage() {
 
             <div className="d-flex gap-2">
               <div className="flex-fill">
-                <Form.Item name="minerId" rules={[{ required: true, message: '请输入节点号' }, { validator: minerValidator }]}>
+                <Form.Item
+                  name="minerId"
+                  rules={[
+                    { required: true, message: '请输入节点号' },
+                    {
+                      validator: minerValidator,
+                    },
+                  ]}
+                >
                   <Input placeholder="输入存储节点号，如f023456" onPressEnter={handleMiner} />
                 </Form.Item>
               </div>
