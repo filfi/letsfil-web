@@ -42,10 +42,11 @@ export default function Raising() {
   const seals = useMemo(() => filter(list, isSealing), [list]);
   const workes = useMemo(() => filter(list, isWorking), [list]);
   const isEmpty = useMemo(() => !((data && data.total > 0) || banner), [banner, data]);
+  const items = useMemo(() => (banner ? list?.concat(banner) : list), [list, banner]);
 
   return (
     <div className="container pt-4 pt-lg-5">
-      <LoadingView data={list || banner} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView data={items} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
             <Empty title="没有募集计划" />

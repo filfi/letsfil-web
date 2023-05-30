@@ -244,7 +244,7 @@ export default function Assets() {
                     disabled={reward <= 0 || unstaking}
                     onClick={handleWithdraw}
                   >
-                    提取金额
+                    提取余额
                   </SpinBtn>
                 </div>
               </div>

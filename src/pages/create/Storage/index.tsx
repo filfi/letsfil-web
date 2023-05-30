@@ -24,7 +24,6 @@ export default function CreateStorage() {
   const [form] = Form.useForm();
   const { account } = useAccounts();
   const [model, setModel] = useModel('stepform');
-  // const minerId = Form.useWatch('minerId', form);
   const defaultAvatar = useRef(randomAvatar()).current;
   const { list, loading: pFetching } = useProvider();
   const { user, loading: fetching, createOrUpdate } = useUser();

@@ -91,7 +91,7 @@ export default function AccountPlans() {
 
   return (
     <>
-      <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView className="vh-50" data={data} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <Result icon={<IconSearch />} title="您还没有募集计划" desc="这里显示您的募集计划，包括您发起的募集计划和参加投资的募集计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">

@@ -7,7 +7,7 @@ import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
-import { accAdd, accMul, accSub } from '@/utils/utils';
+import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
 export default function useRewardServicer(data?: API.Plan) {
   const contract = useRaiseContract(data?.raise_address);
@@ -21,8 +21,14 @@ export default function useRewardServicer(data?: API.Plan) {
 
   const { opsRate, servicerRate } = useRaiseRate(data);
 
-  const locked = useMemo(() => Math.max(accSub(accAdd(accMul(totalReward, opsRate), rewardLock), fines), 0), [fines, opsRate, rewardLock, totalReward]);
-  const total = useMemo(() => Math.max(accSub(accMul(totalReward, accAdd(servicerRate, opsRate)), 0), fines), [fines, opsRate, servicerRate, totalReward]);
+  const locked = useMemo(
+    () => Math.max(accSub(accAdd(accMul(totalReward, accDiv(opsRate, 100)), rewardLock), fines), 0),
+    [fines, opsRate, rewardLock, totalReward],
+  );
+  const total = useMemo(
+    () => Math.max(accSub(accMul(totalReward, accDiv(accAdd(servicerRate, opsRate), 100)), fines), 0),
+    [fines, opsRate, servicerRate, totalReward],
+  );
 
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;

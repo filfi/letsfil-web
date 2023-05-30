@@ -5,16 +5,17 @@
   "author": "",
   "scripts": {
     "build": "max build",
-    "build:2k": "cross-env RUN_ENV=2k max build",
-    "build:hp": "cross-env RUN_ENV=hp max build",
+    "build:main": "cross-env RUN_ENV=main max build",
+    "build:test": "cross-env RUN_ENV=test max build",
     "dev": "max dev",
     "format": "prettier --cache --write .",
     "postinstall": "max setup",
     "prepare": "husky install",
     "setup": "max setup",
     "start": "npm run dev",
-    "start:2k": "cross-env RUN_ENV=2k npm run dev",
-    "start:hp": "cross-env RUN_ENV=hp npm run dev"
+    "start:local": "cross-env RUN_ENV=local npm run dev",
+    "start:main": "cross-env RUN_ENV=main npm run dev",
+    "start:test": "cross-env RUN_ENV=test npm run dev"
   },
   "dependencies": {
     "@ant-design/icons": "^4.7.0",

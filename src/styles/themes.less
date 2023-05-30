@@ -95,8 +95,8 @@
 .btn-primary {
   --bs-btn-bg: @primary;
   --bs-btn-border-color: @primary;
-  --bs-btn-hover-bg: darken(@primary, 5%);
-  --bs-btn-hover-border-color: darken(@primary, 5%);
+  --bs-btn-hover-bg: lighten(@primary, 5%);
+  --bs-btn-hover-border-color: lighten(@primary, 5%);
   --bs-btn-active-bg: darken(@primary, 10%);
   --bs-btn-active-border-color: darken(@primary, 10%);
   --bs-btn-disabled-bg: var(--color-primary-200);
@@ -502,6 +502,10 @@ table.table,
 
 .object-fit-cover {
   object-fit: cover;
+}
+
+.vh-50 {
+  height: 50vh;
 }
 
 .vh-75 {

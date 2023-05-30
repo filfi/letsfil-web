@@ -32,7 +32,7 @@ export function formatAddr(addr?: unknown) {
   return '';
 }
 
-export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode?: BigNumber.RoundingMode) {
+export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode: BigNumber.RoundingMode = 3) {
   return BigNumber(amount ?? 0).toFixed(decimalPlaces, mode);
 }
 
