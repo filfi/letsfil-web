@@ -12,9 +12,9 @@ import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg
 import type { ItemProps } from './types';
 
 const SectionContract: React.FC<ItemProps> = ({ data }) => {
-  const { hasOwner, isClosed, isFailed, isDestroyed, isPending, isRaiser, isSigned } = useRaiseState(data);
+  const { hasOwner, isClosed, isFailed, isDestroyed, isPending, isRaiser, isSigned, isServicer } = useRaiseState(data);
 
-  const canRestore = useMemo(() => isClosed || isFailed || isDestroyed, [isClosed, isFailed, isDestroyed]);
+  const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
 
   const handleSign = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
