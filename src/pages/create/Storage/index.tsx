@@ -11,12 +11,13 @@ import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
-import { randomAvatar } from '@/utils/utils';
 import useAccounts from '@/hooks/useAccounts';
+import useProvider from '@/hooks/useProvider';
 import FormRadio from '@/components/FormRadio';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
 import AvatarInput from '@/components/AvatarInput';
+import { isDef, randomAvatar } from '@/utils/utils';
 import ProviderSelect from '@/components/ProviderRadio';
 
 export default function CreateStorage() {
@@ -25,6 +26,7 @@ export default function CreateStorage() {
   const [model, setModel] = useModel('stepform');
   // const minerId = Form.useWatch('minerId', form);
   const defaultAvatar = useRef(randomAvatar()).current;
+  const { list, loading: pFetching } = useProvider();
   const { user, loading: fetching, createOrUpdate } = useUser();
 
   useUpdateEffect(() => {
@@ -44,6 +46,16 @@ export default function CreateStorage() {
       });
     }
   }, [fetching, user]);
+  useUpdateEffect(() => {
+    const item = list?.find((i) => i.is_default);
+
+    if (item && !isDef(model?.serviceId)) {
+      form.setFieldsValue({
+        serviceId: item.id,
+        serviceProviderAddress: item.wallet_address,
+      });
+    }
+  }, [list, model?.serviceId]);
 
   const [mining, getMiner] = useLoadingify(async (id: string) => {
     const r = await catchify(minerInfo)(id);
@@ -257,7 +269,7 @@ export default function CreateStorage() {
             </p>
 
             <Form.Item name="serviceId" rules={[{ required: true, message: '请选择技术服务商' }]}>
-              <ProviderSelect onSelect={onServiceSelect} />
+              <ProviderSelect options={list} loading={pFetching} onSelect={onServiceSelect} />
             </Form.Item>
             <Form.Item hidden name="serviceProviderAddress">
               <Input />

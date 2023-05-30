@@ -5,6 +5,7 @@ import { providers } from '@/apis/raise';
 
 export default function useProvider() {
   const { data, loading } = useRequest(providers, { retryCount: 3 });
+
   const list = useMemo(() => data?.list, [data]);
 
   const getProvider = (id?: number | string) => {

@@ -29,6 +29,7 @@ declare namespace API {
     full_name: string;
     id: number;
     introduction: string;
+    is_default: boolean;
     logo_url: string;
     short_name: string;
     wallet_address: string;
