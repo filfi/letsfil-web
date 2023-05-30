@@ -9,7 +9,7 @@ const Loading: React.FC<LoadingProps> = ({ className, children }) => {
   return (
     <>
       <div className={classNames('d-flex flex-column align-items-center justify-content-center', className)}>
-        <div className="spinner-grow text-primary m-3" role="status">
+        <div className="spinner-grow text-primary ffi-spinner m-3" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
 

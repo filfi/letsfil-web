@@ -38,9 +38,9 @@ export default function Assets() {
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [param.id] });
 
   const { getProvider } = useProvider();
-  const { isInvestor } = useDepositInvest(data);
   const { pack, remains } = useRaiseSeals(data);
-  const { isClosed, isFailed, isRaiser, isServicer } = useRaiseState(data);
+  const { isInvestor, processing: unstaking, unStaking } = useDepositInvest(data);
+  const { isClosed, isFailed, isDestroyed, isRaiser, isServicer } = useRaiseState(data);
   const { investPower, raiserPower, servicerPower, investPledge, servicerPledge } = useAssetPack(
     data,
     pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,
@@ -55,12 +55,12 @@ export default function Assets() {
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
-  const pledge = useMemo(() => [investPledge, 0, servicerPledge][role], [role, investPledge, servicerPledge]);
   const locked = useMemo(() => (isServicer ? servicer.locked : 0), [servicer.locked, isServicer]);
-  const power = useMemo(() => [investPower, raiserPower, servicerPower][role], [role, investPower, raiserPower, servicerPower]);
-  const total = useMemo(() => [investor.total, raiser.total, servicer.total][role], [role, investor.total, raiser.total, servicer.total]);
-  const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role], [role, investor.reward, raiser.reward, servicer.reward]);
-  const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
+  const pledge = useMemo(() => [investPledge, 0, servicerPledge][role] ?? 0, [role, investPledge, servicerPledge]);
+  const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
+  const total = useMemo(() => [investor.total, raiser.total, servicer.total][role] ?? 0, [role, investor.total, raiser.total, servicer.total]);
+  const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role] ?? 0, [role, investor.reward, raiser.reward, servicer.reward]);
+  // const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
 
   const options = useMemo(() => {
     if (roles.filter(Boolean).length > 1) {
@@ -80,7 +80,7 @@ export default function Assets() {
     setRole(roles.findIndex(Boolean));
   }, [roles]);
 
-  const [processing, handleWithdraw] = useLoadingify(async () => {
+  const [withdrawing, handleWithdraw] = useLoadingify(async () => {
     if (role === 1) {
       await raiser.withdraw();
     } else if (role === 2) {
@@ -238,7 +238,12 @@ export default function Assets() {
                     <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
                   </h4>
 
-                  <SpinBtn className="btn btn-primary btn-lg ms-auto my-auto px-5" loading={processing} disabled={reward <= 0} onClick={handleWithdraw}>
+                  <SpinBtn
+                    className="btn btn-primary btn-lg ms-auto my-auto px-5"
+                    loading={withdrawing}
+                    disabled={reward <= 0 || unstaking}
+                    onClick={handleWithdraw}
+                  >
                     提取金额
                   </SpinBtn>
                 </div>
@@ -246,13 +251,13 @@ export default function Assets() {
 
               <div className="card">
                 <div className="card-body">
-                  <div className="row row-cols-1 row-cols-lg-3 g-3">
-                    <div className="col">
+                  <div className="row row-cols-1 row-cols-lg-2 g-3">
+                    {/* <div className="col">
                       <div className="ffi-form">
                         <p className="mb-1 fw-500">线性待释放</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(pending)} />
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col">
                       <div className="ffi-form">
                         <p className="mb-1 fw-500">锁定余额</p>
@@ -280,12 +285,22 @@ export default function Assets() {
               </div>
 
               <div className="card">
-                <div className="card-body">
-                  <p className="mb-1 text-gray fw-500">持有质押币</p>
-                  <p className="mb-0 fw-600">
-                    <span className="fs-24">{F.formatAmount(pledge)}</span>
-                    <span className="ms-1 fs-sm fw-bold text-neutral">FIL</span>
-                  </p>
+                <div className="card-body d-flex gap-3">
+                  <div>
+                    <p className="mb-1 text-gray fw-500">持有质押币</p>
+                    <p className="mb-0 fw-600">
+                      <span className="fs-24">{F.formatAmount(pledge)}</span>
+                      <span className="ms-1 fs-sm fw-bold text-neutral">FIL</span>
+                    </p>
+                  </div>
+
+                  {isDestroyed && isInvestor && (
+                    <div className="ms-auto my-auto">
+                      <SpinBtn className="btn btn-primary btn-lg px-5" loading={unstaking} disabled={pledge <= 0 || withdrawing} onClick={unStaking}>
+                        取回
+                      </SpinBtn>
+                    </div>
+                  )}
                 </div>
               </div>
 

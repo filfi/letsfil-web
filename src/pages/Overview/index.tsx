@@ -11,6 +11,7 @@ import { sleep } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { packInfo } from '@/apis/packs';
 import { EventType } from '@/utils/mitt';
+import { catchify } from '@/utils/hackify';
 import { del, getInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
@@ -130,7 +131,15 @@ export default function Overview() {
   const [deleting, deleteAction] = useLoadingify(async () => {
     if (!data) return;
 
-    await del(data.raising_id);
+    const [e] = await catchify(del)(data.raising_id);
+
+    if (e) {
+      Dialog.alert({
+        icon: 'error',
+        title: '删除失败',
+        content: e.message,
+      });
+    }
 
     history.replace('/');
   });

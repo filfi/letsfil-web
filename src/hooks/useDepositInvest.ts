@@ -87,6 +87,7 @@ export default function useDepositInvest(data?: API.Plan) {
     record,
     ratio,
     total,
+    sealed,
     target,
     progress,
     interest,

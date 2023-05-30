@@ -537,6 +537,43 @@ svg[fill='currentColor'] path {
   }
 }
 
+.ffi-spinner {
+  --bs-spinner-bg-step-1: var(--color-primary);
+  --bs-spinner-bg-step-2: var(--color-danger);
+  --bs-spinner-animation-name: ffi-spinner;
+  --bs-spinner-animation-speed: 1.6s;
+}
+
+@keyframes ffi-spinner {
+  0%,
+  50% {
+    transform: scale(0);
+    background-color: transparent;
+  }
+
+  25%,
+  75% {
+    opacity: 1;
+    transform: none;
+  }
+
+  49%,
+  99% {
+    opacity: 0;
+    transform: none;
+  }
+
+  25%,
+  49% {
+    background-color: var(--bs-spinner-bg-step-1);
+  }
+
+  75%,
+  99% {
+    background-color: var(--bs-spinner-bg-step-2);
+  }
+}
+
 @media screen and (min-width: 768px) {
   .ffi-form {
     --ffi-form-action-min-width: 120px;

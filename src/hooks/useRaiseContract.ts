@@ -396,6 +396,15 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
+   * 获取owner权限
+   */
+  const getOwner = withConnect(
+    withContract(async (contract) => {
+      return await contract?.gotMiner();
+    }),
+  );
+
+  /**
    * 获取质押总额
    */
   const getTotalPledge = withConnect(
@@ -571,6 +580,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     raiserWithdraw,
     servicerWithdraw,
     investorWithdraw,
+    getOwner,
     getContract,
     getOpsFund,
     getRaiseFund,
