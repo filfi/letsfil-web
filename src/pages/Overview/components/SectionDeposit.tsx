@@ -21,15 +21,30 @@ import type { ItemProps } from './types';
 
 const RaiserCard: React.FC<ItemProps> = ({ data }) => {
   const { initialState } = useModel('@@initialState');
-  const { contract, raiseState, isRaisePaid, isRaiser, isPayer, raiser, isFailed, isPending, isProcess, isRaising, isWorking, isFinished, isDestroyed } =
-    useRaiseState(data);
+  const {
+    contract,
+    raiseState,
+    isRaisePaid,
+    isRaiser,
+    isPayer,
+    raiser,
+    isClosed,
+    isFailed,
+    isPending,
+    isWaiting,
+    isProcess,
+    isRaising,
+    isWorking,
+    isFinished,
+    isDestroyed,
+  } = useRaiseState(data);
   const raise = useDepositRaise(data);
   const actual = useMemo(() => F.toNumber(data?.actual_amount), [data?.actual_amount]);
   const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
   const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
 
   const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
-  const withdrawable = useMemo(() => isRaiser && (isFailed || isFinished || isDestroyed), [isPayer, isFailed, isFinished, isDestroyed]);
+  const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isFinished || isDestroyed), [isPayer, isClosed, isFailed, isFinished, isDestroyed]);
 
   const [paying, handlePay] = useProcessify(async () => {
     if (!data) return;
@@ -43,10 +58,10 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
 
   return (
     <>
-      <div className={classNames('card mb-4', { 'card-danger': data && !isPending && !isRaisePaid })}>
+      <div className={classNames('card mb-4', { 'card-danger': isRaiser && isWaiting && !isRaisePaid })}>
         <div className="card-header d-flex align-items-center">
           <div className="d-flex align-items-center me-auto">
-            <div className="flex-shrink-0">{data && !isPending && !isRaisePaid ? <IconDander /> : <IconSuccess />}</div>
+            <div className="flex-shrink-0">{isRaisePaid ? <IconSuccess /> : <IconDander />}</div>
             <div className="flex-grow-1 ms-2">
               <h4 className="card-title fw-600 mb-0">发起人保证金</h4>
             </div>
@@ -141,12 +156,13 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
   const ops = useDepositOps(data);
   const { total } = useDepositInvest(data);
   const { investRate } = useRaiseRate(data);
-  const { contract, raiseState, isOpsPaid, isPayer, payer, isPending, isFailed, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
+  const { contract, raiseState, isOpsPaid, isPayer, payer, isPending, isWaiting, isClosed, isFailed, isSealing, isDelayed, isFinished, isDestroyed } =
+    useRaiseState(data);
 
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
   const payable = useMemo(() => isPayer && raiseState < RaiseState.Raising, [isPayer, raiseState]);
-  const withdrawable = useMemo(() => isPayer && (isFailed || isDestroyed), [isPayer, isFailed, isDestroyed]);
   const opsAmount = useMemo(() => (isOpsPaid ? ops.amount : ops.total), [ops.amount, ops.total, isOpsPaid]); // 保证金
+  const withdrawable = useMemo(() => isPayer && (isClosed || isFailed || isDestroyed), [isPayer, isClosed, isFailed, isDestroyed]);
   const opsInterest = useMemo(() => accMul(ops.totalInterest, accDiv(ops.total, accAdd(ops.total, total))), [ops.total, ops.totalInterest, total]); // 利息补偿
   const showExtra = useMemo(() => isFailed || isSealing || isDelayed || isFinished || ops.fines > 0, [isFailed, isSealing, isDelayed, isFinished, ops.fines]);
 
@@ -162,10 +178,10 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
 
   return (
     <>
-      <div className={classNames('card', { 'card-danger': data && !isPending && !isOpsPaid })}>
+      <div className={classNames('card', { 'card-danger': isPayer && isWaiting && !isOpsPaid })}>
         <div className="card-header d-flex align-items-center">
           <div className="d-flex align-items-center me-auto">
-            <div className="flex-shrink-0">{data && !isPending && !isOpsPaid ? <IconDander /> : <IconSuccess />}</div>
+            <div className="flex-shrink-0">{isOpsPaid ? <IconSuccess /> : <IconDander />}</div>
             <div className="flex-grow-1 ms-2">
               <h4 className="card-title fw-600 mb-0">技术运维保证金(预存)</h4>
             </div>

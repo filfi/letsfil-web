@@ -18,7 +18,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
   const { isClosed, isFailed, isFinished, isDelayed, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted, isWorking } = useRaiseState(data);
 
   const isStart = useMemo(() => !!(data?.begin_time && isStarted), [isStarted, data?.begin_time]);
-  const endSec = useMemo(() => (data ? data.end_seal_time + U.day2sec(data.sector_period) : 0), [data]);
+  const endSec = useMemo(() => (data && data.end_seal_time ? data.end_seal_time + U.day2sec(data.sector_period) : 0), [data]);
 
   if (!data) return null;
 
@@ -30,12 +30,12 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
         </Steps.Item>
 
         {isClosed || isFailed ? (
-          <Steps.Item title={isClosed ? '募集关闭' : '募集失败'} status="finish">
+          <Steps.Item title={isClosed ? '募集关闭' : '募集失败'} status="active">
             {F.formatUnixDate(data.closing_time)}
           </Steps.Item>
         ) : (
           <Steps.Item title="募集计划截止" status={isSuccess ? 'finish' : isRaising ? 'active' : undefined}>
-            {data.closing_time ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
+            {isSuccess ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
           </Steps.Item>
         )}
 
@@ -66,7 +66,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
               {isFinished && <span className="fw-normal opacity-75">（{data.sector_period}天）</span>}
             </>
           }
-          status={isExpire(endSec) ? 'finish' : isDestroyed ? 'active' : undefined}
+          status={isDestroyed ? (isExpire(endSec) ? 'finish' : 'active') : undefined}
         >
           {isWorking ? (
             <>
