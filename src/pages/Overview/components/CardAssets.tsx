@@ -1,20 +1,14 @@
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
+import { accDiv, accMul } from '@/utils/utils';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useDepositOps from '@/hooks/useDepositOps';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvest from '@/hooks/useDepositInvest';
-import { accDiv, accMul, isDef } from '@/utils/utils';
-import { formatAmount, formatNum, formatUnixDate } from '@/utils/format';
+import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 import type { ItemProps } from './types';
-
-function formatByte(val?: number | string) {
-  if (isDef(val)) {
-    return formatNum(val, '0.0 ib').split(' ');
-  }
-}
 
 const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
   const { amount } = useDepositOps(data);
@@ -63,8 +57,8 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>获得算力</span>
                   <span className="ms-auto">
-                    <span className="fs-20 fw-600">{formatByte(investPower)?.[0]}</span>
-                    <span className="ms-1 text-neutral">{formatByte(investPower)?.[1]}</span>
+                    <span className="fs-20 fw-600">{formatPower(investPower)?.[0]}</span>
+                    <span className="ms-1 text-neutral">{formatPower(investPower)?.[1]}</span>
                   </span>
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">
@@ -90,8 +84,8 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>获得算力</span>
                   <span className="ms-auto">
-                    <span className="fs-20 fw-600">{formatByte(raiserPower)?.[0]}</span>
-                    <span className="ms-1 text-neutral">{formatByte(raiserPower)?.[1]}</span>
+                    <span className="fs-20 fw-600">{formatPower(raiserPower)?.[0]}</span>
+                    <span className="ms-1 text-neutral">{formatPower(raiserPower)?.[1]}</span>
                   </span>
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">

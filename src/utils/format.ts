@@ -4,6 +4,14 @@ import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 import { accAdd, sec2day } from './utils';
 
+export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode: BigNumber.RoundingMode = 3) {
+  return BigNumber(amount ?? 0).toFixed(decimalPlaces, mode);
+}
+
+export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumberish = 18) {
+  return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
+}
+
 export function formatFix(val?: number | string) {
   return `${val ?? ''}`.replace(/(?:\.0*|(\.\d+?)0+)$/, '$1');
 }
@@ -14,6 +22,20 @@ export function formatNum(num: number | string, fmt: string, runding?: numeral.R
 
 export function formatByte(byte: number | string, fmt = '0ib') {
   return formatNum(byte, fmt).replace(/iB$/, 'B');
+}
+
+export function formatBytes(bytes: number | string, decimals = 2, mode: BigNumber.RoundingMode = 3) {
+  const val = +bytes;
+
+  if (!val) return '0 B';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+
+  const i = Math.floor(Math.log(val) / Math.log(k));
+
+  return `${toFixed(val / Math.pow(k, i), dm, mode)} ${sizes[i]}`;
 }
 
 export function formatRate(rate: number | string, fmt = '0%') {
@@ -32,14 +54,6 @@ export function formatAddr(addr?: unknown) {
   return '';
 }
 
-export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode: BigNumber.RoundingMode = 3) {
-  return BigNumber(amount ?? 0).toFixed(decimalPlaces, mode);
-}
-
-export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumberish = 18) {
-  return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
-}
-
 export function formatAmount(amount?: BigNumber.Value, decimalPlaces = 4, mode: BigNumber.RoundingMode = 3) {
   return formatFix(BigNumber(amount ?? 0).toFormat(decimalPlaces, mode));
 }
@@ -56,9 +70,9 @@ export function formatUnixNow(date: number | string | Date | dayjs.Dayjs) {
   return dayjs(date).fromNow();
 }
 
-export function formatPower(power?: number | string, fmt = '0.0 ib') {
+export function formatPower(power?: number | string, decimals = 2, mode: BigNumber.RoundingMode = 3) {
   if (typeof power !== 'undefined') {
-    return formatNum(power, fmt).split(' ');
+    return formatBytes(power, decimals, mode).split(' ');
   }
 }
 

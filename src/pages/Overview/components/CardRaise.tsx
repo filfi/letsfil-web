@@ -10,7 +10,7 @@ import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
-import { formatEther, formatNum } from '@/utils/format';
+import { formatEther, formatPower } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
 import { day2sec, sleep, toF4Address } from '@/utils/utils';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
@@ -24,12 +24,6 @@ const calcTime = (mill: number) => {
     milliseconds: Math.floor(mill) % 1000,
   };
 };
-
-function formatByte(val?: string) {
-  if (val) {
-    return formatNum(val, '0.0 ib').split(' ');
-  }
-}
 
 const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
   const { initialState } = useModel('@@initialState');
@@ -262,8 +256,8 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
             <p className="d-flex align-items-center gap-3 mb-2">
               <span>封装容量</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatByte(pack?.pack_power)?.[0]}</span>
-                <span className="ms-1 text-neutral">{formatByte(pack?.pack_power)?.[1]}</span>
+                <span className="fs-20 fw-600">{formatPower(pack?.pack_power)?.[0]}</span>
+                <span className="ms-1 text-neutral">{formatPower(pack?.pack_power)?.[1]}</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
