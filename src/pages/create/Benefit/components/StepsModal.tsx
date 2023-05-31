@@ -18,7 +18,7 @@ type StepFormProps = {
 export type StepsModalProps = DivProps & {
   ratio?: number; // 运维保证金配比
   spRate?: number; // 技术服务商权益
-  priority?: number; // 出币方权益（优先部分）
+  priority?: number; // 投资人权益（优先部分）
   onConfirm?: (vals: Values) => void;
 };
 
@@ -43,7 +43,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
     <Form form={form} size="large" layout="vertical" initialValues={values} onFinish={handleFinish}>
       <div className="ffi-form">
         <div className="ffi-item px-4 pt-4">
-          <p className="mb-1 fw-500">出币方分成</p>
+          <p className="mb-1 fw-500">投资人分成</p>
           <Form.Item
             className="mb-0"
             name="priority"
@@ -56,7 +56,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
           <div className="row row-cols-1 row-cols-md-2 g-3">
             <div className="col">
               <div className="ffi-item">
-                <p className="mb-1 fw-500">投资人分成</p>
+                <p className="mb-1 fw-500">优先投资人分成</p>
                 <Form.Item noStyle name="investRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>

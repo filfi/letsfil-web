@@ -12,7 +12,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
   const { isStarted, isSuccess } = useRaiseState(data);
   const { actual, target, progress } = useRaiseInfo(data);
-  const { minRate, opsRatio, investRate } = useRaiseRate(data);
+  const { minRate, opsRatio, priorityRate } = useRaiseRate(data);
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
@@ -41,7 +41,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
               <p className="mb-1 text-gray-dark">投资人获得收益</p>
               <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
-                  <span className="fs-3">{investRate}</span>
+                  <span className="fs-3">{priorityRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
                 <span className="badge badge-primary ms-auto">年化{F.formatRate(rate, '0.00%')}</span>

@@ -56,8 +56,8 @@ const Item: React.FC<{
 }> = ({ data, invest, getProvider, onEdit, /* onHide, */ onDelete, onStart }) => {
   const state = useRaiseState(data);
   const { pack } = useRaiseSeals(data);
-  const { investRate } = useRaiseRate(data);
   const { amount } = useDepositInvestor(data);
+  const { priorityRate, opsRatio } = useRaiseRate(data);
   const { actual, progress, target, isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
 
   const calcSealDays = (data: API.Plan) => {
@@ -278,7 +278,7 @@ const Item: React.FC<{
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">投资人分成比例</span>
-            <span className="fw-500">{investRate}%</span>
+            <span className="fw-500">{priorityRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">{state.isWorking ? '实际封装时间' : '承诺封装时间'}</span>
@@ -293,7 +293,7 @@ const Item: React.FC<{
               <span className="align-middle ms-1">
                 <span>{provider?.short_name}</span>
                 <span className="mx-1">·</span>
-                <span>保证金{data.ops_security_fund_rate}%</span>
+                <span>保证金{opsRatio}%</span>
               </span>
             </span>
           </div>

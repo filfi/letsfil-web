@@ -32,13 +32,13 @@ const defaultTreeData = {
   desc: '全部算力的全部产出',
   children: [
     {
-      label: '出币方分成',
+      label: '投资人分成',
       active: true,
       rate: 0,
-      desc: '出币方的权益',
+      desc: '投资人的权益',
       children: [
         {
-          label: '投资人分成',
+          label: '优先投资人分成',
           rate: 0,
           desc: '优先质押币的权益',
         },
