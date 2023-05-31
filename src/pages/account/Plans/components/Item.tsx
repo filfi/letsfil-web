@@ -9,7 +9,6 @@ import Countdown from './Countdown';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import { RaiseState } from '@/constants/state';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -21,16 +20,13 @@ import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
   return (...args: P) => {
-    const isClosed = data.status === RaiseState.Closed;
-    const isPending = data.status === RaiseState.Pending;
-
     const actionHandler = async () => {
       const [e] = await catchify(handler)(...args);
 
       if (e) {
         Dialog.alert({
           icon: 'error',
-          title: '操作失败',
+          title: '删除失败',
           content: e.message,
         });
       }
@@ -38,8 +34,8 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: isPending ? '删除募集计划' : '隐藏募集计划',
-      summary: isPending ? '未签名的募集计划可以永久删除。' : `隐藏${isClosed ? '已关闭' : '募集失败'}的募集计划。`,
+      title: '删除募集计划',
+      summary: '未签名的募集计划可以永久删除。',
       onConfirm: () => {
         hide();
 
@@ -134,7 +130,11 @@ const Item: React.FC<{
 
   const renderStatus = () => {
     if (state.isPending) {
-      return <span className="badge">可编辑</span>;
+      if (isRaiser) {
+        return <span className="badge">可编辑</span>;
+      }
+
+      return <span className="badge">待发起人签名</span>;
     }
     if (state.isWaiting) {
       if (!isRaisePaid || !isOpsPaid) {

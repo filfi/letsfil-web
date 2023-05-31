@@ -36,7 +36,7 @@ export default function useRaiseInfo(data?: API.Plan) {
 
   const [loading, fetchData] = useLoadingify(async () => {
     const hasOwner = await contract.getOwner();
-    setHasOwner(hasOwner);
+    setHasOwner(hasOwner ?? false);
 
     if (!data) return;
 

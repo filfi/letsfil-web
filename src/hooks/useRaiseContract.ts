@@ -1,13 +1,13 @@
-import { ethers } from 'ethers';
-import { useMount, useUnmount } from 'ahooks';
-import { useEffect, useMemo, useRef } from 'react';
-import type { BigNumberish } from 'ethers';
+import { useMemo } from 'react';
+import { useLatest, useUnmount, useUpdateEffect } from 'ahooks';
+import type { Contract, BigNumber, BigNumberish } from 'ethers';
 
 import { isRef } from '@/utils/utils';
 import useAccounts from './useAccounts';
 import { toastify } from '@/utils/hackify';
 import { createContract, withTx } from '@/helpers/app';
 import { createDispatcher, EventType } from '@/utils/mitt';
+import { NodeState, RaiseState } from '@/constants/state';
 
 export enum RaiseEventTypes {
   onStaking = 'Staking',
@@ -29,14 +29,6 @@ export enum RaiseEventTypes {
   onRaiseStateChange = 'RaiseStateChange',
 }
 
-function getRefVal<T>(ref?: MaybeRef<T>) {
-  if (ref && isRef(ref)) {
-    return ref.current;
-  }
-
-  return ref;
-}
-
 const handlers = {
   // 质押
   onStaking: createDispatcher(EventType.onStaking, ['raiseID', 'from', 'to', 'amount']),
@@ -48,8 +40,6 @@ const handlers = {
   onDestroyNode: createDispatcher(EventType.onDepositOpsFund, ['raiseID', 'state']),
   // 募集失败
   onRaiseFailed: createDispatcher(EventType.onRaiseFailed, ['raiseID']),
-  // 修改保证金支付地址
-  // onChangeOpsPayer: createDispatcher(EventType.onChangeOpsPayer, ['raiseID', 'sender', 'oldPayer', 'newPayer']),
   // 运维保证金缴纳
   onDepositRaiseFund: createDispatcher(EventType.onDepositRaiseFund, ['raiseID', 'sender', 'amount']),
   // 运维保证金缴纳
@@ -76,72 +66,81 @@ const handlers = {
   onRaiseStateChange: createDispatcher(EventType.onRaiseStateChange, ['raiseID', 'state']),
 };
 
+function getRefVal<T>(ref?: MaybeRef<T>) {
+  if (ref && isRef(ref)) {
+    return ref.current;
+  }
+
+  return ref;
+}
+
+function bindEvents(contract?: Contract) {
+  contract?.on(RaiseEventTypes.onStaking, handlers.onStaking);
+  contract?.on(RaiseEventTypes.onStartSeal, handlers.onStartSeal);
+  contract?.on(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
+  contract?.on(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
+  contract?.on(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
+  contract?.on(RaiseEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
+  contract?.on(RaiseEventTypes.onDepositOpsFund, handlers.onDepositOpsFund);
+  contract?.on(RaiseEventTypes.onDepositRaiseFund, handlers.onDepositRaiseFund);
+  contract?.on(RaiseEventTypes.onServicerSigned, handlers.onServicerSigned);
+  contract?.on(RaiseEventTypes.onStartRaisePlan, handlers.onStartRaisePlan);
+  contract?.on(RaiseEventTypes.onWithdrawOpsFund, handlers.onWithdrawOpsFund);
+  contract?.on(RaiseEventTypes.onWithdrawRaiseFund, handlers.onWithdrawRaiseFund);
+  contract?.on(RaiseEventTypes.onRaiserWithdraw, handlers.onRaiserWithdraw);
+  contract?.on(RaiseEventTypes.onServicerWithdraw, handlers.onServicerWithdraw);
+  contract?.on(RaiseEventTypes.onInvestorWithdraw, handlers.onInvestorWithdraw);
+  contract?.on(RaiseEventTypes.onNodeStateChange, handlers.onNodeStateChange);
+  contract?.on(RaiseEventTypes.onRaiseStateChange, handlers.onRaiseStateChange);
+}
+
+function unbindEvent(contract?: Contract) {
+  contract?.off(RaiseEventTypes.onStaking, handlers.onStaking);
+  contract?.off(RaiseEventTypes.onStartSeal, handlers.onStartSeal);
+  contract?.off(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
+  contract?.off(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
+  contract?.off(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
+  contract?.off(RaiseEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
+  contract?.off(RaiseEventTypes.onDepositOpsFund, handlers.onDepositOpsFund);
+  contract?.off(RaiseEventTypes.onDepositRaiseFund, handlers.onDepositRaiseFund);
+  contract?.off(RaiseEventTypes.onServicerSigned, handlers.onServicerSigned);
+  contract?.off(RaiseEventTypes.onStartRaisePlan, handlers.onStartRaisePlan);
+  contract?.off(RaiseEventTypes.onWithdrawOpsFund, handlers.onWithdrawOpsFund);
+  contract?.off(RaiseEventTypes.onWithdrawRaiseFund, handlers.onWithdrawRaiseFund);
+  contract?.off(RaiseEventTypes.onRaiserWithdraw, handlers.onRaiserWithdraw);
+  contract?.off(RaiseEventTypes.onServicerWithdraw, handlers.onServicerWithdraw);
+  contract?.off(RaiseEventTypes.onInvestorWithdraw, handlers.onInvestorWithdraw);
+  contract?.off(RaiseEventTypes.onNodeStateChange, handlers.onNodeStateChange);
+  contract?.off(RaiseEventTypes.onRaiseStateChange, handlers.onInvestorWithdraw);
+}
+function createRaiseContract(address?: string) {
+  const contract = createContract(address);
+
+  bindEvents(contract);
+
+  return contract;
+}
+
 export default function useRaiseContract(address?: MaybeRef<string | undefined>) {
   const { withConnect } = useAccounts();
   const rawAddr = useMemo(() => getRefVal(address), [address]);
-
-  const contract = useRef(createContract(rawAddr));
-
-  const bindEvents = () => {
-    contract.current?.on(RaiseEventTypes.onStaking, handlers.onStaking);
-    contract.current?.on(RaiseEventTypes.onStartSeal, handlers.onStartSeal);
-    contract.current?.on(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
-    contract.current?.on(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
-    contract.current?.on(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
-    // contract.current?.on(RaiseEventTypes.onChangeOpsPayer, handlers.onChangeOpsPayer);
-    contract.current?.on(RaiseEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
-    contract.current?.on(RaiseEventTypes.onDepositOpsFund, handlers.onDepositOpsFund);
-    contract.current?.on(RaiseEventTypes.onDepositRaiseFund, handlers.onDepositRaiseFund);
-    contract.current?.on(RaiseEventTypes.onServicerSigned, handlers.onServicerSigned);
-    contract.current?.on(RaiseEventTypes.onStartRaisePlan, handlers.onStartRaisePlan);
-    contract.current?.on(RaiseEventTypes.onWithdrawOpsFund, handlers.onWithdrawOpsFund);
-    contract.current?.on(RaiseEventTypes.onWithdrawRaiseFund, handlers.onWithdrawRaiseFund);
-    contract.current?.on(RaiseEventTypes.onRaiserWithdraw, handlers.onRaiserWithdraw);
-    contract.current?.on(RaiseEventTypes.onServicerWithdraw, handlers.onServicerWithdraw);
-    contract.current?.on(RaiseEventTypes.onInvestorWithdraw, handlers.onInvestorWithdraw);
-    contract.current?.on(RaiseEventTypes.onNodeStateChange, handlers.onNodeStateChange);
-    contract.current?.on(RaiseEventTypes.onRaiseStateChange, handlers.onRaiseStateChange);
-  };
-
-  const unbindEvent = () => {
-    contract.current?.off(RaiseEventTypes.onStaking, handlers.onStaking);
-    contract.current?.off(RaiseEventTypes.onStartSeal, handlers.onStartSeal);
-    contract.current?.off(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
-    contract.current?.off(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
-    contract.current?.off(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
-    contract.current?.off(RaiseEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
-    contract.current?.off(RaiseEventTypes.onDepositOpsFund, handlers.onDepositOpsFund);
-    contract.current?.off(RaiseEventTypes.onDepositRaiseFund, handlers.onDepositRaiseFund);
-    contract.current?.off(RaiseEventTypes.onServicerSigned, handlers.onServicerSigned);
-    contract.current?.off(RaiseEventTypes.onStartRaisePlan, handlers.onStartRaisePlan);
-    contract.current?.off(RaiseEventTypes.onWithdrawOpsFund, handlers.onWithdrawOpsFund);
-    contract.current?.off(RaiseEventTypes.onWithdrawRaiseFund, handlers.onWithdrawRaiseFund);
-    contract.current?.off(RaiseEventTypes.onRaiserWithdraw, handlers.onRaiserWithdraw);
-    contract.current?.off(RaiseEventTypes.onServicerWithdraw, handlers.onServicerWithdraw);
-    contract.current?.off(RaiseEventTypes.onInvestorWithdraw, handlers.onInvestorWithdraw);
-    contract.current?.off(RaiseEventTypes.onNodeStateChange, handlers.onNodeStateChange);
-    contract.current?.off(RaiseEventTypes.onRaiseStateChange, handlers.onInvestorWithdraw);
-  };
+  const contract = useLatest<Contract | undefined>(createRaiseContract(rawAddr));
 
   const initContract = () => {
-    if (!contract.current) {
+    if (rawAddr && (!contract.current || contract.current.address !== rawAddr)) {
       contract.current = createContract(rawAddr);
     }
-
-    bindEvents();
   };
 
-  useEffect(initContract, [rawAddr]);
+  useUpdateEffect(initContract, [rawAddr]);
 
-  useMount(initContract);
+  useUnmount(() => unbindEvent(contract.current));
 
-  useUnmount(unbindEvent);
-
-  const withContract = <R = any, P extends unknown[] = any>(service: (contract: ethers.Contract | undefined, ...args: P) => Promise<R>) => {
+  const withContract = <R = any, P extends unknown[] = any>(service: (contract: Contract, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
-      initContract();
-
-      return await service(contract.current, ...args);
+      if (contract.current) {
+        return await service(contract.current, ...args);
+      }
     };
   };
 
@@ -152,29 +151,29 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   /**
    * 获取募集计划信息
    */
-  const getRaiseInfo = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.raiseInfo(id);
+  const getRaiseInfo = withContract(async (contract, id: BigNumberish): Promise<RaiseInfo> => {
+    return await contract.raiseInfo(id);
   });
 
   /**
    * 获取节点信息
    */
-  const getNodeInfo = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.nodeInfo(id);
+  const getNodeInfo = withContract(async (contract, id: BigNumberish): Promise<NodeInfo> => {
+    return await contract.nodeInfo(id);
   });
 
   /**
    * 获取募集计划状态
    */
-  const getRaiseState = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.raiseState(id);
+  const getRaiseState = withContract(async (contract, id: BigNumberish): Promise<RaiseState> => {
+    return await contract.raiseState(id);
   });
 
   /**
    * 获取节点状态
    */
-  const getNodeState = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.nodeState(id);
+  const getNodeState = withContract(async (contract, id: BigNumberish): Promise<NodeState> => {
+    return await contract.nodeState(id);
   });
 
   /**
@@ -184,7 +183,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.paySecurityFund(id, {
+          return await contract.paySecurityFund(id, {
             ...opts,
           });
         }),
@@ -199,7 +198,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.payOpsSecurityFund(id, {
+          return await contract.payOpsSecurityFund(id, {
             ...opts,
           });
         }),
@@ -214,7 +213,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, opts?: TxOptions) => {
-          return await contract?.spSignWithMiner({
+          return await contract.spSignWithMiner({
             ...opts,
           });
         }),
@@ -229,7 +228,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.startSeal(id, {
+          return await contract.startSeal(id, {
             ...opts,
           });
         }),
@@ -244,7 +243,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.startRaisePlan(id, {
+          return await contract.startRaisePlan(id, {
             ...opts,
           });
         }),
@@ -259,7 +258,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.closeRaisePlan(id, {
+          return await contract.closeRaisePlan(id, {
             ...opts,
           });
         }),
@@ -274,7 +273,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.staking(id, {
+          return await contract.staking(id, {
             ...opts,
           });
         }),
@@ -289,7 +288,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.unStaking(id, {
+          return await contract.unStaking(id, {
             ...opts,
           });
         }),
@@ -304,7 +303,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.withdrawSecurityFund(id, {
+          return await contract.withdrawSecurityFund(id, {
             ...opts,
           });
         }),
@@ -319,7 +318,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.withdrawOpsSecurityFund(id, {
+          return await contract.withdrawOpsSecurityFund(id, {
             ...opts,
           });
         }),
@@ -334,7 +333,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.raiserWithdraw(id, {
+          return await contract.raiserWithdraw(id, {
             ...opts,
           });
         }),
@@ -349,7 +348,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.spWithdraw(id, {
+          return await contract.spWithdraw(id, {
             ...opts,
           });
         }),
@@ -364,7 +363,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     withConnect(
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
-          return await contract?.investorWithdraw(id, {
+          return await contract.investorWithdraw(id, {
             ...opts,
           });
         }),
@@ -375,169 +374,169 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   /**
    * 获取owner权限
    */
-  const getOwner = withContract(async (contract) => {
-    return await contract?.gotMiner();
+  const getOwner = withContract(async (contract): Promise<boolean> => {
+    return await contract.gotMiner();
   });
 
   /**
    * 获取质押总额
    */
-  const getTotalPledge = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.pledgeTotalAmount(id);
+  const getTotalPledge = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.pledgeTotalAmount(id);
   });
 
   /**
    * 获取投资人信息
    */
-  const getInvestorInfo = withContract(async (contract, id: BigNumberish, address: string) => {
-    return await contract?.investorInfo(id, address);
+  const getInvestorInfo = withContract(async (contract, id: BigNumberish, address: string): Promise<InvestorInfo> => {
+    return await contract.investorInfo(id, address);
   });
 
   /**
    * 获取退回资产
    */
-  const getBackAssets = withContract(async (contract, id: BigNumberish, address: string) => {
-    return await contract?.getBack(id, address);
+  const getBackAssets = withContract(async (contract, id: BigNumberish, address: string): Promise<[BigNumber, BigNumber]> => {
+    return await contract.getBack(id, address);
   });
 
   /**
    * 获取募集保证金
    */
-  const getRaiseFund = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.securityFundRemain(id);
+  const getRaiseFund = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.securityFundRemain(id);
   });
 
   /**
    * 获取运维保证金
    */
-  const getOpsFund = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.opsSecurityFundRemain(id);
+  const getOpsFund = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.opsSecurityFundRemain(id);
   });
 
   /**
    * 获取实际配比运维保证金
    */
-  const getOpsCalcFund = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.opsCalcFund(id);
+  const getOpsCalcFund = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.opsCalcFund(id);
   });
 
   /**
    * 获取投资人可提取收益
    */
-  const getInvestorAvailableReward = withContract(async (contract, id: BigNumberish, address: string) => {
-    return await contract?.availableRewardOf(id, address);
+  const getInvestorAvailableReward = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
+    return await contract.availableRewardOf(id, address);
   });
 
   /**
    * 获取投资人已提取收益
    */
-  const getInvestorWithdrawnRecord = withContract(async (contract, id: BigNumberish, address: string) => {
-    return await contract?.withdrawRecord(id, address);
+  const getInvestorWithdrawnRecord = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
+    return await contract.withdrawRecord(id, address);
   });
 
   /**
    * 获取投资人待释放收益
    */
-  const getInvestorPendingReward = withContract(async (contract, id: BigNumberish, address: string) => {
-    return await contract?.willReleaseOf(id, address);
+  const getInvestorPendingReward = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
+    return await contract.willReleaseOf(id, address);
   });
 
   /**
    * 获取投资人总收益
    */
-  const getInvestorTotalReward = withContract(async (contract, id: BigNumberish, address: string) => {
-    return await contract?.totalRewardOf(id, address);
+  const getInvestorTotalReward = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
+    return await contract.totalRewardOf(id, address);
   });
 
   /**
    * 获取募集商已领取的收益
    */
-  const getRaiserWithdrawnReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.gotRaiserReward(id);
+  const getRaiserWithdrawnReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.gotRaiserReward(id);
   });
 
   /**
    * 获取募集商可领取的收益
    */
-  const getRaiserAvailableReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.raiserRewardAvailableLeft(id);
+  const getRaiserAvailableReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.raiserRewardAvailableLeft(id);
   });
 
   /**
    * 获取募集商待释放的收益
    */
-  const getRaiserPendingReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.raiserWillReleaseReward(id);
+  const getRaiserPendingReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.raiserWillReleaseReward(id);
   });
 
   /**
    * 获取服务商已领取的收益
    */
-  const getServicerWithdrawnReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.gotSpReward(id);
+  const getServicerWithdrawnReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.gotSpReward(id);
   });
 
   /**
    * 获取服务商可领取的收益
    */
-  const getServicerAvailableReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.spRewardAvailableLeft(id);
+  const getServicerAvailableReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.spRewardAvailableLeft(id);
   });
 
   /**
    * 获取服务商待释放的收益
    */
-  const getServicerPendingReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.spWillReleaseReward(id);
+  const getServicerPendingReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.spWillReleaseReward(id);
   });
 
   /**
    * 获取服务商罚金
    */
-  const getServicerFines = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.spFine(id);
+  const getServicerFines = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.spFine(id);
   });
 
   /**
    * 获取服务商锁定收益
    */
-  const getServicerLockedReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.spRewardLock(id);
+  const getServicerLockedReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.spRewardLock(id);
   });
 
   /**
    * 获取封装金额
    */
-  const getSealedAmount = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.sealedAmount(id);
+  const getSealedAmount = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.sealedAmount(id);
   });
 
   /**
    * 获取总质押金额
    */
-  const getTotalPledgeAmount = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.pledgeTotalCalcAmount(id);
+  const getTotalPledgeAmount = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.pledgeTotalCalcAmount(id);
   });
 
   /**
    * 获取总利息
    */
-  const getTotalInterest = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.totalInterest(id);
+  const getTotalInterest = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.totalInterest(id);
   });
 
   /**
    * 获取节点总收益
    */
-  const getTotalReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.totalRewardAmount(id);
+  const getTotalReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.totalRewardAmount(id);
   });
 
   /**
    * 获取节点待释放的总收益
    */
-  const getTotalPendingReward = withContract(async (contract, id: BigNumberish) => {
-    return await contract?.totalReleasedRewardAmount(id);
+  const getTotalPendingReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
+    return await contract.totalReleasedRewardAmount(id);
   });
 
   return {

@@ -35,7 +35,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
           </Steps.Item>
         ) : (
           <Steps.Item title="募集计划截止" status={isSuccess ? 'finish' : isRaising ? 'active' : undefined}>
-            {isSuccess ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
+            {isStarted ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
           </Steps.Item>
         )}
 
