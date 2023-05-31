@@ -8,6 +8,11 @@ import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
+/**
+ * 发起人收益
+ * @param data
+ * @returns
+ */
 export default function useRewardRaiser(data?: API.Plan) {
   const contract = useRaiseContract(data?.raise_address);
 

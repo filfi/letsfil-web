@@ -15,7 +15,7 @@ function isExpire(sec?: number) {
 }
 
 const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
-  const { isClosed, isFailed, isFinished, isDelayed, isDestroyed, isRaising, isSuccess, isSealing, isSigned, isStarted, isWorking } = useRaiseState(data);
+  const { isWaiting, isClosed, isFailed, isFinished, isDelayed, isDestroyed, isRaising, isSuccess, isSealing, isStarted, isWorking } = useRaiseState(data);
 
   const isStart = useMemo(() => !!(data?.begin_time && isStarted), [isStarted, data?.begin_time]);
   const endSec = useMemo(() => (data && data.end_seal_time ? data.end_seal_time + U.day2sec(data.sector_period) : 0), [data]);
@@ -25,7 +25,7 @@ const SectionTimeline: React.FC<ItemProps> = ({ data }) => {
   return (
     <>
       <Steps>
-        <Steps.Item title="募集计划开启" status={isStart ? 'finish' : isSigned ? 'active' : undefined}>
+        <Steps.Item title="募集计划开启" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
           {isStart ? F.formatUnixDate(data.begin_time) : '尚未开启'}
         </Steps.Item>
 

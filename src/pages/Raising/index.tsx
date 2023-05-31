@@ -6,7 +6,7 @@ import { useRequest, useTitle } from 'ahooks';
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Empty from '@/components/Empty';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import BannerCard from './components/BannerCard';
 import LoadingView from '@/components/LoadingView';
 import RaisingCard from './components/RaisingCard';
@@ -25,7 +25,7 @@ const isSealing = (data: API.Plan) => data.status === RaiseState.Success && [Nod
 export default function Raising() {
   useTitle('募集计划 - FilFi', { restoreOnUnmount: true });
 
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
 
   const service = async () => {
     return await A.list({

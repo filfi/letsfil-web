@@ -7,12 +7,11 @@ import useAccounts from '@/hooks/useAccounts';
 import LoadingView from '@/components/LoadingView';
 
 export default function AccountAssets() {
-  const { account } = useAccounts();
-  const service = async () => {
-    if (account) {
-      return await listPacks({ address: account, page: 1, page_size: 100 });
-    }
-  };
+  const { account, withAccount } = useAccounts();
+
+  const service = withAccount((address) => {
+    return listPacks({ address, page: 1, page_size: 100 });
+  });
 
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
 

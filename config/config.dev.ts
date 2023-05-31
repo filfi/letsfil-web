@@ -2,7 +2,7 @@ import { defineConfig } from '@umijs/max';
 
 import proxies from './proxy';
 
-const RUN_ENV = process.env.RUN_ENV ?? 'hp';
+const RUN_ENV = process.env.RUN_ENV ?? 'test';
 
 export default defineConfig({
   define: {

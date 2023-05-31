@@ -5,6 +5,11 @@ import { packInfo } from '@/apis/packs';
 import { toNumber } from '@/utils/format';
 import { accDiv, accSub, sec2day } from '@/utils/utils';
 
+/**
+ * 募集计划封装信息
+ * @param data
+ * @returns
+ */
 export default function useRaiseSeals(data?: API.Plan) {
   const service = async () => {
     if (data?.raising_id) {
@@ -12,7 +17,7 @@ export default function useRaiseSeals(data?: API.Plan) {
     }
   };
 
-  const { data: pack } = useRequest(service, { refreshDeps: [data?.raising_id] });
+  const { data: pack, loading, refresh } = useRequest(service, { refreshDeps: [data?.raising_id] });
 
   const period = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]);
   const power = useMemo(() => +`${pack?.pack_power ?? 0}`, [pack?.pack_power]);
@@ -62,5 +67,7 @@ export default function useRaiseSeals(data?: API.Plan) {
     remains,
     running,
     sealdays,
+    loading,
+    refresh,
   };
 }

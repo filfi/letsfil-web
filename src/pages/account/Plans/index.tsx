@@ -11,9 +11,9 @@ import useUser from '@/hooks/useUser';
 import Dialog from '@/components/Dialog';
 import Result from '@/components/Result';
 import { catchify } from '@/utils/hackify';
-import useAccounts from '@/hooks/useAccounts';
-import useProvider from '@/hooks/useProvider';
 import { isEqual, sleep } from '@/utils/utils';
+import useAccounts from '@/hooks/useAccounts';
+import useProviders from '@/hooks/useProviders';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
 import { createContract, transformModel } from '@/helpers/app';
@@ -25,14 +25,12 @@ const isArrs = function <V>(v: V | undefined): v is V {
 
 export default function AccountPlans() {
   const { user } = useUser();
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
   const [, setModel] = useModel('stepform');
   const { account, withAccount } = useAccounts();
 
-  const service = withAccount(async (address) => {
-    if (address) {
-      return await A.investList({ address, page_size: 100 });
-    }
+  const service = withAccount((address) => {
+    return A.investList({ address, page_size: 100 });
   });
 
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
@@ -43,11 +41,11 @@ export default function AccountPlans() {
   const services = useMemo(() => filter(lists, { service_provider_address: account }), [lists, account]);
   const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
 
-  const handleCreate = () => {
+  const handleCreate = withAccount(async () => {
     setModel(undefined);
 
     history.push('/create');
-  };
+  });
 
   const handleEdit = (data: API.Plan) => {
     const model = Object.keys(data).reduce(

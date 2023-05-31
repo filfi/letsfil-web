@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { accSub } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
-import { accSub } from '@/utils/utils';
 
-export default function useDepositOps(data?: API.Plan) {
+/**
+ * 服务商的投资信息
+ * @param data
+ * @returns
+ */
+export default function useDepositServicer(data?: API.Plan) {
   const contract = useRaiseContract(data?.raise_address);
 
   const [fines, setFines] = useState(0); // 罚金

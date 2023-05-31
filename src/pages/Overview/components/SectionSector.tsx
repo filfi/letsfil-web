@@ -5,11 +5,11 @@ import * as F from '@/utils/format';
 // import Modal from '@/components/Modal';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositRaise from '@/hooks/useDepositRaise';
+import useDepositRaiser from '@/hooks/useDepositRaiser';
 import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
 const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
-  const { fines } = useDepositRaise(data);
+  const { fines } = useDepositRaiser(data);
   const { nodeState, isFinished } = useRaiseState(data);
   const { pack, period, sealdays, running, percent: rate } = useRaiseSeals(data);
 

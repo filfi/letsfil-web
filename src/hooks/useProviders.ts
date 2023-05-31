@@ -3,7 +3,11 @@ import { useRequest } from 'ahooks';
 
 import { providers } from '@/apis/raise';
 
-export default function useProvider() {
+/**
+ * 服务商列表
+ * @returns
+ */
+export default function useProviders() {
   const { data, loading } = useRequest(providers, { retryCount: 3 });
 
   const list = useMemo(() => data?.list, [data]);

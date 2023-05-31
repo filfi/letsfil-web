@@ -7,7 +7,7 @@ import { getInfo } from '@/apis/raise';
 import { accAdd } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
 import useAssetPack from '@/hooks/useAssetPack';
-import useRaiseState from '@/hooks/useRaiseState';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
@@ -20,7 +20,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const raiser = useRewardRaiser(info);
   const investor = useRewardInvestor(info);
   const servicer = useRewardServicer(info);
-  const { isRaiser, isServicer } = useRaiseState(info);
+  const { isRaiser, isServicer } = useRaiseInfo(info);
   const { holdPower, holdPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
 
   const rewward = useMemo(() => {

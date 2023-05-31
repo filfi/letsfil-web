@@ -7,7 +7,12 @@ import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
-export default function useDepositRaise(data?: API.Plan) {
+/**
+ * 发起人的投资信息
+ * @param data
+ * @returns
+ */
+export default function useDepositRaiser(data?: API.Plan) {
   const [fines, setFines] = useState(0); // 罚息
   const [amount, setAmount] = useState(0); // 当前保证金
 

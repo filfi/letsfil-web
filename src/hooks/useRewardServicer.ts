@@ -9,6 +9,11 @@ import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
+/**
+ * 服务商收益
+ * @param data
+ * @returns
+ */
 export default function useRewardServicer(data?: API.Plan) {
   const contract = useRaiseContract(data?.raise_address);
 

@@ -12,7 +12,7 @@ import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
 import useAccounts from '@/hooks/useAccounts';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import FormRadio from '@/components/FormRadio';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -25,7 +25,7 @@ export default function CreateStorage() {
   const { account } = useAccounts();
   const [model, setModel] = useModel('stepform');
   const defaultAvatar = useRef(randomAvatar()).current;
-  const { list, loading: pFetching } = useProvider();
+  const { list, loading: pFetching } = useProviders();
   const { user, loading: fetching, createOrUpdate } = useUser();
 
   useUpdateEffect(() => {

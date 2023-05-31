@@ -15,7 +15,8 @@ import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import PageHeader from '@/components/PageHeader';
 import useRaiseState from '@/hooks/useRaiseState';
 import LoadingView from '@/components/LoadingView';
@@ -80,10 +81,11 @@ export default function Overview() {
     { refreshDeps: [param.id] },
   );
 
-  const actions = useRaiseActions(data);
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
 
-  const { isPending, isRaiser, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
+  const actions = useRaiseActions(data);
+  const { isRaiser } = useRaiseInfo(data);
+  const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 

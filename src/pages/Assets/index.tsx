@@ -13,15 +13,16 @@ import FormRadio from '@/components/FormRadio';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
-import useDepositInvest from '@/hooks/useDepositInvest';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconStar } from './imgs/icon-star.svg';
 import { ReactComponent as IconTool } from './imgs/icon-tool.svg';
 import { ReactComponent as IconUser } from './imgs/icon-users.svg';
@@ -37,10 +38,11 @@ export default function Assets() {
 
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [param.id] });
 
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
   const { pack, remains } = useRaiseSeals(data);
-  const { isInvestor } = useDepositInvest(data);
-  const { isClosed, isFailed, isDestroyed, isRaiser, isServicer } = useRaiseState(data);
+  const { isInvestor } = useDepositInvestor(data);
+  const { isRaiser, isServicer } = useRaiseInfo(data);
+  const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
   const { investPower, raiserPower, servicerPower, investPledge, servicerPledge } = useAssetPack(
     data,
     pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,

@@ -6,13 +6,15 @@ import { SCAN_URL } from '@/constants';
 import Modal from '@/components/Modal';
 import { toF4Address } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseState from '@/hooks/useRaiseState';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg';
 import type { ItemProps } from './types';
 
 const SectionContract: React.FC<ItemProps> = ({ data }) => {
-  const { hasOwner, isClosed, isFailed, isDestroyed, isPending, isRaiser, isSigned, isServicer } = useRaiseState(data);
+  const { hasOwner, isRaiser, isSigned, isServicer } = useRaiseInfo(data);
+  const { isClosed, isFailed, isDestroyed, isPending } = useRaiseState(data);
 
   const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
 

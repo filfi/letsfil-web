@@ -13,7 +13,7 @@ import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import BenefitPie from './components/BenefitPie';
 import StepsModal from './components/StepsModal';
 import AssetsModal from './components/AssetsModal';
@@ -97,7 +97,7 @@ export default function CreateBenefit() {
   const modal = useRef<ModalAttrs>(null);
 
   const [form] = Form.useForm();
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
   const [model, setModel] = useModel('stepform');
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);

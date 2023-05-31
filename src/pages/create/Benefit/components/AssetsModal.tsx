@@ -4,7 +4,7 @@ import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import Modal from '@/components/Modal';
 import { accSub } from '@/utils/utils';
 import { catchify } from '@/utils/hackify';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import { formatEther, formatNum } from '@/utils/format';
 
 export type AssetsModalProps = {
@@ -16,7 +16,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
   const modal = useRef<ModalAttrs>(null);
 
   const [form] = Form.useForm();
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
   const powerRate = useMemo(() => data?.raiseHisPowerRate ?? 0, [data?.raiseHisPowerRate]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, powerRate), 0), [powerRate]);
   const provider = useMemo(() => getProvider?.(data?.serviceId), [data?.serviceId, getProvider]);

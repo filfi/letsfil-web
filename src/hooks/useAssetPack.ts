@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 
 import { toNumber } from '@/utils/format';
+import useRaiseInfo from './useRaiseInfo';
 import useRaiseRate from './useRaiseRate';
-import useRaiseState from './useRaiseState';
-import useDepositInvest from './useDepositInvest';
+import useDepositInvestor from './useDepositInvestor';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
 export default function useAssetPack(plan?: API.Plan, pack?: { pledge: string; power: string }) {
-  const { amount, ratio, record, total } = useDepositInvest(plan);
-  const { contract, isRaiser, isServicer } = useRaiseState(plan);
+  const { amount, ratio, record } = useDepositInvestor(plan);
+  const { actual, isRaiser, isServicer } = useRaiseInfo(plan);
   const { investRate, raiserRate, opsRate, servicerRate } = useRaiseRate(plan);
 
   const power = useMemo(() => +`${pack?.power || 0}`, [pack?.power]);
@@ -24,16 +24,15 @@ export default function useAssetPack(plan?: API.Plan, pack?: { pledge: string; p
   );
 
   // 投资人持有质押币
-  const investPledge = useMemo(() => (pledge < total ? accMul(pledge, ratio) : record), [pledge, ratio, record, total]);
+  const investPledge = useMemo(() => (pledge < actual ? accMul(pledge, ratio) : record), [pledge, ratio, record, actual]);
   // 服务商持有质押币
-  const servicerPledge = useMemo(() => (isServicer ? Math.max(accSub(pledge, total), 0) : 0), [pledge, total, isServicer]);
+  const servicerPledge = useMemo(() => (isServicer ? Math.max(accSub(pledge, actual), 0) : 0), [pledge, actual, isServicer]);
 
   // 总持有算力
   const holdPower = useMemo(() => accAdd(investPower, raiserPower, servicerPower), [investPower, raiserPower, servicerPower]);
   const holdPledge = useMemo(() => accAdd(investPledge, servicerPledge), [investPledge, servicerPledge]);
 
   return {
-    contract,
     amount,
     ratio,
     power,

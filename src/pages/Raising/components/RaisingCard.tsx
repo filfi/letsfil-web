@@ -3,9 +3,9 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import { useCountDown } from 'ahooks';
 
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import useDepositInvest from '@/hooks/useDepositInvest';
 import { formatEther, formatRate } from '@/utils/format';
 
 export type RaisingCardProps = {
@@ -14,8 +14,8 @@ export type RaisingCardProps = {
 };
 
 const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
-  const { progress } = useDepositInvest(data);
   const { rate } = useIncomeRate(data.raising_id);
+  const { progress } = useRaiseInfo(data);
   const { opsRatio, investRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 

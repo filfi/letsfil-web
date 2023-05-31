@@ -1,22 +1,22 @@
 import { useMemo } from 'react';
 
 import * as F from '@/utils/format';
+import * as U from '@/utils/utils';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import useDepositInvest from '@/hooks/useDepositInvest';
-import { accDiv, accMul, accSub } from '@/utils/utils';
 import { ItemProps } from './types';
 
 const SectionRaise: React.FC<ItemProps> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
   const { isStarted, isSuccess } = useRaiseState(data);
-  const { progress, target, total } = useDepositInvest(data);
+  const { actual, target, progress } = useRaiseInfo(data);
   const { minRate, opsRatio, investRate } = useRaiseRate(data);
 
-  const minAmount = useMemo(() => accMul(target, minRate), [target, minRate]);
+  const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
-  const opsAmount = useMemo(() => accDiv(accMul(total, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [total, opsRatio]);
+  const opsAmount = useMemo(() => U.accDiv(U.accMul(actual, U.accDiv(opsRatio, 100)), U.accSub(1, U.accDiv(opsRatio, 100))), [actual, opsRatio]);
 
   return (
     <>
@@ -44,9 +44,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
                   <span className="fs-3">{investRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
-                <span className="badge badge-primary ms-auto">
-                  <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
-                </span>
+                <span className="badge badge-primary ms-auto">年化{F.formatRate(rate, '0.00%')}</span>
                 {/* <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
                   <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
@@ -83,7 +81,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
           <div className="row g-0">
             <div className="col-4 table-cell th">已募集</div>
             <div className="col-8 table-cell">
-              <span>{F.formatAmount(total, 2)} FIL</span>
+              <span>{F.formatAmount(actual, 2)} FIL</span>
               {isStarted && !isSuccess && <span> · {F.formatRate(progress)}</span>}
             </div>
           </div>

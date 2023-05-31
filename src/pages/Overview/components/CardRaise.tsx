@@ -1,18 +1,20 @@
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 import { useModel } from '@umijs/max';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
-import { formatEther, formatPower } from '@/utils/format';
+import { day2sec, toF4Address } from '@/utils/utils';
+import useRaiseContract from '@/hooks/useRaiseContract';
 import useFactoryContract from '@/hooks/useFactoryContract';
-import { day2sec, sleep, toF4Address } from '@/utils/utils';
+import { formatEther, formatPower } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
 const calcTime = (mill: number) => {
@@ -28,24 +30,9 @@ const calcTime = (mill: number) => {
 const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
   const { initialState } = useModel('@@initialState');
   const { createRaisePlan } = useFactoryContract();
-  const {
-    contract,
-    isRaiser,
-    isServicer,
-    isPending,
-    isWaiting,
-    isRaising,
-    isSuccess,
-    isClosed,
-    isFailed,
-    isWaitSeal,
-    isSealing,
-    isDelayed,
-    isWorking,
-    isSigned,
-    isOpsPaid,
-    isRaisePaid,
-  } = useRaiseState(data);
+  const { startRaisePlan, startSeal, servicerSign } = useRaiseContract(data?.raise_address);
+  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
+  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
 
@@ -86,35 +73,27 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     setTargetDate(0);
   }, [seconds, isRaising, isDelayed, isSealing]);
 
-  const [creating, handleCreate] = useProcessify(
-    useCallback(async () => {
-      if (!data) return;
+  const [creating, handleCreate] = useProcessify(async () => {
+    if (!data) return;
 
-      const raise = H.transformRaiseInfo(data);
-      const node = H.transformNodeInfo(data);
-      const extra = H.transformExtraInfo(data);
+    const raise = H.transformRaiseInfo(data);
+    const node = H.transformNodeInfo(data);
+    const extra = H.transformExtraInfo(data);
 
-      await createRaisePlan(raise, node, extra);
-    }, [data]),
-  );
+    await createRaisePlan(raise, node, extra);
+  });
 
-  const [sealing, sealAction] = useProcessify(
-    useCallback(async () => {
-      if (!data) return;
+  const [sealing, sealAction] = useProcessify(async () => {
+    if (!data) return;
 
-      await contract.startSeal(data.raising_id);
-    }, [data]),
-  );
+    await startSeal(data.raising_id);
+  });
 
-  const [starting, handleStart] = useProcessify(
-    useCallback(async () => {
-      if (!data) return;
+  const [starting, handleStart] = useProcessify(async () => {
+    if (!data) return;
 
-      await contract.startRaisePlan(data.raising_id);
-
-      await sleep(3e3);
-    }, [data]),
-  );
+    await startRaisePlan(data.raising_id);
+  });
 
   const handleSeal = () => {
     const hide = Dialog.confirm({
@@ -139,13 +118,11 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     });
   };
 
-  const [signing, handleSign] = useProcessify(
-    useCallback(async () => {
-      if (!data) return;
+  const [signing, handleSign] = useProcessify(async () => {
+    if (!data) return;
 
-      await contract.servicerSign();
-    }, [data]),
-  );
+    await servicerSign();
+  });
 
   const renderAction = () => {
     // 准备中

@@ -4,6 +4,11 @@ import { useRequest } from 'ahooks';
 import { toNumber } from '@/utils/format';
 import { getIncomeRate } from '@/apis/raise';
 
+/**
+ * 年化收益率
+ * @param raiseId
+ * @returns
+ */
 export default function useIncomeRate(raiseId?: string) {
   const service = async () => {
     if (raiseId) {

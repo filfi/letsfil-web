@@ -6,8 +6,8 @@ type ProxyOptions = Required<IConfig>['proxy'];
 type Options = OmitType<ProxyOptions, unknown[]>;
 
 const proxies: Record<string, Options> = {
-  // hyperspace testnet
-  hp: {
+  // test - hyperspace testnet
+  test: {
     '/api': {
       // target: 'http://10.100.244.100:9999',
       // target: 'http://10.100.244.100:7777',
@@ -23,8 +23,8 @@ const proxies: Record<string, Options> = {
       changeOrigin: true,
     },
   },
-  // 2k testnet
-  '2k': {
+  // local - 2k testnet
+  local: {
     '/api': {
       target: 'http://10.100.244.100:7777',
       secure: false,

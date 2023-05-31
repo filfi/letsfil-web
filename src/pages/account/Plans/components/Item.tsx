@@ -3,19 +3,20 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
 import * as F from '@/utils/format';
+import { catchify } from '@/utils/hackify';
+import { accSub, sec2day } from '@/utils/utils';
 import Countdown from './Countdown';
 import Dialog from '@/components/Dialog';
-import { catchify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import { RaiseState } from '@/constants/state';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
-import { accSub, sec2day } from '@/utils/utils';
-import useDepositInvest from '@/hooks/useDepositInvest';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
@@ -57,10 +58,11 @@ const Item: React.FC<{
   onStart?: () => Promise<any>;
   getProvider?: (id?: number | string) => API.Provider | undefined;
 }> = ({ data, invest, getProvider, onEdit, /* onHide, */ onDelete, onStart }) => {
+  const state = useRaiseState(data);
   const { pack } = useRaiseSeals(data);
   const { investRate } = useRaiseRate(data);
-  const { amount, progress, total, target } = useDepositInvest(data);
-  const { isRaiser, isSigned, isOpsPaid, isRaisePaid, ...state } = useRaiseState(data);
+  const { amount } = useDepositInvestor(data);
+  const { actual, progress, target, isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
 
   const calcSealDays = (data: API.Plan) => {
     const r: string[] = [];
@@ -262,7 +264,7 @@ const Item: React.FC<{
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">{state.isSuccess ? '实际募集' : '募集目标'}</span>
             <span className="fw-500">
-              <span>{state.isSuccess ? F.formatAmount(total) : F.formatAmount(target)} FIL</span>
+              <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (
                 <>
                   <span> · </span>

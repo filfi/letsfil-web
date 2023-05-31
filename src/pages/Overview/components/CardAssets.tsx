@@ -1,24 +1,26 @@
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
-import { accDiv, accMul } from '@/utils/utils';
+import { accMul } from '@/utils/utils';
 import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
-import useDepositOps from '@/hooks/useDepositOps';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositInvest from '@/hooks/useDepositInvest';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
+import useDepositServicer from '@/hooks/useDepositServicer';
 import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 import type { ItemProps } from './types';
 
 const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
-  const { amount } = useDepositOps(data);
-  const { isRaiser, isServicer, isWorking } = useRaiseState(data);
+  const { isWorking } = useRaiseState(data);
+  const { amount } = useDepositServicer(data);
+  const { ratio, record, isInvestor } = useDepositInvestor(data);
   const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
-  const { record, sealed, total, isInvestor } = useDepositInvest(data);
-
+  const { isRaiser, isServicer, sealProgress } = useRaiseInfo(data);
   const { investPower, raiserPower } = useAssetPack(data, pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined);
-  const ratio = useMemo(() => (total > 0 ? accDiv(sealed, total) : 0), [sealed, total]); // 封装占比
-  const pledge = useMemo(() => accMul(record, Math.min(ratio, 1)), [record, ratio]); // 已封装的质押币
+
+  // 已封装质押币 = 投资额 * 投资占比 * 封装进度
+  const pledge = useMemo(() => accMul(record, Math.min(ratio, 1), sealProgress), [ratio, record, sealProgress]);
 
   const goDepositCard = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
@@ -30,7 +32,7 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
     });
   };
 
-  if (data && (isInvestor || isRaiser || isServicer) && isWorking) {
+  if ((isInvestor || isRaiser || isServicer) && isWorking) {
     return (
       <>
         <div className="card section-card">

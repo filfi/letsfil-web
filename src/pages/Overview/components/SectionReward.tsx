@@ -3,10 +3,10 @@ import { Pie, PieConfig } from '@ant-design/plots';
 
 import { formatNum } from '@/utils/format';
 import { accDiv, accMul } from '@/utils/utils';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositInvest from '@/hooks/useDepositInvest';
 import type { ItemProps } from './types';
 
 const config: PieConfig = {
@@ -33,10 +33,11 @@ const config: PieConfig = {
 
 const SectionReward: React.FC<ItemProps> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
-  const { target, total } = useDepositInvest(data);
-  const { isSuccess, isRaiser, isServicer } = useRaiseState(data);
+  const { isSuccess } = useRaiseState(data);
+  const { actual, target, isRaiser, isServicer } = useRaiseInfo(data);
   const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
-  const reward = useMemo(() => accDiv(accMul(isSuccess ? total : target, rate, period), 360), [isSuccess, target, total, rate, period]);
+  // 预估收益
+  const reward = useMemo(() => accDiv(accMul(isSuccess ? actual : target, rate, period), 360), [isSuccess, target, actual, rate, period]);
 
   const pieData = useMemo(
     () => [

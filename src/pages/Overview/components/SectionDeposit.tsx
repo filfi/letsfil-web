@@ -6,14 +6,14 @@ import { useModel } from '@umijs/max';
 import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
-import { RaiseState } from '@/constants/state';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
-import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
-import useDepositOps from '@/hooks/useDepositOps';
-import useDepositRaise from '@/hooks/useDepositRaise';
-import useDepositInvest from '@/hooks/useDepositInvest';
-import { accAdd, accDiv, accMul, sleep } from '@/utils/utils';
+import useRaiseState from '@/hooks/useRaiseState';
+import { accAdd, accDiv, accMul } from '@/utils/utils';
+import useDepositRaiser from '@/hooks/useDepositRaiser';
+import useRaiseContract from '@/hooks/useRaiseContract';
+import useDepositServicer from '@/hooks/useDepositServicer';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
@@ -21,39 +21,24 @@ import type { ItemProps } from './types';
 
 const RaiserCard: React.FC<ItemProps> = ({ data }) => {
   const { initialState } = useModel('@@initialState');
-  const {
-    contract,
-    raiseState,
-    isRaisePaid,
-    isRaiser,
-    isPayer,
-    raiser,
-    isClosed,
-    isFailed,
-    isPending,
-    isWaiting,
-    isProcess,
-    isRaising,
-    isWorking,
-    isFinished,
-    isDestroyed,
-  } = useRaiseState(data);
-  const raise = useDepositRaise(data);
-  const actual = useMemo(() => F.toNumber(data?.actual_amount), [data?.actual_amount]);
-  const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
-  const fee = useMemo(() => (isProcess ? accMul(actual, 0.003) : 0), [actual, isProcess]); // 手续费
 
-  const payable = useMemo(() => isRaiser && raiseState < RaiseState.Raising, [isRaiser, raiseState]);
-  const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isFinished || isDestroyed), [isPayer, isClosed, isFailed, isFinished, isDestroyed]);
+  const raise = useDepositRaiser(data);
+  const { depositRaiseFund } = useRaiseContract(data?.raise_address);
+  const { actual, raiser, isRaiser, isRaisePaid } = useRaiseInfo(data);
+  const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = useRaiseState(data);
+
+  const fee = useMemo(() => (isSuccess ? accMul(actual, 0.003) : 0), [actual, isSuccess]); // 手续费
+  const amount = useMemo(() => (isRaisePaid ? raise.amount : F.toNumber(data?.raise_security_fund)), [data, raise.amount, isRaisePaid]);
+
+  const payable = useMemo(() => isRaiser && isWaiting, [isRaiser, isWaiting]);
+  const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isWorking), [isRaiser, isClosed, isFailed, isWorking]);
 
   const [paying, handlePay] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.depositRaiseFund(data.raising_id, {
+    await depositRaiseFund(data.raising_id, {
       value: data.raise_security_fund,
     });
-
-    await sleep(3e3);
   });
 
   return (
@@ -95,9 +80,9 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
             </p>
             {isRaisePaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(raiser)}</span>}
           </div>
-          {(isProcess || isFailed || isWorking) && (
+          {(isClosed || isFailed || isSuccess || isWorking) && (
             <div className="bg-light my-2 px-3 py-2 rounded-3">
-              {isProcess && (
+              {isSuccess && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>募集手续费</span>
@@ -107,7 +92,7 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
                   {/* <a className="ms-auto text-underline" href="#">了解更多</a> */}
                 </p>
               )}
-              {(isFailed || isWorking) && (
+              {(isClosed || isFailed || isWorking) && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>累计罚息</span>
@@ -153,32 +138,30 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
 
 const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
   const { initialState } = useModel('@@initialState');
-  const ops = useDepositOps(data);
-  const { total } = useDepositInvest(data);
+  const ops = useDepositServicer(data);
   const { investRate } = useRaiseRate(data);
-  const { contract, raiseState, isOpsPaid, isPayer, payer, isPending, isWaiting, isClosed, isFailed, isSealing, isDelayed, isFinished, isDestroyed } =
-    useRaiseState(data);
+  const { depositOpsFund } = useRaiseContract(data?.raise_address);
+  const { actual, isOpsPaid, servicer, isServicer } = useRaiseInfo(data);
+  const { isPending, isWaiting, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
 
+  const payable = useMemo(() => isServicer && isWaiting, [isServicer, isWaiting]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
-  const payable = useMemo(() => isPayer && raiseState < RaiseState.Raising, [isPayer, raiseState]);
   const opsAmount = useMemo(() => (isOpsPaid ? ops.amount : ops.total), [ops.amount, ops.total, isOpsPaid]); // 保证金
-  const withdrawable = useMemo(() => isPayer && (isClosed || isFailed || isDestroyed), [isPayer, isClosed, isFailed, isDestroyed]);
-  const opsInterest = useMemo(() => accMul(ops.totalInterest, accDiv(ops.total, accAdd(ops.total, total))), [ops.total, ops.totalInterest, total]); // 利息补偿
-  const showExtra = useMemo(() => isFailed || isSealing || isDelayed || isFinished || ops.fines > 0, [isFailed, isSealing, isDelayed, isFinished, ops.fines]);
+  const withdrawable = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isServicer, isClosed, isFailed, isDestroyed]);
+  const opsInterest = useMemo(() => accMul(ops.totalInterest, accDiv(ops.total, accAdd(ops.total, actual))), [ops.total, ops.totalInterest, actual]); // 利息补偿
+  const showExtra = useMemo(() => isClosed || isFailed || isSuccess || isWorking || ops.fines > 0, [isClosed, isFailed, isSuccess, isWorking, ops.fines]);
 
   const [paying, handlePay] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.depositOpsFund(data.raising_id, {
+    await depositOpsFund(data.raising_id, {
       value: data.ops_security_fund,
     });
-
-    await sleep(3e3);
   });
 
   return (
     <>
-      <div className={classNames('card', { 'card-danger': isPayer && isWaiting && !isOpsPaid })}>
+      <div className={classNames('card', { 'card-danger': isServicer && isWaiting && !isOpsPaid })}>
         <div className="card-header d-flex align-items-center">
           <div className="d-flex align-items-center me-auto">
             <div className="flex-shrink-0">{isOpsPaid ? <IconSuccess /> : <IconDander />}</div>
@@ -220,11 +203,11 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
               <span className="text-decimal">{F.formatAmount(opsAmount)}</span>
               <span className="ms-1 text-gray">FIL</span>
             </p>
-            {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(payer)}</span>}
+            {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(servicer)}</span>}
           </div>
           {showExtra && (
             <div className="bg-light my-2 px-3 py-2 rounded-3">
-              {isFailed && (
+              {(isClosed || isFailed) && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>利息补偿</span>
@@ -234,24 +217,24 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
                   {/* <a className="ms-auto text-underline" href="#">补偿明细</a> */}
                 </p>
               )}
-              {(isSealing || isDelayed) && (
+              {isSuccess && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>超配部分</span>
                     <span className="ms-2 fw-bold">{F.formatAmount(ops.over)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
-                  {ops.over > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
+                  {ops.over > 0 && <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>}
                 </p>
               )}
-              {isFinished && (
+              {isWorking && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
                     <span>封装剩余部分</span>
                     <span className="ms-2 fw-bold">{F.formatAmount(ops.remain)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
-                  {ops.remain > 0 && <span className="ms-auto">已退到 {F.formatAddr(payer)}</span>}
+                  {ops.remain > 0 && <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>}
                 </p>
               )}
               {ops.fines > 0 && (
