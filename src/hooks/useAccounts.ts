@@ -49,7 +49,12 @@ export default function useAccounts() {
       return accounts;
     } catch (e: any) {
       setState({ connecting: false });
-      Modal.alert({ icon: 'warn', title: '连接失败', content: e.message });
+
+      const message = e.message;
+
+      if (!`${message}`.toLowerCase().includes('user rejected')) {
+        Modal.alert({ icon: 'warn', title: '连接失败', content: message });
+      }
     }
   };
 
