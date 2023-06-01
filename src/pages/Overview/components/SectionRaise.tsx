@@ -9,7 +9,7 @@ import useIncomeRate from '@/hooks/useIncomeRate';
 import { ItemProps } from './types';
 
 const SectionRaise: React.FC<ItemProps> = ({ data }) => {
-  const { rate } = useIncomeRate(data?.raising_id);
+  const { rate } = useIncomeRate(data);
   const { isStarted, isSuccess } = useRaiseState(data);
   const { actual, target, progress } = useRaiseInfo(data);
   const { minRate, opsRatio, priorityRate } = useRaiseRate(data);

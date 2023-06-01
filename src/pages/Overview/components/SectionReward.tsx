@@ -32,10 +32,10 @@ const config: PieConfig = {
 };
 
 const SectionReward: React.FC<ItemProps> = ({ data }) => {
-  const { rate } = useIncomeRate(data?.raising_id);
+  const { rate } = useIncomeRate(data);
   const { isSuccess } = useRaiseState(data);
   const { actual, target, isRaiser, isServicer } = useRaiseInfo(data);
-  const { priorityRate, investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
+  const { priorityRate, investRate, raiserRate, servicerRate, opsRatio, ffiRate, period } = useRaiseRate(data);
   // 预估收益
   const reward = useMemo(() => accDiv(accMul(isSuccess ? actual : target, rate, period), 360), [isSuccess, target, actual, rate, period]);
 
@@ -71,9 +71,9 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
             <div className="col">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
-                <p className="reward-label">优先投资人</p>
+                <p className="reward-label">投资人</p>
                 <p className="reward-text">
-                  <span className="text-decimal">{investRate}</span>
+                  <span className="text-decimal">{priorityRate}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>
@@ -91,19 +91,9 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
             <div className="col">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
-                <p className="reward-label">技术运维保证金</p>
+                <p className="reward-label">技术运维服务费</p>
                 <p className="reward-text">
-                  <span className="text-decimal">{opsRate}</span>
-                  <span className="ms-2 text-neutral">%</span>
-                </p>
-              </div>
-            </div>
-            <div className="col">
-              <div className="reward-item mb-3" style={{ '--dot-color': '#BCE0FD' } as any}>
-                <span className="reward-dot"></span>
-                <p className="reward-label">技术运维服务商</p>
-                <p className="reward-text">
-                  <span className="text-decimal">{servicerRate}</span>
+                  <span className="text-decimal">{opsRatio}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>

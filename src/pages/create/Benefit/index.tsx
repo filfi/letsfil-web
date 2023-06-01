@@ -36,44 +36,44 @@ const defaultTreeData = {
       active: true,
       rate: 0,
       desc: '投资人的权益',
-      children: [
-        {
-          label: '优先投资人分成',
-          rate: 0,
-          desc: '优先质押币的权益',
-        },
-        {
-          label: '运维保证金分成',
-          rate: 0,
-          locked: true,
-          desc: '劣后质押币的权益',
-        },
-      ],
+      // children: [
+      //   {
+      //     label: '优先投资人分成',
+      //     rate: 0,
+      //     desc: '优先质押币的权益',
+      //   },
+      //   {
+      //     label: '运维保证金分成',
+      //     rate: 0,
+      //     locked: true,
+      //     desc: '劣后质押币的权益',
+      //   },
+      // ],
     },
     {
       label: '建设方分成',
       rate: 0,
       desc: '建设方的权益',
-      children: [
-        {
-          label: '技术运维服务费',
-          rate: 0,
-          active: true,
-          locked: true,
-          desc: '技术服务商的权益',
-        },
-        {
-          label: '发起人分成',
-          rate: 0,
-          desc: '募集计划的管理人',
-        },
-        {
-          label: 'FilFi协议分成',
-          rate: 0,
-          locked: true,
-          desc: '固定为建设方权益的8%',
-        },
-      ],
+      // children: [
+      //   {
+      //     label: '技术运维服务费',
+      //     rate: 0,
+      //     active: true,
+      //     locked: true,
+      //     desc: '技术服务商的权益',
+      //   },
+      //   {
+      //     label: '发起人分成',
+      //     rate: 0,
+      //     desc: '募集计划的管理人',
+      //   },
+      //   {
+      //     label: 'FilFi协议分成',
+      //     rate: 0,
+      //     locked: true,
+      //     desc: '固定为建设方权益的8%',
+      //   },
+      // ],
     },
   ],
 };
@@ -83,12 +83,12 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
   const vals = H.calcEachEarn(priority, spRate, ratio);
 
   data.children[0].rate = vals.priority;
-  data.children[0].children[0].rate = vals.investRate;
-  data.children[0].children[1].rate = vals.opsRate;
+  // data.children[0].children[0].rate = vals.investRate;
+  // data.children[0].children[1].rate = vals.opsRate;
   data.children[1].rate = vals.inferior;
-  data.children[1].children[0].rate = vals.spRate;
-  data.children[1].children[1].rate = vals.raiserRate;
-  data.children[1].children[2].rate = vals.ffiRate;
+  // data.children[1].children[0].rate = vals.spRate;
+  // data.children[1].children[1].rate = vals.raiserRate;
+  // data.children[1].children[2].rate = vals.ffiRate;
 
   return data;
 };

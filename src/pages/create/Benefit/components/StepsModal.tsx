@@ -56,7 +56,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
           <div className="row row-cols-1 row-cols-md-2 g-3">
             <div className="col">
               <div className="ffi-item">
-                <p className="mb-1 fw-500">优先投资人分成</p>
+                <p className="mb-1 fw-500">投资人分成</p>
                 <Form.Item noStyle name="investRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
