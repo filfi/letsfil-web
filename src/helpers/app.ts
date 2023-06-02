@@ -2,13 +2,23 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { createRef } from 'react';
 import { ethers, BigNumber } from 'ethers';
+import MetaMaskOboarding from '@metamask/onboarding';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
+import abi from '@/abis/raise.abi.json';
 import { toFixed } from '@/utils/format';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
+
+export function createContract(address?: string) {
+  if (!address || !MetaMaskOboarding.isMetaMaskInstalled()) return;
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum!);
+
+  return new ethers.Contract(address, abi, provider.getSigner());
+}
 
 export async function callRPC(method: string, params: (number | string)[]) {
   const url = `${RPC_URL}/v1`;
@@ -195,6 +205,35 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
     raiserOldShare: 0,
     spOldRewardShare: 0,
     sponsorOldRewardShare: 0,
+  };
+}
+
+/**
+ * 计算各方权益配比
+ * @param priority 优先部分（出币方权益）
+ * @param spRate 技术运维服务费
+ * @param ratio 保证金配比
+ */
+export function calcEachEarn(priority: number | string = 70, spRate: number | string = 5, ratio: number | string = 5) {
+  const _priority = Number.isNaN(+priority) ? 0 : +priority;
+  const _spRate = Number.isNaN(+spRate) ? 0 : +spRate;
+  const _ratio = Number.isNaN(+ratio) ? 0 : +ratio;
+
+  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), 2); // 投资人分成
+  const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), 2); // 保证金分成
+  const inferior = U.accSub(100, _priority); // 建设方分成(劣后部分)
+  const ffiRate = +toFixed(U.accMul(inferior, 0.08), 2, 2); // FilFi协议费用（建设方 * 8%）
+  const raiserRate = Math.max(U.accSub(inferior, _spRate, ffiRate), 0); // 发起人分成
+
+  return {
+    ratio,
+    priority: _priority,
+    investRate,
+    opsRate,
+    inferior,
+    spRate: _spRate,
+    raiserRate,
+    ffiRate,
   };
 }
 

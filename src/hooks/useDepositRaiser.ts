@@ -7,21 +7,22 @@ import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
-export default function useDepositRaise(data?: API.Plan) {
-  const { getContract } = useRaiseContract();
-
+/**
+ * 发起人的投资信息
+ * @param data
+ * @returns
+ */
+export default function useDepositRaiser(data?: API.Plan) {
   const [fines, setFines] = useState(0); // 罚息
   const [amount, setAmount] = useState(0); // 当前保证金
+
+  const contract = useRaiseContract(data?.raise_address);
 
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-
-    if (!contract) return;
-
-    const fines = await contract.totalInterest(data.raising_id);
-    const amount = await contract.securityFundRemain(data.raising_id);
+    const amount = await contract.getRaiseFund(data.raising_id);
+    const fines = await contract.getTotalInterest(data.raising_id);
 
     setFines(toNumber(fines));
     setAmount(toNumber(amount));
@@ -30,9 +31,7 @@ export default function useDepositRaise(data?: API.Plan) {
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-
-    await contract?.withdrawSecurityFund(data.raising_id);
+    await contract.withdrawRaiseFund(data.raising_id);
   });
 
   useEffect(() => {

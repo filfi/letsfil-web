@@ -1,13 +1,13 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
-import { useMount, useScroll } from 'ahooks';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { FormattedMessage, Link, NavLink, useModel } from '@umijs/max';
+import { useBoolean, useMount, useScroll } from 'ahooks';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FormattedMessage, history, Link, NavLink, useLocation, useModel } from '@umijs/max';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
+import { formatEther } from '@/utils/format';
 import useAccounts from '@/hooks/useAccounts';
-import { /* formatAddr, */ formatEther } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
 import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
@@ -23,10 +23,12 @@ const Header: React.FC = () => {
 
   // states
   const [balance, setBalance] = useState<any>();
+  const [isHover, { setTrue, setFalse }] = useBoolean(false);
 
   // hooks
   const position = useScroll();
-  const { accounts, getBalance, handleConnect /* handleDisconnect */ } = useAccounts();
+  const location = useLocation();
+  const { accounts, getBalance, handleConnect, handleDisconnect } = useAccounts();
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
@@ -42,15 +44,21 @@ const Header: React.FC = () => {
     fetchBalance();
   }, [accounts]);
 
+  useEffect(setFalse, [location]);
+
   useMount(() => {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
   });
 
-  // const disconnect = () => {
-  //   handleDisconnect();
+  const disconnect = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
 
-  //   history.replace('/');
-  // };
+    setFalse();
+
+    handleDisconnect();
+
+    history.replace('/');
+  };
 
   return (
     <header ref={header} className={classNames('header fixed-top bg-white')} style={{ boxShadow: `0 3px 10px rgba(0, 0, 0, ${percent * 0.15})` }}>
@@ -68,7 +76,7 @@ const Header: React.FC = () => {
                     <FormattedMessage id="notify.transaction.processing" />
                   </SpinBtn>
                 ) : (
-                  <div className="btn btn-outline-light d-inline-flex align-items-center">
+                  <button className="btn btn-outline-light d-inline-flex align-items-center" type="button">
                     <span className="lh-1">
                       <IconWallet />
                     </span>
@@ -78,13 +86,34 @@ const Header: React.FC = () => {
                     {/* <span className="vr mx-2 d-none d-md-inline"></span>
 
                     <span className="d-none d-md-inline">{formatAddr(accounts[0])}</span> */}
-                  </div>
+                  </button>
                 )}
-                <Link to="/account" className="btn btn-outline-light">
-                  <span className="lh-1">
-                    <IconUser />
-                  </span>
-                </Link>
+                <div className="btn-group dropdown" role="group" onMouseEnter={setTrue} onMouseLeave={setFalse}>
+                  <Link to="/account" className="btn btn-outline-light rounded-end">
+                    <span className="lh-1">
+                      <IconUser />
+                    </span>
+                  </Link>
+
+                  <ul
+                    className={classNames('dropdown-menu dropdown-menu-end border-0 shadow rounded-4', { show: isHover })}
+                    data-bs-popper={isHover ? 'static' : undefined}
+                  >
+                    <li>
+                      <Link className="dropdown-item" to="/account">
+                        <span className="bi bi-person"></span>
+                        <span className="ms-2">个人资料</span>
+                      </Link>
+                    </li>
+                    <li className="dropdown-divider"></li>
+                    <li>
+                      <a className="dropdown-item" href="#" onClick={disconnect}>
+                        <span className="bi bi-box-arrow-right"></span>
+                        <span className="ms-2">退出</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
               </>
             ) : (
               <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={handleConnect}>

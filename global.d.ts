@@ -1,5 +1,5 @@
 import '@umijs/max/typings';
-import { BigNumberish } from 'ethers';
+import type { BigNumber, BigNumberish } from 'ethers';
 
 declare global {
   interface Window {
@@ -143,5 +143,23 @@ declare global {
      * 旧资产包中服务商的收益分配比例，8000表示80%
      */
     spOldRewardShare: BigNumberish;
+  }
+
+  /**
+   * 投资人信息
+   */
+  interface InvestorInfo {
+    /**
+     * 账户余额
+     */
+    pledgeAmount: BigNumber;
+    /**
+     * 投资总额
+     */
+    pledgeCalcAmount: BigNumber;
+    /**
+     * 已提取金额
+     */
+    withdrawAmount: BigNumber;
   }
 }

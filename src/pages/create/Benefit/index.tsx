@@ -13,7 +13,7 @@ import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import BenefitPie from './components/BenefitPie';
 import StepsModal from './components/StepsModal';
 import AssetsModal from './components/AssetsModal';
@@ -24,27 +24,29 @@ import { formatEther, formatNum, toFixed } from '@/utils/format';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 
+type Values = ReturnType<typeof H.calcEachEarn>;
+
 const defaultTreeData = {
   label: '总收益',
   rate: 100,
   desc: '全部算力的全部产出',
   children: [
     {
-      label: '出币方分成',
+      label: '投资人分成',
       active: true,
       rate: 0,
-      desc: '投入FIL一方的权益',
+      desc: '投资人的权益',
       children: [
         {
-          label: '投资人分成',
+          label: '优先投资人分成',
           rate: 0,
-          desc: '投资人的权益',
+          desc: '优先质押币的权益',
         },
         {
           label: '运维保证金分成',
           rate: 0,
           locked: true,
-          desc: '技术服务商的权益',
+          desc: '劣后质押币的权益',
         },
       ],
     },
@@ -76,18 +78,17 @@ const defaultTreeData = {
   ],
 };
 
-const getTreeData = (amount: number = 70, deposit = 5, rate = 5) => {
-  const data = { ...defaultTreeData };
-  const sVal = accSub(100, amount);
-  const fVal = accMul(sVal, 0.08);
+const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
+  const data = Object.assign({}, defaultTreeData);
+  const vals = H.calcEachEarn(priority, spRate, ratio);
 
-  data.children[0].rate = amount;
-  data.children[0].children[0].rate = accMul(amount, accDiv(accSub(100, rate), 100));
-  data.children[0].children[1].rate = accMul(amount, accDiv(rate, 100));
-  data.children[1].rate = sVal;
-  data.children[1].children[0].rate = deposit;
-  data.children[1].children[1].rate = accSub(sVal, fVal, deposit);
-  data.children[1].children[2].rate = fVal;
+  data.children[0].rate = vals.priority;
+  data.children[0].children[0].rate = vals.investRate;
+  data.children[0].children[1].rate = vals.opsRate;
+  data.children[1].rate = vals.inferior;
+  data.children[1].children[0].rate = vals.spRate;
+  data.children[1].children[1].rate = vals.raiserRate;
+  data.children[1].children[2].rate = vals.ffiRate;
 
   return data;
 };
@@ -96,18 +97,18 @@ export default function CreateBenefit() {
   const modal = useRef<ModalAttrs>(null);
 
   const [form] = Form.useForm();
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
   const [model, setModel] = useModel('stepform');
-  const raiserRate = Form.useWatch('raiserCoinShare', form);
-  const servicerRate = Form.useWatch('opServerShare', form);
-  const opsRate = Form.useWatch('opsSecurityFundRate', form);
+  const spRate = Form.useWatch('opServerShare', form);
+  const priority = Form.useWatch('raiserCoinShare', form);
+  const ratio = Form.useWatch('opsSecurityFundRate', form);
   const powerRate = Form.useWatch('raiseHisPowerRate', form);
   const pledgeRate = Form.useWatch('raiseHisInitialPledgeRate', form);
 
-  const pieVal = useMemo(() => (Number.isNaN(+opsRate) ? 0 : +opsRate), [opsRate]);
+  const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const provider = useMemo(() => getProvider(model?.serviceId), [model, getProvider]);
-  const treeData = useMemo(() => getTreeData(raiserRate, servicerRate, opsRate), [raiserRate, servicerRate, opsRate]);
+  const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0), [powerRate]);
   const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);
 
@@ -124,8 +125,6 @@ export default function CreateBenefit() {
     }
   }, [provider]);
 
-  const rateValidator = createNumRangeValidator([5, 100], '最小5%，最大100%');
-
   const handleReset = () => {
     form.setFieldsValue({
       opServerShare: 5,
@@ -133,10 +132,10 @@ export default function CreateBenefit() {
     });
   };
 
-  const handleSteps = ({ raiser, servicer }: API.Base) => {
+  const handleSteps = ({ priority, spRate }: Values) => {
     form.setFieldsValue({
-      opServerShare: servicer,
-      raiserCoinShare: raiser,
+      opServerShare: spRate,
+      raiserCoinShare: priority,
     });
   };
 
@@ -243,7 +242,10 @@ export default function CreateBenefit() {
             <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4 mb-4">
               <div className="col">
                 <div className="mb-1 fw-500">劣后质押币(技术运维保证金)</div>
-                <Form.Item name="opsSecurityFundRate" rules={[{ required: true, message: '请输入' }, { validator: rateValidator }]}>
+                <Form.Item
+                  name="opsSecurityFundRate"
+                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, 100], '最小5%， 最大100%') }]}
+                >
                   <Input
                     className="text-end"
                     type="number"
@@ -366,11 +368,14 @@ export default function CreateBenefit() {
 
                 <div className="d-flex flex-column flex-lg-row gap-3 gap-lg-4 mb-4 ps-4 ps-lg-0 position-relative">
                   <div className="flex-full">
-                    <Form.Item name="raiseHisPowerRate" rules={[{ required: true, message: '请输入' }, { validator: rateValidator }]}>
+                    <Form.Item
+                      name="raiseHisPowerRate"
+                      rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 100], '最小0%，最大100%') }]}
+                    >
                       <Input
                         className="text-end"
                         type="number"
-                        min={5}
+                        min={0}
                         max={100}
                         prefix={<span className="text-gray-dark">我的算力</span>}
                         suffix="%"
@@ -439,7 +444,7 @@ export default function CreateBenefit() {
         </div>
       </Form>
 
-      <StepsModal id="benefit-modal" ops={opsRate} raiser={raiserRate} servicer={servicerRate} onConfirm={handleSteps} />
+      <StepsModal id="benefit-modal" property={priority} spRate={spRate} ratio={ratio} onConfirm={handleSteps} />
 
       <AssetsModal ref={modal} data={model} onConfirm={handleSubmit} />
 

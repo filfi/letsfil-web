@@ -62,7 +62,7 @@ const BasicLayout: React.FC = () => {
 
       <Header />
 
-      <main className="ff-layout-main">
+      <main className="ffi-layout-main">
         <Outlet />
       </main>
 

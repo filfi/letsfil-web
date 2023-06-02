@@ -1,35 +1,26 @@
 import { useMemo } from 'react';
-import { FormattedMessage, Link, useModel } from '@umijs/max';
+import { Link } from '@umijs/max';
 
-import SpinBtn from '@/components/SpinBtn';
-import useAccounts from '@/hooks/useAccounts';
+import { accMul } from '@/utils/utils';
 import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
-import useDepositOps from '@/hooks/useDepositOps';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositInvest from '@/hooks/useDepositInvest';
-import { accDiv, accMul, isDef } from '@/utils/utils';
-import { formatAmount, formatNum, formatUnixDate } from '@/utils/format';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
+import useDepositServicer from '@/hooks/useDepositServicer';
+import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 import type { ItemProps } from './types';
 
-function formatByte(val?: number | string) {
-  if (isDef(val)) {
-    return formatNum(val, '0.0 ib').split(' ');
-  }
-}
-
 const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
-  const { account, handleConnect } = useAccounts();
-  const { initialState } = useModel('@@initialState');
-
-  const { amount } = useDepositOps(data);
-  const { isRaiser, isServicer, isWorking } = useRaiseState(data);
+  const { isWorking } = useRaiseState(data);
+  const { amount } = useDepositServicer(data);
+  const { ratio, record, isInvestor } = useDepositInvestor(data);
   const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
-  const { record, sealed, total, isInvestor } = useDepositInvest(data);
-
+  const { isRaiser, isServicer, sealProgress } = useRaiseInfo(data);
   const { investPower, raiserPower } = useAssetPack(data, pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined);
-  const ratio = useMemo(() => (total > 0 ? accDiv(sealed, total) : 0), [sealed, total]); // 封装占比
-  const pledge = useMemo(() => accMul(record, Math.min(ratio, 1)), [record, ratio]); // 已封装的质押币
+
+  // 已封装质押币 = 投资额 * 投资占比 * 封装进度
+  const pledge = useMemo(() => accMul(record, Math.min(ratio, 1), sealProgress), [ratio, record, sealProgress]);
 
   const goDepositCard = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
@@ -41,7 +32,7 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
     });
   };
 
-  if (data && (isInvestor || isRaiser || isServicer) && isWorking) {
+  if ((isInvestor || isRaiser || isServicer) && isWorking) {
     return (
       <>
         <div className="card section-card">
@@ -68,8 +59,8 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>获得算力</span>
                   <span className="ms-auto">
-                    <span className="fs-20 fw-600">{formatByte(investPower)?.[0]}</span>
-                    <span className="ms-1 text-neutral">{formatByte(investPower)?.[1]}</span>
+                    <span className="fs-20 fw-600">{formatPower(investPower)?.[0]}</span>
+                    <span className="ms-1 text-neutral">{formatPower(investPower)?.[1]}</span>
                   </span>
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">
@@ -95,8 +86,8 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>获得算力</span>
                   <span className="ms-auto">
-                    <span className="fs-20 fw-600">{formatByte(raiserPower)?.[0]}</span>
-                    <span className="ms-1 text-neutral">{formatByte(raiserPower)?.[1]}</span>
+                    <span className="fs-20 fw-600">{formatPower(raiserPower)?.[0]}</span>
+                    <span className="ms-1 text-neutral">{formatPower(raiserPower)?.[1]}</span>
                   </span>
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">
@@ -165,16 +156,6 @@ const CardAssets: React.FC<ItemProps> = ({ data, pack }) => {
             </p>
           </div>
         </div>
-
-        {!account && (
-          <div className="card section-card">
-            <div className="card-body">
-              <SpinBtn className="btn btn-primary btn-lg w-100" loading={initialState?.connecting} onClick={handleConnect}>
-                <FormattedMessage id="actions.button.connect" />
-              </SpinBtn>
-            </div>
-          </div>
-        )}
       </>
     );
   }

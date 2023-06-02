@@ -2,14 +2,14 @@
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositInvest from '@/hooks/useDepositInvest';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import type { ItemProps } from './types';
 
 const CardBack: React.FC<ItemProps> = ({ data }) => {
-  const { isFailed, isWorking } = useRaiseState(data);
-  const { amount, backAmount, backInterest, processing, isInvestor, unStaking } = useDepositInvest(data);
+  const { isClosed, isFailed, isWorking } = useRaiseState(data);
+  const { amount, backAmount, backInterest, processing, isInvestor, unStaking } = useDepositInvestor(data);
 
-  if (isInvestor && (isFailed || isWorking)) {
+  if (isInvestor && (isClosed || isFailed || isWorking)) {
     return (
       <>
         <div className="card section-card">

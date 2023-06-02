@@ -7,6 +7,8 @@ body {
 
 #root {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 :root {
@@ -19,7 +21,7 @@ body {
   // text
   font-size: 14px;
   font-weight: normal;
-  line-height: 1.42857142;
+  line-height: 1.4286;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,6 +37,10 @@ a {
 
 .alert + .header {
   top: 54px;
+}
+
+.ffi-layout-main {
+  flex: 1 1 auto;
 }
 
 svg[fill='currentColor'] path {

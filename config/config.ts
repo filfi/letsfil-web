@@ -5,9 +5,10 @@ import routes from './routes';
 export default defineConfig({
   define: {
     'process.env': {
-      API_URL: process.env.API_URL ?? '/api',
-      RPC_URL: process.env.RPC_URL ?? '/rpc',
+      API_URL: process.env.API_URL,
+      RPC_URL: process.env.RPC_URL,
       RUN_ENV: process.env.RUN_ENV,
+      ADDRESS: process.env.ADDRESS,
     },
   },
 
@@ -24,7 +25,7 @@ export default defineConfig({
   layout: false,
   locale: {
     title: true,
-    default: 'en-US',
+    default: 'zh-CN',
     useLocalStorage: true,
   },
   request: {},

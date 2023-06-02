@@ -1,46 +1,62 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { accAdd } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
+import useRaiseRate from './useRaiseRate';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
+import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
+/**
+ * 服务商收益
+ * @param data
+ * @returns
+ */
 export default function useRewardServicer(data?: API.Plan) {
-  const { getContract } = useRaiseContract();
+  const contract = useRaiseContract(data?.raise_address);
 
-  const [locked, setLocked] = useState(0);
+  const [fines, setFines] = useState(0); // 罚金
   const [reward, setReward] = useState(0); // 可提取
   const [record, setRecord] = useState(0); // 已提取
   const [pending, setPending] = useState(0); // 待释放
+  const [rewardLock, setRewardLock] = useState(0);
+  const [totalReward, setTotalReward] = useState(0); // 总收益
 
-  const total = useMemo(() => accAdd(accAdd(record, reward), pending), [record, reward, pending]);
+  const { opsRate, servicerRate } = useRaiseRate(data);
+
+  const locked = useMemo(
+    () => Math.max(accSub(accAdd(accMul(totalReward, accDiv(opsRate, 100)), rewardLock), fines), 0),
+    [fines, opsRate, rewardLock, totalReward],
+  );
+  const total = useMemo(
+    () => Math.max(accSub(accMul(totalReward, accDiv(accAdd(servicerRate, opsRate), 100)), fines), 0),
+    [fines, opsRate, servicerRate, totalReward],
+  );
 
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
+    const fines = await contract.getServicerFines(data.raising_id);
+    const locked = await contract.getServicerLockedReward(data.raising_id);
+    const reward = await contract.getServicerAvailableReward(data.raising_id);
+    const record = await contract.getServicerWithdrawnReward(data.raising_id);
+    const pending = await contract.getServicerPendingReward(data.raising_id);
+    const totalReward = await contract.getTotalReward(data.raising_id);
 
-    if (!contract) return;
-
-    const locked = await contract.spRewardLock(data.raising_id);
-    const reward = await contract.spRewardAvailableLeft(data.raising_id);
-    const record = await contract.gotSpReward(data.raising_id);
-    const pending = await contract.spWillReleaseReward(data.raising_id);
-
-    setLocked(toNumber(locked));
+    setFines(toNumber(fines));
     setReward(toNumber(reward));
     setRecord(toNumber(record));
     setPending(toNumber(pending));
+    setRewardLock(toNumber(locked));
+    setTotalReward(toNumber(totalReward));
   });
 
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-    await contract?.spWithdraw(data.raising_id);
+    await contract.servicerWithdraw(data.raising_id);
   });
 
   useEffect(() => {
@@ -52,6 +68,7 @@ export default function useRewardServicer(data?: API.Plan) {
   });
 
   return {
+    fines,
     total,
     locked,
     record,

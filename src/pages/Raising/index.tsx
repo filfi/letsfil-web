@@ -6,7 +6,7 @@ import { useRequest, useTitle } from 'ahooks';
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Empty from '@/components/Empty';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import BannerCard from './components/BannerCard';
 import LoadingView from '@/components/LoadingView';
 import RaisingCard from './components/RaisingCard';
@@ -25,7 +25,7 @@ const isSealing = (data: API.Plan) => data.status === RaiseState.Success && [Nod
 export default function Raising() {
   useTitle('募集计划 - FilFi', { restoreOnUnmount: true });
 
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
 
   const service = async () => {
     return await A.list({
@@ -42,10 +42,11 @@ export default function Raising() {
   const seals = useMemo(() => filter(list, isSealing), [list]);
   const workes = useMemo(() => filter(list, isWorking), [list]);
   const isEmpty = useMemo(() => !((data && data.total > 0) || banner), [banner, data]);
+  const items = useMemo(() => (banner ? list?.concat(banner) : list), [list, banner]);
 
   return (
     <div className="container pt-4 pt-lg-5">
-      <LoadingView data={list || banner} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView data={items} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
             <Empty title="没有募集计划" />

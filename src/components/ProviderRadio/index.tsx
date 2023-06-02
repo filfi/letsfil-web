@@ -1,22 +1,17 @@
-import { useMemo } from 'react';
 import { Skeleton } from 'antd';
-import { useRequest } from 'ahooks';
 
 import FormRadio from '../FormRadio';
 import { isEqual } from '@/utils/utils';
-import { providers } from '@/apis/raise';
 
 export type ProviderRadioProps = {
   value?: number | string;
+  loading?: boolean;
+  options?: API.Provider[];
   onChange?: (value: number | string) => void;
   onSelect?: (value: number | string, item: API.Provider) => void;
 };
 
-const ProviderSelect: React.FC<ProviderRadioProps> = ({ value, onChange, onSelect }) => {
-  const { data, loading } = useRequest(providers);
-
-  const items = useMemo(() => data?.list?.map((item) => item), [data]);
-
+const ProviderSelect: React.FC<ProviderRadioProps> = ({ options, loading, value, onChange, onSelect }) => {
   const handleChange = (item: API.Provider) => {
     onChange?.(item.id);
 
@@ -26,7 +21,7 @@ const ProviderSelect: React.FC<ProviderRadioProps> = ({ value, onChange, onSelec
   return (
     <FormRadio checkbox grid value={value}>
       <Skeleton active loading={loading}>
-        {items?.map((item) => (
+        {options?.map((item) => (
           <FormRadio.Item
             key={item.id}
             icon={<img src={item.logo_url} alt={item.short_name} />}

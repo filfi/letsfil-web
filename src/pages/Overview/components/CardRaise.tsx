@@ -8,11 +8,13 @@ import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
-import { day2sec, sleep, toF4Address } from '@/utils/utils';
-import { formatEther, formatNum } from '@/utils/format';
+import { day2sec, toF4Address } from '@/utils/utils';
+import useRaiseContract from '@/hooks/useRaiseContract';
 import useFactoryContract from '@/hooks/useFactoryContract';
+import { formatEther, formatPower } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
 const calcTime = (mill: number) => {
@@ -25,33 +27,12 @@ const calcTime = (mill: number) => {
   };
 };
 
-function formatByte(val?: string) {
-  if (val) {
-    return formatNum(val, '0.0 ib').split(' ');
-  }
-}
-
 const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
   const { initialState } = useModel('@@initialState');
   const { createRaisePlan } = useFactoryContract();
-  const {
-    contract,
-    isRaiser,
-    isServicer,
-    isPending,
-    isWaiting,
-    isRaising,
-    isSuccess,
-    isClosed,
-    isFailed,
-    isWaitSeal,
-    isSealing,
-    isDelayed,
-    isWorking,
-    isSigned,
-    isOpsPaid,
-    isRaisePaid,
-  } = useRaiseState(data);
+  const { startRaisePlan, startSeal, servicerSign } = useRaiseContract(data?.raise_address);
+  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
+  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
 
@@ -100,24 +81,18 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     const extra = H.transformExtraInfo(data);
 
     await createRaisePlan(raise, node, extra);
-
-    await sleep(3e3);
   });
 
   const [sealing, sealAction] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.startSeal(data.raising_id);
-
-    await sleep(3e3);
+    await startSeal(data.raising_id);
   });
 
   const [starting, handleStart] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.startRaisePlan(data.raising_id);
-
-    await sleep(3e3);
+    await startRaisePlan(data.raising_id);
   });
 
   const handleSeal = () => {
@@ -146,7 +121,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.servicerSign();
+    await servicerSign();
   });
 
   const renderAction = () => {
@@ -258,8 +233,8 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
             <p className="d-flex align-items-center gap-3 mb-2">
               <span>封装容量</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatByte(pack?.pack_power)?.[0]}</span>
-                <span className="ms-1 text-neutral">{formatByte(pack?.pack_power)?.[1]}</span>
+                <span className="fs-20 fw-600">{formatPower(pack?.pack_power)?.[0]}</span>
+                <span className="ms-1 text-neutral">{formatPower(pack?.pack_power)?.[1]}</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">

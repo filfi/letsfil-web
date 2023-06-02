@@ -24,11 +24,10 @@ export default function CreateProgram() {
   const target = Form.useWatch('targetAmount', form);
   const minRate = Form.useWatch('minRaiseRate', form);
   const amountType = Form.useWatch('amountType', form);
-  // const deposit = Form.useWatch('raiseSecurityFund', form);
   const { perPledge, loading: fetching } = useChainInfo();
 
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
-  // const minAmount = useMemo(() => Number.isNaN(+amount) ? 0 : accMul(amount, rate), [amount, rate]);
+  // const minAmount = useMemo(() => (Number.isNaN(+amount) ? 0 : accMul(amount, rate)), [amount, rate]);
 
   const evalMax = useMemo(() => {
     let val = 0;
@@ -52,7 +51,6 @@ export default function CreateProgram() {
     return Number.isNaN(val) ? 0 : val;
   }, [evalMax, rate]);
 
-  // TODO: deposit
   const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
 
   const amountValidator = async (rule: unknown, value: string) => {
@@ -72,7 +70,6 @@ export default function CreateProgram() {
 
     await validators.integer(rule, value);
 
-    // TODO: min validate
     // if (value) {
     //   const val = amountType === 0 ? minAmount : accMul(minAmount, perPledge);
 
@@ -197,11 +194,7 @@ export default function CreateProgram() {
             <h4 className="ffi-label">募集时间</h4>
             <p className="text-gray">募集计划启动后的持续时间，此间开放FIL投资。启动时间由发起人决定。</p>
 
-            <Form.Item
-              name="raiseDays"
-              // TODO: validators.integer
-              rules={[{ required: true, message: '请输入天数' }, { validator: validators.number }]}
-            >
+            <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
               <DaysInput
                 options={[
                   { label: '7天', value: 7 },
@@ -223,11 +216,7 @@ export default function CreateProgram() {
               </a> */}
             </p>
 
-            <Form.Item
-              name="sealDays"
-              // TODO: validators.integer
-              rules={[{ required: true, message: '请输入天数' }, { validator: validators.number }]}
-            >
+            <Form.Item name="sealDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
               <DaysInput
                 options={[
                   { label: '3天', value: 3 },

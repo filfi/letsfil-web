@@ -3,10 +3,10 @@ import { Pie, PieConfig } from '@ant-design/plots';
 
 import { formatNum } from '@/utils/format';
 import { accDiv, accMul } from '@/utils/utils';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositInvest from '@/hooks/useDepositInvest';
 import type { ItemProps } from './types';
 
 const config: PieConfig = {
@@ -33,18 +33,19 @@ const config: PieConfig = {
 
 const SectionReward: React.FC<ItemProps> = ({ data }) => {
   const { rate } = useIncomeRate(data?.raising_id);
-  const { target, total } = useDepositInvest(data);
-  const { isSuccess, isRaiser, isServicer } = useRaiseState(data);
-  const { investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
-  const reward = useMemo(() => accDiv(accMul(isSuccess ? total : target, rate, period), 360), [target, rate, period]);
+  const { isSuccess } = useRaiseState(data);
+  const { actual, target, isRaiser, isServicer } = useRaiseInfo(data);
+  const { priorityRate, investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
+  // 预估收益
+  const reward = useMemo(() => accDiv(accMul(isSuccess ? actual : target, rate, period), 360), [isSuccess, target, actual, rate, period]);
 
   const pieData = useMemo(
     () => [
-      { name: '投资人权益', value: investRate },
+      { name: '投资人权益', value: priorityRate },
       { name: '发起人权益', value: raiserRate },
       { name: '服务商权益', value: servicerRate },
     ],
-    [investRate, raiserRate, servicerRate],
+    [priorityRate, raiserRate, servicerRate],
   );
 
   return (
@@ -62,7 +63,7 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
                 <span className="reward-dot reward-dot-circle"></span>
                 <p className="reward-label">{period}天总奖励(估)</p>
                 <p className="reward-text">
-                  <span className="text-decimal text-uppercase">{formatNum(reward, '0a')}</span>
+                  <span className="text-decimal text-uppercase">{formatNum(reward, '0.0a')}</span>
                   <span className="ms-2 text-neutral">FIL</span>
                 </p>
               </div>
@@ -70,7 +71,7 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
             <div className="col">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
-                <p className="reward-label">投资人</p>
+                <p className="reward-label">优先投资人</p>
                 <p className="reward-text">
                   <span className="text-decimal">{investRate}</span>
                   <span className="ms-2 text-neutral">%</span>

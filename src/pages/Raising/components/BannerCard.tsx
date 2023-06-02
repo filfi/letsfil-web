@@ -5,9 +5,9 @@ import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 
 import { formatRate } from '@/utils/format';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import useDepositInvest from '@/hooks/useDepositInvest';
 
 export type BannerCardProps = {
   data: API.Plan;
@@ -16,9 +16,9 @@ export type BannerCardProps = {
 };
 
 const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider }) => {
-  const { progress } = useDepositInvest(data);
   const { rate } = useIncomeRate(data.raising_id);
-  const { investRate, opsRatio } = useRaiseRate(data);
+  const { progress } = useRaiseInfo(data);
+  const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
@@ -28,7 +28,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
       <div className={classNames('card', className)}>
         <div className="card-body">
           <div className="float-end mt-lg-5 pt-lg-3">
-            <p className="mb-0 fs-30 fw-600">{investRate}%</p>
+            <p className="mb-0 fs-30 fw-600">{priorityRate}%</p>
             <p className="mb-0 fs-16 fw-500">投资人分成比例</p>
           </div>
 

@@ -8,8 +8,13 @@ import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
+/**
+ * 发起人收益
+ * @param data
+ * @returns
+ */
 export default function useRewardRaiser(data?: API.Plan) {
-  const { getContract } = useRaiseContract();
+  const contract = useRaiseContract(data?.raise_address);
 
   const [reward, setReward] = useState(0); // 可提取
   const [record, setRecord] = useState(0); // 已提取
@@ -20,13 +25,9 @@ export default function useRewardRaiser(data?: API.Plan) {
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-
-    if (!contract) return;
-
-    const reward = await contract.raiserRewardAvailableLeft(data.raising_id);
-    const record = await contract.gotRaiserReward(data.raising_id);
-    const pending = await contract.raiserWillReleaseReward(data.raising_id);
+    const reward = await contract.getRaiserAvailableReward(data.raising_id);
+    const record = await contract.getRaiserWithdrawnReward(data.raising_id);
+    const pending = await contract.getRaiserPendingReward(data.raising_id);
 
     setReward(toNumber(reward));
     setRecord(toNumber(record));
@@ -36,8 +37,7 @@ export default function useRewardRaiser(data?: API.Plan) {
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-    await contract?.raiserWithdraw(data.raising_id);
+    await contract.raiserWithdraw(data.raising_id);
   });
 
   useEffect(() => {

@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { accSub } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
-import { accSub } from '@/utils/utils';
 
-export default function useDepositOps(data?: API.Plan) {
-  const { getContract } = useRaiseContract();
+/**
+ * 服务商的投资信息
+ * @param data
+ * @returns
+ */
+export default function useDepositServicer(data?: API.Plan) {
+  const contract = useRaiseContract(data?.raise_address);
 
   const [fines, setFines] = useState(0); // 罚金
   const [amount, setAmount] = useState(0); // 当前保证金
@@ -23,14 +28,10 @@ export default function useDepositOps(data?: API.Plan) {
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-
-    if (!contract) return;
-
-    const fines = await contract.spFine(data.raising_id);
-    const actual = await contract.opsCalcFund(data.raising_id);
-    const amount = await contract.opsSecurityFundRemain(data.raising_id);
-    const totalInterest = await contract.totalInterest(data.raising_id);
+    const fines = await contract.getServicerFines(data.raising_id);
+    const amount = await contract.getOpsFund(data.raising_id);
+    const actual = await contract.getOpsCalcFund(data.raising_id);
+    const totalInterest = await contract.getTotalInterest(data.raising_id);
 
     setFines(toNumber(fines));
     setActual(toNumber(actual));
@@ -40,9 +41,8 @@ export default function useDepositOps(data?: API.Plan) {
 
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
-    const contract = getContract(data.raise_address);
 
-    await contract?.withdrawOpsSecurityFund(data.raising_id);
+    await contract?.withdrawOpsFund(data.raising_id);
   });
 
   useEffect(() => {

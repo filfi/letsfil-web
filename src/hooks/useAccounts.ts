@@ -1,14 +1,15 @@
 import { ethers } from 'ethers';
+import { useCreation } from 'ahooks';
 import { useModel } from '@umijs/max';
 import MetaMaskOnboarding from '@metamask/onboarding';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import * as S from '@/utils/storage';
 import Modal from '@/components/Modal';
 import useAccountEvents from './useAccountEvents';
 
 export default function useAccounts() {
-  const onboarding = useRef(new MetaMaskOnboarding()).current;
+  const onboarding = useCreation(() => new MetaMaskOnboarding(), []);
 
   useAccountEvents();
   const [disabled, setDisabled] = useState(false);
@@ -48,7 +49,12 @@ export default function useAccounts() {
       return accounts;
     } catch (e: any) {
       setState({ connecting: false });
-      Modal.alert({ icon: 'warn', title: '连接失败', content: e.message });
+
+      const message = e.message;
+
+      if (!`${message}`.toLowerCase().includes('user rejected')) {
+        Modal.alert({ icon: 'warn', title: '连接失败', content: message });
+      }
     }
   };
 
@@ -77,7 +83,7 @@ export default function useAccounts() {
     setState({ connected, connecting: false });
   }, [accounts]);
 
-  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string | undefined, ...args: P) => Promise<R>) => {
+  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
       let account: string | undefined = accounts?.[0];
 
@@ -86,7 +92,9 @@ export default function useAccounts() {
         account = list?.[0];
       }
 
-      return await service(account, ...args);
+      if (account) {
+        return await service(account, ...args);
+      }
     };
   };
 

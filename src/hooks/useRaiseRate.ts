@@ -2,6 +2,11 @@ import { useMemo } from 'react';
 
 import * as U from '@/utils/utils';
 
+/**
+ * 募集计划的各方权益
+ * @param data
+ * @returns
+ */
 export default function useRaiseRate(data?: API.Plan) {
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]);
   const minRate = useMemo(() => U.accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]);

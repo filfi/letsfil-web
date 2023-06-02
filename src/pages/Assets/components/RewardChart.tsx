@@ -2,13 +2,13 @@ import dayjs from 'dayjs';
 import { find } from 'lodash';
 import { useRequest } from 'ahooks';
 import { useParams } from '@umijs/max';
-import { Column } from '@ant-design/plots';
 import { useMemo, useState } from 'react';
+import { Column } from '@ant-design/plots';
 import type { ColumnConfig } from '@ant-design/plots';
 
 import { dailyIncome } from '@/apis/packs';
-import { toNumber } from '@/utils/format';
 import FormRadio from '@/components/FormRadio';
+import { formatAmount, toNumber } from '@/utils/format';
 
 const config: ColumnConfig = {
   data: [],
@@ -29,6 +29,14 @@ const config: ColumnConfig = {
     line: null,
     grid: null,
   },
+  tooltip: {
+    formatter(data) {
+      return {
+        name: '收益',
+        value: `${formatAmount(data.value)} FIL`,
+      };
+    },
+  },
 };
 
 const RewardChart: React.FC = () => {
@@ -37,9 +45,7 @@ const RewardChart: React.FC = () => {
 
   const service = async () => {
     if (param.id) {
-      const res = await dailyIncome({ page: 1, page_size: size, asset_pack_id: param.id });
-
-      return res.list;
+      return await dailyIncome({ page: 1, page_size: size, asset_pack_id: param.id });
     }
   };
 

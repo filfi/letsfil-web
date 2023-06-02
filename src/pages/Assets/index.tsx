@@ -1,6 +1,6 @@
-import { useRequest, useUpdateEffect } from 'ahooks';
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
+import { useRequest, useUpdateEffect } from 'ahooks';
 import { Link, NavLink, useParams } from '@umijs/max';
 
 import styles from './styles.less';
@@ -13,15 +13,16 @@ import FormRadio from '@/components/FormRadio';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
-import useProvider from '@/hooks/useProvider';
+import useProviders from '@/hooks/useProviders';
 import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
-import useDepositInvest from '@/hooks/useDepositInvest';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconStar } from './imgs/icon-star.svg';
 import { ReactComponent as IconTool } from './imgs/icon-tool.svg';
 import { ReactComponent as IconUser } from './imgs/icon-users.svg';
@@ -37,10 +38,11 @@ export default function Assets() {
 
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [param.id] });
 
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
   const { pack, remains } = useRaiseSeals(data);
-  const { isInvestor, processing: unstaking, unStaking } = useDepositInvest(data);
-  const { isClosed, isFailed, isDestroyed, isRaiser, isServicer } = useRaiseState(data);
+  const { isInvestor } = useDepositInvestor(data);
+  const { isRaiser, isServicer } = useRaiseInfo(data);
+  const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
   const { investPower, raiserPower, servicerPower, investPledge, servicerPledge } = useAssetPack(
     data,
     pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,
@@ -55,7 +57,7 @@ export default function Assets() {
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
-  const locked = useMemo(() => (isServicer ? servicer.locked : 0), [servicer.locked, isServicer]);
+  const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
   const pledge = useMemo(() => [investPledge, 0, servicerPledge][role] ?? 0, [role, investPledge, servicerPledge]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
   const total = useMemo(() => [investor.total, raiser.total, servicer.total][role] ?? 0, [role, investor.total, raiser.total, servicer.total]);
@@ -238,13 +240,8 @@ export default function Assets() {
                     <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
                   </h4>
 
-                  <SpinBtn
-                    className="btn btn-primary btn-lg ms-auto my-auto px-5"
-                    loading={withdrawing}
-                    disabled={reward <= 0 || unstaking}
-                    onClick={handleWithdraw}
-                  >
-                    提取金额
+                  <SpinBtn className="btn btn-primary btn-lg ms-auto my-auto px-5" loading={withdrawing} disabled={reward <= 0} onClick={handleWithdraw}>
+                    提取余额
                   </SpinBtn>
                 </div>
               </div>
@@ -260,7 +257,7 @@ export default function Assets() {
                     </div> */}
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">锁定余额</p>
+                        <p className="mb-1 fw-500">锁定收益</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
                       </div>
                     </div>
@@ -294,13 +291,13 @@ export default function Assets() {
                     </p>
                   </div>
 
-                  {isDestroyed && isInvestor && (
+                  {/* {isDestroyed && isInvestor && (
                     <div className="ms-auto my-auto">
                       <SpinBtn className="btn btn-primary btn-lg px-5" loading={unstaking} disabled={pledge <= 0 || withdrawing} onClick={unStaking}>
                         取回
                       </SpinBtn>
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
 

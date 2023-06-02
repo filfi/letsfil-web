@@ -2,23 +2,17 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import { useRequest } from 'ahooks';
 
-import { accAdd, isDef } from '@/utils/utils';
+import * as F from '@/utils/format';
 import { getInfo } from '@/apis/raise';
+import { accAdd } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
 import useAssetPack from '@/hooks/useAssetPack';
-import useRaiseState from '@/hooks/useRaiseState';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
-import { formatAmount, formatNum } from '@/utils/format';
 import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
-
-function formatPower(val?: number | string) {
-  if (isDef(val)) {
-    return formatNum(val, '0.0 ib').split(' ');
-  }
-}
 
 const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const { data: info } = useRequest(() => getInfo(data.raising_id), { refreshDeps: [data.raising_id] });
@@ -26,8 +20,8 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const raiser = useRewardRaiser(info);
   const investor = useRewardInvestor(info);
   const servicer = useRewardServicer(info);
-  const { isRaiser, isServicer } = useRaiseState(info);
-  const { holdPower, investPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
+  const { isRaiser, isServicer } = useRaiseInfo(info);
+  const { holdPower, holdPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
 
   const rewward = useMemo(() => {
     let sum = investor.reward;
@@ -60,21 +54,21 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">持有算力(QAP)</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatPower(holdPower)?.[0]}</span>
-            <span className="text-gray-dark ms-1">{formatPower(holdPower)?.[1]}</span>
+            <span className="fs-16 fw-600">{F.formatPower(holdPower)?.[0]}</span>
+            <span className="text-gray-dark ms-1">{F.formatPower(holdPower)?.[1]}</span>
           </span>
         </p>
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">持有质押币</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatAmount(investPledge)}</span>
+            <span className="fs-16 fw-600">{F.formatAmount(holdPledge)}</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>
         <p className="d-flex my-3 gap-3">
           <span className="text-gray-dark">可提余额</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatAmount(rewward)}</span>
+            <span className="fs-16 fw-600">{F.formatAmount(rewward)}</span>
             <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>

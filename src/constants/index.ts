@@ -1,8 +1,10 @@
-export const API_URL = process.env.API_URL ?? '';
+export const ADDRESS = process.env.ADDRESS ?? '';
 
-export const RPC_URL = process.env.RPC_URL ?? '';
+export const API_URL = process.env.API_URL ?? '/api';
 
-export const RUN_ENV = process.env.RUN_ENV ?? 'hp';
+export const RPC_URL = process.env.RPC_URL ?? '/rpc';
+
+export const RUN_ENV = process.env.RUN_ENV ?? 'test';
 
 console.log('[RUN_ENV]: ', RUN_ENV);
 
@@ -22,14 +24,14 @@ const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
 /**
  * Raise Facory Contract Address
  */
-export const RAISE_ADDRESS = RUN_ENV === '2k' ? ADDR_2K : ADDR_HP;
+export const RAISE_ADDRESS = RUN_ENV === 'main' ? ADDRESS : RUN_ENV === 'test' ? ADDR_HP : ADDR_2K;
 
-const SCAN_URL_MAIN = 'https://filfox.info/en';
-const SCAN_URL_HP = 'https://hyperspace.filfox.info/en';
+const SCAN_URL_MAIN = 'https://filfox.info/en'; // mainnet
+const SCAN_URL_HP = 'https://hyperspace.filfox.info/en'; // hyperspace testnet
 /**
  * Miner Overview address
  */
-export const SCAN_URL = RUN_ENV === 'hp' ? SCAN_URL_HP : SCAN_URL_MAIN;
+export const SCAN_URL = RUN_ENV === 'main' ? SCAN_URL_MAIN : SCAN_URL_HP;
 
 export const sectors = [32, 64];
 export const periods = [180, 360, 540];

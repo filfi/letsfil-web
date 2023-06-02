@@ -3,53 +3,39 @@ import { Form, FormInstance, Input } from 'antd';
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import Modal from '@/components/Modal';
-import { accDiv, accMul, accSub } from '@/utils/utils';
+import { calcEachEarn } from '@/helpers/app';
+import { accMul, accSub } from '@/utils/utils';
 import { createNumRangeValidator } from '@/utils/validators';
 
 type DivProps = React.HtmlHTMLAttributes<HTMLDivElement>;
+type Values = ReturnType<typeof calcEachEarn>;
 
 type StepFormProps = {
-  ops?: number;
-  values?: API.Base;
-  onFinish?: (vals: API.Base) => void;
+  values?: Values;
+  onFinish?: (vals: Values) => void;
 };
 
 export type StepsModalProps = DivProps & {
-  ops?: number;
-  raiser?: number;
-  servicer?: number;
-  onConfirm?: (vals: { raiser: number; servicer: number }) => void;
+  ratio?: number; // 运维保证金配比
+  spRate?: number; // 技术服务商权益
+  priority?: number; // 投资人权益（优先部分）
+  onConfirm?: (vals: Values) => void;
 };
 
-const getValues = ({ ops = 5, raiser = 70, servicer = 5 }: { ops: number; raiser: number; servicer: number } = {} as any) => {
-  const remain = Math.max(accSub(100, raiser), 0);
-  const filfi = accMul(remain, 0.08);
-
-  return {
-    raiserCoinShare: +raiser,
-    raiserCionFirst: accMul(raiser, accDiv(accSub(100, ops), 100)),
-    raiserCionLast: accMul(raiser, accDiv(ops, 100)),
-    serverShare: remain,
-    opServerShare: servicer,
-    raiserShare: Math.max(accSub(remain, filfi, servicer), 0),
-    filfiShare: filfi,
-  };
-};
-
-const RaiseForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref: React.ForwardedRef<FormInstance>) => {
-  const [form] = Form.useForm();
-  const raiser = Form.useWatch('raiserCoinShare', form);
+const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.ForwardedRef<FormInstance>) => {
+  const [form] = Form.useForm<Values>();
+  const amount = Form.useWatch('priority', form);
 
   useUpdateEffect(() => {
-    const servicer = values?.opServerShare ?? 5;
-    const amount = Number.isNaN(+raiser) ? 0 : +raiser;
+    const { spRate = 5, ratio = 5 } = values ?? {};
+    const priority = Number.isNaN(+amount) ? 0 : +amount;
 
-    form.setFieldsValue(getValues({ ops, servicer, raiser: amount }));
-  }, [ops, raiser, values?.opServerShare]);
+    form.setFieldsValue(calcEachEarn(priority, spRate, ratio));
+  }, [amount, values]);
 
   useImperativeHandle(ref, () => form, [form]);
 
-  const handleFinish = (vals: API.Base) => {
+  const handleFinish = (vals: Values) => {
     onFinish?.(vals);
   };
 
@@ -57,21 +43,21 @@ const RaiseForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref:
     <Form form={form} size="large" layout="vertical" initialValues={values} onFinish={handleFinish}>
       <div className="ffi-form">
         <div className="ffi-item px-4 pt-4">
-          <p className="mb-1 fw-500">出币方分成</p>
+          <p className="mb-1 fw-500">投资人分成</p>
           <Form.Item
             className="mb-0"
-            name="raiserCoinShare"
-            rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 94.6], '最小0%，最大94.6%') }]}
+            name="priority"
+            rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 94.56], '最小0%，最大94.56%') }]}
           >
-            <Input type="number" min={0} max={94.6} placeholder="请输入" suffix="%" />
+            <Input type="number" min={0} max={94.56} placeholder="请输入" suffix="%" />
           </Form.Item>
         </div>
         <div className="bg-primary-tertiary px-4 pt-4">
           <div className="row row-cols-1 row-cols-md-2 g-3">
             <div className="col">
               <div className="ffi-item">
-                <p className="mb-1 fw-500">投资人分成</p>
-                <Form.Item noStyle name="raiserCionFirst">
+                <p className="mb-1 fw-500">优先投资人分成</p>
+                <Form.Item noStyle name="investRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
               </div>
@@ -79,7 +65,7 @@ const RaiseForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref:
             <div className="col">
               <div className="ffi-item">
                 <p className="mb-1 fw-500">运维保证金分成</p>
-                <Form.Item noStyle name="raiserCionLast">
+                <Form.Item noStyle name="opsRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
               </div>
@@ -91,25 +77,24 @@ const RaiseForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref:
   );
 });
 
-const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, ref: React.ForwardedRef<FormInstance>) => {
+const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.ForwardedRef<FormInstance>) => {
   const [form] = Form.useForm();
-  const servicer = Form.useWatch('opServerShare', form);
+  const amount = Form.useWatch('spRate', form);
 
-  const priorityRate = useMemo(() => values?.raiserCoinShare ?? 70, [values?.raiserCoinShare]);
-  const inferRate = useMemo(() => accSub(100, priorityRate), [priorityRate]);
-  const raiserRate = useMemo(() => values?.raiserShare ?? 0, [values?.raiserShare]);
-  const filfiRate = useMemo(() => values?.filfiShare ?? 0, [values?.filfiShare]);
-  const opsMax = useMemo(() => accSub(inferRate, raiserRate, filfiRate), [inferRate, raiserRate, filfiRate]);
+  const inferior = useMemo(() => values?.inferior ?? 30, [values?.inferior]);
+  const ffiRate = useMemo(() => values?.ffiRate ?? accMul(inferior, 0.08), [values?.ffiRate, inferior]);
+  const opsMax = useMemo(() => Math.max(accSub(inferior, ffiRate), 0), [inferior, ffiRate]);
 
   useUpdateEffect(() => {
-    const amount = Number.isNaN(+servicer) ? 0 : +servicer;
+    const { priority = 70, ratio = 5 } = values ?? {};
+    const spRate = Number.isNaN(+amount) ? 0 : +amount;
 
-    form.setFieldsValue(getValues({ ops, raiser: raiserRate, servicer: amount }));
-  }, [ops, servicer, raiserRate]);
+    form.setFieldsValue(calcEachEarn(priority, spRate, ratio));
+  }, [amount, values]);
 
   useImperativeHandle(ref, () => form, [form]);
 
-  const handleFinish = (vals: API.Base) => {
+  const handleFinish = (vals: Values) => {
     onFinish?.(vals);
   };
 
@@ -118,7 +103,7 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
       <div className="ffi-form">
         <div className="ffi-item px-4 pt-4">
           <p className="mb-1 fw-500">建设方分成</p>
-          <Form.Item noStyle name="serverShare">
+          <Form.Item noStyle name="inferior">
             <Input className="bg-light" readOnly suffix="%" />
           </Form.Item>
         </div>
@@ -129,8 +114,8 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
                 <p className="mb-1 fw-500">技术运维服务费</p>
                 <Form.Item
                   className="mb-0"
-                  name="opServerShare"
-                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, opsMax], '最小5%，最大100%') }]}
+                  name="spRate"
+                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, opsMax], `最小5%，最大${opsMax}%`) }]}
                 >
                   <Input type="number" min={5} max={opsMax} placeholder="请输入" suffix="%" />
                 </Form.Item>
@@ -139,7 +124,7 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
             <div className="col">
               <div className="ffi-item mb-0">
                 <p className="mb-1 fw-500">发起人分成</p>
-                <Form.Item noStyle name="raiserShare">
+                <Form.Item noStyle name="raiserRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
               </div>
@@ -147,7 +132,7 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
             <div className="col">
               <div className="ffi-ite mb-0">
                 <p className="mb-1 fw-500">FilFi协议分成</p>
-                <Form.Item className="mb-0" name="filfiShare" help="服务商 * 8%">
+                <Form.Item className="mb-0" name="ffiRate" help="服务商 * 8%">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
               </div>
@@ -160,7 +145,7 @@ const ServiceForm = forwardRef(({ ops = 5, values, onFinish }: StepFormProps, re
 });
 
 const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalProps> = (
-  { ops = 5, raiser = 70, servicer = 5, onConfirm, ...props },
+  { priority = 70, spRate = 5, ratio = 5, onConfirm, ...props },
   ref?: React.Ref<ModalAttrs> | null,
 ) => {
   const modal = useRef<ModalAttrs>(null);
@@ -168,15 +153,15 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
   const serviceForm = useRef<FormInstance>(null);
 
   const [step, setStep] = useState(0);
-  const [values, setValues] = useState(getValues());
+  const [values, setValues] = useState(calcEachEarn(priority, spRate, ratio));
 
   useUpdateEffect(() => {
-    const vals = getValues({ ops, raiser, servicer });
+    const vals = calcEachEarn(priority, spRate, ratio);
     setValues({ ...vals });
 
     raiseForm.current?.setFieldsValue(vals);
     serviceForm.current?.setFieldsValue(vals);
-  }, [ops, raiser, servicer]);
+  }, [priority, spRate, ratio]);
 
   useImperativeHandle(
     ref,
@@ -200,9 +185,9 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
 
   const handleFinish = (vals: API.Base) => {
     const _vals = { ...values, ...vals };
-    const { raiserCoinShare, opServerShare } = _vals;
+    const { priority, spRate } = _vals;
 
-    setValues(getValues({ ops, raiser: raiserCoinShare, servicer: opServerShare }));
+    setValues(calcEachEarn(priority, spRate, ratio));
 
     if (step === 0) {
       setStep(1);
@@ -211,7 +196,7 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
 
     modal.current?.hide();
 
-    onConfirm?.({ raiser: raiserCoinShare, servicer: opServerShare });
+    onConfirm?.(_vals);
   };
 
   const handleHidden = () => {
@@ -256,9 +241,9 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
       {...props}
     >
       {step === 0 ? (
-        <RaiseForm ref={raiseForm} ops={ops} values={values} onFinish={handleFinish} />
+        <RaiseForm ref={raiseForm} values={values} onFinish={handleFinish} />
       ) : (
-        <ServiceForm ref={serviceForm} ops={ops} values={values} onFinish={handleFinish} />
+        <ServiceForm ref={serviceForm} values={values} onFinish={handleFinish} />
       )}
     </Modal>
   );

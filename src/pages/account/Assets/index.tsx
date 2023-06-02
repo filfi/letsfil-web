@@ -7,12 +7,11 @@ import useAccounts from '@/hooks/useAccounts';
 import LoadingView from '@/components/LoadingView';
 
 export default function AccountAssets() {
-  const { account } = useAccounts();
-  const service = async () => {
-    if (account) {
-      return await listPacks({ address: account, page: 1, page_size: 100 });
-    }
-  };
+  const { account, withAccount } = useAccounts();
+
+  const service = withAccount((address) => {
+    return listPacks({ address, page: 1, page_size: 100 });
+  });
 
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
 
@@ -20,7 +19,7 @@ export default function AccountAssets() {
 
   return (
     <>
-      <LoadingView data={list} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView className="vh-50" data={list} error={!!error} loading={loading} retry={refresh}>
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-3">
           {list?.map((item) => (
             <div key={item.asset_pack_id} className="col">

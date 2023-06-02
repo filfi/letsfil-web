@@ -1,0 +1,31 @@
+.footer {
+  --bs-color: var(--bs-gray-200);
+  --bs-link-color: var(--bs-gray-200);
+  --footer-font-size: 14px;
+  --footer-dt-font-size: 12px;
+
+  padding-top: 64px;
+  padding-bottom: 48px;
+  color: var(--bs-color);
+  font-size: var(--footer-font-size);
+  line-height: 1.5;
+  background-color: #1d2939;
+
+  :global {
+    dt {
+      color: var(--bs-gray-300);
+      font-size: var(--footer-dt-font-size);
+    }
+
+    dd > p {
+      margin-bottom: 12px;
+    }
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .footer {
+    --footer-font-size: 16px;
+    --footer-dt-font-size: 14px;
+  }
+}

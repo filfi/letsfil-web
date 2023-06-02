@@ -11,13 +11,12 @@ import useUser from '@/hooks/useUser';
 import Dialog from '@/components/Dialog';
 import Result from '@/components/Result';
 import { catchify } from '@/utils/hackify';
-import useAccounts from '@/hooks/useAccounts';
-import useProvider from '@/hooks/useProvider';
-import { transformModel } from '@/helpers/app';
 import { isEqual, sleep } from '@/utils/utils';
+import useAccounts from '@/hooks/useAccounts';
+import useProviders from '@/hooks/useProviders';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
-import useRaiseContract from '@/hooks/useRaiseContract';
+import { createContract, transformModel } from '@/helpers/app';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 
 const isArrs = function <V>(v: V | undefined): v is V {
@@ -26,30 +25,27 @@ const isArrs = function <V>(v: V | undefined): v is V {
 
 export default function AccountPlans() {
   const { user } = useUser();
-  const { getProvider } = useProvider();
+  const { getProvider } = useProviders();
   const [, setModel] = useModel('stepform');
-  const { getContract } = useRaiseContract();
   const { account, withAccount } = useAccounts();
 
-  const service = withAccount(async (address) => {
-    if (address) {
-      return await A.investList({ address, page_size: 100 });
-    }
+  const service = withAccount((address) => {
+    return A.investList({ address, page_size: 100 });
   });
 
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
   const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data?.total, loading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
-  const investIds = useMemo(() => data?.list?.invest_list, [data?.list.invest_list]);
+  const investIds = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
   const raises = useMemo(() => filter(lists, { raiser: account }), [lists, account]);
   const services = useMemo(() => filter(lists, { service_provider_address: account }), [lists, account]);
   const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
 
-  const handleCreate = () => {
+  const handleCreate = withAccount(async () => {
     setModel(undefined);
 
     history.push('/create');
-  };
+  });
 
   const handleEdit = (data: API.Plan) => {
     const model = Object.keys(data).reduce(
@@ -82,7 +78,7 @@ export default function AccountPlans() {
   };
 
   const [, handleStart] = useProcessify(async (data: API.Plan) => {
-    const contract = getContract(data.raise_address);
+    const contract = createContract(data.raise_address);
 
     await contract?.startRaisePlan(data.raising_id);
 
@@ -93,7 +89,7 @@ export default function AccountPlans() {
 
   return (
     <>
-      <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView className="vh-50" data={data} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <Result icon={<IconSearch />} title="您还没有募集计划" desc="这里显示您的募集计划，包括您发起的募集计划和参加投资的募集计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">

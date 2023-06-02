@@ -2,34 +2,31 @@ import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
+import * as F from '@/utils/format';
+import { catchify } from '@/utils/hackify';
+import { accSub, sec2day } from '@/utils/utils';
 import Countdown from './Countdown';
 import Dialog from '@/components/Dialog';
-import { catchify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useAccounts from '@/hooks/useAccounts';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
-import useDepositInvest from '@/hooks/useDepositInvest';
-import { NodeState, RaiseState } from '@/constants/state';
-import { accSub, isEqual, sec2day } from '@/utils/utils';
-import { formatAmount, formatByte, formatEther, formatNum, formatRate } from '@/utils/format';
+import useRaiseState from '@/hooks/useRaiseState';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
   return (...args: P) => {
-    const isClosed = data.status === RaiseState.Closed;
-    const isPending = data.status === RaiseState.Pending;
-
     const actionHandler = async () => {
       const [e] = await catchify(handler)(...args);
 
       if (e) {
         Dialog.alert({
           icon: 'error',
-          title: '操作失败',
+          title: '删除失败',
           content: e.message,
         });
       }
@@ -37,77 +34,14 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: isPending ? '删除募集计划' : '隐藏募集计划',
-      summary: isPending ? '未签名的募集计划可以永久删除。' : `隐藏${isClosed ? '已关闭' : '募集失败'}的募集计划。`,
+      title: '删除募集计划',
+      summary: '未签名的募集计划可以永久删除。',
       onConfirm: () => {
         hide();
 
         actionHandler();
       },
     });
-  };
-}
-
-function calcSealDays(data: API.Plan) {
-  const r: string[] = [];
-
-  // 封装结束
-  if (data.end_seal_time && data.begin_seal_time) {
-    r.push(formatNum((data.end_seal_time - data.begin_seal_time) / 86400, '0.0') + ' 天');
-    r.push(`承诺${data.seal_days}天`);
-
-    return r;
-  }
-
-  r.push(`< ${data.seal_days} 天`);
-
-  // 封装中
-  if (data.begin_seal_time) {
-    r.push(`已进行${formatNum((Date.now() / 1000 - data.begin_seal_time) / 86400, '0.0')}天`);
-  }
-
-  return r;
-}
-
-function useStates(data: API.Plan) {
-  const { account } = useAccounts();
-
-  const raiser = useMemo(() => data.raiser, [data.raiser]);
-  const payer = useMemo(() => data.ops_security_fund_addr, [data.ops_security_fund_addr]);
-  const servicer = useMemo(() => data.service_provider_address, [data.service_provider_address]);
-  const isSigned = useMemo(() => data.sp_sign_status === 1, [data.sp_sign_status]);
-  const isOpsPaid = useMemo(() => data.sp_margin_status === 1, [data.sp_margin_status]);
-  const isRaisePaid = useMemo(() => data.raise_margin_status === 1, [data.raise_margin_status]);
-
-  const isPayer = useMemo(() => isEqual(payer, account), [payer, account]);
-  const isRaiser = useMemo(() => isEqual(raiser, account), [raiser, account]);
-  const isServicer = useMemo(() => isEqual(servicer, account), [servicer, account]);
-
-  const isPending = useMemo(() => data.status === RaiseState.Pending, [data.status]);
-  const isStarted = useMemo(() => data.status > RaiseState.WaitingStart && !isPending, [data.status, isPending]);
-  const isRaising = useMemo(() => data.status === RaiseState.Raising, [data.status]);
-  const isSuccess = useMemo(() => data.status === RaiseState.Success, [data.status]);
-  const isSealing = useMemo(() => isSuccess && data.sealed_status === NodeState.Started, [data.sealed_status, isSuccess]);
-  const isDelayed = useMemo(() => isSuccess && data.sealed_status === NodeState.Delayed, [data.sealed_status, isSuccess]);
-  const isFinished = useMemo(() => isSuccess && data.sealed_status === NodeState.End, [data.sealed_status, isSuccess]);
-
-  return {
-    payer,
-    raiser,
-    servicer,
-    isPayer,
-    isRaiser,
-    isServicer,
-    isOpsPaid,
-    isRaisePaid,
-    isSigned,
-    isPending,
-    isStarted,
-    isRaising,
-    isSuccess,
-    isSealing,
-    isDelayed,
-    isFinished,
   };
 }
 
@@ -120,18 +54,38 @@ const Item: React.FC<{
   onStart?: () => Promise<any>;
   getProvider?: (id?: number | string) => API.Provider | undefined;
 }> = ({ data, invest, getProvider, onEdit, /* onHide, */ onDelete, onStart }) => {
+  const state = useRaiseState(data);
   const { pack } = useRaiseSeals(data);
-  const { investRate } = useRaiseRate(data);
-  const { amount, progress } = useDepositInvest(data);
-  const { isRaiser, isOpsPaid, isRaisePaid, isSigned, isStarted, isSuccess, isSealing, isDelayed, isFinished } = useStates(data);
+  const { amount } = useDepositInvestor(data);
+  const { priorityRate, opsRatio } = useRaiseRate(data);
+  const { actual, progress, target, isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
 
-  const sealDays = useMemo(() => calcSealDays(data), [data]);
+  const calcSealDays = (data: API.Plan) => {
+    const r: string[] = [];
+
+    // 生产中
+    if (state.isWorking) {
+      const sec = Math.max(accSub(data.end_seal_time, data.begin_seal_time), 0);
+      r.push(`${sec2day(sec)}天`);
+      r.push(`承诺${data.seal_days}天`);
+
+      return r;
+    }
+
+    r.push(`< ${data.seal_days} 天`);
+
+    // 封装中
+    if (state.isSealing || state.isDelayed) {
+      const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time));
+      r.push(`已进行${sec2day(sec)}天`);
+    }
+
+    return r;
+  };
+
+  const sealDays = useMemo(() => calcSealDays(data), [data, state]);
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
-
-  // const [hiding, hideAction] = useLoadingify(async () => {
-  //   await onHide?.();
-  // });
 
   const [deleting, deleteAction] = useLoadingify(async () => {
     await onDelete?.();
@@ -145,8 +99,8 @@ const Item: React.FC<{
   const handleDelete = withConfirm(data, deleteAction);
 
   const renderAssets = () => {
-    const showAssets = invest && isStarted;
-    const showPack = isFinished && pack;
+    const showPack = state.isWorking && pack;
+    const showAssets = invest && amount > 0;
 
     if (showAssets || showPack) {
       return (
@@ -154,14 +108,14 @@ const Item: React.FC<{
           {showAssets && (
             <div className="d-flex justify-content-between gap-3 py-2">
               <span className="text-gray-dark">我的投入</span>
-              <span className="fw-500">{formatAmount(amount)} FIL</span>
+              <span className="fw-500">{F.formatAmount(amount)} FIL</span>
             </div>
           )}
           {showPack && (
             <div className="d-flex justify-content-between gap-3 py-2">
               <span className="text-gray-dark">我的资产</span>
               <Link className="fw-500 text-underline" to={`/assets/${pack.raising_id}`}>
-                <span>{formatByte(pack.pack_power)}</span>
+                <span>{F.formatByte(pack.pack_power)}</span>
                 <span>@</span>
                 <span>{pack.miner_id}</span>
               </Link>
@@ -175,88 +129,94 @@ const Item: React.FC<{
   };
 
   const renderStatus = () => {
-    switch (data.status) {
-      case RaiseState.WaitingStart:
-        if (!isRaisePaid || !isOpsPaid) {
-          return <span className="badge badge-danger">待缴纳保证金</span>;
-        }
-
-        if (!isSigned) {
-          return <span className="badge badge-danger">待服务商签名</span>;
-        }
-
-        return <span className="badge">待启动</span>;
-      case RaiseState.Raising:
-        return (
-          <>
-            <span className="badge badge-success">募集中</span>
-            <span className="ms-2 fs-sm text-gray">
-              <Countdown time={data.closing_time} />
-            </span>
-          </>
-        );
-      case RaiseState.Closed:
-        return (
-          <>
-            <span className="badge">已关闭</span>
-            {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
-          </>
-        );
-      case RaiseState.Failure:
-        return (
-          <>
-            <span className="badge badge-danger">募集失败</span>
-            {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
-          </>
-        );
-      case RaiseState.Success:
-        if (isFinished) {
-          const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time), 0);
-          return (
-            <>
-              <span className="badge badge-primary">生产中</span>
-              <span className="ms-2 fs-sm text-gray">已运行 {sec2day(sec)} 天</span>
-            </>
-          );
-        }
-
-        if (isDelayed) {
-          return (
-            <>
-              <span className="badge badge-warning">封装延期</span>
-              <span className="ms-2 fs-sm text-gray">
-                <Countdown time={data.end_seal_time} />
-              </span>
-            </>
-          );
-        }
-
-        if (isSealing) {
-          return (
-            <>
-              <span className="badge badge-warning">封装中</span>
-              <span className="ms-2 fs-sm text-gray">
-                <Countdown time={data.end_seal_time} />
-              </span>
-            </>
-          );
-        }
-
-        return <span className="badge">待封装</span>;
-      case RaiseState.Pending:
+    if (state.isPending) {
+      if (isRaiser) {
         return <span className="badge">可编辑</span>;
+      }
+
+      return <span className="badge">待发起人签名</span>;
     }
+    if (state.isWaiting) {
+      if (!isRaisePaid || !isOpsPaid) {
+        return <span className="badge badge-danger">待缴纳保证金</span>;
+      }
+
+      if (!isSigned) {
+        return <span className="badge badge-danger">待服务商签名</span>;
+      }
+
+      return <span className="badge">待启动</span>;
+    }
+    if (state.isRaising) {
+      return (
+        <>
+          <span className="badge badge-success">募集中</span>
+          <span className="ms-2 fs-sm text-gray">
+            <Countdown time={data.closing_time} />
+          </span>
+        </>
+      );
+    }
+    if (state.isClosed) {
+      return (
+        <>
+          <span className="badge">已关闭</span>
+          {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
+        </>
+      );
+    }
+    if (state.isFailed) {
+      return (
+        <>
+          <span className="badge badge-danger">募集失败</span>
+          {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
+        </>
+      );
+    }
+    if (state.isWaitSeal) {
+      return <span className="badge">待封装</span>;
+    }
+    if (state.isSealing) {
+      return (
+        <>
+          <span className="badge badge-warning">封装中</span>
+          <span className="ms-2 fs-sm text-gray">
+            <Countdown time={data.end_seal_time} />
+          </span>
+        </>
+      );
+    }
+    if (state.isDelayed) {
+      return (
+        <>
+          <span className="badge badge-warning">封装延期</span>
+          <span className="ms-2 fs-sm text-gray">
+            <Countdown time={data.end_seal_time} />
+          </span>
+        </>
+      );
+    }
+    if (state.isWorking) {
+      const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time), 0);
+      return (
+        <>
+          <span className="badge badge-primary">生产中</span>
+          <span className="ms-2 fs-sm text-gray">已运行 {sec2day(sec)} 天</span>
+        </>
+      );
+    }
+
+    return null;
   };
 
   const renderActions = () => {
-    const editable = RaiseState.Pending === data.status;
-    const deletable = RaiseState.Pending === data.status;
-    // const hidable = [RaiseState.Closed, RaiseState.Failure].includes(data.status);
-    const startable = data.status === RaiseState.WaitingStart && isRaisePaid && isOpsPaid && isSigned;
+    const editable = state.isPending;
+    const deletable = state.isPending;
+    const startable = state.isWaiting && isRaisePaid && isOpsPaid && isSigned;
 
     return (
       <>
-        {deletable ? (
+        {deletable && (
           <SpinBtn
             className="btn btn-outline-danger border-0 shadow-none"
             loading={deleting}
@@ -265,16 +225,7 @@ const Item: React.FC<{
           >
             删除
           </SpinBtn>
-        ) : // ) : hidable ? (
-        //   <SpinBtn
-        //     className="btn btn-outline-danger border-0 shadow-none"
-        //     loading={hiding}
-        //     icon={<span className="bi bi-eye-slash"></span>}
-        //     onClick={handleHide}
-        //   >
-        //     隐藏
-        //   </SpinBtn>
-        null}
+        )}
 
         {editable && (
           <button className="btn btn-outline-light" type="button" onClick={onEdit}>
@@ -311,15 +262,15 @@ const Item: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{isSuccess ? '实际募集' : '募集目标'}</span>
+            <span className="text-gray-dark">{state.isSuccess ? '实际募集' : '募集目标'}</span>
             <span className="fw-500">
-              <span>{formatEther(data.target_amount)} FIL</span>
+              <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (
                 <>
                   <span> · </span>
                   <span>
-                    {isSuccess ? '达到目标的' : '已募集'}
-                    {formatRate(progress)}
+                    {state.isSuccess ? '达到目标的' : '已募集'}
+                    {F.formatRate(progress)}
                   </span>
                 </>
               )}
@@ -327,11 +278,11 @@ const Item: React.FC<{
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">投资人分成比例</span>
-            <span className="fw-500">{investRate}%</span>
+            <span className="fw-500">{priorityRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{isFinished ? '实际封装时间' : '承诺封装时间'}</span>
-            <span className="fw-500">{isFinished ? sealDays.join(' / ') : sealDays.join(' · ')}</span>
+            <span className="text-gray-dark">{state.isWorking ? '实际封装时间' : '承诺封装时间'}</span>
+            <span className="fw-500">{state.isWorking ? sealDays.join(' / ') : sealDays.join(' · ')}</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">技术服务</span>
@@ -342,7 +293,7 @@ const Item: React.FC<{
               <span className="align-middle ms-1">
                 <span>{provider?.short_name}</span>
                 <span className="mx-1">·</span>
-                <span>保证金{data.ops_security_fund_rate}%</span>
+                <span>保证金{opsRatio}%</span>
               </span>
             </span>
           </div>

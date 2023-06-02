@@ -8,9 +8,14 @@ import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
+/**
+ * 投资人收益
+ * @param data
+ * @returns
+ */
 export default function useRewardInvestor(data?: API.Plan) {
   const { account } = useAccounts();
-  const { getContract } = useRaiseContract();
+  const contract = useRaiseContract(data?.raise_address);
 
   const [total, setTotal] = useState(0); // 总收益
   const [reward, setReward] = useState(0); // 可提取
@@ -20,14 +25,10 @@ export default function useRewardInvestor(data?: API.Plan) {
   const [loading, fetchData] = useLoadingify(async () => {
     if (!account || !data) return;
 
-    const contract = getContract(data.raise_address);
-
-    if (!contract) return;
-
-    const total = await contract.totalRewardOf(data.raising_id, account);
-    const reward = await contract.availableRewardOf(data.raising_id, account);
-    const pending = await contract.willReleaseOf(data.raising_id, account);
-    const info = await contract.investorInfo(data.raising_id, account);
+    const info = await contract.getInvestorInfo(data.raising_id, account);
+    const total = await contract.getInvestorTotalReward(data.raising_id, account);
+    const reward = await contract.getInvestorAvailableReward(data.raising_id, account);
+    const pending = await contract.getInvestorPendingReward(data.raising_id, account);
     const record = info?.withdrawAmount;
 
     setTotal(toNumber(total));
@@ -39,8 +40,7 @@ export default function useRewardInvestor(data?: API.Plan) {
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
 
-    const contract = getContract(data.raise_address);
-    await contract?.investorWithdraw(data.raising_id);
+    await contract.investorWithdraw(data.raising_id);
   });
 
   useEffect(() => {

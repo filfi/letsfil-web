@@ -1,32 +1,26 @@
 import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { Form, Input } from 'antd';
-import { FormattedMessage, useModel } from '@umijs/max';
 
+import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
-import { accSub, sleep } from '@/utils/utils';
-import useAccounts from '@/hooks/useAccounts';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositInvest from '@/hooks/useDepositInvest';
+import useRaiseContract from '@/hooks/useRaiseContract';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import type { ItemProps } from './types';
 
 const CardStaking: React.FC<ItemProps> = ({ data }) => {
   const [form] = Form.useForm();
-  const { initialState } = useModel('@@initialState');
-  const { account, handleConnect } = useAccounts();
-  const { amount, total, target } = useDepositInvest(data);
-  const { contract, isRaising, isSealing } = useRaiseState(data);
+  const { staking } = useRaiseContract(data?.raise_address);
+  const { amount } = useDepositInvestor(data);
+  const { actual, target } = useRaiseInfo(data);
+  const { isRaising, isSealing } = useRaiseState(data);
 
-  const max = useMemo(() => {
-    if (target > 0 && target > total) {
-      return accSub(target, total);
-    }
-
-    return target;
-  }, [target, total]);
+  const max = useMemo(() => Math.max(accSub(target, actual), 0), [actual, target]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await number(rule, value);
@@ -45,11 +39,9 @@ const CardStaking: React.FC<ItemProps> = ({ data }) => {
   const [loading, handleStaking] = useProcessify(async ({ amount }: { amount: string }) => {
     if (!data) return;
 
-    await contract.staking(data.raising_id, {
+    await staking(data.raising_id, {
       value: ethers.utils.parseEther(`${amount}`),
     });
-
-    await sleep(3e3);
 
     form.resetFields();
   });
@@ -92,16 +84,6 @@ const CardStaking: React.FC<ItemProps> = ({ data }) => {
             )}
           </div>
         </div>
-
-        {!account && (
-          <div className="card section-card">
-            <div className="card-body">
-              <SpinBtn className="btn btn-primary btn-lg w-100" loading={initialState?.connecting} onClick={handleConnect}>
-                <FormattedMessage id="actions.button.connect" />
-              </SpinBtn>
-            </div>
-          </div>
-        )}
       </>
     );
   }
