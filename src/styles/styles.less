@@ -30,17 +30,27 @@ a {
   text-decoration: none;
 }
 
+.ffi-layout-main {
+  flex: 1 1 auto;
+}
+
 .container {
   padding-top: 0.01px;
   padding-bottom: 0.01px;
 }
 
-.alert + .header {
+@media screen and (min-width: 1400px) {
+  .container {
+    max-width: calc(1280px + var(--bs-gutter-x));
+  }
+}
+
+.alert ~ .header {
   top: 54px;
 }
 
-.ffi-layout-main {
-  flex: 1 1 auto;
+.alert ~ .ffi-layout-main {
+  padding-top: 54px;
 }
 
 svg[fill='currentColor'] path {

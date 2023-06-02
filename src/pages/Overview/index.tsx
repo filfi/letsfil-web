@@ -101,7 +101,7 @@ export default function Overview() {
   useEmittHandler<any>({
     [EventType.onStaking]: refresh,
     [EventType.onUnstaking]: refresh,
-    [EventType.onStartSeal]: refresh,
+    [EventType.onStartPreSeal]: refresh,
     [EventType.onDepositOpsFund]: refresh,
     [EventType.onServicerSigned]: refresh,
     [EventType.onStartRaisePlan]: refresh,

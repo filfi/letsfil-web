@@ -54,26 +54,26 @@ const defaultTreeData = {
       label: '建设方分成',
       rate: 0,
       desc: '建设方的权益',
-      // children: [
-      //   {
-      //     label: '技术运维服务费',
-      //     rate: 0,
-      //     active: true,
-      //     locked: true,
-      //     desc: '技术服务商的权益',
-      //   },
-      //   {
-      //     label: '发起人分成',
-      //     rate: 0,
-      //     desc: '募集计划的管理人',
-      //   },
-      //   {
-      //     label: 'FilFi协议分成',
-      //     rate: 0,
-      //     locked: true,
-      //     desc: '固定为建设方权益的8%',
-      //   },
-      // ],
+      children: [
+        {
+          label: '技术运维服务费',
+          rate: 0,
+          active: true,
+          locked: true,
+          desc: '技术服务商的权益',
+        },
+        {
+          label: '发起人分成',
+          rate: 0,
+          desc: '募集计划的管理人',
+        },
+        {
+          label: 'FilFi协议分成',
+          rate: 0,
+          locked: true,
+          desc: '固定为建设方权益的8%',
+        },
+      ],
     },
   ],
 };
@@ -86,9 +86,9 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
   // data.children[0].children[0].rate = vals.investRate;
   // data.children[0].children[1].rate = vals.opsRate;
   data.children[1].rate = vals.inferior;
-  // data.children[1].children[0].rate = vals.spRate;
-  // data.children[1].children[1].rate = vals.raiserRate;
-  // data.children[1].children[2].rate = vals.ffiRate;
+  data.children[1].children![0].rate = vals.spRate;
+  data.children[1].children![1].rate = vals.raiserRate;
+  data.children[1].children![2].rate = vals.ffiRate;
 
   return data;
 };
@@ -153,8 +153,6 @@ export default function CreateBenefit() {
       }),
       {},
     );
-
-    console.log('[post body]: %o', body);
 
     const [e] = await catchify(async () => {
       if (raiseId) {
@@ -302,7 +300,7 @@ export default function CreateBenefit() {
 
             <div className={classNames('card', styles.card)}>
               <div className="card-body">
-                <OrgTree data={treeData} className={styles.tree} nodeClassName="w-100" renderContent={renderTreeContent} />
+                <OrgTree data={treeData} className={styles.tree} renderContent={renderTreeContent} />
               </div>
               <div className="card-footer">
                 <div className="row row-cols-1 row-cols-lg-2 g-3">

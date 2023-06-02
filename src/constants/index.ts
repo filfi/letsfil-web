@@ -10,31 +10,30 @@ console.log('[RUN_ENV]: ', RUN_ENV);
 
 export const defaultLocale = 'zh-CN';
 
-export const SUPPORTED_CHAINS = [
-  '0x13a', // 314, // Filecoin - Mainnet
-  '0xc45', // 3141, // hypersapce testnet
-  '0x1df5e76', // 31415926, // 2k - local testnet
-];
+export const SUPPORTED_CHAINS =
+  RUN_ENV === 'main'
+    ? [
+        '0x13a', // 314, // Filecoin - Mainnet
+      ]
+    : [
+        '0xc45', // 3141, // Hypersapce testnet
+        '0x4cb2f', // 314159, // Calibration testnet
+      ];
 
-// hyperspace - testnet
-// const ADDR_HP = '0x30d10A82a29A367bD403bB2139d8994333550F80'; // 5200
-const ADDR_HP = '0xC8fee5a235C9119245F8f9a03DB3Ba0fFD8473d8'; // 5000
-// 2k - testnet
-const ADDR_2K = '0x04Cf4781A179c8dAE96EF91f958222BFE6cFC503';
+// Calibration testnet
+// const RAISE_ADDR = '0x30d10A82a29A367bD403bB2139d8994333550F80'; // 5200
+const RAISE_ADDR = '0x390CB629D5057AB6F990471a725179FdfB64dEFD'; // 5000
 /**
  * Raise Facory Contract Address
  */
-export const RAISE_ADDRESS = RUN_ENV === 'main' ? ADDRESS : RUN_ENV === 'test' ? ADDR_HP : ADDR_2K;
+export const RAISE_ADDRESS = RUN_ENV === 'main' ? ADDRESS : RAISE_ADDR;
 
 const SCAN_URL_MAIN = 'https://filfox.info/en'; // mainnet
-const SCAN_URL_HP = 'https://hyperspace.filfox.info/en'; // hyperspace testnet
+const SCAN_URL_CB = 'https://calibration.filscan.io'; // calibration testnet
 /**
  * Miner Overview address
  */
-export const SCAN_URL = RUN_ENV === 'main' ? SCAN_URL_MAIN : SCAN_URL_HP;
-
-export const sectors = [32, 64];
-export const periods = [180, 360, 540];
+export const SCAN_URL = RUN_ENV === 'main' ? SCAN_URL_MAIN : SCAN_URL_CB;
 
 export const locales = [
   {

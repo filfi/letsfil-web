@@ -8,7 +8,7 @@ import { providers } from '@/apis/raise';
  * @returns
  */
 export default function useProviders() {
-  const { data, loading } = useRequest(providers, { retryCount: 3 });
+  const { data, loading, refresh } = useRequest(providers, { retryCount: 3 });
 
   const list = useMemo(() => data?.list, [data]);
 
@@ -25,5 +25,6 @@ export default function useProviders() {
     loading,
     getProvider,
     renderLabel,
+    refresh,
   };
 }

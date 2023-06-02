@@ -26,15 +26,17 @@ export default function useAccountEvents() {
   });
 
   const onAccounts = useMemoizedFn((accounts: string[]) => {
+    setState({ accounts });
+
     if (initialState?.connected) {
-      setState({ accounts });
       reload();
     }
   });
 
   const onChainChanged = useMemoizedFn((chainId: string) => {
+    setState({ chainId });
+
     if (initialState?.connected) {
-      setState({ chainId });
       reload();
     }
   });

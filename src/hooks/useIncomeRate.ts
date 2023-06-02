@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { useRequest } from 'ahooks';
 
-import { accMul } from '@/utils/utils';
 import { toNumber } from '@/utils/format';
 import { getIncomeRate } from '@/apis/raise';
+import { accDiv, accMul } from '@/utils/utils';
 
 /**
  * 年化收益率
@@ -23,7 +23,7 @@ export default function useIncomeRate(plan?: API.Plan) {
   const income = useMemo(() => toNumber(`${data?.ec_income_rate ?? 0}`, 6), [data?.ec_income_rate]);
 
   const rate = useMemo(() => {
-    const r = accMul(income, ratio);
+    const r = accMul(income, accDiv(ratio, 100));
     return Number.isNaN(r) ? 0 : r;
   }, [income, ratio]);
 

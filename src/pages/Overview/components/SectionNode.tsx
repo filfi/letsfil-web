@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import { SCAN_URL } from '@/constants';
 import { byte2gb } from '@/utils/utils';
-import { formatByte } from '@/utils/format';
+import { formatPower } from '@/utils/format';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 import type { ItemProps } from './types';
 
 const SectionNode: React.FC<ItemProps> = ({ data }) => {
-  const size = useMemo(() => formatByte(data?.target_power ?? 0, '0 ib').split(' '), [data]);
+  const size = useMemo(() => formatPower(data?.target_power ?? 0), [data]);
 
   return (
     <>
@@ -26,8 +26,8 @@ const SectionNode: React.FC<ItemProps> = ({ data }) => {
               <tr>
                 <th className="ps-3 ps-lg-4">新增容量</th>
                 <td>
-                  <span className="text-decimal me-1">{size[0]}</span>
-                  <span className="text-neutral small fw-bold">{size[1]}</span>
+                  <span className="text-decimal me-1">{size?.[0]}</span>
+                  <span className="text-neutral small fw-bold">{size?.[1]}</span>
                 </td>
                 <th>扇区时间</th>
                 <td className="pe-3 pe-lg-4">

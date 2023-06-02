@@ -10,10 +10,9 @@ import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
 const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { fines } = useDepositRaiser(data);
-  const { nodeState, isFinished } = useRaiseState(data);
   const { pack, period, sealdays, running, percent: rate } = useRaiseSeals(data);
+  const { isPreSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
 
-  const isDelayed = useMemo(() => data && data.delay_seal_time > 0, [data?.delay_seal_time]);
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
   const percent = useMemo(() => (total > 0 ? Math.min(accDiv(running, total), 1) : 0), [running, total]);
@@ -25,7 +24,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
     return 0;
   }, [data]);
 
-  if (nodeState > 0) {
+  if (isPreSeal || isSealing || isDelayed || isWorking) {
     return (
       <>
         <div className="pt-3 mb-3">
@@ -81,15 +80,20 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
           <table className="table">
             <tbody>
               <tr>
-                {isFinished ? (
+                {isDelayed ? (
+                  <>
+                    <th>展期截止</th>
+                    <td>{F.formatUnixDate(data?.delay_seal_time)}</td>
+                  </>
+                ) : isFinished ? (
                   <>
                     <th>完成时间</th>
                     <td>{F.formatUnixDate(data?.end_seal_time)}</td>
                   </>
                 ) : (
                   <>
-                    <th>已进行</th>
-                    <td>{running} 天</td>
+                    <th>截止时间</th>
+                    <td>{F.formatUnixDate(data?.end_seal_time)}</td>
                   </>
                 )}
                 <th>已封装扇区</th>
@@ -160,7 +164,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
         <table className="table">
           <tbody>
             <tr>
-              <th>已进行</th>
+              <th>截止时间</th>
               <td>尚未开始</td>
               <th>已封装扇区</th>
               <td>-</td>

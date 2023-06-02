@@ -11,8 +11,8 @@ import { ItemProps } from './types';
 const SectionRaise: React.FC<ItemProps> = ({ data }) => {
   const { rate } = useIncomeRate(data);
   const { isStarted, isSuccess } = useRaiseState(data);
-  const { actual, target, progress } = useRaiseInfo(data);
-  const { minRate, opsRatio, priorityRate } = useRaiseRate(data);
+  const { opsRatio, priorityRate } = useRaiseRate(data);
+  const { actual, minRate, target, progress } = useRaiseInfo(data);
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)

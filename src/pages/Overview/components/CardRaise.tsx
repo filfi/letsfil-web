@@ -13,8 +13,8 @@ import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
 import { day2sec, toF4Address } from '@/utils/utils';
 import useRaiseContract from '@/hooks/useRaiseContract';
-import useFactoryContract from '@/hooks/useFactoryContract';
 import { formatEther, formatPower } from '@/utils/format';
+import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
 const calcTime = (mill: number) => {
@@ -30,9 +30,9 @@ const calcTime = (mill: number) => {
 const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
   const { initialState } = useModel('@@initialState');
   const { createRaisePlan } = useFactoryContract();
-  const { startRaisePlan, startSeal, servicerSign } = useRaiseContract(data?.raise_address);
+  const { startRaisePlan, startPreSeal, servicerSign } = useRaiseContract(data?.raise_address);
   const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
-  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
+  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
 
@@ -45,7 +45,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
       }
     }
 
-    if (isRaising) {
+    if (isRaising || isWaitSeal || isPreSeal) {
       return data.closing_time;
     }
 
@@ -58,14 +58,17 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     }
 
     return day2sec(data.raise_days);
-  }, [data, isClosed, isRaising, isDelayed, isSealing, isSuccess]);
+  }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed, isSuccess]);
 
   const [, formatted] = useCountDown({ targetDate });
   const raiseTime = useMemo(() => calcTime(seconds * 1000), [seconds]);
-  const displayTime = useMemo(() => (isRaising || isDelayed || isSealing ? formatted : raiseTime), [formatted, raiseTime, isRaising, isDelayed, isSealing]);
+  const displayTime = useMemo(
+    () => (isRaising || isWaitSeal || isPreSeal || isSealing || isDelayed ? formatted : raiseTime),
+    [formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
+  );
 
   useEffect(() => {
-    if (isRaising || isDelayed || isSealing) {
+    if (isRaising || isWaitSeal || isPreSeal || isDelayed || isSealing) {
       setTargetDate(seconds * 1000);
       return;
     }
@@ -86,7 +89,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
   const [sealing, sealAction] = useProcessify(async () => {
     if (!data) return;
 
-    await startSeal(data.raising_id);
+    await startPreSeal(data.raising_id);
   });
 
   const [starting, handleStart] = useProcessify(async () => {
@@ -270,17 +273,19 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
                   ? '募集计划已关闭'
                   : isRaising
                   ? '正在募集中！距离截止时间'
-                  : isDelayed
-                  ? '封装延期'
+                  : isWaitSeal || isPreSeal
+                  ? '募集成功，等待封装'
                   : isSealing
                   ? '封装倒计时'
-                  : isSuccess
-                  ? '募集成功，等待封装'
+                  : isDelayed
+                  ? '封装延期'
                   : '募集时间'}
               </h4>
               <div className="ms-auto">
                 {isFailed ? <span className="badge badge-danger">募集未成功</span> : isSuccess ? <span className="badge badge-success">募集成功</span> : null}
-                {isDelayed ? (
+                {isPreSeal ? (
+                  <span className="badge ms-2">准备封装</span>
+                ) : isDelayed ? (
                   <span className="badge badge-warning ms-2">封装延期</span>
                 ) : isSealing ? (
                   <span className="badge badge-primary ms-2">正在封装</span>
@@ -294,19 +299,19 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
                 'text-main': !isClosed && !isFailed,
               })}
             >
-              <div className="">
+              <div className="countdown-item">
                 <p className="h2 fw-bold mb-1">{displayTime.days}</p>
                 <p className="mb-0 text-gray">天</p>
               </div>
-              <div className="">
+              <div className="countdown-item">
                 <p className="h2 fw-bold mb-1">{displayTime.hours}</p>
                 <p className="mb-0 text-gray">小时</p>
               </div>
-              <div className="">
+              <div className="countdown-item">
                 <p className="h2 fw-bold mb-1">{displayTime.minutes}</p>
                 <p className="mb-0 text-gray">分</p>
               </div>
-              <div className="">
+              <div className="countdown-item">
                 <p className="h2 fw-bold mb-1">{displayTime.seconds}</p>
                 <p className="mb-0 text-gray">秒</p>
               </div>

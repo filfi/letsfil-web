@@ -27,7 +27,7 @@ export default function CreateProgram() {
   const { perPledge, loading: fetching } = useChainInfo();
 
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
-  const minAmount = useMemo(() => (Number.isNaN(+amount) ? 0 : accMul(amount, rate)), [amount, rate]);
+  // const minAmount = useMemo(() => (Number.isNaN(+amount) ? 0 : accMul(amount, rate)), [amount, rate]);
 
   const evalMax = useMemo(() => {
     let val = 0;
@@ -70,13 +70,13 @@ export default function CreateProgram() {
 
     await validators.integer(rule, value);
 
-    if (value) {
-      const val = amountType === 0 ? minAmount : accMul(minAmount, perPledge);
+    // if (value) {
+    //   const val = amountType === 0 ? minAmount : accMul(minAmount, perPledge);
 
-      if (val < 5000) {
-        return Promise.reject(`必须大于 5,000 FIL，当前计算为 ${formatAmount(val)} FIL`);
-      }
-    }
+    //   if (val < 5000) {
+    //     return Promise.reject(`必须大于 5,000 FIL，当前计算为 ${formatAmount(val)} FIL`);
+    //   }
+    // }
   };
 
   useUpdateEffect(() => {

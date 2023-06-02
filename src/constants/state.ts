@@ -52,4 +52,8 @@ export enum NodeState {
    * 已经销毁
    */
   Destroy = 4,
+  /**
+   * 预封装
+   */
+  PreSeal = 11,
 }

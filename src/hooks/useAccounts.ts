@@ -1,19 +1,17 @@
-import { ethers } from 'ethers';
+import { useMemo } from 'react';
 import { useCreation } from 'ahooks';
 import { useModel } from '@umijs/max';
 import MetaMaskOnboarding from '@metamask/onboarding';
-import { useEffect, useMemo, useState } from 'react';
 
 import * as S from '@/utils/storage';
 import Modal from '@/components/Modal';
-import useAccountEvents from './useAccountEvents';
+import { toNumber } from '@/utils/format';
 
 export default function useAccounts() {
   const onboarding = useCreation(() => new MetaMaskOnboarding(), []);
 
-  useAccountEvents();
-  const [disabled, setDisabled] = useState(false);
-  const [buttonText, setBtnText] = useState('点击安装MetaMask');
+  // const [disabled, setDisabled] = useState(false);
+  // const [buttonText, setBtnText] = useState('点击安装MetaMask');
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const accounts = useMemo(() => initialState?.accounts ?? [], [initialState]);
@@ -33,10 +31,12 @@ export default function useAccounts() {
   };
 
   const requestAccounts = async (): Promise<string[] | undefined> => {
+    if (!window.ethereum) return;
+
     setState({ connecting: true });
 
     try {
-      const accounts = await window.ethereum?.request({ method: 'eth_requestAccounts' });
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       console.log(accounts);
       const connected = !!(accounts && accounts[0]);
 
@@ -59,29 +59,18 @@ export default function useAccounts() {
   };
 
   const getBalance = async (account: string) => {
-    if (window.ethereum) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+    if (account && window.ethereum) {
+      try {
+        const balance = await window.ethereum.request({ method: 'eth_getBalance', params: [account, 'latest'] });
+        return toNumber(balance);
+      } catch (e) {
+        console.log(e);
+      }
+      // const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-      return await provider.getBalance(account);
+      // return await provider.getBalance(account);
     }
   };
-
-  useEffect(() => {
-    let connected = false;
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      if (accounts.length > 0) {
-        setBtnText('已连接');
-        setDisabled(true);
-        connected = true;
-        onboarding.stopOnboarding();
-      } else {
-        setBtnText('连接钱包');
-        setDisabled(false);
-      }
-    }
-
-    setState({ connected, connecting: false });
-  }, [accounts]);
 
   const withAccount = <R = any, P extends unknown[] = any>(service: (account: string, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
@@ -117,8 +106,6 @@ export default function useAccounts() {
   return {
     account,
     accounts,
-    buttonText,
-    disabled,
     getBalance,
     withAccount,
     withConnect,

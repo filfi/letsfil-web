@@ -17,6 +17,7 @@
   color: var(--org-tree-color);
 
   &-node {
+    display: table;
     padding: var(--org-tree-node-padding-y) var(--org-tree-node-padding-x);
     background-color: var(--org-tree-node-bg);
     border: var(--org-tree-node-border-width) solid var(--org-tree-node-border-color);
@@ -25,6 +26,10 @@
     &:only-child {
       margin-top: calc(var(--org-tree-node-spacer) / 2);
       margin-bottom: calc(var(--org-tree-node-spacer) / 2);
+    }
+
+    &:not(.is-leaf) {
+      width: 100%;
     }
   }
 

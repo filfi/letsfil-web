@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useAsyncEffect, useLockFn } from 'ahooks';
 
+import { isDef } from '@/utils/utils';
 import { toNumber } from '@/utils/format';
+import useLoadingify from './useLoadingify';
 import useRaiseContract from './useRaiseContract';
 
 /**
@@ -14,23 +17,24 @@ export default function useRaiseReward(data?: API.Plan) {
 
   const contract = useRaiseContract(data?.raise_address);
 
-  const fetchData = async () => {
-    if (!data) return;
+  const [loading, fetchData] = useLoadingify(
+    useLockFn(async () => {
+      if (!data?.raising_id) return;
 
-    const total = await contract.getTotalReward(data.raising_id);
-    const fines = await contract.getServicerFines(data.raising_id);
+      const total = await contract.getTotalReward(data.raising_id);
+      const fines = await contract.getServicerFines(data.raising_id);
 
-    setFines(toNumber(fines));
-    setReward(toNumber(total));
-  };
+      isDef(fines) && setFines(toNumber(fines));
+      isDef(total) && setReward(toNumber(total));
+    }),
+  );
 
-  useEffect(() => {
-    fetchData();
-  }, [data]);
+  useAsyncEffect(fetchData, [data?.raising_id]);
 
   return {
     fines,
     reward,
+    loading,
     refresh: fetchData,
   };
 }

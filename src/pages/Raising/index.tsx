@@ -20,7 +20,7 @@ const isArrs = function <V>(v: V | undefined): v is V {
 
 const isRaising = (data: API.Plan) => data.status === RaiseState.Raising;
 const isWorking = (data: API.Plan) => data.status === RaiseState.Success && data.sealed_status === NodeState.End;
-const isSealing = (data: API.Plan) => data.status === RaiseState.Success && [NodeState.Started, NodeState.Delayed].includes(data.sealed_status);
+const isSealing = (data: API.Plan) => data.status === RaiseState.Success && ![NodeState.End, NodeState.Destroy].includes(data.sealed_status);
 
 export default function Raising() {
   useTitle('募集计划 - FilFi', { restoreOnUnmount: true });
