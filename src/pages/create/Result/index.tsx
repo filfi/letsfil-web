@@ -66,10 +66,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">建设者</span>
+                  <span className="fw-bold">发起人</span>
                   <span>签名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">对节点计划达成共识，建设者签名完成链上部署，上链之后不可修改。</p>
+                <p className="mb-0 text-gray-dark">对募集计划达成共识，发起人签名完成链上部署，上链之后不可修改。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -78,10 +78,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">建设者</span>
-                  <span>存入”建设者保证金“</span>
+                  <span className="fw-bold">发起人</span>
+                  <span>存入”发起人保证金“</span>
                 </p>
-                <p className="mb-0 text-gray-dark">封装结束后，建设者可取回保证金，保证金原路退回存入时使用的钱包。</p>
+                <p className="mb-0 text-gray-dark">封装结束后，发起人可取回保证金，保证金原路退回存入时使用的钱包。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -93,7 +93,7 @@ export default function CreateResult() {
                   <span className="fw-bold">技术服务商</span>
                   <span>签名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">节点计划需要得到技术服务商签名确认，同时将存储节点的Owner交给智能合约。</p>
+                <p className="mb-0 text-gray-dark">募集计划需要得到技术服务商签名确认，同时将存储节点的Owner交给智能合约。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -114,10 +114,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">建设者</span>
+                  <span className="fw-bold">发起人</span>
                   <span>启动</span>
                 </p>
-                <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，建设者决定启动时间，启动后集合质押期开始计时。</p>
+                <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，发起人决定启动时间，启动后募集期开始计时。</p>
               </div>
             </li>
           </ul>
@@ -132,7 +132,7 @@ export default function CreateResult() {
             重新修改
           </SpinBtn>
           <Link className="btn btn-primary btn-lg flex-fill" replace to={`/overview/${raiseId}`}>
-            查看节点计划
+            查看募集计划
           </Link>
         </div>
       </div>
@@ -145,10 +145,10 @@ export default function CreateResult() {
             </div>
             <div className="flex-grow-1">
               <p className="mb-0">
-                <span className="fw-bold">建设者</span>
+                <span className="fw-bold">发起人</span>
                 <span>签名</span>
               </p>
-              <p className="mb-0 text-gray-dark">对节点计划达成共识，建设者签名完成链上部署，上链之后不可修改。</p>
+              <p className="mb-0 text-gray-dark">对募集计划达成共识，发起人签名完成链上部署，上链之后不可修改。</p>
             </div>
           </li>
           <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -157,10 +157,10 @@ export default function CreateResult() {
             </div>
             <div className="flex-grow-1">
               <p className="mb-0">
-                <span className="fw-bold">建设者</span>
-                <span>存入”建设者保证金“</span>
+                <span className="fw-bold">发起人</span>
+                <span>存入”发起人保证金“</span>
               </p>
-              <p className="mb-0 text-gray-dark">封装结束后，建设者可取回保证金，保证金原路退回存入时使用的钱包。</p>
+              <p className="mb-0 text-gray-dark">封装结束后，发起人可取回保证金，保证金原路退回存入时使用的钱包。</p>
             </div>
           </li>
           <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -172,7 +172,7 @@ export default function CreateResult() {
                 <span className="fw-bold">技术服务商</span>
                 <span>签名</span>
               </p>
-              <p className="mb-0 text-gray-dark">节点计划需要得到技术服务商签名确认，同时将存储节点的Owner交给智能合约。</p>
+              <p className="mb-0 text-gray-dark">募集计划需要得到技术服务商签名确认，同时将存储节点的Owner交给智能合约。</p>
             </div>
           </li>
           <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -193,10 +193,10 @@ export default function CreateResult() {
             </div>
             <div className="flex-grow-1">
               <p className="mb-0">
-                <span className="fw-bold">建设者</span>
+                <span className="fw-bold">发起人</span>
                 <span>启动</span>
               </p>
-              <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，建设者决定启动时间，启动后集合质押期开始计时。</p>
+              <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，发起人决定启动时间，启动后募集期开始计时。</p>
             </div>
           </li>
         </ul>

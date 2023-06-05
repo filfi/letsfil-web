@@ -10,7 +10,7 @@ import useRaiseContract from './useRaiseContract';
 import { accDiv, isDef, isEqual } from '@/utils/utils';
 
 /**
- * 节点计划信息
+ * 募集计划信息
  * @param data
  * @returns
  */
@@ -23,9 +23,9 @@ export default function useRaiseInfo(data?: API.Plan) {
   const [actual, setActual] = useState(toNumber(data?.actual_amount)); // 质押总额
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
-  const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小集合质押比例
+  const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小募集比例
   const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 节点目标
-  const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 建设者
+  const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 发起人
   const servicer = useMemo(() => data?.service_provider_address ?? '', [data?.service_provider_address]); // 服务商
   const isRaiser = useMemo(() => isEqual(account, raiser), [account, raiser]);
   const isServicer = useMemo(() => isEqual(account, servicer), [account, servicer]);
@@ -33,7 +33,7 @@ export default function useRaiseInfo(data?: API.Plan) {
   const isOpsPaid = useMemo(() => data?.sp_margin_status === 1, [data?.sp_margin_status]);
   const isRaisePaid = useMemo(() => data?.raise_margin_status === 1, [data?.raise_margin_status]);
 
-  const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 集合质押进度
+  const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 募集进度
   const sealProgress = useMemo(() => (actual > 0 ? Math.min(accDiv(sealed, actual), 1) : 0), [actual, sealed]); // 封装进度
 
   const [loading, fetchData] = useLoadingify(

@@ -87,7 +87,7 @@ export default function Overview() {
   const { isRaiser } = useRaiseInfo(data);
   const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
-  const title = useMemo(() => (data ? `${data.sponsor_company}发起的节点计划@${data.miner_id}` : '-'), [data]);
+  const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
 
   const refresh = async () => {
     await sleep(3e3);
@@ -132,8 +132,8 @@ export default function Overview() {
   const handleDelete = () => {
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: '删除节点计划',
-      summary: '未签名的节点计划可以永久删除。',
+      title: '删除募集计划',
+      summary: '未签名的募集计划可以永久删除。',
       onConfirm: () => {
         hide();
 
@@ -147,16 +147,16 @@ export default function Overview() {
 
     const hide = Dialog.confirm({
       icon: 'error',
-      title: '关闭节点计划',
-      summary: '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
+      title: '关闭募集计划',
+      summary: '募集计划已经部署在链上，关闭已经启动的募集计划被视为违约。',
       content: (
         <div className="text-gray">
           <ul>
-            <li>需要向参建者支付投资额的利息</li>
+            <li>需要向投资人支付投资额的利息</li>
             <li>需要向技术服务商支付保证金利息</li>
           </ul>
           <p>
-            <span>智能合约按照规则会产生罚金，罚金从建设者保证金中扣除。 </span>
+            <span>智能合约按照规则会产生罚金，罚金从发起人保证金中扣除。 </span>
             <a href="#">如何计算罚金？</a>
           </p>
         </div>
@@ -180,7 +180,7 @@ export default function Overview() {
         {isPending && isRaiser && (
           <>
             <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
-              修改节点计划
+              修改募集计划
             </SpinBtn>
 
             <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={actions.removing} onClick={handleDelete}>
@@ -280,7 +280,7 @@ export default function Overview() {
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" to={`/overview/${param.id}`}>
-                  节点计划
+                  募集计划
                 </NavLink>
               </li>
             </ul>
@@ -352,8 +352,8 @@ export default function Overview() {
               <section id="reward">
                 <div className="section">
                   <div className="section-header">
-                    <h4 className="section-title">节点激励分配方案</h4>
-                    <p className="mb-0">节点计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
+                    <h4 className="section-title">收益分配方案</h4>
+                    <p className="mb-0">募集计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
                   </div>
 
                   <SectionReward data={data} />
@@ -371,7 +371,7 @@ export default function Overview() {
               <section id="node" className="section">
                 <div className="section-header">
                   <h4 className="section-title">建设方案</h4>
-                  <p className="mb-0">集合质押FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
+                  <p className="mb-0">募集FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
                 </div>
 
                 <SectionNode data={data} />
@@ -389,7 +389,7 @@ export default function Overview() {
               <section id="deposit" className="section">
                 <div className="section-header">
                   <h4 className="section-title">保证金</h4>
-                  <p className="mb-0">保障节点计划执行，异常自动触发惩罚机制，保护参建者权益。</p>
+                  <p className="mb-0">保障募集计划执行，异常自动触发惩罚机制，保护投资人权益。</p>
                 </div>
 
                 <SectionDeposit data={data} getProvider={getProvider} />
@@ -397,7 +397,7 @@ export default function Overview() {
               <section id="timeline" className="section">
                 <div className="section-header">
                   <h4 className="section-title">时间进度</h4>
-                  <p className="mb-0">参建者对每一步进展尽在掌握。</p>
+                  <p className="mb-0">投资人对每一步进展尽在掌握。</p>
                 </div>
 
                 <SectionTimeline data={data} />
@@ -405,7 +405,7 @@ export default function Overview() {
               <section id="contract" className="section">
                 <div className="section-header">
                   <h4 className="section-title">智能合约</h4>
-                  <p className="mb-0">节点计划是部署在Filecoin上的智能合约，存储节点的质押和节点激励分配完全由智能合约管理。</p>
+                  <p className="mb-0">募集计划是部署在Filecoin上的智能合约，存储节点的质押和收益分配完全由智能合约管理。</p>
                 </div>
 
                 <SectionContract data={data} />
@@ -414,7 +414,7 @@ export default function Overview() {
                 <section id="events" className="section">
                   <div className="section-header">
                     <h4 className="section-title">活动</h4>
-                    <p className="mb-0">节点计划发生的重要活动以及链上相关消息</p>
+                    <p className="mb-0">募集计划发生的重要活动以及链上相关消息</p>
                   </div>
 
                   <SectionEvents data={data} />

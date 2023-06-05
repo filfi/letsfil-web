@@ -75,7 +75,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
       </div>
       <div className="card-footer d-flex">
         <Link className="btn btn-primary ms-auto" to={`/assets/${data.raising_id}`}>
-          提取节点激励
+          提取收益
         </Link>
       </div>
     </div>

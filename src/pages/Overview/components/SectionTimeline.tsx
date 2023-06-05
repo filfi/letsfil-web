@@ -20,7 +20,7 @@ const StepStart: React.FC<{ data: API.Plan }> = ({ data }) => {
   const isStart = useMemo(() => isStarted && data.begin_time, [isStarted, data.begin_time]);
 
   return (
-    <Steps.Item title="节点计划开启" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
+    <Steps.Item title="募集计划开启" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
       {isStart ? F.formatUnixDate(data.begin_time) : '尚未开启'}
     </Steps.Item>
   );
@@ -33,14 +33,14 @@ const StepClose: React.FC<{ data: API.Plan }> = ({ data }) => {
 
   if (isClosed || isFailed) {
     return (
-      <Steps.Item title={isClosed ? '集合质押关闭' : '集合质押失败'} status="active">
+      <Steps.Item title={isClosed ? '募集关闭' : '募集失败'} status="active">
         {F.formatUnixDate(data.closing_time)}
       </Steps.Item>
     );
   }
 
   return (
-    <Steps.Item title="节点计划截止" status={isRaiseEnd ? 'finish' : isProgress ? 'active' : undefined}>
+    <Steps.Item title="募集计划截止" status={isRaiseEnd ? 'finish' : isProgress ? 'active' : undefined}>
       {isProgress ? F.formatUnixDate(data.closing_time) : `预期${data.raise_days}天`}
     </Steps.Item>
   );
@@ -69,7 +69,7 @@ const StepWork: React.FC<{ data: API.Plan }> = ({ data }) => {
 
   return (
     <Steps.Item title="节点生产阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
-      {isWorking ? '产出和分配节点激励' : `+${data.sector_period}天`}
+      {isWorking ? '产出和分配收益' : `+${data.sector_period}天`}
     </Steps.Item>
   );
 };

@@ -91,14 +91,14 @@ export default function AccountPlans() {
     <>
       <LoadingView className="vh-50" data={data} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
-          <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参加投资的节点计划。">
+          <Result icon={<IconSearch />} title="您还没有募集计划" desc="这里显示您的募集计划，包括您发起的募集计划和参加投资的募集计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
               <Link className="btn btn-light" to="/raising">
-                查看开放的节点计划
+                查看开放的募集计划
               </Link>
               <button className="btn btn-primary" type="button" onClick={handleCreate}>
                 <span className="bi bi-plus-lg"></span>
-                <span className="ms-2">发起节点计划</span>
+                <span className="ms-2">发起募集计划</span>
               </button>
             </div>
           </Result>
@@ -106,11 +106,11 @@ export default function AccountPlans() {
           <>
             <button className="btn btn-primary float-md-end mt-lg-3" type="button" onClick={handleCreate}>
               <span className="bi bi-plus-lg"></span>
-              <span className="ms-2">发起节点计划</span>
+              <span className="ms-2">发起募集计划</span>
             </button>
             {isArrs(raises) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我发起的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我发起的募集计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {raises.map((item) => (
                     <div className="col" key={item.raising_id}>
@@ -130,7 +130,7 @@ export default function AccountPlans() {
 
             {isArrs(invests) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我投资的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我投资的募集计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {invests.map((item) => (
                     <div className="col" key={item.raising_id}>
@@ -151,7 +151,7 @@ export default function AccountPlans() {
 
             {isArrs(services) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>{user?.name}提供技术服务的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>{user?.name}提供技术服务的募集计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {services.map((item) => (
                     <div className="col" key={item.raising_id}>

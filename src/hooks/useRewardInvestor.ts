@@ -11,7 +11,7 @@ import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
 /**
- * 参建者节点激励
+ * 投资人收益
  * @param data
  * @returns
  */
@@ -19,7 +19,7 @@ export default function useRewardInvestor(data?: API.Plan) {
   const { account } = useAccounts();
   const contract = useRaiseContract(data?.raise_address);
 
-  const [total, setTotal] = useState(0); // 总节点激励
+  const [total, setTotal] = useState(0); // 总收益
   const [reward, setReward] = useState(0); // 可提取
   const [record, setRecord] = useState(0); // 已提取
   const [pending, setPending] = useState(0); // 待释放

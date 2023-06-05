@@ -38,14 +38,8 @@ const Activity: React.FC = () => {
       dataIndex: 'tx_type',
       render: (type, row) => (
         <span>
-          {`${row.fund_type}` === '4' ? (
-            '分配节点激励'
-          ) : (
-            <>
-              {['', '存入', '取回', '提取'][type]}
-              {['', '建设者保证金', '技术运维保证金', '质押币', '节点激励'][row.fund_type]}
-            </>
-          )}
+          {['', '存入', '取回', '提取'][type]}
+          {['', '发起人保证金', '技术运维保证金', '质押币', '收益'][row.fund_type]}
         </span>
       ),
     },

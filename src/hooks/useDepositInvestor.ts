@@ -12,7 +12,7 @@ import useRaiseContract from './useRaiseContract';
 import { accDiv, isDef } from '@/utils/utils';
 
 /**
- * 参建者的投资信息
+ * 投资人的投资信息
  * @param data
  * @returns
  */

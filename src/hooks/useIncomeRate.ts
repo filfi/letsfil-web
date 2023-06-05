@@ -6,7 +6,7 @@ import { getIncomeRate } from '@/apis/raise';
 import { accDiv, accMul } from '@/utils/utils';
 
 /**
- * 年化节点激励率
+ * 年化收益率
  * @param plan
  * @returns
  */

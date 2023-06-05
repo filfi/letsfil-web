@@ -10,7 +10,7 @@ import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
 /**
- * 建设者的投资信息
+ * 发起人的投资信息
  * @param data
  * @returns
  */

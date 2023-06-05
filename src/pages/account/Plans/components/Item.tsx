@@ -34,8 +34,8 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: '删除节点计划',
-      summary: '未签名的节点计划可以永久删除。',
+      title: '删除募集计划',
+      summary: '未签名的募集计划可以永久删除。',
       onConfirm: () => {
         hide();
 
@@ -134,7 +134,7 @@ const Item: React.FC<{
         return <span className="badge">可编辑</span>;
       }
 
-      return <span className="badge">待建设者签名</span>;
+      return <span className="badge">待发起人签名</span>;
     }
     if (state.isWaiting) {
       if (!isRaisePaid || !isOpsPaid) {
@@ -150,7 +150,7 @@ const Item: React.FC<{
     if (state.isRaising) {
       return (
         <>
-          <span className="badge badge-success">集合质押中</span>
+          <span className="badge badge-success">募集中</span>
           <span className="ms-2 fs-sm text-gray">
             <Countdown time={data.closing_time} />
           </span>
@@ -168,7 +168,7 @@ const Item: React.FC<{
     if (state.isFailed) {
       return (
         <>
-          <span className="badge badge-danger">集合质押失败</span>
+          <span className="badge badge-danger">募集失败</span>
           {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
         </>
       );
@@ -252,7 +252,7 @@ const Item: React.FC<{
           </div>
           <div className="mx-3 clearfix">
             <span className="badge badge-primary ms-1 float-end">@{data.miner_id}</span>
-            <h4 className="card-title mb-0 text-truncate">{data.sponsor_company}发起的节点计划</h4>
+            <h4 className="card-title mb-0 text-truncate">{data.sponsor_company}发起的募集计划</h4>
           </div>
           <div className="flex-shrink-0 ms-auto">
             <ShareBtn className="btn btn-light border-0 shadow-none" text={shareUrl}>
@@ -262,14 +262,14 @@ const Item: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isSuccess ? '实际集合质押' : '节点目标'}</span>
+            <span className="text-gray-dark">{state.isSuccess ? '实际募集' : '节点目标'}</span>
             <span className="fw-500">
               <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (
                 <>
                   <span> · </span>
                   <span>
-                    {state.isSuccess ? '达到目标的' : '已集合质押'}
+                    {state.isSuccess ? '达到目标的' : '已募集'}
                     {F.formatRate(progress)}
                   </span>
                 </>
@@ -277,7 +277,7 @@ const Item: React.FC<{
             </span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">参建者分配比例</span>
+            <span className="text-gray-dark">投资人分配比例</span>
             <span className="fw-500">{priorityRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">

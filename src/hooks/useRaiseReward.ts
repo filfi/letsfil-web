@@ -7,7 +7,7 @@ import useLoadingify from './useLoadingify';
 import useRaiseContract from './useRaiseContract';
 
 /**
- * 节点计划的节点激励
+ * 募集计划的收益
  * @param data
  * @returns
  */

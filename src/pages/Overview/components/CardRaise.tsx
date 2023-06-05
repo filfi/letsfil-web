@@ -107,7 +107,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
         <div className="text-gray">
           <ul>
             <li>提前沟通技术服务商，与封装排期计划保持同步</li>
-            <li>检查节点计划承诺的封装时间，封装延期将产生罚金</li>
+            <li>检查募集计划承诺的封装时间，封装延期将产生罚金</li>
           </ul>
         </div>
       ),
@@ -135,11 +135,11 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
           <>
             <div>
               <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} onClick={handleCreate}>
-                建设者签名
+                发起人签名
               </SpinBtn>
             </div>
 
-            <p className="mb-0">与相关方共识后签名，链上部署后不可修改，但您依然可以创建新的节点计划。</p>
+            <p className="mb-0">与相关方共识后签名，链上部署后不可修改，但您依然可以创建新的募集计划。</p>
           </>
         );
       }
@@ -153,29 +153,29 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
               </SpinBtn>
             </div>
 
-            <p className="mb-0">等待建设者签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
+            <p className="mb-0">等待发起人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
           </>
         );
       }
 
-      return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
+      return <p className="mb-0">募集计划尚未开放，收藏页面密切关注投资机会。</p>;
     }
 
     // 待开始
     if (isWaiting) {
-      // 建设者
+      // 发起人
       if (isRaiser) {
-        // 可启动（建设者保证金已缴 且 运维保证金已缴纳 且 已签名）
+        // 可启动（发起人保证金已缴 且 运维保证金已缴纳 且 已签名）
         const disabled = !(isRaisePaid && isOpsPaid && isSigned);
         return (
           <>
             <div>
               <SpinBtn className="btn btn-primary btn-lg w-100" disabled={disabled} loading={starting} onClick={handleStart}>
-                启动集合质押
+                启动募集
               </SpinBtn>
             </div>
 
-            <p className="mb-0">查看页面上的红色提示，满足启动条件后启动按钮生效。启动后参建者即可存入FIL。</p>
+            <p className="mb-0">查看页面上的红色提示，满足启动条件后启动按钮生效。启动后投资人即可存入FIL。</p>
           </>
         );
       }
@@ -196,12 +196,12 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
               </SpinBtn>
             </div>
 
-            <p className="mb-0">签名即同意节点计划中的约定，您签名后节点计划方可启动。</p>
+            <p className="mb-0">签名即同意募集计划中的约定，您签名后募集计划方可启动。</p>
           </>
         );
       }
 
-      return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
+      return <p className="mb-0">募集计划尚未开放，收藏页面密切关注投资机会。</p>;
     }
 
     // 待封装
@@ -214,7 +214,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
             </SpinBtn>
           </div>
 
-          <p className="mb-0">集合质押已成功，可提前开始封装。集合质押金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
+          <p className="mb-0">募集已成功，可提前开始封装。募集金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
         </>
       );
     }
@@ -228,8 +228,8 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
       <>
         <div className="card section-card">
           <div className="card-header d-flex align-items-center border-0">
-            <h4 className="card-title mb-0 me-2">节点计划·已完成</h4>
-            <span className="badge badge-success ms-auto">集合质押成功</span>
+            <h4 className="card-title mb-0 me-2">募集计划·已完成</h4>
+            <span className="badge badge-success ms-auto">募集成功</span>
             <span className="badge badge-success ms-2">封装完成</span>
           </div>
           <div className="card-body py-2 fs-16 text-main">
@@ -268,25 +268,21 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
             <div className="d-flex align-items-center">
               <h4 className="card-title mb-0 me-2">
                 {isFailed
-                  ? '节点计划已结束'
+                  ? '募集计划已结束'
                   : isClosed
-                  ? '节点计划已关闭'
+                  ? '募集计划已关闭'
                   : isRaising
-                  ? '正在集合质押中！距离截止时间'
+                  ? '正在募集中！距离截止时间'
                   : isWaitSeal || isPreSeal
-                  ? '集合质押成功，等待封装'
+                  ? '募集成功，等待封装'
                   : isSealing
                   ? '封装倒计时'
                   : isDelayed
                   ? '封装延期'
-                  : '集合质押时间'}
+                  : '募集时间'}
               </h4>
               <div className="ms-auto">
-                {isFailed ? (
-                  <span className="badge badge-danger">集合质押未成功</span>
-                ) : isSuccess ? (
-                  <span className="badge badge-success">集合质押成功</span>
-                ) : null}
+                {isFailed ? <span className="badge badge-danger">募集未成功</span> : isSuccess ? <span className="badge badge-success">募集成功</span> : null}
                 {isPreSeal ? (
                   <span className="badge ms-2">准备封装</span>
                 ) : isDelayed ? (
