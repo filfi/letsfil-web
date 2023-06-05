@@ -73,7 +73,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
             </div>
             <div className="flex-grow-1">
               <p className="mb-3 mb-lg-4 fs-16 text-gray-dark">
-                <span>节点目标</span>
+                <span>募集目标</span>
                 <span className="mx-1 fw-bold">{formatEther(data.target_amount)}</span>
                 <span>FIL</span>
                 <span className="mx-2">·</span>

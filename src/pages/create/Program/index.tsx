@@ -143,7 +143,7 @@ export default function CreateProgram() {
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">节点目标</h4>
+            <h4 className="ffi-label">募集目标</h4>
             <p className="text-gray">填写FIL的募集数量，过低目标不利于硬件设备的充分利用。存储算力是指QAP(Quality-Adjusted Power)</p>
 
             <Form.Item className="mb-2" name="amountType">
@@ -158,8 +158,8 @@ export default function CreateProgram() {
 
             <div className="row row-cols-1 row-cols-lg-2 mb-4">
               <div className="col">
-                <Form.Item name="amount" rules={[{ required: true, message: '请输入节点目标' }, { validator: amountValidator }]}>
-                  <Input placeholder="节点目标" suffix={<span>{['FIL', 'PiB'][amountType]}</span>} />
+                <Form.Item name="amount" rules={[{ required: true, message: '请输入募集目标' }, { validator: amountValidator }]}>
+                  <Input placeholder="募集目标" suffix={<span>{['FIL', 'PiB'][amountType]}</span>} />
                 </Form.Item>
                 <Form.Item name="minRaiseRate" rules={[{ required: true, message: '请输入最低募集比例' }, { validator: minRateValidator }]}>
                   <Input type="number" min={0} max={99} placeholder="最低募集比例" suffix="%" />

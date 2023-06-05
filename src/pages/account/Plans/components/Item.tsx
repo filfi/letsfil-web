@@ -262,7 +262,7 @@ const Item: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isSuccess ? '实际募集' : '节点目标'}</span>
+            <span className="text-gray-dark">{state.isSuccess ? '实际募集' : '募集目标'}</span>
             <span className="fw-500">
               <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (

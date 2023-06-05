@@ -93,9 +93,9 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
           )}
           <p className="mb-0">
             {isRaising ? (
-              <span>当节点目标未达成，或发起方主动终止，此保证金赔偿投资人存入FIL的利息损失。</span>
+              <span>当募集目标未达成，或发起方主动终止，此保证金赔偿投资人存入FIL的利息损失。</span>
             ) : (
-              <span>保障募集期和封装期。节点目标未达成或封装延期，此保证金支付罚金。</span>
+              <span>保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</span>
             )}
             {/* <a className="text-underline" href="#raiser-deposit" data-bs-toggle="modal">
               更多信息
@@ -107,7 +107,7 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
       {/* <Modal.Alert id="raiser-deposit" title="发起人保证金">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">保障募集期和封装期。节点目标未达成或封装延期，此保证金支付罚金。</p>
+            <p className="mb-0">保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</p>
           </div>
         </div>
       </Modal.Alert>
@@ -281,7 +281,7 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
             </div>
           </div>
 
-          <p className="mb-4 fs-16 fw-500">预存金额按照节点目标计算，募集结束后按照实际节点目标</p>
+          <p className="mb-4 fs-16 fw-500">预存金额按照募集目标计算，募集结束后按照实际募集目标</p>
 
           <p className="mb-0">
             <span className="fs-24 fw-600">{F.formatAmount(total)}</span>

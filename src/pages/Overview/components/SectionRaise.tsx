@@ -24,7 +24,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">节点目标</p>
+              <p className="mb-1 text-gray-dark">募集目标</p>
               <p className="mb-0 d-flex align-items-center">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3 text-uppercase">{F.formatNum(target, '0.0a')}</span>

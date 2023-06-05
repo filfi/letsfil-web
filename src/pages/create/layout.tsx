@@ -6,7 +6,7 @@ import { Outlet, useLocation } from '@umijs/max';
 import Steps from '@/components/Steps';
 import PageHeader from '@/components/PageHeader';
 
-const items = [{ title: '定制存储方案' }, { title: '填写节点目标' }, { title: '设计分配方案' }, { title: '完成' }];
+const items = [{ title: '定制存储方案' }, { title: '填写募集目标' }, { title: '设计分配方案' }, { title: '完成' }];
 
 export default function Create() {
   useTitle('发起募集计划 - FilFi', { restoreOnUnmount: true });

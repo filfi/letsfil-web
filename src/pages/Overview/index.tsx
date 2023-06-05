@@ -291,7 +291,7 @@ export default function Overview() {
               <ul className="nav nav-pills flex-lg-column mb-2">
                 <li className="nav-item">
                   <a className="nav-link" href="#raising">
-                    节点目标
+                    募集目标
                   </a>
                 </li>
                 <li className="nav-item">

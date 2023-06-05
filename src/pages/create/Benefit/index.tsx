@@ -458,7 +458,7 @@ export default function CreateBenefit() {
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">
-              根据节点目标和分配方案可计算技术运维保证金。技术运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加募集计划的吸引力，以及未来算力交易中的流动性。
+              根据募集目标和分配方案可计算技术运维保证金。技术运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加募集计划的吸引力，以及未来算力交易中的流动性。
             </p>
           </div>
         </div>

@@ -24,7 +24,7 @@ export default function useRaiseInfo(data?: API.Plan) {
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
   const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小募集比例
-  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 节点目标
+  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 募集目标
   const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 发起人
   const servicer = useMemo(() => data?.service_provider_address ?? '', [data?.service_provider_address]); // 服务商
   const isRaiser = useMemo(() => isEqual(account, raiser), [account, raiser]);

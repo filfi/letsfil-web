@@ -116,7 +116,7 @@ export function calcEachEarn(priority: number | string = 70, spRate: number | st
 
 /**
  * 计算发起人保证金
- * @param target 节点目标
+ * @param target 募集目标
  * @param period 募集期限
  * @param seals 封装期限
  * @returns
@@ -130,14 +130,14 @@ export function calcRaiseDepost(target: number, period: number, seals: number) {
   const ratio = 0.001;
   // 展期天数
   const delay = U.accDiv(seals, 2);
-  // 手续费 = 节点目标 * 0.3%
+  // 手续费 = 募集目标 * 0.3%
   const fee = U.accMul(target, 0.003);
-  // 本金 = 节点目标 * (1 - 可以进入展期的最低比例)
+  // 本金 = 募集目标 * (1 - 可以进入展期的最低比例)
   const cost = U.accMul(target, U.accSub(1, 0.5));
 
-  // 募集期罚息 = (节点目标 + 运维保证金(最大=节点目标)) * 年利率 * 募集天数 / 365 + 手续费
+  // 募集期罚息 = (募集目标 + 运维保证金(最大=募集目标)) * 年利率 * 募集天数 / 365 + 手续费
   const rInterest = U.accAdd(U.accMul(U.accAdd(target, target), yRate, U.accDiv(period, 365)), fee);
-  // 封装期罚息 = 节点目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
+  // 封装期罚息 = 募集目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
   const sInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(seals, 365)), fee);
   // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
   const dInterest = U.accAdd(U.accMul(cost, pim, yRate, U.accDiv(U.accAdd(seals, delay), 365)), U.accMul(cost, ratio, delay), fee);

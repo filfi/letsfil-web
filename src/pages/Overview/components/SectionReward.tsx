@@ -35,7 +35,7 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
   const { period, target, isRaiser, isServicer } = useRaiseInfo(data);
   const { priorityRate, raiserRate, opsRatio, ffiRate } = useRaiseRate(data);
 
-  // 预估收益 = 24小时产出效率 * 封装天数 * 总算力(节点目标 / 当前扇区质押量)
+  // 预估收益 = 24小时产出效率 * 封装天数 * 总算力(募集目标 / 当前扇区质押量)
   const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
   const pieData = useMemo(
     () => [
