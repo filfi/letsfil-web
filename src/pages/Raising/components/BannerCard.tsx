@@ -101,7 +101,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
                 </div>
               </div>
               <div className="cd-item cd-item-fill">
-                <span className="fw-600">{formatRate(progress)}</span>
+                <span className="fw-600">{formatRate(Math.floor(progress))}</span>
                 <span className="label">已募</span>
               </div>
             </div>

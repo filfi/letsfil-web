@@ -78,7 +78,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 <span>FIL</span>
                 <span className="mx-2">·</span>
                 <span>已募</span>
-                <span className="ms-1 fw-bold">{formatRate(progress)}</span>
+                <span className="ms-1 fw-bold">{formatRate(Math.floor(progress))}</span>
               </p>
 
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-3">
