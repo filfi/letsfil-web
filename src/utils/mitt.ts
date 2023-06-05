@@ -8,7 +8,7 @@ export enum EventType {
   onUnstaking = 'onUnstaking', // 解除质押
   onDestroyNode = 'onDestroyNode', // 节点运行结束
   onRaiseFailed = 'onRaiseFailed', // 质押失败
-  onChangeOpsPayer = 'onChangeOpsPayer', // 修改保证金支付地址
+  onStartPreSeal = 'StartPreSeal', // 启动预封装
   onDepositOpsFund = 'onDepositOpsFund', // 运维保证金支付
   onDepositRaiseFund = 'onDepositRaiseFund', // 募集保证金支付
   onServicerSigned = 'onServicerSigned', // 服务商已签名
@@ -34,7 +34,7 @@ export type Events<D extends Data = Data> = {
   [EventType.onUnstaking]: D;
   [EventType.onDestroyNode]: D;
   [EventType.onRaiseFailed]: D;
-  [EventType.onChangeOpsPayer]: D;
+  [EventType.onStartPreSeal]: D;
   [EventType.onCreateRaisePlan]: D;
   [EventType.onDepositOpsFund]: D;
   [EventType.onDepositRaiseFund]: D;

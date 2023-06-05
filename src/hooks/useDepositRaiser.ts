@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAsyncEffect, useLockFn } from 'ahooks';
 
+import { isDef } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
@@ -13,30 +15,40 @@ import useRaiseContract from './useRaiseContract';
  * @returns
  */
 export default function useDepositRaiser(data?: API.Plan) {
-  const [fines, setFines] = useState(0); // 罚息
-  const [amount, setAmount] = useState(0); // 当前保证金
-
   const contract = useRaiseContract(data?.raise_address);
 
-  const [loading, fetchData] = useLoadingify(async () => {
+  const [fines, setFines] = useState(0); // 罚息
+  const [amount, setAmount] = useState(toNumber(data?.raise_security_fund)); // 当前保证金
+
+  const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
+
+  const [loading, fetchData] = useLoadingify(
+    useLockFn(async () => {
+      if (!data) return;
+
+      const amount = await contract.getRaiseFund(data.raising_id);
+      const fines = await contract.getTotalInterest(data.raising_id);
+
+      isDef(fines) && setFines(toNumber(fines));
+      isDef(amount) && setAmount(toNumber(amount));
+    }),
+  );
+
+  const [paying, pay] = useProcessify(async () => {
     if (!data) return;
 
-    const amount = await contract.getRaiseFund(data.raising_id);
-    const fines = await contract.getTotalInterest(data.raising_id);
-
-    setFines(toNumber(fines));
-    setAmount(toNumber(amount));
+    return await contract.depositRaiseFund(data.raising_id, {
+      value: data.raise_security_fund,
+    });
   });
 
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
 
-    await contract.withdrawRaiseFund(data.raising_id);
+    return await contract.withdrawRaiseFund(data.raising_id);
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [data]);
+  useAsyncEffect(fetchData, [data]);
 
   useEmittHandler({
     [EventType.onWithdrawRaiseFund]: fetchData,
@@ -44,9 +56,12 @@ export default function useDepositRaiser(data?: API.Plan) {
 
   return {
     fines,
+    total,
     amount,
     loading,
+    paying,
     processing,
+    pay,
     withdraw,
     refresh: fetchData,
   };

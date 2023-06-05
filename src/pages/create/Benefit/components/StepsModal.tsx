@@ -52,11 +52,15 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
             <Input type="number" min={0} max={94.56} placeholder="请输入" suffix="%" />
           </Form.Item>
         </div>
-        <div className="bg-primary-tertiary px-4 pt-4">
-          <div className="row row-cols-1 row-cols-md-2 g-3">
+        <div className="ffi-item bg-primary-tertiary p-4 mb-0">
+          <p className="mb-1 fw-500">建设方分成</p>
+          <Form.Item noStyle name="inferior">
+            <Input className="bg-light" readOnly suffix="%" />
+          </Form.Item>
+          {/* <div className="row row-cols-1 row-cols-md-2 g-3">
             <div className="col">
               <div className="ffi-item">
-                <p className="mb-1 fw-500">优先投资人分成</p>
+                <p className="mb-1 fw-500">投资人分成</p>
                 <Form.Item noStyle name="investRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
@@ -70,7 +74,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
                 </Form.Item>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </Form>
@@ -84,6 +88,8 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
   const inferior = useMemo(() => values?.inferior ?? 30, [values?.inferior]);
   const ffiRate = useMemo(() => values?.ffiRate ?? accMul(inferior, 0.08), [values?.ffiRate, inferior]);
   const opsMax = useMemo(() => Math.max(accSub(inferior, ffiRate), 0), [inferior, ffiRate]);
+
+  console.log(opsMax);
 
   useUpdateEffect(() => {
     const { priority = 70, ratio = 5 } = values ?? {};

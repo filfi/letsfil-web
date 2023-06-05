@@ -1,13 +1,13 @@
-import { useMemo } from 'react';
-import { useLatest, useUnmount, useUpdateEffect } from 'ahooks';
+import { useMemo, useRef } from 'react';
+import { useUnmount, useUpdateEffect } from 'ahooks';
 import type { Contract, BigNumber, BigNumberish } from 'ethers';
 
 import { isRef } from '@/utils/utils';
 import useAccounts from './useAccounts';
 import { toastify } from '@/utils/hackify';
 import { createContract, withTx } from '@/helpers/app';
-import { createDispatcher, EventType } from '@/utils/mitt';
 import { NodeState, RaiseState } from '@/constants/state';
+import { createDispatcher, EventType } from '@/utils/mitt';
 
 export enum RaiseEventTypes {
   onStaking = 'Staking',
@@ -15,6 +15,7 @@ export enum RaiseEventTypes {
   onUnstaking = 'Unstaking',
   onDestroyNode = 'DestroyNode',
   onRaiseFailed = 'RaiseFailed',
+  onStartPreSeal = 'StartPreSeal',
   onCloseRaisePlan = 'CloseRaisePlan',
   onServicerSigned = 'SpSignWithMiner',
   onStartRaisePlan = 'StartRaisePlan',
@@ -40,6 +41,8 @@ const handlers = {
   onDestroyNode: createDispatcher(EventType.onDepositOpsFund, ['raiseID', 'state']),
   // 募集失败
   onRaiseFailed: createDispatcher(EventType.onRaiseFailed, ['raiseID']),
+  // 启动预封装
+  onStartPreSeal: createDispatcher(EventType.onStartPreSeal, ['raiseID', 'caller']),
   // 运维保证金缴纳
   onDepositRaiseFund: createDispatcher(EventType.onDepositRaiseFund, ['raiseID', 'sender', 'amount']),
   // 运维保证金缴纳
@@ -80,6 +83,7 @@ function bindEvents(contract?: Contract) {
   contract?.on(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
   contract?.on(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
   contract?.on(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
+  contract?.on(RaiseEventTypes.onStartPreSeal, handlers.onStartPreSeal);
   contract?.on(RaiseEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
   contract?.on(RaiseEventTypes.onDepositOpsFund, handlers.onDepositOpsFund);
   contract?.on(RaiseEventTypes.onDepositRaiseFund, handlers.onDepositRaiseFund);
@@ -100,6 +104,7 @@ function unbindEvent(contract?: Contract) {
   contract?.off(RaiseEventTypes.onUnstaking, handlers.onUnstaking);
   contract?.off(RaiseEventTypes.onDestroyNode, handlers.onDestroyNode);
   contract?.off(RaiseEventTypes.onRaiseFailed, handlers.onRaiseFailed);
+  contract?.off(RaiseEventTypes.onStartPreSeal, handlers.onStartPreSeal);
   contract?.off(RaiseEventTypes.onCloseRaisePlan, handlers.onCloseRaisePlan);
   contract?.off(RaiseEventTypes.onDepositOpsFund, handlers.onDepositOpsFund);
   contract?.off(RaiseEventTypes.onDepositRaiseFund, handlers.onDepositRaiseFund);
@@ -124,7 +129,7 @@ function createRaiseContract(address?: string) {
 export default function useRaiseContract(address?: MaybeRef<string | undefined>) {
   const { withConnect } = useAccounts();
   const rawAddr = useMemo(() => getRefVal(address), [address]);
-  const contract = useLatest<Contract | undefined>(createRaiseContract(rawAddr));
+  const contract = useRef(createRaiseContract(rawAddr));
 
   const initContract = () => {
     if (rawAddr && (!contract.current || contract.current.address !== rawAddr)) {
@@ -229,6 +234,21 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
       withTx(
         withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
           return await contract.startSeal(id, {
+            ...opts,
+          });
+        }),
+      ),
+    ),
+  );
+
+  /**
+   * 启动预封装
+   */
+  const startPreSeal = toastify(
+    withConnect(
+      withTx(
+        withContract(async (contract, id: BigNumberish, opts?: TxOptions) => {
+          return await contract.startPreSeal(id, {
             ...opts,
           });
         }),
@@ -547,6 +567,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
     depositRaiseFund,
     servicerSign,
     startSeal,
+    startPreSeal,
     startRaisePlan,
     withdrawOpsFund,
     withdrawRaiseFund,

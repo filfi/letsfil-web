@@ -1,10 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import useAccounts from './useAccounts';
-import { EventType } from '@/utils/mitt';
-import useLoadingify from './useLoadingify';
-import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
 import { NodeState, RaiseState } from '@/constants/state';
 
 /**
@@ -13,11 +8,8 @@ import { NodeState, RaiseState } from '@/constants/state';
  * @returns
  */
 export default function useRaiseState(data?: API.Plan) {
-  const { account } = useAccounts();
-  const contract = useRaiseContract(data?.raise_address);
-
-  const [raiseState, setRaiseState] = useState(data?.status ?? -1);
-  const [nodeState, setNodeState] = useState(data?.sealed_status ?? -1);
+  const raiseState = useMemo(() => data?.status ?? -1, [data?.status]); // 募集状态
+  const nodeState = useMemo(() => data?.sealed_status ?? -1, [data?.sealed_status]); // 节点状态
 
   // 等待上链
   const isPending = useMemo(() => raiseState === 10, [raiseState]);
@@ -37,6 +29,8 @@ export default function useRaiseState(data?: API.Plan) {
   const isProcess = useMemo(() => raiseState >= RaiseState.Success && !isPending, [raiseState, isPending]);
   // 等待封装
   const isWaitSeal = useMemo(() => isSuccess && nodeState === NodeState.WaitingStart, [isSuccess, nodeState]);
+  // 预封装
+  const isPreSeal = useMemo(() => isSuccess && nodeState === NodeState.PreSeal, [isSuccess, nodeState]);
   // 封装中
   const isSealing = useMemo(() => isSuccess && nodeState === NodeState.Started, [isSuccess, nodeState]);
   // 已延期
@@ -44,32 +38,11 @@ export default function useRaiseState(data?: API.Plan) {
   // 封装完成
   const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
   // 工作中（产生收益）
-  const isWorking = useMemo(() => isSuccess && nodeState >= NodeState.End, [isSuccess, nodeState]);
+  const isWorking = useMemo(() => isSuccess && nodeState >= NodeState.End && !isPreSeal, [isSuccess, nodeState, isPreSeal]);
   // 已销毁（节点运行结束）
   const isDestroyed = useMemo(() => isSuccess && nodeState === NodeState.Destroy, [isSuccess, nodeState]);
 
-  const [loading, fetchData] = useLoadingify(async () => {
-    if (!data) return;
-
-    const nodeState = await contract.getNodeState(data.raising_id);
-    const raiseState = await contract.getRaiseState(data.raising_id);
-
-    setRaiseState(raiseState ?? data.status);
-    setNodeState(nodeState ?? data.sealed_status);
-  });
-
-  useEffect(() => {
-    fetchData();
-  }, [account, data]);
-
-  useEmittHandler({
-    [EventType.onNodeStateChange]: fetchData,
-    [EventType.onRaiseStateChange]: fetchData,
-  });
-
   return {
-    contract,
-    loading,
     nodeState,
     raiseState,
     isClosed,
@@ -81,11 +54,11 @@ export default function useRaiseState(data?: API.Plan) {
     isPending,
     isRaising,
     isWaitSeal,
+    isPreSeal,
     isSealing,
     isWorking,
     isDelayed,
     isFinished,
     isDestroyed,
-    refresh: fetchData,
   };
 }

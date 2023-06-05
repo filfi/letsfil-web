@@ -85,129 +85,6 @@ export function genRaiseID(minerId: number | string) {
   return BigNumber.from(mid).mul(Math.pow(10, 10)).add(dayjs().unix());
 }
 
-export function transformParams(data: API.Base) {
-  const {
-    sealDays,
-    raiseDays,
-    sectorSize,
-    minRaiseRate,
-    sectorPeriod,
-    targetAmount,
-    ffiProtocolFee,
-    opsSecurityFund,
-    raiseSecurityFund,
-    opsSecurityFundRate,
-    ...props
-  } = data;
-  const _params = omit(props, ['amount', 'amountType']);
-
-  return {
-    ..._params,
-    sealDays: +sealDays,
-    raiseDays: +raiseDays,
-    minRaiseRate: +minRaiseRate,
-    sectorPeriod: +sectorPeriod,
-    sectorSize: U.gb2byte(sectorSize),
-    opsSecurityFundRate: +opsSecurityFundRate,
-    ffiProtocolFee: ethers.utils.parseEther(`${ffiProtocolFee}`).toString(),
-    opsSecurityFund: ethers.utils.parseEther(`${opsSecurityFund}`).toString(),
-    raiseSecurityFund: ethers.utils.parseEther(`${raiseSecurityFund}`).toString(),
-    targetAmount: ethers.utils.parseEther(`${targetAmount}`).toString(),
-  };
-}
-
-export function transformModel(data: API.Base) {
-  const { sectorSize, targetAmount, raiseSecurityFund, opsSecurityFund, ffiProtocolFee, ...props } = data;
-
-  const amount = +ethers.utils.formatEther(targetAmount);
-
-  return {
-    ...props,
-    amount,
-    targetAmount: amount,
-    sectorSize: U.byte2gb(sectorSize),
-    ffiProtocolFee: +ethers.utils.formatEther(ffiProtocolFee),
-    opsSecurityFund: +ethers.utils.formatEther(opsSecurityFund),
-    raiseSecurityFund: +ethers.utils.formatEther(raiseSecurityFund),
-  };
-}
-
-/**
- * 将表单数据转换成 RaiseInfo
- * @param data 表单数据
- */
-export function transformRaiseInfo(data: API.Plan): RaiseInfo {
-  const opsRatio = U.accDiv(data.ops_security_fund_rate, 100); // 保证金配比
-  const infriority = U.accSub(100, data.raiser_coin_share); // 劣后部分
-  const servicerRate = data.op_server_share; // 服务商部分
-  const ffiRate = U.accMul(infriority, 0.08); // filfi协议部分
-  const raiserRate = U.accSub(infriority, servicerRate, ffiRate); // 发起人部分
-  const spRate = U.accMul(data.raiser_coin_share, opsRatio); // 运维保证金部分
-  const investRate = U.accMul(data.raiser_coin_share, U.accSub(1, opsRatio)); // 投资人部分
-  // 募集计划信息
-  return {
-    id: data.raising_id,
-    targetAmount: data.target_amount,
-    minRaiseRate: U.accMul(data.min_raise_rate, 100),
-    securityFund: data.raise_security_fund,
-    raiseDays: data.raise_days,
-    filFiShare: U.accMul(ffiRate, 100),
-    spFundShare: U.accMul(spRate, 100),
-    raiserShare: U.accMul(raiserRate, 100),
-    investorShare: U.accMul(investRate, 100),
-    servicerShare: U.accMul(servicerRate, 100),
-    sponsor: data.raiser,
-    raiseCompany: data.sponsor_company,
-  };
-}
-
-/**
- * 将表单数据转换成 NodeInfo
- * @param data 表单数据
- */
-export function transformNodeInfo(data: API.Plan): NodeInfo {
-  // 节点信息
-  return {
-    minerId: +U.parseMinerID(data.miner_id),
-    nodeSize: data.target_power,
-    sectorSize: `${data.sector_size}`,
-    sealDays: data.seal_days,
-    nodeDays: data.sector_period,
-    opsSecurityFund: data.ops_security_fund,
-    spAddr: data.service_provider_address,
-    companyId: data.service_id,
-  };
-}
-
-/**
- * 将表单数据转换成 ExtraInfo
- * @param data 表单数据
- */
-export function transformExtraInfo(data: API.Plan): ExtraInfo {
-  // 拓展信息
-
-  if (data.miner_type === 2) {
-    const spPowerRate = Math.max(U.accSub(100, data.raise_his_power_rate), 0);
-    const spPledgeRate = Math.max(U.accSub(100, data.raise_his_initial_pledge_rate), 0);
-
-    return {
-      oldId: +U.parseMinerID(data.miner_id),
-      spOldShare: U.accMul(spPledgeRate, 100),
-      raiserOldShare: U.accMul(data.raise_his_initial_pledge_rate, 100),
-      spOldRewardShare: U.accMul(spPowerRate, 100),
-      sponsorOldRewardShare: U.accMul(data.raise_his_power_rate, 100),
-    };
-  }
-
-  return {
-    oldId: 0,
-    spOldShare: 0,
-    raiserOldShare: 0,
-    spOldRewardShare: 0,
-    sponsorOldRewardShare: 0,
-  };
-}
-
 /**
  * 计算各方权益配比
  * @param priority 优先部分（出币方权益）
@@ -270,4 +147,122 @@ export function calcRaiseDepost(target: number, period: number, seals: number) {
 
   // 保留3位小数，向上舍入
   return Number.isNaN(result) ? '0' : toFixed(result, 3, 2);
+}
+
+export function transformParams(data: API.Base) {
+  const {
+    sealDays,
+    raiseDays,
+    sectorSize,
+    minRaiseRate,
+    sectorPeriod,
+    targetAmount,
+    ffiProtocolFee,
+    opsSecurityFund,
+    raiseSecurityFund,
+    opsSecurityFundRate,
+    ...props
+  } = data;
+  const _params = omit(props, ['amount', 'amountType']);
+
+  return {
+    ..._params,
+    sealDays: +sealDays,
+    raiseDays: +raiseDays,
+    minRaiseRate: +minRaiseRate,
+    sectorPeriod: +sectorPeriod,
+    sectorSize: U.gb2byte(sectorSize),
+    opsSecurityFundRate: +opsSecurityFundRate,
+    ffiProtocolFee: ethers.utils.parseEther(`${ffiProtocolFee}`).toString(),
+    opsSecurityFund: ethers.utils.parseEther(`${opsSecurityFund}`).toString(),
+    raiseSecurityFund: ethers.utils.parseEther(`${raiseSecurityFund}`).toString(),
+    targetAmount: ethers.utils.parseEther(`${targetAmount}`).toString(),
+  };
+}
+
+export function transformModel(data: API.Base) {
+  const { sectorSize, targetAmount, raiseSecurityFund, opsSecurityFund, ffiProtocolFee, ...props } = data;
+
+  const amount = +ethers.utils.formatEther(targetAmount);
+
+  return {
+    ...props,
+    amount,
+    targetAmount: amount,
+    sectorSize: U.byte2gb(sectorSize),
+    ffiProtocolFee: +ethers.utils.formatEther(ffiProtocolFee),
+    opsSecurityFund: +ethers.utils.formatEther(opsSecurityFund),
+    raiseSecurityFund: +ethers.utils.formatEther(raiseSecurityFund),
+  };
+}
+
+/**
+ * 将表单数据转换成 RaiseInfo
+ * @param data 表单数据
+ */
+export function transformRaiseInfo(data: API.Plan): RaiseInfo {
+  const { investRate, opsRate, spRate, raiserRate, ffiRate } = calcEachEarn(data.raiser_coin_share, data.op_server_share, data.ops_security_fund_rate);
+
+  // 募集计划信息
+  return {
+    id: data.raising_id,
+    targetAmount: data.target_amount,
+    minRaiseRate: U.accMul(data.min_raise_rate, 100),
+    securityFund: data.raise_security_fund,
+    raiseDays: data.raise_days,
+    filFiShare: U.accMul(ffiRate, 100),
+    spFundShare: U.accMul(opsRate, 100),
+    raiserShare: U.accMul(raiserRate, 100),
+    investorShare: U.accMul(investRate, 100),
+    servicerShare: U.accMul(spRate, 100),
+    sponsor: data.raiser,
+    raiseCompany: data.sponsor_company,
+  };
+}
+
+/**
+ * 将表单数据转换成 NodeInfo
+ * @param data 表单数据
+ */
+export function transformNodeInfo(data: API.Plan): NodeInfo {
+  // 节点信息
+  return {
+    minerId: +U.parseMinerID(data.miner_id),
+    nodeSize: data.target_power,
+    sectorSize: `${data.sector_size}`,
+    sealDays: data.seal_days,
+    nodeDays: data.sector_period,
+    opsSecurityFund: data.ops_security_fund,
+    spAddr: data.service_provider_address,
+    companyId: data.service_id,
+  };
+}
+
+/**
+ * 将表单数据转换成 ExtraInfo
+ * @param data 表单数据
+ */
+export function transformExtraInfo(data: API.Plan): ExtraInfo {
+  // 拓展信息
+
+  if (data.miner_type === 2) {
+    const spPowerRate = Math.max(U.accSub(100, data.raise_his_power_rate), 0);
+    const spPledgeRate = Math.max(U.accSub(100, data.raise_his_initial_pledge_rate), 0);
+
+    return {
+      oldId: +U.parseMinerID(data.miner_id),
+      spOldShare: U.accMul(spPledgeRate, 100),
+      raiserOldShare: U.accMul(data.raise_his_initial_pledge_rate, 100),
+      spOldRewardShare: U.accMul(spPowerRate, 100),
+      sponsorOldRewardShare: U.accMul(data.raise_his_power_rate, 100),
+    };
+  }
+
+  return {
+    oldId: 0,
+    spOldShare: 0,
+    raiserOldShare: 0,
+    spOldRewardShare: 0,
+    sponsorOldRewardShare: 0,
+  };
 }

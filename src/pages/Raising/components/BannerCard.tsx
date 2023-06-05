@@ -16,7 +16,7 @@ export type BannerCardProps = {
 };
 
 const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider }) => {
-  const { rate } = useIncomeRate(data.raising_id);
+  const { rate } = useIncomeRate(data);
   const { progress } = useRaiseInfo(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });

@@ -51,21 +51,15 @@ export default function useFactoryContract() {
 
   useUnmount(unbindEvents);
 
-  const withContract = <R = any, P extends unknown[] = any>(handler: (contract: ethers.Contract | undefined, ...args: P) => Promise<R>) => {
+  const withContract = <R = any, P extends unknown[] = any>(handler: (contract: ethers.Contract, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
       initContract();
 
-      return await handler(contract, ...args);
+      if (contract) {
+        return await handler(contract, ...args);
+      }
     };
   };
-
-  const getRaisePool = toastify(
-    withConnect(
-      withContract(async (contract, sponsor: string, minerID: number, raiseID: number) => {
-        return await contract?.getRaisePool(sponsor, minerID, raiseID);
-      }),
-    ),
-  );
 
   // 创建募集计划
   const createRaisePlan = toastify(
@@ -73,11 +67,11 @@ export default function useFactoryContract() {
       withTx(
         withContract(async (contract, raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: TxOptions) => {
           console.log(raise, node, extra, opts);
-          return await contract?.createRaisePlan(raise, node, extra);
+          return await contract.createRaisePlan(raise, node, extra);
         }),
       ),
     ),
   );
 
-  return { createRaisePlan, getRaisePool };
+  return { createRaisePlan };
 }

@@ -8,9 +8,6 @@ import * as U from '@/utils/utils';
  * @returns
  */
 export default function useRaiseRate(data?: API.Plan) {
-  const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]);
-  const minRate = useMemo(() => U.accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]);
-
   // 优先部分
   const priorityRate = useMemo(() => data?.raiser_coin_share ?? 70, [data?.raiser_coin_share]);
   // 劣后部分
@@ -29,8 +26,6 @@ export default function useRaiseRate(data?: API.Plan) {
   const raiserRate = useMemo(() => U.accSub(inferiorityRate, ffiRate, servicerRate), [inferiorityRate, ffiRate, servicerRate]);
 
   return {
-    period,
-    minRate,
     priorityRate,
     inferiorityRate,
     opsRatio,

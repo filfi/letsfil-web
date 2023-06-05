@@ -1,13 +1,13 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
-import { useBoolean, useMount, useScroll } from 'ahooks';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 import { FormattedMessage, history, Link, NavLink, useLocation, useModel } from '@umijs/max';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
-import { formatEther } from '@/utils/format';
 import useAccounts from '@/hooks/useAccounts';
+import { formatAmount } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
 import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
@@ -28,23 +28,21 @@ const Header: React.FC = () => {
   // hooks
   const position = useScroll();
   const location = useLocation();
-  const { accounts, getBalance, handleConnect, handleDisconnect } = useAccounts();
+  const { account, getBalance, handleConnect, handleDisconnect } = useAccounts();
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
   const fetchBalance = async () => {
-    if (!accounts[0]) return;
+    if (!account) return;
 
-    const balance = await getBalance(accounts[0]);
+    const balance = await getBalance(account);
 
     setBalance(balance);
   };
 
-  useEffect(() => {
-    fetchBalance();
-  }, [accounts]);
+  useAsyncEffect(fetchBalance, [account]);
 
-  useEffect(setFalse, [location]);
+  useUpdateEffect(setFalse, [location]);
 
   useMount(() => {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
@@ -81,7 +79,7 @@ const Header: React.FC = () => {
                       <IconWallet />
                     </span>
 
-                    <span className="ms-1">{formatEther(balance)} FIL</span>
+                    <span className="ms-1">{formatAmount(balance)} FIL</span>
 
                     {/* <span className="vr mx-2 d-none d-md-inline"></span>
 

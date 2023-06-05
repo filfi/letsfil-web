@@ -14,7 +14,7 @@ export type RaisingCardProps = {
 };
 
 const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
-  const { rate } = useIncomeRate(data.raising_id);
+  const { rate } = useIncomeRate(data);
   const { progress } = useRaiseInfo(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });

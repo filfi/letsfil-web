@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAsyncEffect, useLockFn } from 'ahooks';
 
-import { accDiv } from '@/utils/utils';
 import useAccounts from './useAccounts';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
@@ -9,6 +9,7 @@ import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
+import { accDiv, isDef } from '@/utils/utils';
 
 /**
  * 投资人的投资信息
@@ -29,26 +30,28 @@ export default function useDepositInvestor(data?: API.Plan) {
   const isInvestor = useMemo(() => record > 0, [record]);
   const ratio = useMemo(() => (actual > 0 ? accDiv(record, actual) : 0), [record, actual]); // 投资占比
 
-  const [loading, fetchData] = useLoadingify(async () => {
-    if (!data) return;
+  const [loading, fetchData] = useLoadingify(
+    useLockFn(async () => {
+      if (!data?.raising_id) return;
 
-    if (account) {
-      const info = await contract.getInvestorInfo(data.raising_id, account);
-      const back = await contract.getBackAssets(data.raising_id, account);
+      if (account) {
+        const info = await contract.getInvestorInfo(data.raising_id, account);
+        const back = await contract.getBackAssets(data.raising_id, account);
 
-      const amount = info?.pledgeAmount; // 账户余额
-      const record = info?.pledgeCalcAmount; // 总质押
-      const withdraw = info?.withdrawAmount; // 已提取
-      const backAmount = back?.[0]; // 退回金额
-      const backInterest = back?.[1]; // 利息补偿
+        const amount = info?.pledgeAmount; // 账户余额
+        const record = info?.pledgeCalcAmount; // 账户总质押
+        const withdraw = info?.withdrawAmount; // 已提取
+        const backAmount = back?.[0]; // 退回金额
+        const backInterest = back?.[1]; // 利息补偿
 
-      setAmount(toNumber(amount));
-      setRecord(toNumber(record));
-      setWithdraw(toNumber(withdraw));
-      setBackAmount(toNumber(backAmount));
-      setBackInterest(toNumber(backInterest));
-    }
-  });
+        isDef(account) && setAmount(toNumber(amount));
+        isDef(record) && setRecord(toNumber(record));
+        isDef(withdraw) && setWithdraw(toNumber(withdraw));
+        isDef(backAmount) && setBackAmount(toNumber(backAmount));
+        isDef(backInterest) && setBackInterest(toNumber(backInterest));
+      }
+    }),
+  );
 
   const [processing, unStaking] = useProcessify(async () => {
     if (!data) return;
@@ -56,9 +59,7 @@ export default function useDepositInvestor(data?: API.Plan) {
     await contract.unStaking(data.raising_id);
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [account, data]);
+  useAsyncEffect(fetchData, [account, data?.raising_id]);
 
   useEmittHandler({
     [EventType.onStaking]: fetchData,

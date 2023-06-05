@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
-import * as U from '@/utils/utils';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseRate from '@/hooks/useRaiseRate';
+import useRaiseState from '@/hooks/useRaiseState';
+import { formatAmount } from '@/utils/format';
+import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 import type { ItemProps } from './types';
 
 const config: PieConfig = {
@@ -27,17 +31,21 @@ const config: PieConfig = {
 };
 
 const SectionCoin: React.FC<ItemProps> = ({ data }) => {
-  // 保证金部分
-  const opsRate = useMemo(() => data?.ops_security_fund_rate ?? 5, [data?.ops_security_fund_rate]);
-  // 投资人部分
-  const investRate = useMemo(() => U.accSub(100, opsRate), [opsRate]);
+  const { actual } = useRaiseInfo(data);
+  const { opsRatio } = useRaiseRate(data);
+  const { isSuccess } = useRaiseState(data);
+
+  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
+  const ops = useMemo(() => accDiv(accMul(actual, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [actual, opsRatio]);
+  const totalAmount = useMemo(() => accAdd(actual, ops), [actual, ops]);
+  const investRate = useMemo(() => Math.max(accSub(100, opsRatio), 0), [opsRatio]);
 
   const pieData = useMemo(
     () => [
-      { name: '投资人', value: investRate },
-      { name: '技术运维保证金', value: opsRate },
+      { name: '优先投资人', value: investRate },
+      { name: '技术运维保证金', value: opsRatio },
     ],
-    [investRate, opsRate],
+    [investRate, opsRatio],
   );
 
   return (
@@ -49,27 +57,39 @@ const SectionCoin: React.FC<ItemProps> = ({ data }) => {
           </div>
         </div>
         <div className="col-12 col-md-8 col-xl-9">
-          <div className="row row-cols-2 g-2">
-            <div className="col">
+          <div className="row g-2">
+            <div className="col-12 col-md-6">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
-                <p className="reward-label">投资人(优先质押币)</p>
+                <p className="reward-label">优先投资人(优先质押币)</p>
                 <p className="reward-text">
                   <span className="text-decimal">{investRate}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>
             </div>
-            <div className="col">
+            <div className="col-12 col-md-6">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
                 <p className="reward-label">技术运维保证金(劣后质押币)</p>
                 <p className="reward-text">
-                  <span className="text-decimal">{opsRate}</span>
+                  <span className="text-decimal">{opsRatio}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>
             </div>
+            {isSuccess && (
+              <div className="col-12">
+                <div className="reward-item mb-3">
+                  <span className="reward-dot"></span>
+                  <p className="reward-label">质押币总额(优先质押币+劣后质押币)</p>
+                  <p className="reward-text">
+                    <span className="text-decimal">{formatAmount(totalAmount)}</span>
+                    <span className="ms-2 text-neutral">FIL</span>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -103,7 +123,7 @@ const SectionCoin: React.FC<ItemProps> = ({ data }) => {
       <div className="table-row w-100">
         <div className="row g-0">
           <div className="col-4 col-md-2 col-lg-4 col-xl-2 table-cell th">承诺比例</div>
-          <div className="col-8 col-md-10 col-lg-8 col-xl-10 table-cell">按募集金额等比例配比保证金，始终保持保证金占比{opsRate}%</div>
+          <div className="col-8 col-md-10 col-lg-8 col-xl-10 table-cell">按募集金额等比例配比保证金，始终保持保证金占比{opsRatio}%</div>
         </div>
       </div>
     </>

@@ -26,6 +26,7 @@ const EVENTS_MAP: Record<string, string> = {
   ENodeDestroy: '扇区到期',
   ERaiseFailed: '募集失败',
   ERaiseSuccess: '募集成功',
+  EStartPreSeal: '准备封装',
   ESealProgress: '正在封装',
   ERaiseWithdraw: '发起人提取收益',
   CloseRaisePlan: '关闭募集',
@@ -34,7 +35,7 @@ const EVENTS_MAP: Record<string, string> = {
   ECreateAssetPack: '发起人签名',
   ESpecifyOpsPayer: '指定运维付款人',
   ERaiseSecurityFund: '存入发起人保证金',
-  EStackFromInvestor: '投资者质押',
+  EStackFromInvestor: '投资者认购',
   EUnstackFromInverstor: '投资者赎回',
   EDepositOPSSecurityFund: '存入技术运维保证金',
   EInverstorWithdrawProfit: '投资者提取收益',
@@ -97,7 +98,16 @@ const SectionEvents: React.FC<ItemProps> = ({ data }) => {
 
   return (
     <>
-      <Table rowKey="ID" size="middle" className="table mb-0" loading={loading} columns={columns} dataSource={dataSource} pagination={false} />
+      <Table
+        rowKey="ID"
+        size="middle"
+        className="table mb-0"
+        loading={loading}
+        columns={columns}
+        dataSource={dataSource}
+        pagination={false}
+        scroll={{ x: 560 }}
+      />
     </>
   );
 };

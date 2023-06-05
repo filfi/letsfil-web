@@ -121,37 +121,6 @@
         "type": "uint256"
       }
     ],
-    "name": "FilFiWithdraw",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "raiseID",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
     "name": "InvestorWithdraw",
     "type": "event"
   },
@@ -499,6 +468,25 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      }
+    ],
+    "name": "StartPreSeal",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "sponsorAddr",
         "type": "address"
       },
@@ -605,6 +593,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "reward",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fine",
         "type": "uint256"
       }
     ],
@@ -1816,25 +1810,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      }
-    ],
-    "name": "spFundLock",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "",
         "type": "uint256"
       }
@@ -1967,7 +1942,7 @@
         "type": "uint256"
       }
     ],
-    "name": "startRaisePlan",
+    "name": "startPreSeal",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1980,7 +1955,7 @@
         "type": "uint256"
       }
     ],
-    "name": "startSeal",
+    "name": "startRaisePlan",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -2108,19 +2083,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "transferAssetOnlyForTest",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "id",
         "type": "uint256"
       }
@@ -2152,19 +2114,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint64",
-        "name": "_minerId",
-        "type": "uint64"
-      }
-    ],
-    "name": "withdrawMinerBalanceTest",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

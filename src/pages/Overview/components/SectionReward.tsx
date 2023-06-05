@@ -3,10 +3,9 @@ import { Pie, PieConfig } from '@ant-design/plots';
 
 import { formatNum } from '@/utils/format';
 import { accDiv, accMul } from '@/utils/utils';
+import useChainInfo from '@/hooks/useChainInfo';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
-import useIncomeRate from '@/hooks/useIncomeRate';
-import useRaiseState from '@/hooks/useRaiseState';
 import type { ItemProps } from './types';
 
 const config: PieConfig = {
@@ -32,13 +31,12 @@ const config: PieConfig = {
 };
 
 const SectionReward: React.FC<ItemProps> = ({ data }) => {
-  const { rate } = useIncomeRate(data?.raising_id);
-  const { isSuccess } = useRaiseState(data);
-  const { actual, target, isRaiser, isServicer } = useRaiseInfo(data);
-  const { priorityRate, investRate, raiserRate, servicerRate, opsRate, ffiRate, period } = useRaiseRate(data);
-  // 预估收益
-  const reward = useMemo(() => accDiv(accMul(isSuccess ? actual : target, rate, period), 360), [isSuccess, target, actual, rate, period]);
+  const { perFil, perPledge } = useChainInfo();
+  const { period, target, isRaiser, isServicer } = useRaiseInfo(data);
+  const { priorityRate, raiserRate, servicerRate, opsRatio, ffiRate } = useRaiseRate(data);
 
+  // 预估收益 = 24小时产出效率 * 封装天数 * 总算力(募集目标 / 当前扇区质押量)
+  const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
   const pieData = useMemo(
     () => [
       { name: '投资人权益', value: priorityRate },
@@ -57,8 +55,8 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
           </div>
         </div>
         <div className="col-12 col-md-8 col-xl-9">
-          <div className="row row-cols-3 g-2">
-            <div className="col">
+          <div className="row g-2">
+            <div className="col-6 col-md-7">
               <div className="reward-item mb-3">
                 <span className="reward-dot reward-dot-circle"></span>
                 <p className="reward-label">{period}天总奖励(估)</p>
@@ -68,17 +66,17 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
                 </p>
               </div>
             </div>
-            <div className="col">
+            <div className="col-6 col-md-5">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
-                <p className="reward-label">优先投资人</p>
+                <p className="reward-label">投资人</p>
                 <p className="reward-text">
-                  <span className="text-decimal">{investRate}</span>
+                  <span className="text-decimal">{priorityRate}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>
             </div>
-            <div className="col">
+            <div className="col-6 col-md-4">
               <div className="reward-item mb-3" style={{ '--dot-color': '#7FC4FD' } as any}>
                 <span className="reward-dot"></span>
                 <p className="reward-label">发起人</p>
@@ -88,27 +86,17 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
                 </p>
               </div>
             </div>
-            <div className="col">
+            <div className="col-6 col-md-4">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
-                <p className="reward-label">技术运维保证金</p>
+                <p className="reward-label">技术运维服务费</p>
                 <p className="reward-text">
-                  <span className="text-decimal">{opsRate}</span>
+                  <span className="text-decimal">{opsRatio}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>
             </div>
-            <div className="col">
-              <div className="reward-item mb-3" style={{ '--dot-color': '#BCE0FD' } as any}>
-                <span className="reward-dot"></span>
-                <p className="reward-label">技术运维服务商</p>
-                <p className="reward-text">
-                  <span className="text-decimal">{servicerRate}</span>
-                  <span className="ms-2 text-neutral">%</span>
-                </p>
-              </div>
-            </div>
-            <div className="col">
+            <div className="col-12 col-md-4">
               <div className="reward-item mb-3">
                 <span className="reward-dot"></span>
                 <p className="reward-label">FilFi协议费用</p>
@@ -126,7 +114,7 @@ const SectionReward: React.FC<ItemProps> = ({ data }) => {
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">每个投资人</div>
-            <div className="col-8 table-cell">按投入占比分享投资人的{investRate}%</div>
+            <div className="col-8 table-cell">获得收益的{priorityRate}%</div>
           </div>
         </div>
         <div className="col table-row">

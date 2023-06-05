@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useAsyncEffect, useLockFn } from 'ahooks';
 
+import { isDef } from '@/utils/utils';
 import useAccounts from './useAccounts';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
@@ -22,20 +24,22 @@ export default function useRewardInvestor(data?: API.Plan) {
   const [record, setRecord] = useState(0); // 已提取
   const [pending, setPending] = useState(0); // 待释放
 
-  const [loading, fetchData] = useLoadingify(async () => {
-    if (!account || !data) return;
+  const [loading, fetchData] = useLoadingify(
+    useLockFn(async () => {
+      if (!account || !data?.raising_id) return;
 
-    const info = await contract.getInvestorInfo(data.raising_id, account);
-    const total = await contract.getInvestorTotalReward(data.raising_id, account);
-    const reward = await contract.getInvestorAvailableReward(data.raising_id, account);
-    const pending = await contract.getInvestorPendingReward(data.raising_id, account);
-    const record = info?.withdrawAmount;
+      const info = await contract.getInvestorInfo(data.raising_id, account);
+      const total = await contract.getInvestorTotalReward(data.raising_id, account);
+      const reward = await contract.getInvestorAvailableReward(data.raising_id, account);
+      const pending = await contract.getInvestorPendingReward(data.raising_id, account);
+      const record = info?.withdrawAmount;
 
-    setTotal(toNumber(total));
-    setReward(toNumber(reward));
-    setRecord(toNumber(record));
-    setPending(toNumber(pending));
-  });
+      isDef(total) && setTotal(toNumber(total));
+      isDef(reward) && setReward(toNumber(reward));
+      isDef(record) && setRecord(toNumber(record));
+      isDef(pending) && setPending(toNumber(pending));
+    }),
+  );
 
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
@@ -43,9 +47,7 @@ export default function useRewardInvestor(data?: API.Plan) {
     await contract.investorWithdraw(data.raising_id);
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [account, data]);
+  useAsyncEffect(fetchData, [account, data?.raising_id]);
 
   useEmittHandler({
     [EventType.onInvestorWithdraw]: fetchData,
