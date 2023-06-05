@@ -73,7 +73,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
             </div>
             <div className="flex-grow-1">
               <p className="mb-3 mb-lg-4 fs-16 text-gray-dark">
-                <span>节点目标</span>
+                <span>质押目标</span>
                 <span className="mx-1 fw-bold">{formatEther(data.target_amount)}</span>
                 <span>FIL</span>
                 <span className="mx-2">·</span>
@@ -84,7 +84,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-3">
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-people text-gray"></span>
-                  <span className="mx-1">参建者分配比例</span>
+                  <span className="mx-1">建设者获得</span>
                   <span className="fw-bold">{priorityRate}%</span>
                 </p>
 
@@ -107,7 +107,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                   <span className="align-middle">
                     <span className="mx-1">{provider?.short_name}</span>
                     <span className="mx-1">·</span>
-                    <span className="mx-1">保证金配比</span>
+                    <span className="mx-1">保证金占比</span>
                     <span className="fw-bold">{opsRatio}%</span>
                   </span>
                 </p>

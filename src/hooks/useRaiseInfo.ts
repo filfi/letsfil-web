@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useAsyncEffect, useLockFn } from 'ahooks';
 
-import useAccounts from './useAccounts';
+import useAccount from './useAccount';
+import usePackData from './usePackData';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
@@ -15,17 +16,18 @@ import { accDiv, isDef, isEqual } from '@/utils/utils';
  * @returns
  */
 export default function useRaiseInfo(data?: API.Plan) {
-  const { account } = useAccounts();
+  const { account } = useAccount();
   const contract = useRaiseContract(data?.raise_address);
 
   const [sealed, setSealed] = useState(0); // 已封装金额
   const [hasOwner, setHasOwner] = useState(false); // owner权限
-  const [actual, setActual] = useState(toNumber(data?.actual_amount)); // 质押总额
+  const { pledgeTotal: actual } = usePackData(data);
+  // const [actual, setActual] = useState(toNumber(data?.actual_amount)); // 质押总额
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
   const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小集合质押比例
-  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 节点目标
-  const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 建设者
+  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 质押目标
+  const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 主办人
   const servicer = useMemo(() => data?.service_provider_address ?? '', [data?.service_provider_address]); // 服务商
   const isRaiser = useMemo(() => isEqual(account, raiser), [account, raiser]);
   const isServicer = useMemo(() => isEqual(account, servicer), [account, servicer]);
@@ -44,9 +46,9 @@ export default function useRaiseInfo(data?: API.Plan) {
       if (!data?.raising_id) return;
 
       const sealed = await contract.getSealedAmount(data.raising_id);
-      const actual = await contract.getTotalPledgeAmount(data.raising_id);
+      // const actual = await contract.getTotalPledgeAmount(data.raising_id);
 
-      isDef(actual) && setActual(toNumber(actual));
+      // isDef(actual) && setActual(toNumber(actual));
       isDef(sealed) && setSealed(toNumber(sealed));
     }),
   );

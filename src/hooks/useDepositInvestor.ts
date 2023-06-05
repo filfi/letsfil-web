@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAsyncEffect, useLockFn } from 'ahooks';
 
-import useAccounts from './useAccounts';
+import useAccount from './useAccount';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useRaiseInfo from './useRaiseInfo';
@@ -12,12 +12,12 @@ import useRaiseContract from './useRaiseContract';
 import { accDiv, isDef } from '@/utils/utils';
 
 /**
- * 参建者的投资信息
+ * 建设者的投资信息
  * @param data
  * @returns
  */
 export default function useDepositInvestor(data?: API.Plan) {
-  const { account } = useAccounts();
+  const { account } = useAccount();
   const { actual } = useRaiseInfo();
   const contract = useRaiseContract(data?.raise_address);
 

@@ -2,24 +2,20 @@ import { useMemo } from 'react';
 import { camelCase } from 'lodash';
 import classNames from 'classnames';
 import { ScrollSpy } from 'bootstrap';
+import { useResponsive, useUpdateEffect } from 'ahooks';
 import { NavLink, history, useModel, useParams } from '@umijs/max';
-import { useRequest, useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as H from '@/helpers/app';
-import { getInfo } from '@/apis/raise';
-import { sleep } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
-import { packInfo } from '@/apis/packs';
 import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useProviders from '@/hooks/useProviders';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
 import PageHeader from '@/components/PageHeader';
-import useRaiseState from '@/hooks/useRaiseState';
 import LoadingView from '@/components/LoadingView';
+import RaiseProvider from '@/components/RaiseProvider';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useEmittHandler from '@/hooks/useEmitHandler';
 import useRaiseActions from '@/hooks/useRaiseActions';
 // import CardFAQ from './components/CardFAQ';
@@ -54,47 +50,19 @@ function updateScrollSpy() {
   }
 }
 
-export default function Overview() {
+function RaiseContent() {
   const param = useParams();
   const responsive = useResponsive();
   const [, setModel] = useModel('stepform');
 
-  const {
-    data,
-    error,
-    loading,
-    refresh: refreshData,
-  } = useRequest(
-    async () => {
-      if (param.id) {
-        return await getInfo(param.id);
-      }
-    },
-    { refreshDeps: [param.id] },
-  );
-  const { data: pack, refresh: refreshPack } = useRequest(
-    async () => {
-      if (param.id) {
-        return await packInfo(param.id);
-      }
-    },
-    { refreshDeps: [param.id] },
-  );
+  const { data, error, loading, info, state, refresh } = useRaiseDetail();
 
-  const { getProvider } = useProviders();
+  const { isRaiser } = info;
+  const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = state;
 
   const actions = useRaiseActions(data);
-  const { isRaiser } = useRaiseInfo(data);
-  const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的节点计划@${data.miner_id}` : '-'), [data]);
-
-  const refresh = async () => {
-    await sleep(3e3);
-
-    refreshData();
-    refreshPack();
-  };
 
   useUpdateEffect(updateScrollSpy, [data, isStarted]);
 
@@ -152,11 +120,11 @@ export default function Overview() {
       content: (
         <div className="text-gray">
           <ul>
-            <li>需要向参建者支付投资额的利息</li>
+            <li>需要向建设者支付投资额的利息</li>
             <li>需要向技术服务商支付保证金利息</li>
           </ul>
           <p>
-            <span>智能合约按照规则会产生罚金，罚金从建设者保证金中扣除。 </span>
+            <span>智能合约按照规则会产生罚金，罚金从主办人保证金中扣除。 </span>
             <a href="#">如何计算罚金？</a>
           </p>
         </div>
@@ -226,15 +194,15 @@ export default function Overview() {
 
     return (
       <>
-        <CardRaise data={data} pack={pack} />
+        <CardRaise />
 
-        <CardStaking data={data} pack={pack} />
+        <CardStaking />
 
-        <CardBack data={data} pack={pack} />
+        <CardBack />
 
-        <CardAssets data={data} pack={pack} />
+        <CardAssets />
 
-        {/* <CardCalc data={data} /> */}
+        {/* <CardCalc /> */}
       </>
     );
   };
@@ -243,15 +211,15 @@ export default function Overview() {
     if (responsive.lg) {
       return (
         <>
-          <CardRaise data={data} pack={pack} />
+          <CardRaise />
 
-          <CardStaking data={data} pack={pack} />
+          <CardStaking />
 
-          <CardBack data={data} pack={pack} />
+          <CardBack />
 
-          <CardAssets data={data} pack={pack} />
+          <CardAssets />
 
-          {/* <CardCalc data={data} /> */}
+          {/* <CardCalc /> */}
         </>
       );
     }
@@ -291,7 +259,7 @@ export default function Overview() {
               <ul className="nav nav-pills flex-lg-column mb-2">
                 <li className="nav-item">
                   <a className="nav-link" href="#raising">
-                    节点目标
+                    质押目标
                   </a>
                 </li>
                 <li className="nav-item">
@@ -336,7 +304,7 @@ export default function Overview() {
             <div className={classNames('flex-grow-1')} tabIndex={0} data-bs-spy="scroll" data-bs-target="#nav-pills" data-bs-smooth-scroll="true">
               <section id="raising" className="section">
                 <div className="d-flex flex-column gap-3">
-                  <SectionRaise data={data} />
+                  <SectionRaise />
 
                   {renderMain()}
                 </div>
@@ -347,7 +315,7 @@ export default function Overview() {
                   <p className="mb-0">开创链上协作新模式，专业化服务，负责任承诺。</p>
                 </div>
 
-                <SectionProvider data={data} getProvider={getProvider} />
+                <SectionProvider />
               </section>
               <section id="reward">
                 <div className="section">
@@ -356,7 +324,7 @@ export default function Overview() {
                     <p className="mb-0">节点计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
                   </div>
 
-                  <SectionReward data={data} />
+                  <SectionReward />
                 </div>
 
                 <div className="section">
@@ -365,7 +333,7 @@ export default function Overview() {
                     <p className="mb-0">质押的所有权永恒不变，投入多少返回多少。</p>
                   </div>
 
-                  <SectionCoin data={data} />
+                  <SectionCoin />
                 </div>
               </section>
               <section id="node" className="section">
@@ -374,7 +342,7 @@ export default function Overview() {
                   <p className="mb-0">集合质押FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
                 </div>
 
-                <SectionNode data={data} />
+                <SectionNode />
               </section>
               {isSuccess && (
                 <section id="sector" className="section">
@@ -383,24 +351,24 @@ export default function Overview() {
                     <p className="mb-0">封装进展一览无余</p>
                   </div>
 
-                  <SectionSector data={data} />
+                  <SectionSector />
                 </section>
               )}
               <section id="deposit" className="section">
                 <div className="section-header">
                   <h4 className="section-title">保证金</h4>
-                  <p className="mb-0">保障节点计划执行，异常自动触发惩罚机制，保护参建者权益。</p>
+                  <p className="mb-0">保障节点计划执行，异常自动触发惩罚机制，保护建设者权益。</p>
                 </div>
 
-                <SectionDeposit data={data} getProvider={getProvider} />
+                <SectionDeposit />
               </section>
               <section id="timeline" className="section">
                 <div className="section-header">
                   <h4 className="section-title">时间进度</h4>
-                  <p className="mb-0">参建者对每一步进展尽在掌握。</p>
+                  <p className="mb-0">建设者对每一步进展尽在掌握。</p>
                 </div>
 
-                <SectionTimeline data={data} />
+                <SectionTimeline />
               </section>
               <section id="contract" className="section">
                 <div className="section-header">
@@ -408,7 +376,7 @@ export default function Overview() {
                   <p className="mb-0">节点计划是部署在Filecoin上的智能合约，存储节点的质押和节点激励分配完全由智能合约管理。</p>
                 </div>
 
-                <SectionContract data={data} />
+                <SectionContract />
               </section>
               {isStarted && (
                 <section id="events" className="section">
@@ -417,7 +385,7 @@ export default function Overview() {
                     <p className="mb-0">节点计划发生的重要活动以及链上相关消息</p>
                   </div>
 
-                  <SectionEvents data={data} />
+                  <SectionEvents />
                 </section>
               )}
             </div>
@@ -426,7 +394,7 @@ export default function Overview() {
         </LoadingView>
       </div>
 
-      {/* <Calculator data={data} pack={pack} /> */}
+      {/* <Calculator /> */}
 
       <p>
         <br />
@@ -435,5 +403,15 @@ export default function Overview() {
         <br />
       </p>
     </>
+  );
+}
+
+export default function Overview() {
+  const param = useParams();
+
+  return (
+    <RaiseProvider id={param.id}>
+      <RaiseContent />
+    </RaiseProvider>
   );
 }

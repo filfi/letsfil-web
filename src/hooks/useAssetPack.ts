@@ -13,9 +13,9 @@ export default function useAssetPack(plan?: API.Plan, pack?: { pledge: string; p
 
   const power = useMemo(() => +`${pack?.power || 0}`, [pack?.power]);
   const pledge = useMemo(() => toNumber(pack?.pledge), [pack?.pledge]);
-  // 参建者持有算力
-  const investPower = useMemo(() => accMul(power, accDiv(investRate, 100), ratio), [power, ratio, investRate]);
   // 建设者持有算力
+  const investPower = useMemo(() => accMul(power, accDiv(investRate, 100), ratio), [power, ratio, investRate]);
+  // 主办人持有算力
   const raiserPower = useMemo(() => (isRaiser ? accMul(power, accDiv(raiserRate, 100)) : 0), [power, raiserRate, isRaiser]);
   // 服务商持有算力
   const servicerPower = useMemo(
@@ -23,7 +23,7 @@ export default function useAssetPack(plan?: API.Plan, pack?: { pledge: string; p
     [power, servicerRate, opsRate, isServicer],
   );
 
-  // 参建者持有质押币
+  // 建设者持有质押币
   const investPledge = useMemo(() => (pledge < actual ? accMul(pledge, ratio) : record), [pledge, ratio, record, actual]);
   // 服务商持有质押币
   const servicerPledge = useMemo(() => (isServicer ? Math.max(accSub(pledge, actual), 0) : 0), [pledge, actual, isServicer]);

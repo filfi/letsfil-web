@@ -29,7 +29,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
         <div className="card-body">
           <div className="float-end mt-lg-5 pt-lg-3">
             <p className="mb-0 fs-30 fw-600">{priorityRate}%</p>
-            <p className="mb-0 fs-16 fw-500">参建者分配比例</p>
+            <p className="mb-0 fs-16 fw-500">建设者获得</p>
           </div>
 
           <div className="mb-4">
@@ -44,7 +44,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
 
               <div className="d-flex flex-md-column justify-content-between gap-2 mb-3">
                 <p className="mb-0 fs-16 fw-500">承诺封装时间 {data.seal_days}天</p>
-                <p className="mb-0 fs-16 fw-500">预估年化节点激励 {formatRate(rate)}</p>
+                <p className="mb-0 fs-16 fw-500">预估年化 {formatRate(rate)}</p>
               </div>
 
               <div className="mb-3 d-flex gap-3">
@@ -58,7 +58,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
                     </p>
                     <p className="mb-0 lh-sm">
                       <span className="mx-1 d-none d-md-inline">·</span>
-                      <span>保证金配比 {opsRatio}%</span>
+                      <span>保证金占比 {opsRatio}%</span>
                     </p>
                   </div>
                   <p className="mb-0 lh-1">

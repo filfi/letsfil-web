@@ -2,7 +2,7 @@ import classNames from 'classnames';
 
 import { Form, Input, Select } from 'antd';
 
-const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
+const Calculator: React.FC = () => {
   const [form] = Form.useForm();
 
   const handleCalc = async (vals: any) => {
@@ -86,7 +86,7 @@ const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
 
                     <div className="row row-cols-2">
                       <div className="col">
-                        <Form.Item label="参建者分配比例">
+                        <Form.Item label="建设者获得">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="%" />
                         </Form.Item>
                       </div>
@@ -99,7 +99,7 @@ const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
 
                     <div className="row row-cols-2">
                       <div className="col">
-                        <Form.Item label="参建者节点激励">
+                        <Form.Item label="建设者节点激励">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="FIL" />
                         </Form.Item>
                       </div>

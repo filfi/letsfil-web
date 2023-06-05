@@ -155,4 +155,8 @@ declare namespace API {
     total_power: string;
     total_sector: number;
   };
+
+  type ContractData = {
+    pledge_total_calc_amount: string;
+  };
 }

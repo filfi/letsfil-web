@@ -1,12 +1,12 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
 import { useMemo, useRef, useState } from 'react';
-import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 import { FormattedMessage, history, Link, useLocation, useModel } from '@umijs/max';
+import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 import { formatAmount } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
@@ -31,7 +31,7 @@ const Header: React.FC = () => {
   // hooks
   const position = useScroll();
   const location = useLocation();
-  const { account, getBalance, handleConnect, handleDisconnect } = useAccounts();
+  const { account, connect, disconnect, getBalance } = useAccount();
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
@@ -51,12 +51,18 @@ const Header: React.FC = () => {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
   });
 
-  const disconnect = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  const handleConnect = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    e.preventDefault();
+
+    connect();
+  };
+
+  const handleDisconnect = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     e.preventDefault();
 
     setFalse();
 
-    handleDisconnect();
+    disconnect();
 
     history.replace('/');
   };
@@ -129,7 +135,7 @@ const Header: React.FC = () => {
                     </li>
                     <li className="dropdown-divider"></li>
                     <li>
-                      <a className="dropdown-item" href="#" onClick={disconnect}>
+                      <a className="dropdown-item" href="#" onClick={handleDisconnect}>
                         <span className="bi bi-box-arrow-right"></span>
                         <span className="ms-2">退出</span>
                       </a>

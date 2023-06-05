@@ -50,8 +50,8 @@ export default function Assets() {
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
   const [role, setRole] = useState(roles.findIndex(Boolean));
-  const raiser = useRewardRaiser(data); // 建设者的节点激励
-  const investor = useRewardInvestor(data); // 参建者的节点激励
+  const raiser = useRewardRaiser(data); // 主办人的节点激励
+  const investor = useRewardInvestor(data); // 建设者的节点激励
   const servicer = useRewardServicer(data); // 服务商的节点激励
 
   const title = useMemo(() => (data ? `${data.sponsor_company}发起的节点计划@${data.miner_id}` : '-'), [data]);
@@ -67,8 +67,8 @@ export default function Assets() {
   const options = useMemo(() => {
     if (roles.filter(Boolean).length > 1) {
       const items = [
-        { icon: <IconUser />, label: '我是参建者', value: 0 },
-        { icon: <IconStar />, label: '我是建设者', value: 1 },
+        { icon: <IconUser />, label: '我是建设者', value: 0 },
+        { icon: <IconStar />, label: '我是主办人', value: 1 },
         { icon: <IconTool />, label: '我是技术服务商', value: 2 },
       ];
 

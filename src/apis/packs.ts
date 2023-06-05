@@ -15,3 +15,7 @@ export function listActivities(params: API.PagingParams & { asset_pack_id: strin
 export function dailyIncome(params: API.PagingParams & { asset_pack_id: string }) {
   return A.get<API.Base[]>('/asset-pack/asset-pack-daily-income', params);
 }
+
+export function getContractData(id: string) {
+  return A.get<API.ContractData>('/asset-pack/asset-pack-contract-data', { asset_pack_id: id });
+}

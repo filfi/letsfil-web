@@ -6,8 +6,8 @@ import { isDef } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { getEvents } from '@/apis/raise';
 import usePagination from '@/hooks/usePagination';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import { formatAddr, formatUnixNow } from '@/utils/format';
-import type { ItemProps } from './types';
 
 function withEmpty<D = any>(render: (value: any, row: D, index: number) => React.ReactNode) {
   return (value: any, row: D, index: number) => {
@@ -28,19 +28,19 @@ const EVENTS_MAP: Record<string, string> = {
   ERaiseSuccess: '集合质押成功',
   EStartPreSeal: '准备封装',
   ESealProgress: '正在封装',
-  ERaiseWithdraw: '建设者提取节点激励',
+  ERaiseWithdraw: '主办人提取节点激励',
   CloseRaisePlan: '关闭集合质押',
   StartRaisePlan: '开始集合质押',
-  SpSignWithMiner: '服务商签名',
-  ECreateAssetPack: '建设者签名',
+  SpSignWithMiner: '技术服务商签名',
+  ECreateAssetPack: '主办人签名',
   ESpecifyOpsPayer: '指定运维付款人',
-  ERaiseSecurityFund: '存入建设者保证金',
-  EStackFromInvestor: '参建者认购',
-  EUnstackFromInverstor: '参建者赎回',
+  ERaiseSecurityFund: '存入主办人保证金',
+  EStackFromInvestor: '建设者认购',
+  EUnstackFromInverstor: '建设者赎回',
   EDepositOPSSecurityFund: '存入技术运维保证金',
-  EInverstorWithdrawProfit: '参建者提取节点激励',
+  EInverstorWithdrawProfit: '建设者提取节点激励',
   EWithdrawOPSSecurityFund: '技术服务商取回保证金',
-  EWithdrawRaiseSecurityFund: '建设者取回保证金',
+  EWithdrawRaiseSecurityFund: '主办人取回保证金',
 };
 
 function renderName(event: string) {
@@ -55,7 +55,9 @@ function sortEvents(a: API.Event, b: API.Event) {
   return 0;
 }
 
-const SectionEvents: React.FC<ItemProps> = ({ data }) => {
+const SectionEvents: React.FC = () => {
+  const { data } = useRaiseDetail();
+
   const service = async ({ page, pageSize }: any) => {
     if (data?.raising_id) {
       return await getEvents({ page, page_size: pageSize, raising_id: data.raising_id });

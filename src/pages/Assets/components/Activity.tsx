@@ -4,13 +4,13 @@ import type { ColumnsType } from 'antd/es/table';
 
 import { SCAN_URL } from '@/constants';
 import { listActivities } from '@/apis/packs';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 import usePagination from '@/hooks/usePagination';
 import { formatAddr, formatEther, formatUnixDate } from '@/utils/format';
 
 const Activity: React.FC = () => {
   const param = useParams();
-  const { account } = useAccounts();
+  const { account } = useAccount();
 
   const service = async ({ page, pageSize }: API.Base) => {
     if (account && param.id) {
@@ -39,7 +39,7 @@ const Activity: React.FC = () => {
       render: (type, row) => (
         <span>
           {['', '存入', '取回', '分配'][type]}
-          {['', '建设者保证金', '技术运维保证金', '质押币', '节点激励'][row.fund_type]}
+          {['', '主办人保证金', '技术运维保证金', '质押币', '节点激励'][row.fund_type]}
         </span>
       ),
     },

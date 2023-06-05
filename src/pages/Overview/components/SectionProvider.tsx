@@ -1,19 +1,17 @@
 import { Avatar } from 'antd';
-import { useMemo } from 'react';
 import classNames from 'classnames';
 
-import useRaiseState from '@/hooks/useRaiseState';
-import type { ItemProps } from './types';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 
-const SectionProvider: React.FC<ItemProps> = ({ data, getProvider }) => {
-  const { isPending } = useRaiseState(data);
-  const provider = useMemo(() => getProvider?.(data?.service_id), [getProvider, data?.service_id]);
+const SectionProvider: React.FC = () => {
+  const { data, state, provider } = useRaiseDetail();
+  const { isPending } = state;
 
   return (
     <>
       <div className="table-row w-100">
         <div className="row g-0 p-0">
-          <div className="col-12 col-lg-3 d-none d-lg-table-cell table-cell th">建设者</div>
+          <div className="col-12 col-lg-3 d-none d-lg-table-cell table-cell th">主办人</div>
           <div className="col-12 col-lg-9 table-cell">
             <div className="d-flex align-items-center flex-wrap gap-3">
               <div className="d-flex align-items-center me-auto">
@@ -22,13 +20,13 @@ const SectionProvider: React.FC<ItemProps> = ({ data, getProvider }) => {
                 </div>
                 <div className="flex-grow-1 ms-2">
                   <p className="mb-0">{data?.sponsor_company}</p>
-                  <p className="mb-0 text-gray d-lg-none">建设者</p>
+                  <p className="mb-0 text-gray d-lg-none">主办人</p>
                 </div>
               </div>
               <p className="d-flex flex-column flex-lg-row align-items-start gap-1 mb-0">
                 <span className={classNames('badge', data && !isPending ? 'badge-success' : 'badge-danger')}>{data && !isPending ? '已签名' : '待签名'}</span>
                 <span className={classNames('badge', ['badge-danger', 'badge-success'][data?.raise_margin_status ?? 0])}>
-                  建设者保证金·{['待缴', '已付'][data?.raise_margin_status ?? 0]}
+                  主办人保证金·{['待缴', '已付'][data?.raise_margin_status ?? 0]}
                 </span>
               </p>
             </div>

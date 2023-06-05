@@ -47,7 +47,7 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
             </span>
           </p>
           <p className="my-3 d-flex gap-3">
-            <span className="text-gray-dark">成功集合质押</span>
+            <span className="text-gray-dark">集合质押</span>
             <span className="ms-auto">{formatEther(data.actual_amount)} FIL</span>
           </p>
         </div>

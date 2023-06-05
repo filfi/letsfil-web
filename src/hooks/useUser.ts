@@ -1,10 +1,10 @@
 import { useRequest } from 'ahooks';
 
 import * as A from '@/apis/user';
-import useAccounts from './useAccounts';
+import useAccount from './useAccount';
 
 export default function useUser() {
-  const { account } = useAccounts();
+  const { account } = useAccount();
 
   const service = async () => {
     if (account) {

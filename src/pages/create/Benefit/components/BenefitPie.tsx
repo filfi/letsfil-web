@@ -10,7 +10,7 @@ const BenefitPie: React.FC<{
   const pieData = useMemo(
     () => [
       { name: name ?? '-', value },
-      { name: '参建者', value: Math.max(100 - value, 0) },
+      { name: '建设者', value: Math.max(100 - value, 0) },
     ],
     [name, value],
   );

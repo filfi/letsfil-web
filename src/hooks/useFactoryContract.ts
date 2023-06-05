@@ -1,12 +1,11 @@
 import { ethers } from 'ethers';
 import { useMount, useUnmount } from 'ahooks';
-import MetaMaskOboarding from '@metamask/onboarding';
 
-import { withTx } from '@/helpers/app';
-import useAccounts from './useAccounts';
+import useAccount from './useAccount';
 import abi from '@/abis/factory.abi.json';
 import { toastify } from '@/utils/hackify';
 import { RAISE_ADDRESS } from '@/constants';
+import { getWeb3Provider, withTx } from '@/helpers/app';
 import { createDispatcher, EventType } from '@/utils/mitt';
 
 export enum FactoryEventTypes {
@@ -16,9 +15,9 @@ export enum FactoryEventTypes {
 let contract: ethers.Contract | undefined;
 
 function createContract() {
-  if (MetaMaskOboarding.isMetaMaskInstalled()) {
-    const provider = new ethers.providers.Web3Provider(window.ethereum!);
+  const provider = getWeb3Provider();
 
+  if (provider) {
     contract = new ethers.Contract(RAISE_ADDRESS, abi, provider.getSigner());
     console.log('[Factory Contract]: ', contract);
     return contract;
@@ -31,7 +30,7 @@ const handlers = {
 };
 
 export default function useFactoryContract() {
-  const { withConnect } = useAccounts();
+  const { withConnect } = useAccount();
 
   const bindEvents = () => {
     contract?.on(FactoryEventTypes.onCreateRaisePlan, handlers.onCreateRaise);
