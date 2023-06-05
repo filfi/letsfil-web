@@ -8,7 +8,6 @@ const isMainnet = RUN_ENV === 'main';
 const { publicClient, webSocketPublicClient } = configureChains([isMainnet ? filecoin : filecoinCalibration], [publicProvider()]);
 
 const config = createConfig({
-  autoConnect: false,
   publicClient,
   webSocketPublicClient,
 });

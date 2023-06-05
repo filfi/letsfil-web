@@ -74,13 +74,6 @@ export default function useAccounts() {
 
   const withAccount = <R = any, P extends unknown[] = any>(service: (account: string, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
-      let account: string | undefined = accounts?.[0];
-
-      if (!account) {
-        const list = await requestAccounts();
-        account = list?.[0];
-      }
-
       if (account) {
         return await service(account, ...args);
       }
@@ -91,7 +84,7 @@ export default function useAccounts() {
     return withAccount((_, ...args: P) => service(...args));
   };
 
-  const handleConnect = async () => {
+  const connect = async () => {
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       return await requestAccounts();
     }
@@ -99,7 +92,7 @@ export default function useAccounts() {
     onboarding.startOnboarding();
   };
 
-  const handleDisconnect = () => {
+  const disconnect = () => {
     setState({ accounts: [], connected: false, connecting: false });
   };
 
@@ -109,8 +102,8 @@ export default function useAccounts() {
     getBalance,
     withAccount,
     withConnect,
-    handleConnect,
     requestAccounts,
-    handleDisconnect,
+    connect,
+    disconnect,
   };
 }

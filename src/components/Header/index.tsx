@@ -1,8 +1,8 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
 import { useMemo, useRef, useState } from 'react';
-import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 import { FormattedMessage, history, Link, useLocation, useModel } from '@umijs/max';
+import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
@@ -31,17 +31,15 @@ const Header: React.FC = () => {
   // hooks
   const position = useScroll();
   const location = useLocation();
-  const { account, getBalance, handleConnect, handleDisconnect } = useAccounts();
+  const { account, withAccount, getBalance, connect, disconnect } = useAccounts();
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
-  const fetchBalance = async () => {
-    if (!account) return;
-
+  const fetchBalance = withAccount(async (account) => {
     const balance = await getBalance(account);
 
     setBalance(balance);
-  };
+  });
 
   useAsyncEffect(fetchBalance, [account]);
 
@@ -51,12 +49,12 @@ const Header: React.FC = () => {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
   });
 
-  const disconnect = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  const handleDisconnect = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
 
     setFalse();
 
-    handleDisconnect();
+    disconnect();
 
     history.replace('/');
   };
@@ -129,7 +127,7 @@ const Header: React.FC = () => {
                     </li>
                     <li className="dropdown-divider"></li>
                     <li>
-                      <a className="dropdown-item" href="#" onClick={disconnect}>
+                      <a className="dropdown-item" href="#" onClick={handleDisconnect}>
                         <span className="bi bi-box-arrow-right"></span>
                         <span className="ms-2">退出</span>
                       </a>
@@ -138,7 +136,7 @@ const Header: React.FC = () => {
                 </div>
               </>
             ) : (
-              <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={handleConnect}>
+              <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={connect}>
                 <FormattedMessage id="actions.button.connect" />
               </SpinBtn>
             )}

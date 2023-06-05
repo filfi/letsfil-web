@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { useUnmount, useUpdateEffect } from 'ahooks';
+import { useAsyncEffect, useUnmount } from 'ahooks';
 import type { Contract, BigNumber, BigNumberish } from 'ethers';
 
 import { isRef } from '@/utils/utils';
@@ -129,24 +129,24 @@ function createRaiseContract(address?: string) {
 export default function useRaiseContract(address?: MaybeRef<string | undefined>) {
   const { withConnect } = useAccounts();
   const rawAddr = useMemo(() => getRefVal(address), [address]);
-  const contract = useRef(createRaiseContract(rawAddr));
+  const contract = useRef<Contract>(); // createRaiseContract(rawAddr));
 
-  const initContract = () => {
+  const initContract = withConnect(async () => {
     if (rawAddr && (!contract.current || contract.current.address !== rawAddr)) {
-      contract.current = createContract(rawAddr);
+      contract.current = createRaiseContract(rawAddr);
     }
-  };
+  });
 
-  useUpdateEffect(initContract, [rawAddr]);
+  useAsyncEffect(initContract, [rawAddr]);
 
   useUnmount(() => unbindEvent(contract.current));
 
   const withContract = <R = any, P extends unknown[] = any>(service: (contract: Contract, ...args: P) => Promise<R>) => {
-    return async (...args: P) => {
+    return withConnect(async (...args: P) => {
       if (contract.current) {
         return await service(contract.current, ...args);
       }
-    };
+    });
   };
 
   const getContract = () => {

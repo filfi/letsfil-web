@@ -41,7 +41,7 @@ const Avatar: React.FC<AvatarProps> = ({ className, address, size, src, ...props
     <div className={className}>
       <Jazzicon
         diameter={getSize(size)}
-        seed={jsNumberForAddress(address ?? account)}
+        seed={jsNumberForAddress(address ?? account ?? '0x111111111111111111')}
         paperStyles={{ display: 'block' }}
         svgStyles={{ width: '100%', height: '100%' }}
       />

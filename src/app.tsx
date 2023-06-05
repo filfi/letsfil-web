@@ -2,6 +2,7 @@
  * 运行时配置
  */
 
+import AppConfig from './components/AppConfig';
 import { getInitState, getLocale, setLocale } from '@/utils/storage';
 
 /**
@@ -34,4 +35,8 @@ export async function getInitialState(): Promise<InitState> {
     connecting: false,
     processing: false,
   };
+}
+
+export function rootContainer(root?: React.ReactNode) {
+  return <AppConfig>{root}</AppConfig>;
 }
