@@ -38,7 +38,7 @@ export default function AccountLayout() {
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/account/plans">
-                募集计划
+                节点计划
               </NavLink>
             </li>
             {/* <li className="nav-item">

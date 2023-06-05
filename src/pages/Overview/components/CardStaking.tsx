@@ -77,7 +77,7 @@ const CardStaking: React.FC<ItemProps> = ({ data }) => {
 
                 <p className="mb-0">
                   <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
-                    认购
+                    参与
                   </SpinBtn>
                 </p>
               </Form>

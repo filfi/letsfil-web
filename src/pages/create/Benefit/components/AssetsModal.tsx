@@ -58,7 +58,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
         onConfirm={handleConfirm}
       >
         <p className="mb-4 fs-16">
-          检测到 {data?.minerId} 是已存在的节点，先确认历史资产的归属。历史资产不属于当前募集计划，移交Owner之后，FilFi智能合约将按约定比例独立分配。
+          检测到 {data?.minerId} 是已存在的节点，先确认历史资产的归属。历史资产不属于当前节点计划，移交Owner之后，FilFi智能合约将按约定比例独立分配。
         </p>
 
         <div className="ffi-form mb-4">

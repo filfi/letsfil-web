@@ -17,7 +17,7 @@ const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
             <div className="modal-header flex-column">
               <button type="button" className="btn-close position-absolute end-0 top-0 me-3 mt-3" data-bs-dismiss="modal" aria-label="Close"></button>
 
-              <p className="ms-auto pe-5 me-5 mb-2 text-end text-neutral fw-500">年化收益率</p>
+              <p className="ms-auto pe-5 me-5 mb-2 text-end text-neutral fw-500">年化节点激励率</p>
 
               <div className="d-flex w-100">
                 <div className="flex-shrink-0 mt-auto mb-2">
@@ -49,14 +49,14 @@ const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
               <div className="modal-body border-top">
                 <div className="row row-cols-1 row-cols-md-2 g-0 g-md-3 g-lg-4">
                   <div className="col d-flex flex-column">
-                    <Form.Item label="募集金额" name="total">
-                      <Input placeholder="输入募集金额" suffix="FIL" />
+                    <Form.Item label="集合质押金额" name="total">
+                      <Input placeholder="输入集合质押金额" suffix="FIL" />
                     </Form.Item>
 
                     <div className="row row-cols-2 order-md-2">
                       <div className="col">
-                        <Form.Item label="24h平均收益/T" name="perPower">
-                          <Input placeholder="输入24h平均收益/T" suffix="FIL/TiB" />
+                        <Form.Item label="24h平均节点激励/T" name="perPower">
+                          <Input placeholder="输入24h平均节点激励/T" suffix="FIL/TiB" />
                         </Form.Item>
                       </div>
                       <div className="col">
@@ -80,13 +80,13 @@ const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
                   </div>
 
                   <div className="col">
-                    <Form.Item label="总收益">
+                    <Form.Item label="总节点激励">
                       <Input className="border-0 text-end" readOnly value={0.0} suffix="FIL" />
                     </Form.Item>
 
                     <div className="row row-cols-2">
                       <div className="col">
-                        <Form.Item label="投资人分配比例">
+                        <Form.Item label="参建者分配比例">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="%" />
                         </Form.Item>
                       </div>
@@ -99,12 +99,12 @@ const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
 
                     <div className="row row-cols-2">
                       <div className="col">
-                        <Form.Item label="投资人收益">
+                        <Form.Item label="参建者节点激励">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="FIL" />
                         </Form.Item>
                       </div>
                       <div className="col">
-                        <Form.Item label="我的收益">
+                        <Form.Item label="我的节点激励">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="FIL" />
                         </Form.Item>
                       </div>
@@ -117,7 +117,7 @@ const Calculator: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = () => {
                 <span className="text-gray">
                   <i className="bi bi-clock align-middle"></i>
 
-                  <span className="ms-2 align-middle">24h平均收益/T</span>
+                  <span className="ms-2 align-middle">24h平均节点激励/T</span>
                   <span className="ms-3 fw-500 align-middle">3小时前</span>
                 </span>
 

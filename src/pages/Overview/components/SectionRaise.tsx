@@ -15,7 +15,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
   const { actual, minRate, target, progress } = useRaiseInfo(data);
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
-  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
+  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
   const opsAmount = useMemo(() => U.accDiv(U.accMul(actual, U.accDiv(opsRatio, 100)), U.accSub(1, U.accDiv(opsRatio, 100))), [actual, opsRatio]);
 
   return (
@@ -24,7 +24,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">募集目标</p>
+              <p className="mb-1 text-gray-dark">节点目标</p>
               <p className="mb-0 d-flex align-items-center">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3 text-uppercase">{F.formatNum(target, '0.0a')}</span>
@@ -38,7 +38,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">投资人获得收益</p>
+              <p className="mb-1 text-gray-dark">参建者分配比例</p>
               <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3">{priorityRate}</span>
@@ -59,14 +59,14 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         {isStarted ? (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">募集截止</div>
+              <div className="col-4 table-cell th">集合质押截止</div>
               <div className="col-8 table-cell">{data ? F.formatUnixDate(data.closing_time) : '-'}</div>
             </div>
           </div>
         ) : (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">募集时间</div>
+              <div className="col-4 table-cell th">集合质押时间</div>
               <div className="col-8 table-cell">{data ? data.raise_days : '-'}天</div>
             </div>
           </div>
@@ -79,7 +79,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">已募集</div>
+            <div className="col-4 table-cell th">已集合质押</div>
             <div className="col-8 table-cell">
               <span>{F.formatAmount(actual, 2)} FIL</span>
               {isStarted && <span> · {F.formatRate(Math.floor(progress))}</span>}

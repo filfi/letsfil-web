@@ -10,18 +10,18 @@ export enum EventType {
   onRaiseFailed = 'onRaiseFailed', // 质押失败
   onStartPreSeal = 'StartPreSeal', // 启动预封装
   onDepositOpsFund = 'onDepositOpsFund', // 运维保证金支付
-  onDepositRaiseFund = 'onDepositRaiseFund', // 发起人保证金支付
+  onDepositRaiseFund = 'onDepositRaiseFund', // 建设者保证金支付
   onServicerSigned = 'onServicerSigned', // 服务商已签名
-  onStartRaisePlan = 'onStartRaisePlan', // 募集计划启动
-  onCloseRaisePlan = 'onCloseRaisePlan', // 募集计划关闭
-  onCreateRaisePlan = 'onCreateRaisePlan', // 募集计划创建
+  onStartRaisePlan = 'onStartRaisePlan', // 节点计划启动
+  onCloseRaisePlan = 'onCloseRaisePlan', // 节点计划关闭
+  onCreateRaisePlan = 'onCreateRaisePlan', // 节点计划创建
   onWithdrawOpsFund = 'onWithdrawOpsFund', // 提取运维保证金
-  onWithdrawRaiseFund = 'onWithdrawRaiseFund', // 提取发起人保证金
-  onRaiserWithdraw = 'onRaiserWithdraw', // 发起人提取收益
-  onServicerWithdraw = 'onServicerWithdraw', // 服务商提取收益
-  onInvestorWithdraw = 'onInvestorWithdraw', // 投资人提取收益
+  onWithdrawRaiseFund = 'onWithdrawRaiseFund', // 提取建设者保证金
+  onRaiserWithdraw = 'onRaiserWithdraw', // 建设者提取节点激励
+  onServicerWithdraw = 'onServicerWithdraw', // 服务商提取节点激励
+  onInvestorWithdraw = 'onInvestorWithdraw', // 参建者提取节点激励
   onNodeStateChange = 'onNodeStateChange', // 节点状态改变
-  onRaiseStateChange = 'onRaiseStateChange', // 募集计划状态改变
+  onRaiseStateChange = 'onRaiseStateChange', // 节点计划状态改变
 }
 
 export type Data = {

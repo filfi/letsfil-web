@@ -1,5 +1,5 @@
 /**
- * 募集计划状态
+ * 节点计划状态
  */
 export enum RaiseState {
   /**
@@ -7,19 +7,19 @@ export enum RaiseState {
    */
   WaitingStart = 0,
   /**
-   * 募集中
+   * 集合质押中
    */
   Raising = 1,
   /**
-   * 募集关闭
+   * 集合质押关闭
    */
   Closed = 2,
   /**
-   * 募集成功
+   * 集合质押成功
    */
   Success = 3,
   /**
-   * 募集失败
+   * 集合质押失败
    */
   Failure = 4,
   /**

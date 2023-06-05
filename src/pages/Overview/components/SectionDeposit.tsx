@@ -35,7 +35,7 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
           <div className="d-flex align-items-center me-auto">
             <div className="flex-shrink-0">{isRaisePaid ? <IconSuccess /> : <IconDander />}</div>
             <div className="flex-grow-1 ms-2">
-              <h4 className="card-title fw-600 mb-0">发起人保证金</h4>
+              <h4 className="card-title fw-600 mb-0">建设者保证金</h4>
             </div>
           </div>
 
@@ -72,7 +72,7 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
               {isSuccess && (
                 <p className="d-flex gap-3 my-2">
                   <span className="text-gray-dark">
-                    <span>募集手续费</span>
+                    <span>集合质押手续费</span>
                     <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fee, 2, 2)}</span>
                     <span className="ms-1">FIL</span>
                   </span>
@@ -93,9 +93,9 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
           )}
           <p className="mb-0">
             {isRaising ? (
-              <span>当募集目标未达成，或发起方主动终止，此保证金赔偿投资人存入FIL的利息损失。</span>
+              <span>当节点目标未达成，或发起方主动终止，此保证金赔偿参建者存入FIL的利息损失。</span>
             ) : (
-              <span>保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</span>
+              <span>保障集合质押期和封装期。节点目标未达成或封装延期，此保证金支付罚金。</span>
             )}
             {/* <a className="text-underline" href="#raiser-deposit" data-bs-toggle="modal">
               更多信息
@@ -104,10 +104,10 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* <Modal.Alert id="raiser-deposit" title="发起人保证金">
+      {/* <Modal.Alert id="raiser-deposit" title="建设者保证金">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">保障募集期和封装期。募集目标未达成或封装延期，此保证金支付罚金。</p>
+            <p className="mb-0">保障集合质押期和封装期。节点目标未达成或封装延期，此保证金支付罚金。</p>
           </div>
         </div>
       </Modal.Alert>
@@ -115,7 +115,7 @@ const RaiserCard: React.FC<ItemProps> = ({ data }) => {
       <Modal.Alert id="sp-deposit" title="技术运维保证金">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">与投资人等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
+            <p className="mb-0">与参建者等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
           </div>
         </div>
       </Modal.Alert> */}
@@ -227,7 +227,7 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
             </div>
           )}
           <p className="mb-0">
-            <span>与投资人等比投入，维持占比{opsRatio}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</span>
+            <span>与参建者等比投入，维持占比{opsRatio}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</span>
             {/* <a className="text-underline" href="#sp-deposit" data-bs-toggle="modal">
               更多信息
             </a> */}
@@ -238,7 +238,7 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
       <Modal.Confirm id="deposit-confirm" footerClassName="border-0" title="预存技术运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={pay}>
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">
-            <span>技术运维保证金认购募集计划的份额，成为劣后质押币，与投资人的优先质押一同封装到存储节点中。</span>
+            <span>技术运维保证金认购节点计划的份额，成为劣后质押币，与参建者的优先质押一同封装到存储节点中。</span>
             {/* <a className="text-underline" href="#">
               了解更多
             </a> */}
@@ -271,7 +271,7 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
                       <span className="fs-24 lh-1 text-gray-dark">
                         <span className="bi bi-people"></span>
                       </span>
-                      <span className="ms-2">投资人</span>
+                      <span className="ms-2">参建者</span>
                     </div>
                   }
                   suffix="%"
@@ -281,7 +281,7 @@ const ServiceCard: React.FC<ItemProps> = ({ data, getProvider }) => {
             </div>
           </div>
 
-          <p className="mb-4 fs-16 fw-500">预存金额按照募集目标计算，募集结束后按照实际募集目标</p>
+          <p className="mb-4 fs-16 fw-500">预存金额按照节点目标计算，集合质押结束后按照实际节点目标</p>
 
           <p className="mb-0">
             <span className="fs-24 fw-600">{F.formatAmount(total)}</span>

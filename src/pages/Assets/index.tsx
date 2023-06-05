@@ -50,11 +50,11 @@ export default function Assets() {
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
   const [role, setRole] = useState(roles.findIndex(Boolean));
-  const raiser = useRewardRaiser(data); // 发起人的收益
-  const investor = useRewardInvestor(data); // 投资人的收益
-  const servicer = useRewardServicer(data); // 服务商的收益
+  const raiser = useRewardRaiser(data); // 建设者的节点激励
+  const investor = useRewardInvestor(data); // 参建者的节点激励
+  const servicer = useRewardServicer(data); // 服务商的节点激励
 
-  const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
+  const title = useMemo(() => (data ? `${data.sponsor_company}发起的节点计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
   const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
@@ -67,8 +67,8 @@ export default function Assets() {
   const options = useMemo(() => {
     if (roles.filter(Boolean).length > 1) {
       const items = [
-        { icon: <IconUser />, label: '我是投资人', value: 0 },
-        { icon: <IconStar />, label: '我是发起人', value: 1 },
+        { icon: <IconUser />, label: '我是参建者', value: 0 },
+        { icon: <IconStar />, label: '我是建设者', value: 1 },
         { icon: <IconTool />, label: '我是技术服务商', value: 2 },
       ];
 
@@ -108,7 +108,7 @@ export default function Assets() {
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to={`/overview/${param.id}`}>
-                募集计划
+                节点计划
               </NavLink>
             </li>
           </ul>
@@ -140,12 +140,12 @@ export default function Assets() {
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-1 fw-500">{data?.sponsor_company}发起的募集计划</p>
+                    <p className="mb-1 fw-500">{data?.sponsor_company}发起的节点计划</p>
                     <p className="mb-0 text-gray-dark">
                       {isClosed ? (
                         <span className="badge">已关闭</span>
                       ) : isFailed ? (
-                        <span className="badge badge-danger">募集失败</span>
+                        <span className="badge badge-danger">集合质押失败</span>
                       ) : (
                         <span>{F.formatUnixDate(data?.begin_time)}启动</span>
                       )}
@@ -257,13 +257,13 @@ export default function Assets() {
                     </div> */}
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">锁定收益</p>
+                        <p className="mb-1 fw-500">锁定节点激励</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
                       </div>
                     </div>
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">累计收益</p>
+                        <p className="mb-1 fw-500">累计节点激励</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
                       </div>
                     </div>
