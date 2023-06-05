@@ -39,7 +39,7 @@ const handlers = {
   onUnstaking: createDispatcher(EventType.onUnstaking, ['raiseID', 'from', 'to', 'amount']),
   // 节点结束
   onDestroyNode: createDispatcher(EventType.onDepositOpsFund, ['raiseID', 'state']),
-  // 募集失败
+  // 集合质押失败
   onRaiseFailed: createDispatcher(EventType.onRaiseFailed, ['raiseID']),
   // 启动预封装
   onStartPreSeal: createDispatcher(EventType.onStartPreSeal, ['raiseID', 'caller']),
@@ -49,23 +49,23 @@ const handlers = {
   onDepositOpsFund: createDispatcher(EventType.onDepositOpsFund, ['raiseID', 'sender', 'amount']),
   // 服务商已签名
   onServicerSigned: createDispatcher(EventType.onServicerSigned, ['raiseID', 'sender', 'minerId', 'oldOwner', 'contract']),
-  // 募集计划启动
+  // 节点计划启动
   onStartRaisePlan: createDispatcher(EventType.onStartRaisePlan, ['raiseID', 'sendar', 'time']),
-  // 关闭募集计划
+  // 关闭节点计划
   onCloseRaisePlan: createDispatcher(EventType.onCloseRaisePlan, ['caller', 'raiseID']),
-  // 募集商提取收益
+  // 集合质押商提取节点激励
   onRaiserWithdraw: createDispatcher(EventType.onRaiserWithdraw, ['raiseID', 'from', 'to', 'amount']),
-  // 服务商提取收益
+  // 服务商提取节点激励
   onServicerWithdraw: createDispatcher(EventType.onServicerWithdraw, ['raiseID', 'from', 'to', 'amount']),
-  // 投资人提取收益
+  // 参建者提取节点激励
   onInvestorWithdraw: createDispatcher(EventType.onInvestorWithdraw, ['raiseID', 'from', 'to', 'amount']),
   // 提取运维保证金
   onWithdrawOpsFund: createDispatcher(EventType.onWithdrawOpsFund, ['raiseID', 'sender', 'amount']),
-  // 提取募集保证金
+  // 提取建设者保证金
   onWithdrawRaiseFund: createDispatcher(EventType.onWithdrawRaiseFund, ['raiseID', 'sender', 'amount']),
   // 节点状态变更
   onNodeStateChange: createDispatcher(EventType.onNodeStateChange, ['raiseID', 'state']),
-  // 募集计划状态变更
+  // 节点计划状态变更
   onRaiseStateChange: createDispatcher(EventType.onRaiseStateChange, ['raiseID', 'state']),
 };
 
@@ -154,7 +154,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   };
 
   /**
-   * 获取募集计划信息
+   * 获取节点计划信息
    */
   const getRaiseInfo = withContract(async (contract, id: BigNumberish): Promise<RaiseInfo> => {
     return await contract.raiseInfo(id);
@@ -168,7 +168,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
-   * 获取募集计划状态
+   * 获取节点计划状态
    */
   const getRaiseState = withContract(async (contract, id: BigNumberish): Promise<RaiseState> => {
     return await contract.raiseState(id);
@@ -182,7 +182,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
-   * 缴纳募集保证金
+   * 缴纳建设者保证金
    */
   const depositRaiseFund = toastify(
     withConnect(
@@ -257,7 +257,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 启动募集计划
+   * 启动节点计划
    */
   const startRaisePlan = toastify(
     withConnect(
@@ -272,7 +272,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 关闭募集计划
+   * 关闭节点计划
    */
   const closeRaisePlan = toastify(
     withConnect(
@@ -317,7 +317,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 提取募集保证金
+   * 提取建设者保证金
    */
   const withdrawRaiseFund = toastify(
     withConnect(
@@ -347,7 +347,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 募集商提取收益
+   * 集合质押商提取节点激励
    */
   const raiserWithdraw = toastify(
     withConnect(
@@ -362,7 +362,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 服务商提取收益
+   * 服务商提取节点激励
    */
   const servicerWithdraw = toastify(
     withConnect(
@@ -377,7 +377,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   );
 
   /**
-   * 投资人提取收益
+   * 参建者提取节点激励
    */
   const investorWithdraw = toastify(
     withConnect(
@@ -406,7 +406,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
-   * 获取投资人信息
+   * 获取参建者信息
    */
   const getInvestorInfo = withContract(async (contract, id: BigNumberish, address: string): Promise<InvestorInfo> => {
     return await contract.investorInfo(id, address);
@@ -420,7 +420,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
-   * 获取募集保证金
+   * 获取建设者保证金
    */
   const getRaiseFund = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.securityFundRemain(id);
@@ -441,70 +441,70 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
-   * 获取投资人可提取收益
+   * 获取参建者可提取节点激励
    */
   const getInvestorAvailableReward = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
     return await contract.availableRewardOf(id, address);
   });
 
   /**
-   * 获取投资人已提取收益
+   * 获取参建者已提取节点激励
    */
   const getInvestorWithdrawnRecord = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
     return await contract.withdrawRecord(id, address);
   });
 
   /**
-   * 获取投资人待释放收益
+   * 获取参建者待释放节点激励
    */
   const getInvestorPendingReward = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
     return await contract.willReleaseOf(id, address);
   });
 
   /**
-   * 获取投资人总收益
+   * 获取参建者总节点激励
    */
   const getInvestorTotalReward = withContract(async (contract, id: BigNumberish, address: string): Promise<BigNumber> => {
     return await contract.totalRewardOf(id, address);
   });
 
   /**
-   * 获取募集商已领取的收益
+   * 获取集合质押商已领取的节点激励
    */
   const getRaiserWithdrawnReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.gotRaiserReward(id);
   });
 
   /**
-   * 获取募集商可领取的收益
+   * 获取集合质押商可领取的节点激励
    */
   const getRaiserAvailableReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.raiserRewardAvailableLeft(id);
   });
 
   /**
-   * 获取募集商待释放的收益
+   * 获取集合质押商待释放的节点激励
    */
   const getRaiserPendingReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.raiserWillReleaseReward(id);
   });
 
   /**
-   * 获取服务商已领取的收益
+   * 获取服务商已领取的节点激励
    */
   const getServicerWithdrawnReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.gotSpReward(id);
   });
 
   /**
-   * 获取服务商可领取的收益
+   * 获取服务商可领取的节点激励
    */
   const getServicerAvailableReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.spRewardAvailableLeft(id);
   });
 
   /**
-   * 获取服务商待释放的收益
+   * 获取服务商待释放的节点激励
    */
   const getServicerPendingReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.spWillReleaseReward(id);
@@ -518,7 +518,7 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
-   * 获取服务商锁定收益
+   * 获取服务商锁定节点激励
    */
   const getServicerLockedReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.spRewardLock(id);
@@ -546,14 +546,14 @@ export default function useRaiseContract(address?: MaybeRef<string | undefined>)
   });
 
   /**
-   * 获取节点总收益
+   * 获取节点总节点激励
    */
   const getTotalReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.totalRewardAmount(id);
   });
 
   /**
-   * 获取节点待释放的总收益
+   * 获取节点待释放的总节点激励
    */
   const getTotalPendingReward = withContract(async (contract, id: BigNumberish): Promise<BigNumber> => {
     return await contract.totalReleasedRewardAmount(id);

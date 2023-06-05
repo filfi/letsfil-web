@@ -10,8 +10,8 @@ import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
 const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
   const { fines } = useDepositRaiser(data);
+  const { isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
   const { pack, period, sealdays, running, percent: rate } = useRaiseSeals(data);
-  const { isPreSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
 
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
@@ -24,7 +24,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
     return 0;
   }, [data]);
 
-  if (isPreSeal || isSealing || isDelayed || isWorking) {
+  if (isSealing || isDelayed || isWorking) {
     return (
       <>
         <div className="pt-3 mb-3">
@@ -165,7 +165,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
           <tbody>
             <tr>
               <th>截止时间</th>
-              <td>尚未开始</td>
+              <td>准备封装</td>
               <th>已封装扇区</th>
               <td>-</td>
             </tr>

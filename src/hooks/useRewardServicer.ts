@@ -11,7 +11,7 @@ import useRaiseContract from './useRaiseContract';
 import { accAdd, accDiv, accMul, accSub, isDef } from '@/utils/utils';
 
 /**
- * 服务商收益
+ * 服务商节点激励
  * @param data
  * @returns
  */
@@ -23,7 +23,7 @@ export default function useRewardServicer(data?: API.Plan) {
   const [record, setRecord] = useState(0); // 已提取
   const [pending, setPending] = useState(0); // 待释放
   const [rewardLock, setRewardLock] = useState(0);
-  const [totalReward, setTotalReward] = useState(0); // 总收益
+  const [totalReward, setTotalReward] = useState(0); // 总节点激励
 
   const { opsRate, servicerRate } = useRaiseRate(data);
 

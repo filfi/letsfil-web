@@ -28,31 +28,31 @@ declare global {
   }
 
   /**
-   * 募集计划信息
+   * 集合质押计划信息
    */
   interface RaiseInfo {
     /**
-     * 募集ID，合约内递增唯一标识
+     * 集合质押ID，合约内递增唯一标识
      */
     id: BigNumberish;
     /**
-     * 募集目标
+     * 集合质押目标
      */
     targetAmount: BigNumberish;
     /**
-     * 最小募集比例 1000 -> 10%
+     * 最小集合质押比例 1000 -> 10%
      */
     minRaiseRate: BigNumberish;
     /**
-     * 募集保证金
+     * 建设者保证金
      */
     securityFund: BigNumberish;
     /**
-     * 募集天数 单位天
+     * 集合质押天数 单位天
      */
     raiseDays: BigNumberish;
     /**
-     * 募集者权益 1000 -> 10%
+     * 集合质押者权益 1000 -> 10%
      */
     raiserShare: BigNumberish;
     /**

@@ -26,7 +26,7 @@ function createContract() {
 }
 
 const handlers = {
-  // 募集计划创建
+  // 节点计划创建
   onCreateRaise: createDispatcher(EventType.onCreateRaisePlan, ['raiseID', 'raisePool', 'caller', 'raiseInfo', 'nodeInfo', 'extraInfo']),
 };
 
@@ -61,7 +61,7 @@ export default function useFactoryContract() {
     };
   };
 
-  // 创建募集计划
+  // 创建节点计划
   const createRaisePlan = toastify(
     withConnect(
       withTx(

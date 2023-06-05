@@ -1,5 +1,7 @@
 import { Avatar } from 'antd';
 import { useMemo } from 'react';
+import { Link } from '@umijs/max';
+
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import { formatEther, formatRate } from '@/utils/format';
 
@@ -15,17 +17,17 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
   return (
     <>
       <div className="card h-100">
-        <div className="card-header d-flex gap-3 align-items-center">
+        <Link className="card-header d-flex gap-3 align-items-center" to={`/overview/${data.raising_id}`}>
           <div className="flex-shrink-0">
             <Avatar src={data.sponsor_logo} size={{ xs: 48, xl: 56 }} />
           </div>
           <div className="flex-grow-1">
-            <h4 className="card-title mb-0">{data.sponsor_company}发起的募集计划</h4>
+            <h4 className="card-title text-reset mb-0">{data.sponsor_company}发起的节点计划</h4>
           </div>
-        </div>
+        </Link>
         <div className="card-body py-2">
           <p className="my-3 d-flex gap-3">
-            <span className="text-gray-dark">成功募集</span>
+            <span className="text-gray-dark">成功集合质押</span>
             <span className="ms-auto">{formatEther(data.actual_amount)} FIL</span>
           </p>
           <p className="my-3 d-flex gap-3">
@@ -35,7 +37,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
                 第{running}天 · {formatRate(percent)}
               </span>
             ) : (
-              <span className="ms-auto text-gray">尚未开始</span>
+              <span className="ms-auto text-gray">准备封装</span>
             )}
           </p>
           <p className="my-3 d-flex gap-3">

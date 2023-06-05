@@ -31,7 +31,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 <Avatar src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
               </div>
               <div className="flex-grow-1">
-                <h4 className="card-title mb-0 fw-600">{data.sponsor_company}发起的募集计划</h4>
+                <h4 className="card-title mb-0 fw-600">{data.sponsor_company}发起的节点计划</h4>
               </div>
             </div>
             <div className="d-flex flex-shrink-0 flex-column flex-md-row gap-3 mb-auto">
@@ -73,7 +73,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
             </div>
             <div className="flex-grow-1">
               <p className="mb-3 mb-lg-4 fs-16 text-gray-dark">
-                <span>募集目标</span>
+                <span>节点目标</span>
                 <span className="mx-1 fw-bold">{formatEther(data.target_amount)}</span>
                 <span>FIL</span>
                 <span className="mx-2">·</span>
@@ -84,7 +84,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-3">
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-people text-gray"></span>
-                  <span className="mx-1">投资人分成比例</span>
+                  <span className="mx-1">参建者分配比例</span>
                   <span className="fw-bold">{priorityRate}%</span>
                 </p>
 

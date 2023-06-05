@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
 import { useMemo, useRef, useState } from 'react';
 import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
-import { FormattedMessage, history, Link, NavLink, useLocation, useModel } from '@umijs/max';
+import { FormattedMessage, history, Link, useLocation, useModel } from '@umijs/max';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
@@ -11,6 +11,9 @@ import { formatAmount } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
 import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
+import { ReactComponent as IconDiscord } from '@/assets/socials/discord.svg';
+import { ReactComponent as IconTwitter } from '@/assets/socials/twitter.svg';
+import { ReactComponent as IconTelegram } from '@/assets/socials/telegram.svg';
 
 const headerHeight = 80;
 
@@ -57,6 +60,27 @@ const Header: React.FC = () => {
 
     history.replace('/');
   };
+
+  const socials = [
+    {
+      icon: IconDiscord,
+      title: 'Discord',
+      desc: 'Ask us question',
+      url: 'https://discord.gg/tht348jhuy',
+    },
+    {
+      icon: IconTwitter,
+      title: 'Twitter',
+      desc: 'Follow us on @FilFi',
+      url: 'https://twitter.com/filfi_io',
+    },
+    {
+      icon: IconTelegram,
+      title: 'Telegram',
+      desc: 'Join disscution',
+      url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+    },
+  ];
 
   return (
     <header ref={header} className={classNames('header fixed-top bg-white')} style={{ boxShadow: `0 3px 10px rgba(0, 0, 0, ${percent * 0.15})` }}>
@@ -135,9 +159,9 @@ const Header: React.FC = () => {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/">
+                  <Link className="nav-link" to="/">
                     <FormattedMessage id="menu.miner" />
-                  </NavLink>
+                  </Link>
                 </li>
                 <li className="nav-item dropdown">
                   <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
@@ -176,18 +200,15 @@ const Header: React.FC = () => {
 
                   <div className="dropdown-menu border-0 shadow rounded-4">
                     <div className="d-flex flex-column gap-2">
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">FilFi DAO Guide</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Ambassador</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Governance process</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
+                      {socials.map((item, key) => (
+                        <a key={key} className="dropdown-item d-flex px-4 py-3" href={item.url} target="_blank" rel="noreferrer">
+                          <span className="flex-shrink-0 me-3">{<item.icon />}</span>
+                          <span className="flex-grow-1">
+                            <span className="d-block fw-600 mb-1">{item.title}</span>
+                            <span className="d-block text-gray">{item.desc}</span>
+                          </span>
+                        </a>
+                      ))}
                     </div>
                   </div>
                 </li>

@@ -25,7 +25,7 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
       <div className="card working-card h-100">
         <div className="card-header d-flex gap-3">
           <div>
-            <span className="text-gray-dark">累计收益</span>
+            <span className="text-gray-dark">累计节点激励</span>
             <span className="ms-3 fs-24 fw-600">{formatAmount(reward)}</span>
             <span className="ms-1 text-gray-dark">FIL</span>
           </div>
@@ -37,34 +37,34 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
         </div>
         <div className="card-body py-2">
           <p className="my-3 d-flex gap-3">
-            <span className="text-gray-dark">募集计划</span>
+            <span className="text-gray-dark">节点计划</span>
             <span className="ms-auto">
               <Link className="text-underline" to={`/overview/${data.raising_id}`}>
-                {data.sponsor_company}发起的募集计划
+                {data.sponsor_company}发起的节点计划
               </Link>
               <span className="mx-1">·</span>
               <span>已运行{running}天</span>
             </span>
           </p>
           <p className="my-3 d-flex gap-3">
-            <span className="text-gray-dark">成功募集</span>
+            <span className="text-gray-dark">成功集合质押</span>
             <span className="ms-auto">{formatEther(data.actual_amount)} FIL</span>
           </p>
         </div>
-        <div className="card-footer d-flex gap-3">
-          <div>
-            <span className="d-inline-block">
-              <Avatar src={provider?.logo_url} size={24} />
-            </span>
-            <span className="align-middle">
-              <span className="ms-2">{provider?.short_name}</span>
+        <div className="card-footer d-flex gap-2">
+          <div className="flex-shrink-0">
+            <Avatar src={provider?.logo_url} size={32} />
+          </div>
+          <div className="flex-grow-1 d-flex flex-column flex-md-row gap-2 my-auto">
+            <span className="align-middle me-auto">
+              <span className="">{provider?.short_name}</span>
               <span className="mx-1">·</span>
               <span className="mx-1">保证金</span>
               <span>{data.ops_security_fund_rate}%</span>
             </span>
-          </div>
-          <div className="ms-auto my-auto">
-            <span className="badge badge-success">提供技术服务</span>
+            <div>
+              <span className="badge badge-success text-sm">提供技术服务</span>
+            </div>
           </div>
         </div>
       </div>

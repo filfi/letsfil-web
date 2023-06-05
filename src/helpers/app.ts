@@ -96,11 +96,11 @@ export function calcEachEarn(priority: number | string = 70, spRate: number | st
   const _spRate = Number.isNaN(+spRate) ? 0 : +spRate;
   const _ratio = Number.isNaN(+ratio) ? 0 : +ratio;
 
-  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), 2); // 投资人分成
+  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), 2); // 参建者分成
   const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), 2); // 保证金分成
   const inferior = U.accSub(100, _priority); // 建设方分成(劣后部分)
   const ffiRate = +toFixed(U.accMul(inferior, 0.08), 2, 2); // FilFi协议费用（建设方 * 8%）
-  const raiserRate = Math.max(U.accSub(inferior, _spRate, ffiRate), 0); // 发起人分成
+  const raiserRate = Math.max(U.accSub(inferior, _spRate, ffiRate), 0); // 建设者分成
 
   return {
     ratio,
@@ -115,9 +115,9 @@ export function calcEachEarn(priority: number | string = 70, spRate: number | st
 }
 
 /**
- * 计算募集保证金
- * @param target 募集目标
- * @param period 募集期限
+ * 计算建设者保证金
+ * @param target 节点目标
+ * @param period 集合质押期限
  * @param seals 封装期限
  * @returns
  */
@@ -130,14 +130,14 @@ export function calcRaiseDepost(target: number, period: number, seals: number) {
   const ratio = 0.001;
   // 展期天数
   const delay = U.accDiv(seals, 2);
-  // 手续费 = 募集目标 * 0.3%
+  // 手续费 = 节点目标 * 0.3%
   const fee = U.accMul(target, 0.003);
-  // 本金 = 募集目标 * (1 - 可以进入展期的最低比例)
+  // 本金 = 节点目标 * (1 - 可以进入展期的最低比例)
   const cost = U.accMul(target, U.accSub(1, 0.5));
 
-  // 募集期罚息 = (募集目标 + 运维保证金(最大=募集目标)) * 年利率 * 募集天数 / 365 + 手续费
+  // 集合质押期罚息 = (节点目标 + 运维保证金(最大=节点目标)) * 年利率 * 集合质押天数 / 365 + 手续费
   const rInterest = U.accAdd(U.accMul(U.accAdd(target, target), yRate, U.accDiv(period, 365)), fee);
-  // 封装期罚息 = 募集目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
+  // 封装期罚息 = 节点目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
   const sInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(seals, 365)), fee);
   // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
   const dInterest = U.accAdd(U.accMul(cost, pim, yRate, U.accDiv(U.accAdd(seals, delay), 365)), U.accMul(cost, ratio, delay), fee);
@@ -203,7 +203,7 @@ export function transformModel(data: API.Base) {
 export function transformRaiseInfo(data: API.Plan): RaiseInfo {
   const { investRate, opsRate, spRate, raiserRate, ffiRate } = calcEachEarn(data.raiser_coin_share, data.op_server_share, data.ops_security_fund_rate);
 
-  // 募集计划信息
+  // 节点计划信息
   return {
     id: data.raising_id,
     targetAmount: data.target_amount,

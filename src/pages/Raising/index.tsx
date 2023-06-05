@@ -18,12 +18,20 @@ const isArrs = function <V>(v: V | undefined): v is V {
   return Array.isArray(v) && v.length > 0;
 };
 
-const isRaising = (data: API.Plan) => data.status === RaiseState.Raising;
-const isWorking = (data: API.Plan) => data.status === RaiseState.Success && data.sealed_status === NodeState.End;
-const isSealing = (data: API.Plan) => data.status === RaiseState.Success && ![NodeState.End, NodeState.Destroy].includes(data.sealed_status);
+function isRaising(data: API.Plan) {
+  return data.status === RaiseState.Raising || (data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.PreSeal].includes(data.sealed_status));
+}
+
+function isSealing(data: API.Plan) {
+  return data.status === RaiseState.Success && [NodeState.Started, NodeState.Delayed].includes(data.sealed_status);
+}
+
+function isWorking(data: API.Plan) {
+  return data.status === RaiseState.Success && data.sealed_status === NodeState.End;
+}
 
 export default function Raising() {
-  useTitle('募集计划 - FilFi', { restoreOnUnmount: true });
+  useTitle('节点计划 - FilFi', { restoreOnUnmount: true });
 
   const { getProvider } = useProviders();
 
@@ -49,7 +57,7 @@ export default function Raising() {
       <LoadingView data={items} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
-            <Empty title="没有募集计划" />
+            <Empty title="没有节点计划" />
           </div>
         ) : (
           <>
@@ -58,7 +66,7 @@ export default function Raising() {
             {isArrs(raises) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">开放募集中</h3>
+                  <h3 className="mb-1 fs-18 fw-600">开放集合质押中</h3>
                 </div>
                 <div className="row row-cols-1 g-3 g-lg-4 mb-4 mb-lg-5">
                   {raises.map((item) => (
@@ -88,8 +96,8 @@ export default function Raising() {
             {isArrs(workes) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">募集成功，已投入生产</h3>
-                  <p className="text-gray-dark">募得的FIL做为质押币，完全用于建设联合节点，按照募集计划的约定，智能合约持续分配收益。</p>
+                  <h3 className="mb-1 fs-18 fw-600">集合质押成功，已投入生产</h3>
+                  <p className="text-gray-dark">募得的FIL做为质押，完全用于建设联合节点，按照节点计划的约定，智能合约持续分配节点激励。</p>
                 </div>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4">
                   {workes.map((item) => (

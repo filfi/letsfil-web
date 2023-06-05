@@ -6,7 +6,7 @@ import { toNumber } from '@/utils/format';
 import { accDiv, accSub, sec2day } from '@/utils/utils';
 
 /**
- * 募集计划封装信息
+ * 节点计划封装信息
  * @param data
  * @returns
  */

@@ -36,8 +36,8 @@ const SectionContract: React.FC<ItemProps> = ({ data }) => {
             <span className="bi bi-info-circle"></span>
           </div>
           <div className="flex-grow-1 ms-3">
-            <p className="mb-1 fw-600">募集计划还未部署到智能合约，需要发起人签名</p>
-            <p className="mb-0">新创建的募集计划可以修改，便于达成共识。发起人签名后，募集计划将永久部署在链上，不可更改。</p>
+            <p className="mb-1 fw-600">节点计划还未部署到智能合约，需要建设者签名</p>
+            <p className="mb-0">新创建的节点计划可以修改，便于达成共识。建设者签名后，节点计划将永久部署在链上，不可更改。</p>
             {isRaiser && (
               <p className="mt-2 mb-0 fw-600">
                 <span className="me-2">在哪里签名？</span>
