@@ -7,7 +7,7 @@ import Avatar from '@/components/Avatar';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import { formatRate, formatSponsor } from '@/utils/format';
+import { formatProgress, formatRate, formatSponsor } from '@/utils/format';
 
 export type BannerCardProps = {
   data: API.Plan;
@@ -101,7 +101,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
                 </div>
               </div>
               <div className="cd-item cd-item-fill">
-                <span className="fw-600">{formatRate(Math.floor(progress))}</span>
+                <span className="fw-600">{formatProgress(progress)}</span>
                 <span className="label">已募</span>
               </div>
             </div>

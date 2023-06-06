@@ -6,7 +6,7 @@ import Avatar from '@/components/Avatar';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import { formatEther, formatRate, formatSponsor } from '@/utils/format';
+import { formatAmount, formatProgress, formatRate, formatSponsor } from '@/utils/format';
 
 export type RaisingCardProps = {
   data: API.Plan;
@@ -15,7 +15,7 @@ export type RaisingCardProps = {
 
 const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
   const { rate } = useIncomeRate(data);
-  const { progress } = useRaiseInfo(data);
+  const { progress, target } = useRaiseInfo(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
@@ -74,11 +74,11 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
             <div className="flex-grow-1">
               <p className="mb-3 mb-lg-4 fs-16 text-gray-dark">
                 <span>质押目标</span>
-                <span className="mx-1 fw-bold">{formatEther(data.target_amount)}</span>
+                <span className="mx-1 fw-bold">{formatAmount(target)}</span>
                 <span>FIL</span>
                 <span className="mx-2">·</span>
                 <span>已募</span>
-                <span className="ms-1 fw-bold">{formatRate(Math.floor(progress))}</span>
+                <span className="ms-1 fw-bold">{formatProgress(progress)}</span>
               </p>
 
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-3">

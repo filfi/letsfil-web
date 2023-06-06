@@ -26,7 +26,7 @@ const SectionRaise: React.FC = () => {
                   <span className="fs-3 text-uppercase">{F.formatNum(target, '0.0a')}</span>
                   <span className="ms-1 text-neutral">FIL</span>
                 </span>
-                <span className="badge badge-success ms-auto">已募{F.formatRate(Math.floor(progress))}</span>
+                <span className="badge badge-success ms-auto">已募{F.formatProgress(progress)}</span>
               </p>
             </div>
           </div>
@@ -78,7 +78,7 @@ const SectionRaise: React.FC = () => {
             <div className="col-4 table-cell th">已参与</div>
             <div className="col-8 table-cell">
               <span>{F.formatAmount(actual, 2)} FIL</span>
-              {isStarted && <span> · {F.formatRate(Math.floor(progress))}</span>}
+              {isStarted && <span> · {F.formatProgress(progress)}</span>}
             </div>
           </div>
         </div>

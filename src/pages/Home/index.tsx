@@ -82,7 +82,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconClock className="card-icon" />
                   <h4 className="card-title">尊重时间价值</h4>
-                  <p>如果募集不成功，质押全额返还，并补偿滞留时间的价值。</p>
+                  <p>如果集合质押不成功，质押全额返还，并补偿滞留时间的价值。</p>
                 </div>
               </div>
             </div>
