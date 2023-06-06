@@ -1,8 +1,9 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
-import { useMemo, useRef, useState } from 'react';
+import { useBalance } from 'wagmi';
+import { useMemo, useRef } from 'react';
+import { useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 import { FormattedMessage, history, Link, useLocation, useModel } from '@umijs/max';
-import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
@@ -25,23 +26,17 @@ const Header: React.FC = () => {
   const { initialState } = useModel('@@initialState');
 
   // states
-  const [balance, setBalance] = useState<any>();
   const [isHover, { setTrue, setFalse }] = useBoolean(false);
 
   // hooks
+  const { data } = useBalance();
   const position = useScroll();
   const location = useLocation();
-  const { account, connecting, withAccount, getBalance, connect, disconnect } = useAccount();
+  const { account, balance, connecting, connect, disconnect } = useAccount();
+
+  console.log(data);
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
-
-  const fetchBalance = withAccount(async (account) => {
-    const balance = await getBalance(account);
-
-    setBalance(balance);
-  });
-
-  useAsyncEffect(fetchBalance, [account]);
 
   useUpdateEffect(setFalse, [location]);
 
@@ -107,7 +102,9 @@ const Header: React.FC = () => {
                       <IconWallet />
                     </span>
 
-                    <span className="ms-1">{formatAmount(balance)} FIL</span>
+                    <span className="ms-1">
+                      {formatAmount(balance?.formatted)} {balance?.symbol}
+                    </span>
 
                     {/* <span className="vr mx-2 d-none d-md-inline"></span>
 
