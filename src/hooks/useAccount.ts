@@ -1,56 +1,20 @@
 import { useMemo } from 'react';
-import { useModel } from '@umijs/max';
+import { useAccount as useWagmi, useConnect, useDisconnect, Connector } from 'wagmi';
 
-import * as S from '@/utils/storage';
-import Modal from '@/components/Modal';
+// import Modal from '@/components/Modal';
 import { toNumber } from '@/utils/format';
+import { catchify } from '@/utils/hackify';
+import ClientModal from '@/components/ClientModal';
+import { FoxWalletConnector, MetaMaskConnector, TokenPocketConnector } from '@/core/connectors';
 
 export default function useAccount() {
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const { address, status } = useWagmi();
 
-  const accounts = useMemo(() => initialState?.accounts ?? [], [initialState]);
-  const account = useMemo(() => accounts[0], [accounts]);
+  const connected = useMemo(() => status === 'connected', [status]);
+  const connecting = useMemo(() => status === 'connecting' || status === 'reconnecting', [status]);
 
-  const setState = (state: Partial<InitState>) => {
-    setInitialState((d) => {
-      const _state = {
-        ...d,
-        ...state,
-      };
-
-      S.setInitState(_state as any);
-
-      return _state as any;
-    });
-  };
-
-  const requestAccounts = async (): Promise<string[] | undefined> => {
-    if (!window.ethereum) return;
-
-    setState({ connecting: true });
-
-    try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      console.log(accounts);
-      const connected = !!(accounts && accounts[0]);
-
-      setState({
-        connected,
-        connecting: false,
-        accounts: accounts ?? [],
-      });
-
-      return accounts;
-    } catch (e: any) {
-      setState({ connecting: false });
-
-      const message = e.message;
-
-      if (!`${message}`.toLowerCase().includes('user rejected')) {
-        Modal.alert({ icon: 'warn', title: '连接失败', content: message });
-      }
-    }
-  };
+  const { connectAsync } = useConnect();
+  const { disconnectAsync } = useDisconnect();
 
   const getBalance = async (account: string) => {
     if (account && window.ethereum) {
@@ -63,10 +27,10 @@ export default function useAccount() {
     }
   };
 
-  const withAccount = <R = any, P extends unknown[] = any>(service: (account: string, ...args: P) => Promise<R>) => {
+  const withAccount = <R = any, P extends unknown[] = any>(service: (address: string, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
-      if (account) {
-        return service(account, ...args);
+      if (address) {
+        return service(address, ...args);
       }
     };
   };
@@ -75,19 +39,48 @@ export default function useAccount() {
     return withAccount((_, ...args: P) => service(...args));
   };
 
-  const connect = async () => {
-    return await requestAccounts();
+  const handleConfirm = async (id: string) => {
+    let connector: Connector | undefined;
+
+    switch (id) {
+      case 'foxWallet':
+        connector = new FoxWalletConnector();
+        break;
+      case 'tokenPocket':
+        connector = new TokenPocketConnector();
+        break;
+      case 'metaMask':
+        connector = new MetaMaskConnector();
+        break;
+    }
+
+    if (!connector) return;
+
+    const [e, res] = await catchify(connectAsync)({ connector });
+
+    if (e?.name === 'ConnectorNotFoundError') {
+      console.log(e.message);
+    }
+
+    console.log(res);
   };
 
-  const disconnect = () => {
-    setState({ accounts: [], connected: false, connecting: false });
+  const connect = () => {
+    ClientModal.show({
+      loading: connecting,
+      onConfirm: handleConfirm,
+    });
+  };
+
+  const disconnect = async () => {
+    await disconnectAsync();
   };
 
   return {
-    account,
-    accounts,
+    account: address,
+    connected,
+    connecting,
     getBalance,
-    requestAccounts,
     withAccount,
     withConnect,
     connect,

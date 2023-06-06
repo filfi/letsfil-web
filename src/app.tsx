@@ -2,8 +2,14 @@
  * 运行时配置
  */
 
-import AppConfig from './components/AppConfig';
+import { publicProvider } from 'wagmi/providers/public';
+import { filecoin, filecoinCalibration } from 'viem/chains';
+import { WagmiConfig, configureChains, createConfig } from 'wagmi';
+
+import { RUN_ENV } from '@/constants';
 import { getInitState, getLocale, setLocale } from '@/utils/storage';
+
+const isMainnet = RUN_ENV === 'main';
 
 /**
  * @see https://v3.umijs.org/zh-CN/plugins/plugin-locale#%E8%BF%90%E8%A1%8C%E6%97%B6%E9%85%8D%E7%BD%AE
@@ -37,6 +43,14 @@ export async function getInitialState(): Promise<InitState> {
   };
 }
 
+const { publicClient, webSocketPublicClient } = configureChains([isMainnet ? filecoin : filecoinCalibration], [publicProvider()]);
+
+const config = createConfig({
+  autoConnect: true,
+  publicClient,
+  webSocketPublicClient,
+});
+
 export function rootContainer(root?: React.ReactNode) {
-  return <AppConfig>{root}</AppConfig>;
+  return <WagmiConfig config={config}>{root}</WagmiConfig>;
 }

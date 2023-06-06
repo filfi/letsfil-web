@@ -31,7 +31,7 @@ const Header: React.FC = () => {
   // hooks
   const position = useScroll();
   const location = useLocation();
-  const { account, withAccount, getBalance, connect, disconnect } = useAccount();
+  const { account, connecting, withAccount, getBalance, connect, disconnect } = useAccount();
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
@@ -95,7 +95,7 @@ const Header: React.FC = () => {
           </Link>
 
           <div className="btn-group assets-bar" role="group" aria-label="Assets Bar">
-            {initialState?.connected ? (
+            {!!account ? (
               <>
                 {initialState?.processing ? (
                   <SpinBtn className="btn btn-outline-light" loading>
@@ -142,7 +142,7 @@ const Header: React.FC = () => {
                 </div>
               </>
             ) : (
-              <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={handleConnect}>
+              <SpinBtn className="btn btn-outline-light btn-lg" loading={connecting} onClick={handleConnect}>
                 <FormattedMessage id="actions.button.connect" />
               </SpinBtn>
             )}
