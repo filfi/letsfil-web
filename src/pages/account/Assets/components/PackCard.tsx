@@ -13,6 +13,7 @@ import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
 import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const { data: info } = useRequest(() => getInfo(data.raising_id), { refreshDeps: [data.raising_id] });
@@ -20,22 +21,27 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const raiser = useRewardRaiser(info);
   const investor = useRewardInvestor(info);
   const servicer = useRewardServicer(info);
+  const { isInvestor } = useDepositInvestor(info);
   const { isRaiser, isServicer } = useRaiseInfo(info);
-  const { holdPower, holdPledge } = useAssetPack(info, { power: data.total_power, pledge: data.total_pledge_amount });
+  const { holdPower, holdPledge } = useAssetPack(info);
 
   const rewward = useMemo(() => {
-    let sum = investor.reward;
+    let sum = 0;
 
-    if (raiser) {
+    if (isInvestor) {
+      sum = accAdd(sum, investor.reward);
+    }
+
+    if (isRaiser) {
       sum = accAdd(sum, raiser.reward);
     }
 
-    if (servicer) {
+    if (isServicer) {
       sum = accAdd(sum, servicer.reward);
     }
 
     return sum;
-  }, [investor.reward, raiser.reward, servicer.reward, isRaiser, isServicer]);
+  }, [investor.reward, raiser.reward, servicer.reward, isInvestor, isRaiser, isServicer]);
 
   return (
     <div className="card h-100">
@@ -59,7 +65,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
           </span>
         </p>
         <p className="d-flex my-3 gap-3">
-          <span className="text-gray-dark">持有质押币</span>
+          <span className="text-gray-dark">持有质押</span>
           <span className="ms-auto">
             <span className="fs-16 fw-600">{F.formatAmount(holdPledge)}</span>
             <span className="text-gray-dark ms-1">FIL</span>

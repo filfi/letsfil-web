@@ -4,10 +4,10 @@ import { Link } from '@umijs/max';
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 
-import { formatRate } from '@/utils/format';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
+import { formatRate, formatSponsor } from '@/utils/format';
 
 export type BannerCardProps = {
   data: API.Plan;
@@ -39,7 +39,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
           <div className="row g-0 mb-3">
             <div className="col-12 col-lg-10 col-xl-8 col-xxl-6">
               <h3 className="mb-3 fs-30 fw-600">
-                {data.sponsor_company}发起的节点计划@{data.miner_id}
+                {formatSponsor(data.sponsor_company)}发起的节点计划@{data.miner_id}
               </h3>
 
               <div className="d-flex flex-md-column justify-content-between gap-2 mb-3">

@@ -39,14 +39,11 @@ export default function Assets() {
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [param.id] });
 
   const { getProvider } = useProviders();
-  const { pack, remains } = useRaiseSeals(data);
   const { isInvestor } = useDepositInvestor(data);
   const { isRaiser, isServicer } = useRaiseInfo(data);
   const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
-  const { investPower, raiserPower, servicerPower, investPledge, servicerPledge } = useAssetPack(
-    data,
-    pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,
-  );
+  const { pack, investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data);
+  const { remains } = useRaiseSeals(data, pack);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
   const [role, setRole] = useState(roles.findIndex(Boolean));
@@ -54,12 +51,12 @@ export default function Assets() {
   const investor = useRewardInvestor(data); // 建设者的节点激励
   const servicer = useRewardServicer(data); // 服务商的节点激励
 
-  const title = useMemo(() => (data ? `${data.sponsor_company}发起的节点计划@${data.miner_id}` : '-'), [data]);
+  const title = useMemo(() => (data ? `${F.formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
   const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
-  const pledge = useMemo(() => [investPledge, 0, servicerPledge][role] ?? 0, [role, investPledge, servicerPledge]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
+  const pledge = useMemo(() => [investPledge, raiserPledge, servicerPledge][role] ?? 0, [role, investPledge, raiserPledge, servicerPledge]);
   const total = useMemo(() => [investor.total, raiser.total, servicer.total][role] ?? 0, [role, investor.total, raiser.total, servicer.total]);
   const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role] ?? 0, [role, investor.reward, raiser.reward, servicer.reward]);
   // const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
@@ -140,7 +137,7 @@ export default function Assets() {
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-1 fw-500">{data?.sponsor_company}发起的节点计划</p>
+                    <p className="mb-1 fw-500">{F.formatSponsor(data?.sponsor_company)}发起的节点计划</p>
                     <p className="mb-0 text-gray-dark">
                       {isClosed ? (
                         <span className="badge">已关闭</span>
@@ -177,11 +174,11 @@ export default function Assets() {
                     <div className="accordion-body py-2">
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">最早到期</span>
-                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.sector_begin_expira, 'll')}</span>
+                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.min_expiration_epoch, 'll')}</span>
                       </p>
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">最晚到期</span>
-                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.max_expiration_epoch, 'll')}</span>
                       </p>
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">剩余时间</span>

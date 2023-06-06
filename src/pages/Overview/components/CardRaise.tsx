@@ -12,7 +12,7 @@ import useProcessify from '@/hooks/useProcessify';
 import { day2sec, toF4Address } from '@/utils/utils';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useRaiseContract from '@/hooks/useRaiseContract';
-import { formatEther, formatPower } from '@/utils/format';
+import { formatAmount, formatPower } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
@@ -29,7 +29,9 @@ const calcTime = (mill: number) => {
 const CardRaise: React.FC = () => {
   const { createRaisePlan } = useFactoryContract();
   const { initialState } = useModel('@@initialState');
-  const { data, pack, info, state } = useRaiseDetail();
+  const { data, asset, info, state } = useRaiseDetail();
+
+  const { power, pledge } = asset;
 
   const { startRaisePlan, startPreSeal, servicerSign } = useRaiseContract(data?.raise_address);
 
@@ -238,14 +240,14 @@ const CardRaise: React.FC = () => {
             <p className="d-flex align-items-center gap-3 mb-2">
               <span>封装容量</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatPower(pack?.pack_power)?.[0]}</span>
-                <span className="ms-1 text-neutral">{formatPower(pack?.pack_power)?.[1]}</span>
+                <span className="fs-20 fw-600">{formatPower(power)?.[0]}</span>
+                <span className="ms-1 text-neutral">{formatPower(power)?.[1]}</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
               <span>封装质押币</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatEther(pack?.pack_initial_pledge)}</span>
+                <span className="fs-20 fw-600">{formatAmount(pledge)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
               </span>
             </p>

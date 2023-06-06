@@ -135,8 +135,8 @@ export default function CreateProgram() {
               <FormRadio
                 grid
                 items={[
-                  { label: '公募计划', desc: '对所有人公开', value: 1 },
-                  { label: '私募计划', desc: '定向集合质押，即将上线。', disabled: true, value: 2 },
+                  { label: '公开计划', desc: '对所有人公开', value: 1 },
+                  { label: '定向计划', desc: '定向集合质押，即将上线。', disabled: true, value: 2 },
                 ]}
               />
             </Form.Item>
@@ -161,8 +161,8 @@ export default function CreateProgram() {
                 <Form.Item name="amount" rules={[{ required: true, message: '请输入质押目标' }, { validator: amountValidator }]}>
                   <Input placeholder="质押目标" suffix={<span>{['FIL', 'PiB'][amountType]}</span>} />
                 </Form.Item>
-                <Form.Item name="minRaiseRate" rules={[{ required: true, message: '请输入最低集合质押比例' }, { validator: minRateValidator }]}>
-                  <Input type="number" min={0} max={99} placeholder="最低集合质押比例" suffix="%" />
+                <Form.Item name="minRaiseRate" rules={[{ required: true, message: '请输入最低达成比例' }, { validator: minRateValidator }]}>
+                  <Input type="number" min={0} max={99} placeholder="最低达成比例" suffix="%" />
                 </Form.Item>
                 <Form.Item hidden name="targetPower">
                   <Input />
@@ -176,7 +176,7 @@ export default function CreateProgram() {
                   <div className="card-body">
                     <Skeleton active loading={fetching} paragraph={{ rows: 1 }}>
                       <div className="d-flex text-neutral mb-3">
-                        <span className="fw-600">{['估算存储算力(QAP)', '需要质押币'][amountType]}</span>
+                        <span className="fw-600">{['估算存储算力(QAP)', '需要质押FIL'][amountType]}</span>
                         <span className="ms-auto">{data?.sectorSize}G扇区</span>
                       </div>
 
@@ -195,7 +195,7 @@ export default function CreateProgram() {
 
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">集合质押时间</h4>
-            <p className="text-gray">节点计划启动后的持续时间，此间开放FIL投资。启动时间由主办人决定。</p>
+            <p className="text-gray">节点计划保持开放的持续时间。启动时间由主办人决定。</p>
 
             <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
               <DaysInput

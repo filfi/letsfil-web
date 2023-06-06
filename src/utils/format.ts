@@ -3,6 +3,7 @@ import numeral from 'numeral';
 import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 import { accAdd, sec2day } from './utils';
+import { isAddress } from 'ethers/lib/utils';
 
 export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode: BigNumber.RoundingMode = 3) {
   return BigNumber(amount ?? 0).toFixed(decimalPlaces, mode);
@@ -92,6 +93,14 @@ export function formatUnixDate(sec?: number | string, fmt = 'lll') {
   }
 
   return '-';
+}
+
+export function formatSponsor(sponsor?: string) {
+  if (sponsor && isAddress(sponsor)) {
+    return formatAddr(sponsor);
+  }
+
+  return sponsor;
 }
 
 export function formatSecDays(sec?: number | string) {

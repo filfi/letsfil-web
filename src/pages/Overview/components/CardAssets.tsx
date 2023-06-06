@@ -2,22 +2,21 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
 import { accMul } from '@/utils/utils';
-import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 import useDepositServicer from '@/hooks/useDepositServicer';
 import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 
 const CardAssets: React.FC = () => {
-  const { data, pack, info, rate, state } = useRaiseDetail();
+  const { data, asset, info, rate, state } = useRaiseDetail();
 
   const { isWorking } = state;
+  const { pack, investPower, raiserPower } = asset;
   const { raiserRate, opsRate, servicerRate } = rate;
   const { isRaiser, isServicer, sealProgress } = info;
 
   const { amount } = useDepositServicer(data);
   const { ratio, record, isInvestor } = useDepositInvestor(data);
-  const { investPower, raiserPower } = useAssetPack(data, pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined);
 
   // 已封装质押币 = 投资额 * 投资占比 * 封装进度
   const pledge = useMemo(() => accMul(record, Math.min(ratio, 1), sealProgress), [ratio, record, sealProgress]);
@@ -65,11 +64,11 @@ const CardAssets: React.FC = () => {
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>到期时间</span>
-                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.max_expiration_epoch, 'll')}</span>
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>最后释放</span>
-                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.max_expiration_epoch, 'll')}</span>
                 </p>
               </div>
             </>
@@ -99,7 +98,7 @@ const CardAssets: React.FC = () => {
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>到期时间</span>
-                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.max_expiration_epoch, 'll')}</span>
                 </p>
               </div>
             </>
@@ -136,7 +135,7 @@ const CardAssets: React.FC = () => {
                 </p>
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>到期时间</span>
-                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+                  <span className="ms-auto fs-20 fw-600">{formatUnixDate(pack?.max_expiration_epoch, 'll')}</span>
                 </p>
               </div>
             </>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
+import { useAsyncEffect } from 'ahooks';
 
 import { isDef } from '@/utils/utils';
 import useAccount from './useAccount';
@@ -24,22 +24,20 @@ export default function useRewardInvestor(data?: API.Plan) {
   const [record, setRecord] = useState(0); // 已提取
   const [pending, setPending] = useState(0); // 待释放
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!account || !data?.raising_id) return;
+  const [loading, fetchData] = useLoadingify(async () => {
+    if (!account || !data?.raising_id) return;
 
-      const info = await contract.getInvestorInfo(data.raising_id, account);
-      const total = await contract.getInvestorTotalReward(data.raising_id, account);
-      const reward = await contract.getInvestorAvailableReward(data.raising_id, account);
-      const pending = await contract.getInvestorPendingReward(data.raising_id, account);
-      const record = info?.withdrawAmount;
+    const info = await contract.getInvestorInfo(data.raising_id, account);
+    const total = await contract.getInvestorTotalReward(data.raising_id, account);
+    const reward = await contract.getInvestorAvailableReward(data.raising_id, account);
+    const pending = await contract.getInvestorPendingReward(data.raising_id, account);
+    const record = info?.withdrawAmount;
 
-      isDef(total) && setTotal(toNumber(total));
-      isDef(reward) && setReward(toNumber(reward));
-      isDef(record) && setRecord(toNumber(record));
-      isDef(pending) && setPending(toNumber(pending));
-    }),
-  );
+    isDef(total) && setTotal(toNumber(total));
+    isDef(reward) && setReward(toNumber(reward));
+    isDef(record) && setRecord(toNumber(record));
+    isDef(pending) && setPending(toNumber(pending));
+  });
 
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;

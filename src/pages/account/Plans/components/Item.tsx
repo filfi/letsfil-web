@@ -9,11 +9,11 @@ import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
-import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
@@ -53,9 +53,9 @@ const Item: React.FC<{
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
   getProvider?: (id?: number | string) => API.Provider | undefined;
-}> = ({ data, invest, getProvider, onEdit, /* onHide, */ onDelete, onStart }) => {
+}> = ({ data, invest, getProvider, onEdit, onDelete, onStart }) => {
   const state = useRaiseState(data);
-  const { pack } = useRaiseSeals(data);
+  const { pack, power } = useAssetPack(data);
   const { amount } = useDepositInvestor(data);
   const { priorityRate, opsRatio } = useRaiseRate(data);
   const { actual, progress, target, isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
@@ -95,7 +95,6 @@ const Item: React.FC<{
     await onStart?.();
   });
 
-  // const handleHide = withConfirm(data, hideAction);
   const handleDelete = withConfirm(data, deleteAction);
 
   const renderAssets = () => {
@@ -114,10 +113,10 @@ const Item: React.FC<{
           {showPack && (
             <div className="d-flex justify-content-between gap-3 py-2">
               <span className="text-gray-dark">我的资产</span>
-              <Link className="fw-500 text-underline" to={`/assets/${pack.raising_id}`}>
-                <span>{F.formatByte(pack.pack_power)}</span>
+              <Link className="fw-500 text-underline" to={`/assets/${data.raising_id}`}>
+                <span>{F.formatByte(power)}</span>
                 <span>@</span>
-                <span>{pack.miner_id}</span>
+                <span>{data.miner_id}</span>
               </Link>
             </div>
           )}
@@ -252,7 +251,7 @@ const Item: React.FC<{
           </div>
           <div className="mx-3 clearfix">
             <span className="badge badge-primary ms-1 float-end">@{data.miner_id}</span>
-            <h4 className="card-title mb-0 text-truncate">{data.sponsor_company}发起的节点计划</h4>
+            <h4 className="card-title mb-0 text-truncate">{F.formatSponsor(data.sponsor_company)}发起的节点计划</h4>
           </div>
           <div className="flex-shrink-0 ms-auto">
             <ShareBtn className="btn btn-light border-0 shadow-none" text={shareUrl}>
@@ -262,7 +261,7 @@ const Item: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isSuccess ? '集合质押' : '质押目标'}</span>
+            <span className="text-gray-dark">{state.isSuccess ? '实际集合质押' : '质押目标'}</span>
             <span className="fw-500">
               <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (

@@ -5,7 +5,7 @@ export function listPacks(params: API.PagingParams & { address: string }) {
 }
 
 export function packInfo(asset_pack_id: string) {
-  return A.get<API.AssetPack>('/asset-pack/my-asset-pack-info', { asset_pack_id });
+  return A.get<API.Pack>('/asset-pack/my-asset-pack-info', { asset_pack_id });
 }
 
 export function listActivities(params: API.PagingParams & { asset_pack_id: string; wallet_address: string }) {

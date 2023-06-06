@@ -126,7 +126,7 @@ export default function CreateStorage() {
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
-          sponsorCompany: user?.name,
+          sponsorCompany: account,
           hisBlance: '0',
           hisPower: '0',
           hisInitialPledge: '0',
@@ -175,11 +175,7 @@ export default function CreateStorage() {
               <div className="flex-grow-1">
                 <div className="row">
                   <div className="col-12 col-md-8 col-lg-6">
-                    <Form.Item
-                      name="sponsorCompany"
-                      help={<span>钱包地址：{formatAddr(account)}</span>}
-                      rules={[{ required: true, message: '请输入您的名称' }]}
-                    >
+                    <Form.Item name="sponsorCompany" help={<span>钱包地址：{formatAddr(account)}</span>}>
                       <Input maxLength={30} placeholder="输入您的名称" />
                     </Form.Item>
                   </div>
@@ -234,8 +230,8 @@ export default function CreateStorage() {
                 grid
                 disabled
                 items={[
-                  { label: '新建DC节点', value: 1 },
-                  { label: '已有节点扩展算力', value: 2 },
+                  { label: '新建节点', value: 1 },
+                  { label: '扩建节点', value: 2 },
                 ]}
               />
             </Form.Item>
