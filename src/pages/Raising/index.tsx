@@ -19,15 +19,15 @@ const isArrs = function <V>(v: V | undefined): v is V {
 };
 
 function isRaising(data: API.Plan) {
-  return data.status === RaiseState.Raising || (data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.PreSeal].includes(data.sealed_status));
+  return data.status === RaiseState.Raising;
 }
 
 function isSealing(data: API.Plan) {
-  return data.status === RaiseState.Success && [NodeState.Started, NodeState.Delayed].includes(data.sealed_status);
+  return data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.PreSeal, NodeState.Started, NodeState.Delayed].includes(data.sealed_status);
 }
 
 function isWorking(data: API.Plan) {
-  return data.status === RaiseState.Success && data.sealed_status === NodeState.End;
+  return data.status === RaiseState.Success && data.sealed_status >= NodeState.End && data.sealed_status !== NodeState.PreSeal;
 }
 
 export default function Raising() {

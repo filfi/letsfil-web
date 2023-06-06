@@ -1,8 +1,8 @@
-import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import { useCountDown } from 'ahooks';
 
+import Avatar from '@/components/Avatar';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
@@ -28,7 +28,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
           <div className="d-flex flex-column flex-lg-row gap-3 mb-3">
             <div className="d-flex flex-grow-1 gap-3 align-items-center">
               <div className="flex-shrink-0">
-                <Avatar src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
+                <Avatar address={data.raiser} src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
               </div>
               <div className="flex-grow-1">
                 <h4 className="card-title mb-0 fw-600">{formatSponsor(data.sponsor_company)}发起的节点计划</h4>
@@ -69,7 +69,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
 
           <div className="d-lg-flex gap-3">
             <div className="flex-shrink-0 d-none d-lg-block opacity-0">
-              <Avatar src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
+              <Avatar address={data.raiser} src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
             </div>
             <div className="flex-grow-1">
               <p className="mb-3 mb-lg-4 fs-16 text-gray-dark">
@@ -102,7 +102,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
 
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="d-inline-block text-gray">
-                    <Avatar src={provider?.logo_url} size={20} />
+                    <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={20} />
                   </span>
                   <span className="align-middle">
                     <span className="mx-1">{provider?.short_name}</span>

@@ -1,9 +1,9 @@
-import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 
+import Avatar from '@/components/Avatar';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
@@ -33,7 +33,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
           </div>
 
           <div className="mb-4">
-            <Avatar src={data.sponsor_logo} size={56} />
+            <Avatar address={data.raiser} src={data.sponsor_logo} size={56} />
           </div>
 
           <div className="row g-0 mb-3">
@@ -49,7 +49,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
 
               <div className="mb-3 d-flex gap-3">
                 <div className="flex-shrink-0 my-auto">
-                  <Avatar size={32} src={provider?.logo_url} />
+                  <Avatar address={provider?.wallet_address} size={32} src={provider?.logo_url} />
                 </div>
                 <div className="flex-grow-1 d-flex flex-column flex-lg-row gap-1 my-auto">
                   <div className="d-flex flex-column flex-md-row gap-1">

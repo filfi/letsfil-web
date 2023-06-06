@@ -1,7 +1,7 @@
 import { snakeCase } from 'lodash';
+import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { useUpdateEffect } from 'ahooks';
-import { Avatar, Form, Input } from 'antd';
 import { history, useModel } from '@umijs/max';
 import { useEffect, useMemo, useRef } from 'react';
 
@@ -9,6 +9,7 @@ import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
 import styles from './styles.less';
 // import Modal from '@/components/Modal';
+import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
@@ -251,7 +252,7 @@ export default function CreateBenefit() {
                     max={100}
                     prefix={
                       <div className="d-flex">
-                        <Avatar size={24} src={provider?.logo_url} />
+                        <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
                         <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
                       </div>
                     }
@@ -390,7 +391,7 @@ export default function CreateBenefit() {
                       className="bg-light text-end"
                       prefix={
                         <div className="d-flex">
-                          <Avatar size={24} src={provider?.logo_url} />
+                          <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
                           <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
                         </div>
                       }
@@ -414,7 +415,7 @@ export default function CreateBenefit() {
                       className="bg-light text-end"
                       prefix={
                         <div className="d-flex">
-                          <Avatar size={24} src={provider?.logo_url} />
+                          <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
                           <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
                         </div>
                       }

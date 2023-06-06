@@ -1,7 +1,7 @@
-import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
+import Avatar from '@/components/Avatar';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import { formatEther, formatRate, formatSponsor } from '@/utils/format';
@@ -21,7 +21,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
       <div className="card h-100">
         <Link className="card-header d-flex gap-3 align-items-center stretched-link" to={`/overview/${data.raising_id}`}>
           <div className="flex-shrink-0">
-            <Avatar src={data.sponsor_logo} size={{ xs: 48, xl: 56 }} />
+            <Avatar address={data.raiser} src={data.sponsor_logo} size={{ xs: 48, xl: 56 }} />
           </div>
           <div className="flex-grow-1">
             <h4 className="card-title text-reset mb-0">{formatSponsor(data.sponsor_company)}发起的节点计划</h4>
@@ -46,7 +46,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
             <span className="text-gray-dark">技术服务</span>
             <span className="ms-auto">
               <span className="d-inline-block">
-                <Avatar src={provider?.logo_url} size={20} />
+                <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={20} />
               </span>
               <span className="align-middle">
                 <span className="mx-1">{provider?.short_name}</span>
