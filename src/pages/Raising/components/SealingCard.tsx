@@ -2,8 +2,9 @@ import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
+import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
-import { formatEther, formatRate } from '@/utils/format';
+import { formatEther, formatRate, formatSponsor } from '@/utils/format';
 
 export type SealingCardProps = {
   data: API.Plan;
@@ -11,7 +12,8 @@ export type SealingCardProps = {
 };
 
 const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
-  const { percent, running } = useRaiseSeals(data);
+  const { pack } = useAssetPack(data);
+  const { progress, running } = useRaiseSeals(data, pack);
   const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
 
   return (
@@ -22,7 +24,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
             <Avatar src={data.sponsor_logo} size={{ xs: 48, xl: 56 }} />
           </div>
           <div className="flex-grow-1">
-            <h4 className="card-title mb-0">{data.sponsor_company}发起的节点计划</h4>
+            <h4 className="card-title text-reset mb-0">{formatSponsor(data.sponsor_company)}发起的节点计划</h4>
           </div>
         </Link>
         <div className="card-body py-2">
@@ -34,7 +36,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
             <span className="text-gray-dark">封装进度</span>
             {data.begin_seal_time > 0 ? (
               <span className="ms-auto">
-                第{running}天 · {formatRate(percent)}
+                第{running}天 · {formatRate(progress)}
               </span>
             ) : (
               <span className="ms-auto text-gray">准备封装</span>

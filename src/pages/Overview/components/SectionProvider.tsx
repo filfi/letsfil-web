@@ -1,6 +1,7 @@
 import { Avatar } from 'antd';
 import classNames from 'classnames';
 
+import { formatSponsor } from '@/utils/format';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
 
 const SectionProvider: React.FC = () => {
@@ -19,7 +20,7 @@ const SectionProvider: React.FC = () => {
                   <Avatar size={32} src={data?.sponsor_logo} />
                 </div>
                 <div className="flex-grow-1 ms-2">
-                  <p className="mb-0">{data?.sponsor_company}</p>
+                  <p className="mb-0">{formatSponsor(data?.sponsor_company)}</p>
                   <p className="mb-0 text-gray d-lg-none">主办人</p>
                 </div>
               </div>

@@ -1,5 +1,5 @@
+import { useAsyncEffect } from 'ahooks';
 import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
 
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
@@ -36,25 +36,23 @@ export default function useRewardServicer(data?: API.Plan) {
     [fines, opsRate, servicerRate, totalReward],
   );
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!data?.raising_id) return;
+  const [loading, fetchData] = useLoadingify(async () => {
+    if (!data?.raising_id) return;
 
-      const fines = await contract.getServicerFines(data.raising_id);
-      const locked = await contract.getServicerLockedReward(data.raising_id);
-      const reward = await contract.getServicerAvailableReward(data.raising_id);
-      const record = await contract.getServicerWithdrawnReward(data.raising_id);
-      const pending = await contract.getServicerPendingReward(data.raising_id);
-      const totalReward = await contract.getTotalReward(data.raising_id);
+    const fines = await contract.getServicerFines(data.raising_id);
+    const locked = await contract.getServicerLockedReward(data.raising_id);
+    const reward = await contract.getServicerAvailableReward(data.raising_id);
+    const record = await contract.getServicerWithdrawnReward(data.raising_id);
+    const pending = await contract.getServicerPendingReward(data.raising_id);
+    const totalReward = await contract.getTotalReward(data.raising_id);
 
-      isDef(fines) && setFines(toNumber(fines));
-      isDef(reward) && setReward(toNumber(reward));
-      isDef(record) && setRecord(toNumber(record));
-      isDef(pending) && setPending(toNumber(pending));
-      isDef(locked) && setRewardLock(toNumber(locked));
-      isDef(totalReward) && setTotalReward(toNumber(totalReward));
-    }),
-  );
+    isDef(fines) && setFines(toNumber(fines));
+    isDef(reward) && setReward(toNumber(reward));
+    isDef(record) && setRecord(toNumber(record));
+    isDef(pending) && setPending(toNumber(pending));
+    isDef(locked) && setRewardLock(toNumber(locked));
+    isDef(totalReward) && setTotalReward(toNumber(totalReward));
+  });
 
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;

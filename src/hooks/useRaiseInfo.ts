@@ -21,7 +21,7 @@ export default function useRaiseInfo(data?: API.Plan) {
 
   const [sealed, setSealed] = useState(0); // 已封装金额
   const [hasOwner, setHasOwner] = useState(false); // owner权限
-  const { pledgeTotal: actual } = usePackData(data);
+  const { pledgeTotal: actual } = usePackData(data); // 质押总额
   // const [actual, setActual] = useState(toNumber(data?.actual_amount)); // 质押总额
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限

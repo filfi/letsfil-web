@@ -1,5 +1,5 @@
+import { useAsyncEffect } from 'ahooks';
 import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
 
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
@@ -26,21 +26,19 @@ export default function useDepositServicer(data?: API.Plan) {
   const over = useMemo(() => Math.max(accSub(total, actual), 0), [actual, total]); // 超配部分
   const remain = useMemo(() => Math.max(accSub(actual, amount), 0), [actual, amount]); // 封装剩余部分
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!data?.raising_id) return;
+  const [loading, fetchData] = useLoadingify(async () => {
+    if (!data?.raising_id) return;
 
-      const fines = await contract.getServicerFines(data.raising_id);
-      const amount = await contract.getOpsFund(data.raising_id);
-      const actual = await contract.getOpsCalcFund(data.raising_id);
-      const totalInterest = await contract.getTotalInterest(data.raising_id);
+    const fines = await contract.getServicerFines(data.raising_id);
+    const amount = await contract.getOpsFund(data.raising_id);
+    const actual = await contract.getOpsCalcFund(data.raising_id);
+    const totalInterest = await contract.getTotalInterest(data.raising_id);
 
-      isDef(fines) && setFines(toNumber(fines));
-      isDef(actual) && setActual(toNumber(actual));
-      isDef(amount) && setAmount(toNumber(amount));
-      isDef(totalInterest) && setTotalInterest(toNumber(totalInterest));
-    }),
-  );
+    isDef(fines) && setFines(toNumber(fines));
+    isDef(actual) && setActual(toNumber(actual));
+    isDef(amount) && setAmount(toNumber(amount));
+    isDef(totalInterest) && setTotalInterest(toNumber(totalInterest));
+  });
 
   const [paying, pay] = useProcessify(async () => {
     if (!data) return;

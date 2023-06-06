@@ -8,11 +8,12 @@ import useDepositRaiser from '@/hooks/useDepositRaiser';
 import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
 const SectionSector: React.FC = () => {
-  const { data, seals, state } = useRaiseDetail();
-  const { fines } = useDepositRaiser(data);
+  const { data, asset, seals, state } = useRaiseDetail();
 
+  const { fines } = useDepositRaiser(data);
+  const { pledge, sector } = asset;
+  const { period, sealdays, running, progress } = seals;
   const { isWorking, isSealing, isDelayed, isFinished } = state;
-  const { pack, period, sealdays, running, percent: rate } = seals;
 
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
@@ -98,13 +99,13 @@ const SectionSector: React.FC = () => {
                   </>
                 )}
                 <th>已封装扇区</th>
-                <td>{pack?.sector_count} 个</td>
+                <td>{sector} 个</td>
               </tr>
               <tr>
                 <th>消耗质押币</th>
-                <td>{F.formatEther(pack?.pack_initial_pledge)} FIL</td>
+                <td>{F.formatAmount(pledge)} FIL</td>
                 <th>完成比例</th>
-                <td>{F.formatRate(rate)}</td>
+                <td>{F.formatRate(progress)}</td>
               </tr>
               <tr>
                 <th>超期时间</th>

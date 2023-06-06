@@ -1,5 +1,5 @@
+import { useAsyncEffect } from 'ahooks';
 import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
 
 import useAccount from './useAccount';
 import { EventType } from '@/utils/mitt';
@@ -18,7 +18,7 @@ import { accDiv, isDef } from '@/utils/utils';
  */
 export default function useDepositInvestor(data?: API.Plan) {
   const { account } = useAccount();
-  const { actual } = useRaiseInfo();
+  const { actual } = useRaiseInfo(data);
   const contract = useRaiseContract(data?.raise_address);
 
   const [amount, setAmount] = useState(0); // 用户质押金额
@@ -30,28 +30,26 @@ export default function useDepositInvestor(data?: API.Plan) {
   const isInvestor = useMemo(() => record > 0, [record]);
   const ratio = useMemo(() => (actual > 0 ? accDiv(record, actual) : 0), [record, actual]); // 投资占比
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!data?.raising_id) return;
+  const [loading, fetchData] = useLoadingify(async () => {
+    if (!data?.raising_id) return;
 
-      if (account) {
-        const info = await contract.getInvestorInfo(data.raising_id, account);
-        const back = await contract.getBackAssets(data.raising_id, account);
+    if (account) {
+      const info = await contract.getInvestorInfo(data.raising_id, account);
+      const back = await contract.getBackAssets(data.raising_id, account);
 
-        const amount = info?.pledgeAmount; // 账户余额
-        const record = info?.pledgeCalcAmount; // 账户总质押
-        const withdraw = info?.withdrawAmount; // 已提取
-        const backAmount = back?.[0]; // 退回金额
-        const backInterest = back?.[1]; // 利息补偿
+      const amount = info?.pledgeAmount; // 账户余额
+      const record = info?.pledgeCalcAmount; // 账户总质押
+      const withdraw = info?.withdrawAmount; // 已提取
+      const backAmount = back?.[0]; // 退回金额
+      const backInterest = back?.[1]; // 利息补偿
 
-        isDef(account) && setAmount(toNumber(amount));
-        isDef(record) && setRecord(toNumber(record));
-        isDef(withdraw) && setWithdraw(toNumber(withdraw));
-        isDef(backAmount) && setBackAmount(toNumber(backAmount));
-        isDef(backInterest) && setBackInterest(toNumber(backInterest));
-      }
-    }),
-  );
+      isDef(account) && setAmount(toNumber(amount));
+      isDef(record) && setRecord(toNumber(record));
+      isDef(withdraw) && setWithdraw(toNumber(withdraw));
+      isDef(backAmount) && setBackAmount(toNumber(backAmount));
+      isDef(backInterest) && setBackInterest(toNumber(backInterest));
+    }
+  });
 
   const [processing, unStaking] = useProcessify(async () => {
     if (!data) return;

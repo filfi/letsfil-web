@@ -6,7 +6,7 @@ import { useCountDown } from 'ahooks';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import { formatEther, formatRate } from '@/utils/format';
+import { formatEther, formatRate, formatSponsor } from '@/utils/format';
 
 export type RaisingCardProps = {
   data: API.Plan;
@@ -31,7 +31,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 <Avatar src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
               </div>
               <div className="flex-grow-1">
-                <h4 className="card-title mb-0 fw-600">{data.sponsor_company}发起的节点计划</h4>
+                <h4 className="card-title mb-0 fw-600">{formatSponsor(data.sponsor_company)}发起的节点计划</h4>
               </div>
             </div>
             <div className="d-flex flex-shrink-0 flex-column flex-md-row gap-3 mb-auto">

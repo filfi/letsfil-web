@@ -1,5 +1,5 @@
+import { useAsyncEffect } from 'ahooks';
 import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
 
 import { isDef } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
@@ -22,17 +22,15 @@ export default function useDepositRaiser(data?: API.Plan) {
 
   const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!data) return;
+  const [loading, fetchData] = useLoadingify(async () => {
+    if (!data) return;
 
-      const amount = await contract.getRaiseFund(data.raising_id);
-      const fines = await contract.getTotalInterest(data.raising_id);
+    const amount = await contract.getRaiseFund(data.raising_id);
+    const fines = await contract.getTotalInterest(data.raising_id);
 
-      isDef(fines) && setFines(toNumber(fines));
-      isDef(amount) && setAmount(toNumber(amount));
-    }),
-  );
+    isDef(fines) && setFines(toNumber(fines));
+    isDef(amount) && setAmount(toNumber(amount));
+  });
 
   const [paying, pay] = useProcessify(async () => {
     if (!data) return;

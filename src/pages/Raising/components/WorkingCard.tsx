@@ -6,7 +6,7 @@ import { useRequest } from 'ahooks';
 import { count } from '@/apis/raise';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseReward from '@/hooks/useRaiseReward';
-import { formatAmount, formatEther } from '@/utils/format';
+import { formatAmount, formatEther, formatSponsor } from '@/utils/format';
 
 export type WorkingCardProps = {
   data: API.Plan;
@@ -40,7 +40,7 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
             <span className="text-gray-dark">节点计划</span>
             <span className="ms-auto">
               <Link className="text-underline" to={`/overview/${data.raising_id}`}>
-                {data.sponsor_company}发起的节点计划
+                {formatSponsor(data.sponsor_company)}发起的节点计划
               </Link>
               <span className="mx-1">·</span>
               <span>已运行{running}天</span>

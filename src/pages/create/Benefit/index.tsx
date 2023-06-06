@@ -239,7 +239,7 @@ export default function CreateBenefit() {
 
             <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4 mb-4">
               <div className="col">
-                <div className="mb-1 fw-500">劣后质押币(技术运维保证金)</div>
+                <div className="mb-1 fw-500">劣后质押(技术运维保证金)</div>
                 <Form.Item
                   name="opsSecurityFundRate"
                   rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, 100], '最小5%， 最大100%') }]}
@@ -260,7 +260,7 @@ export default function CreateBenefit() {
                   />
                 </Form.Item>
 
-                <div className="mb-1 fw-500">优先质押币</div>
+                <div className="mb-1 fw-500">优先质押</div>
                 <Form.Item noStyle>
                   <Input
                     className="bg-light text-end"

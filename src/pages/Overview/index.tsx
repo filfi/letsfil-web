@@ -12,6 +12,7 @@ import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import { formatSponsor } from '@/utils/format';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RaiseProvider from '@/components/RaiseProvider';
@@ -62,7 +63,7 @@ function RaiseContent() {
 
   const actions = useRaiseActions(data);
 
-  const title = useMemo(() => (data ? `${data.sponsor_company}发起的节点计划@${data.miner_id}` : '-'), [data]);
+  const title = useMemo(() => (data ? `${formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
 
   useUpdateEffect(updateScrollSpy, [data, isStarted]);
 

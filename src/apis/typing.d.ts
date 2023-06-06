@@ -119,19 +119,6 @@ declare namespace API {
     total_balance: string;
   };
 
-  type AssetPack = {
-    asset_pack_id: string;
-    miner_id: string;
-    pack_initial_pledge: string;
-    pack_power: string;
-    raising_id: number;
-    region: string;
-    sector_begin_expira: number;
-    sector_count: number;
-    sector_end_expira: number;
-    sector_size: number;
-  };
-
   type Pack = {
     CreatedAt: string;
     DeletedAt: string;

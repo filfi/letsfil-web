@@ -22,7 +22,7 @@ const StepStart: React.FC = () => {
 
   return (
     <Steps.Item title="节点计划开启" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
-      {isStart ? F.formatUnixDate(data!.begin_time) : '主办人决定启动时间'}
+      {data?.closing_time ? F.formatUnixDate(data.begin_time) : '主办人决定启动时间'}
     </Steps.Item>
   );
 };
@@ -44,7 +44,7 @@ const StepClose: React.FC = () => {
 
   return (
     <Steps.Item title="节点计划截止" status={isRaiseEnd ? 'finish' : isProgress ? 'active' : undefined}>
-      {isProgress ? F.formatUnixDate(data!.closing_time) : `预期${data!.raise_days}天`}
+      {data?.closing_time ? F.formatUnixDate(data.closing_time) : `预期${data!.raise_days}天`}
     </Steps.Item>
   );
 };
@@ -63,7 +63,11 @@ const StepSeal: React.FC = () => {
       }
       status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}
     >
-      {isDelayed ? F.formatUnixDate(data!.delay_seal_time) : isWorking ? F.formatUnixDate(data!.end_seal_time) : `预计 ${data!.seal_days} 天`}
+      {data?.delay_seal_time
+        ? F.formatUnixDate(data.delay_seal_time)
+        : data?.end_seal_time
+        ? F.formatUnixDate(data.end_seal_time)
+        : `预计 ${data!.seal_days} 天`}
     </Steps.Item>
   );
 };

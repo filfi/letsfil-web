@@ -1,5 +1,5 @@
+import { useAsyncEffect } from 'ahooks';
 import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
 
 import { accAdd, isDef } from '@/utils/utils';
 import { EventType } from '@/utils/mitt';
@@ -23,19 +23,19 @@ export default function useRewardRaiser(data?: API.Plan) {
 
   const total = useMemo(() => accAdd(accAdd(record, reward), pending), [record, reward, pending]);
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!data?.raising_id) return;
+  const [loading, fetchData] = useLoadingify(async () => {
+    if (!data?.raising_id) return;
 
-      const reward = await contract.getRaiserAvailableReward(data.raising_id);
-      const record = await contract.getRaiserWithdrawnReward(data.raising_id);
-      const pending = await contract.getRaiserPendingReward(data.raising_id);
+    console.log('[raiser raward]: ', data.raising_id);
 
-      isDef(reward) && setReward(toNumber(reward));
-      isDef(record) && setRecord(toNumber(record));
-      isDef(pending) && setPending(toNumber(pending));
-    }),
-  );
+    const reward = await contract.getRaiserAvailableReward(data.raising_id);
+    const record = await contract.getRaiserWithdrawnReward(data.raising_id);
+    const pending = await contract.getRaiserPendingReward(data.raising_id);
+
+    isDef(reward) && setReward(toNumber(reward));
+    isDef(record) && setRecord(toNumber(record));
+    isDef(pending) && setPending(toNumber(pending));
+  });
 
   const [processing, withdraw] = useProcessify(async () => {
     if (!data) return;
