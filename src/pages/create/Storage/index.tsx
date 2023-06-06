@@ -11,7 +11,7 @@ import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 import useProviders from '@/hooks/useProviders';
 import FormRadio from '@/components/FormRadio';
 import * as validators from '@/utils/validators';
@@ -21,7 +21,7 @@ import ProviderSelect from '@/components/ProviderRadio';
 
 export default function CreateStorage() {
   const [form] = Form.useForm();
-  const { account } = useAccounts();
+  const { account } = useAccount();
   const [model, setModel] = useModel('stepform');
   const { user, createOrUpdate } = useUser();
   const { list, loading: pFetching } = useProviders();
@@ -161,9 +161,9 @@ export default function CreateStorage() {
 
         <div className="ffi-form">
           <div className={classNames('ffi-item border-bottom')}>
-            <h4 className="ffi-label">完善建设者资料</h4>
+            <h4 className="ffi-label">完善主办人资料</h4>
             <p className="text-gray">
-              建设者的名称和Logo都会显示在节点计划中，使用有助于参建者识别的名称，也可以使用机构名称。名称允许修改，会产生Gas费，修改历史会在链上记录。
+              主办人的名称和Logo都会显示在节点计划中，使用有助于建设者识别的名称，也可以使用机构名称。名称允许修改，会产生Gas费，修改历史会在链上记录。
             </p>
 
             <div className="d-flex gap-3">

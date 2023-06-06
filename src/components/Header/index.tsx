@@ -6,7 +6,7 @@ import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 import { formatAmount } from '@/utils/format';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
@@ -31,7 +31,7 @@ const Header: React.FC = () => {
   // hooks
   const position = useScroll();
   const location = useLocation();
-  const { account, withAccount, getBalance, connect, disconnect } = useAccounts();
+  const { account, withAccount, getBalance, connect, disconnect } = useAccount();
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
@@ -49,7 +49,13 @@ const Header: React.FC = () => {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
   });
 
-  const handleDisconnect = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  const handleConnect = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    e.preventDefault();
+
+    connect();
+  };
+
+  const handleDisconnect = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     e.preventDefault();
 
     setFalse();
@@ -136,7 +142,7 @@ const Header: React.FC = () => {
                 </div>
               </>
             ) : (
-              <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={connect}>
+              <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={handleConnect}>
                 <FormattedMessage id="actions.button.connect" />
               </SpinBtn>
             )}

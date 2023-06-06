@@ -3,11 +3,11 @@ import { useRequest } from 'ahooks';
 
 import { listPacks } from '@/apis/packs';
 import PackCard from './components/PackCard';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 import LoadingView from '@/components/LoadingView';
 
 export default function AccountAssets() {
-  const { account, withAccount } = useAccounts();
+  const { account, withAccount } = useAccount();
 
   const service = withAccount((address) => {
     return listPacks({ address, page: 1, page_size: 100 });

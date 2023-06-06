@@ -32,13 +32,13 @@ const defaultTreeData = {
   desc: '全部算力的全部产出',
   children: [
     {
-      label: '参建者分成',
+      label: '建设者分成',
       active: true,
       rate: 0,
       desc: '质押的权益',
       // children: [
       //   {
-      //     label: '优先参建者分成',
+      //     label: '优先建设者分成',
       //     rate: 0,
       //     desc: '优先质押币的权益',
       //   },
@@ -63,7 +63,7 @@ const defaultTreeData = {
           desc: '技术服务商的权益',
         },
         {
-          label: '建设者分成',
+          label: '主办人分成',
           rate: 0,
           desc: '节点计划的管理人',
         },
@@ -224,7 +224,7 @@ export default function CreateBenefit() {
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">技术运维保证金</h4>
             <p className="text-gray">
-              建设者要求技术服务商存入保证金，保证金将做为劣后质押，与参建者的质押一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押的比例不低于5%，提高占比要求，可提高对参建者的吸引力。
+              主办人要求技术服务商存入保证金，保证金将做为劣后质押，与建设者的质押一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押的比例不低于5%，提高占比要求，可提高对建设者的吸引力。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -269,7 +269,7 @@ export default function CreateBenefit() {
                     prefix={
                       <div>
                         <span className="bi bi-people align-middle"></span>
-                        <span className="ms-2 text-gray-dark">参建者</span>
+                        <span className="ms-2 text-gray-dark">建设者</span>
                       </div>
                     }
                     value={priorityRate}
@@ -311,7 +311,7 @@ export default function CreateBenefit() {
                     </p>
                     <p className="text-gray mb-1">
                       <IconBorder />
-                      <span className="align-middle ms-2">需要建设者填写的比例，其他比例自动计算</span>
+                      <span className="align-middle ms-2">需要主办人填写的比例，其他比例自动计算</span>
                     </p>
                   </div>
                   <div className="col">
@@ -337,7 +337,7 @@ export default function CreateBenefit() {
                 <h4 className="ffi-label">{model.minerId}历史资产的归属</h4>
                 <p className="text-gray">
                   检测到 {model.minerId}{' '}
-                  是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属建设者。
+                  是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属主办人。
                   {/* <a className="text-underline" href="#assets-modal" data-bs-toggle="modal">
                     了解更多
                   </a> */}
@@ -458,7 +458,7 @@ export default function CreateBenefit() {
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">
-              根据节点目标和分配方案可计算技术运维保证金。技术运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加节点计划的吸引力，以及未来算力交易中的流动性。
+              根据质押目标和分配方案可计算技术运维保证金。技术运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加节点计划的吸引力，以及未来算力交易中的流动性。
             </p>
           </div>
         </div>
@@ -469,7 +469,7 @@ export default function CreateBenefit() {
           <div className="card-body">
             <p className="mb-0">
               检测到 f1234567
-              是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属建设者。
+              是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属主办人。
             </p>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAsyncEffect, useLockFn } from 'ahooks';
 
 import { isDef } from '@/utils/utils';
-import useAccounts from './useAccounts';
+import useAccount from './useAccount';
 import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
@@ -11,12 +11,12 @@ import useEmittHandler from './useEmitHandler';
 import useRaiseContract from './useRaiseContract';
 
 /**
- * 参建者节点激励
+ * 建设者节点激励
  * @param data
  * @returns
  */
 export default function useRewardInvestor(data?: API.Plan) {
-  const { account } = useAccounts();
+  const { account } = useAccount();
   const contract = useRaiseContract(data?.raise_address);
 
   const [total, setTotal] = useState(0); // 总节点激励

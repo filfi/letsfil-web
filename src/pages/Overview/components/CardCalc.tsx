@@ -1,7 +1,6 @@
 import { ReactComponent as IconCalc } from '@/assets/icons/calculator.svg';
-import type { ItemProps } from './types';
 
-const CardCalc: React.FC<ItemProps> = ({}) => {
+const CardCalc: React.FC = () => {
   return (
     <>
       <div className="card section-card bg-transparent border-0">

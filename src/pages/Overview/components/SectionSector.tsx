@@ -3,15 +3,16 @@ import classNames from 'classnames';
 
 import * as F from '@/utils/format';
 // import Modal from '@/components/Modal';
-import useRaiseSeals from '@/hooks/useRaiseSeals';
-import useRaiseState from '@/hooks/useRaiseState';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
-const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionSector: React.FC = () => {
+  const { data, seals, state } = useRaiseDetail();
   const { fines } = useDepositRaiser(data);
-  const { isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
-  const { pack, period, sealdays, running, percent: rate } = useRaiseSeals(data);
+
+  const { isWorking, isSealing, isDelayed, isFinished } = state;
+  const { pack, period, sealdays, running, percent: rate } = seals;
 
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);

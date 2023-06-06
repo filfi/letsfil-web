@@ -1,17 +1,11 @@
 import { useMemo } from 'react';
-import { useCreation } from 'ahooks';
 import { useModel } from '@umijs/max';
-import MetaMaskOnboarding from '@metamask/onboarding';
 
 import * as S from '@/utils/storage';
 import Modal from '@/components/Modal';
 import { toNumber } from '@/utils/format';
 
-export default function useAccounts() {
-  const onboarding = useCreation(() => new MetaMaskOnboarding(), []);
-
-  // const [disabled, setDisabled] = useState(false);
-  // const [buttonText, setBtnText] = useState('点击安装MetaMask');
+export default function useAccount() {
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const accounts = useMemo(() => initialState?.accounts ?? [], [initialState]);
@@ -66,16 +60,13 @@ export default function useAccounts() {
       } catch (e) {
         console.log(e);
       }
-      // const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-      // return await provider.getBalance(account);
     }
   };
 
   const withAccount = <R = any, P extends unknown[] = any>(service: (account: string, ...args: P) => Promise<R>) => {
     return async (...args: P) => {
       if (account) {
-        return await service(account, ...args);
+        return service(account, ...args);
       }
     };
   };
@@ -85,11 +76,7 @@ export default function useAccounts() {
   };
 
   const connect = async () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      return await requestAccounts();
-    }
-
-    onboarding.startOnboarding();
+    return await requestAccounts();
   };
 
   const disconnect = () => {
@@ -100,9 +87,9 @@ export default function useAccounts() {
     account,
     accounts,
     getBalance,
+    requestAccounts,
     withAccount,
     withConnect,
-    requestAccounts,
     connect,
     disconnect,
   };

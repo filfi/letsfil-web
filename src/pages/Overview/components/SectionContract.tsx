@@ -6,15 +6,14 @@ import { SCAN_URL } from '@/constants';
 import Modal from '@/components/Modal';
 import { toF4Address } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
-import useRaiseState from '@/hooks/useRaiseState';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg';
-import type { ItemProps } from './types';
 
-const SectionContract: React.FC<ItemProps> = ({ data }) => {
-  const { hasOwner, isRaiser, isSigned, isServicer } = useRaiseInfo(data);
-  const { isClosed, isFailed, isDestroyed, isPending } = useRaiseState(data);
+const SectionContract: React.FC = () => {
+  const { data, info, state } = useRaiseDetail();
+  const { hasOwner, isRaiser, isSigned, isServicer } = info;
+  const { isClosed, isFailed, isDestroyed, isPending } = state;
 
   const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
 
@@ -36,8 +35,8 @@ const SectionContract: React.FC<ItemProps> = ({ data }) => {
             <span className="bi bi-info-circle"></span>
           </div>
           <div className="flex-grow-1 ms-3">
-            <p className="mb-1 fw-600">节点计划还未部署到智能合约，需要建设者签名</p>
-            <p className="mb-0">新创建的节点计划可以修改，便于达成共识。建设者签名后，节点计划将永久部署在链上，不可更改。</p>
+            <p className="mb-1 fw-600">节点计划还未部署到智能合约，需要主办人签名</p>
+            <p className="mb-0">新创建的节点计划可以修改，便于达成共识。主办人签名后，节点计划将永久部署在链上，不可更改。</p>
             {isRaiser && (
               <p className="mt-2 mb-0 fw-600">
                 <span className="me-2">在哪里签名？</span>

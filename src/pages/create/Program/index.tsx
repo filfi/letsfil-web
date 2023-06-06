@@ -3,6 +3,7 @@ import { useUpdateEffect } from 'ahooks';
 import { Form, Input, Skeleton } from 'antd';
 import { history, useModel } from '@umijs/max';
 
+import { RUN_ENV } from '@/constants';
 // import Modal from '@/components/Modal';
 import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
@@ -13,6 +14,8 @@ import { accDiv, accMul, pb2byte } from '@/utils/utils';
 import { formatAmount, formatNum, toFixed } from '@/utils/format';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
+
+const isMainnet = RUN_ENV === 'main';
 
 export default function CreateProgram() {
   const [form] = Form.useForm();
@@ -27,7 +30,7 @@ export default function CreateProgram() {
   const { perPledge, loading: fetching } = useChainInfo();
 
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
-  // const minAmount = useMemo(() => (Number.isNaN(+amount) ? 0 : accMul(amount, rate)), [amount, rate]);
+  const minAmount = useMemo(() => (Number.isNaN(+amount) ? 0 : accMul(amount, rate)), [amount, rate]);
 
   const evalMax = useMemo(() => {
     let val = 0;
@@ -70,13 +73,13 @@ export default function CreateProgram() {
 
     await validators.integer(rule, value);
 
-    // if (value) {
-    //   const val = amountType === 0 ? minAmount : accMul(minAmount, perPledge);
+    if (isMainnet && value) {
+      const val = amountType === 0 ? minAmount : accMul(minAmount, perPledge);
 
-    //   if (val < 5000) {
-    //     return Promise.reject(`必须大于 5,000 FIL，当前计算为 ${formatAmount(val)} FIL`);
-    //   }
-    // }
+      if (val < 5000) {
+        return Promise.reject(`必须大于 5,000 FIL，当前计算为 ${formatAmount(val)} FIL`);
+      }
+    }
   };
 
   useUpdateEffect(() => {
@@ -140,7 +143,7 @@ export default function CreateProgram() {
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">节点目标</h4>
+            <h4 className="ffi-label">质押目标</h4>
             <p className="text-gray">填写FIL的集合质押数量，过低目标不利于硬件设备的充分利用。存储算力是指QAP(Quality-Adjusted Power)</p>
 
             <Form.Item className="mb-2" name="amountType">
@@ -155,8 +158,8 @@ export default function CreateProgram() {
 
             <div className="row row-cols-1 row-cols-lg-2 mb-4">
               <div className="col">
-                <Form.Item name="amount" rules={[{ required: true, message: '请输入节点目标' }, { validator: amountValidator }]}>
-                  <Input placeholder="节点目标" suffix={<span>{['FIL', 'PiB'][amountType]}</span>} />
+                <Form.Item name="amount" rules={[{ required: true, message: '请输入质押目标' }, { validator: amountValidator }]}>
+                  <Input placeholder="质押目标" suffix={<span>{['FIL', 'PiB'][amountType]}</span>} />
                 </Form.Item>
                 <Form.Item name="minRaiseRate" rules={[{ required: true, message: '请输入最低集合质押比例' }, { validator: minRateValidator }]}>
                   <Input type="number" min={0} max={99} placeholder="最低集合质押比例" suffix="%" />
@@ -192,7 +195,7 @@ export default function CreateProgram() {
 
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">集合质押时间</h4>
-            <p className="text-gray">节点计划启动后的持续时间，此间开放FIL投资。启动时间由建设者决定。</p>
+            <p className="text-gray">节点计划启动后的持续时间，此间开放FIL投资。启动时间由主办人决定。</p>
 
             <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
               <DaysInput
@@ -210,7 +213,7 @@ export default function CreateProgram() {
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">封装时间</h4>
             <p className="text-gray">
-              承诺的封装时间，超期会对建设者产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。
+              承诺的封装时间，超期会对主办人产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。
               {/* <a className="text-underline" href="#time-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -230,9 +233,9 @@ export default function CreateProgram() {
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">建设者保证金</h4>
+            <h4 className="ffi-label">主办人保证金</h4>
             <p className="text-gray">
-              根据节点计划自动计算，节点计划成功上链之后放开存入。封装工作完成后，建设者即可取回保证金。
+              根据节点计划自动计算，节点计划成功上链之后放开存入。封装工作完成后，主办人即可取回保证金。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -255,7 +258,7 @@ export default function CreateProgram() {
 
           <div className="ffi-item">
             <h4 className="ffi-label">协议手续费</h4>
-            <p className="text-gray">创建新的节点计划会产生“FilFi协议手续费”，费用为实际集合质押金额*0.3%，集合质押不成功不产生手续费。</p>
+            <p className="text-gray">创建新的节点计划会产生“FilFi协议手续费”，费用为集合质押金额*0.3%，集合质押不成功不产生手续费。</p>
 
             <Form.Item name="ffiProtocolFeePayMeth">
               <FormRadio
@@ -266,7 +269,7 @@ export default function CreateProgram() {
                     value: 1,
                     icon: <IconFIL />,
                     label: '使用 FIL 支付',
-                    desc: '集合质押成功后从“建设者保证金”中自动扣减',
+                    desc: '集合质押成功后从“主办人保证金”中自动扣减',
                   },
                   {
                     value: 2,
@@ -307,15 +310,15 @@ export default function CreateProgram() {
       {/* <Modal.Alert id="time-modal" title="封装时间" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">承诺的封装时间，超期会对建设者产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。</p>
+            <p className="mb-0">承诺的封装时间，超期会对主办人产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。</p>
           </div>
         </div>
       </Modal.Alert>
 
-      <Modal.Alert id="deposit-modal" title="建设者保证金" confirmText="我知道了">
+      <Modal.Alert id="deposit-modal" title="主办人保证金" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">根据节点计划自动计算，节点计划成功上链之后放开存入。封装工作完成后，建设者即可取回保证金。</p>
+            <p className="mb-0">根据节点计划自动计算，节点计划成功上链之后放开存入。封装工作完成后，主办人即可取回保证金。</p>
           </div>
         </div>
       </Modal.Alert> */}

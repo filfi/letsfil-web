@@ -6,19 +6,19 @@ import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useProcessify from '@/hooks/useProcessify';
-import useRaiseState from '@/hooks/useRaiseState';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useRaiseContract from '@/hooks/useRaiseContract';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-import type { ItemProps } from './types';
 
-const CardStaking: React.FC<ItemProps> = ({ data }) => {
+const CardStaking: React.FC = () => {
   const [form] = Form.useForm();
+  const { data, info, state } = useRaiseDetail();
   const { staking } = useRaiseContract(data?.raise_address);
   const { amount } = useDepositInvestor(data);
-  const { actual, target } = useRaiseInfo(data);
-  const { isRaising, isSealing } = useRaiseState(data);
+
+  const { actual, target } = info;
+  const { isRaising, isSealing } = state;
 
   const max = useMemo(() => Math.max(accSub(target, actual), 0), [actual, target]);
 

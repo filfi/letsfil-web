@@ -66,10 +66,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">建设者</span>
+                  <span className="fw-bold">主办人</span>
                   <span>签名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">对节点计划达成共识，建设者签名完成链上部署，上链之后不可修改。</p>
+                <p className="mb-0 text-gray-dark">对节点计划达成共识，主办人签名完成链上部署，上链之后不可修改。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -78,10 +78,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">建设者</span>
-                  <span>存入”建设者保证金“</span>
+                  <span className="fw-bold">主办人</span>
+                  <span>存入”主办人保证金“</span>
                 </p>
-                <p className="mb-0 text-gray-dark">封装结束后，建设者可取回保证金，保证金原路退回存入时使用的钱包。</p>
+                <p className="mb-0 text-gray-dark">封装结束后，主办人可取回保证金，保证金原路退回存入时使用的钱包。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -114,10 +114,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">建设者</span>
+                  <span className="fw-bold">主办人</span>
                   <span>启动</span>
                 </p>
-                <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，建设者决定启动时间，启动后集合质押期开始计时。</p>
+                <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后集合质押期开始计时。</p>
               </div>
             </li>
           </ul>
@@ -145,10 +145,10 @@ export default function CreateResult() {
             </div>
             <div className="flex-grow-1">
               <p className="mb-0">
-                <span className="fw-bold">建设者</span>
+                <span className="fw-bold">主办人</span>
                 <span>签名</span>
               </p>
-              <p className="mb-0 text-gray-dark">对节点计划达成共识，建设者签名完成链上部署，上链之后不可修改。</p>
+              <p className="mb-0 text-gray-dark">对节点计划达成共识，主办人签名完成链上部署，上链之后不可修改。</p>
             </div>
           </li>
           <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -157,10 +157,10 @@ export default function CreateResult() {
             </div>
             <div className="flex-grow-1">
               <p className="mb-0">
-                <span className="fw-bold">建设者</span>
-                <span>存入”建设者保证金“</span>
+                <span className="fw-bold">主办人</span>
+                <span>存入”主办人保证金“</span>
               </p>
-              <p className="mb-0 text-gray-dark">封装结束后，建设者可取回保证金，保证金原路退回存入时使用的钱包。</p>
+              <p className="mb-0 text-gray-dark">封装结束后，主办人可取回保证金，保证金原路退回存入时使用的钱包。</p>
             </div>
           </li>
           <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -193,10 +193,10 @@ export default function CreateResult() {
             </div>
             <div className="flex-grow-1">
               <p className="mb-0">
-                <span className="fw-bold">建设者</span>
+                <span className="fw-bold">主办人</span>
                 <span>启动</span>
               </p>
-              <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，建设者决定启动时间，启动后集合质押期开始计时。</p>
+              <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后集合质押期开始计时。</p>
             </div>
           </li>
         </ul>

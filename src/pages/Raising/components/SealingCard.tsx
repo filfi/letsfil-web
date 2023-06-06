@@ -16,18 +16,18 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
 
   return (
     <>
-      <Link className="card h-100 text-reset" to={`/overview/${data.raising_id}`}>
-        <div className="card-header d-flex gap-3 align-items-center">
+      <div className="card h-100">
+        <Link className="card-header d-flex gap-3 align-items-center stretched-link" to={`/overview/${data.raising_id}`}>
           <div className="flex-shrink-0">
             <Avatar src={data.sponsor_logo} size={{ xs: 48, xl: 56 }} />
           </div>
           <div className="flex-grow-1">
             <h4 className="card-title mb-0">{data.sponsor_company}发起的节点计划</h4>
           </div>
-        </div>
+        </Link>
         <div className="card-body py-2">
           <p className="my-3 d-flex gap-3">
-            <span className="text-gray-dark">成功集合质押</span>
+            <span className="text-gray-dark">集合质押</span>
             <span className="ms-auto">{formatEther(data.actual_amount)} FIL</span>
           </p>
           <p className="my-3 d-flex gap-3">
@@ -55,7 +55,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
             </span>
           </p>
         </div>
-      </Link>
+      </div>
     </>
   );
 };

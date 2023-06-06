@@ -2,11 +2,13 @@ import { useMemo } from 'react';
 import { SCAN_URL } from '@/constants';
 import { byte2gb } from '@/utils/utils';
 import { formatPower } from '@/utils/format';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
-import type { ItemProps } from './types';
 
-const SectionNode: React.FC<ItemProps> = ({ data }) => {
-  const size = useMemo(() => formatPower(data?.target_power ?? 0), [data]);
+const SectionNode: React.FC = () => {
+  const { data } = useRaiseDetail();
+
+  const size = useMemo(() => formatPower(data?.target_power ?? 0), [data?.target_power]);
 
   return (
     <>

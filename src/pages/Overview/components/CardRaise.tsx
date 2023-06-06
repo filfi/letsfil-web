@@ -8,10 +8,9 @@ import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useProcessify from '@/hooks/useProcessify';
-import useRaiseState from '@/hooks/useRaiseState';
 import { day2sec, toF4Address } from '@/utils/utils';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useRaiseContract from '@/hooks/useRaiseContract';
 import { formatEther, formatPower } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
@@ -27,12 +26,15 @@ const calcTime = (mill: number) => {
   };
 };
 
-const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
-  const { initialState } = useModel('@@initialState');
+const CardRaise: React.FC = () => {
   const { createRaisePlan } = useFactoryContract();
+  const { initialState } = useModel('@@initialState');
+  const { data, pack, info, state } = useRaiseDetail();
+
   const { startRaisePlan, startPreSeal, servicerSign } = useRaiseContract(data?.raise_address);
-  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
-  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
+
+  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = info;
+  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = state;
 
   const [targetDate, setTargetDate] = useState(0);
 
@@ -135,7 +137,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
           <>
             <div>
               <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} onClick={handleCreate}>
-                建设者签名
+                主办人签名
               </SpinBtn>
             </div>
 
@@ -153,7 +155,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
               </SpinBtn>
             </div>
 
-            <p className="mb-0">等待建设者签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
+            <p className="mb-0">等待主办人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
           </>
         );
       }
@@ -163,9 +165,9 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
 
     // 待开始
     if (isWaiting) {
-      // 建设者
+      // 主办人
       if (isRaiser) {
-        // 可启动（建设者保证金已缴 且 运维保证金已缴纳 且 已签名）
+        // 可启动（主办人保证金已缴 且 运维保证金已缴纳 且 已签名）
         const disabled = !(isRaisePaid && isOpsPaid && isSigned);
         return (
           <>
@@ -175,7 +177,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
               </SpinBtn>
             </div>
 
-            <p className="mb-0">查看页面上的红色提示，满足启动条件后启动按钮生效。启动后参建者即可存入FIL。</p>
+            <p className="mb-0">查看页面上的红色提示，满足启动条件后启动按钮生效。启动后建设者即可存入FIL。</p>
           </>
         );
       }
@@ -265,8 +267,8 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
       <>
         <div id="card-action" className="card section-card">
           <div className="card-body d-flex flex-column gap-3">
-            <div className="d-flex align-items-center">
-              <h4 className="card-title mb-0 me-2">
+            <div className="d-flex align-items-center flex-wrap gap-2">
+              <h4 className="card-title mb-0">
                 {isFailed
                   ? '节点计划已结束'
                   : isClosed

@@ -134,7 +134,7 @@ const Item: React.FC<{
         return <span className="badge">可编辑</span>;
       }
 
-      return <span className="badge">待建设者签名</span>;
+      return <span className="badge">待主办人签名</span>;
     }
     if (state.isWaiting) {
       if (!isRaisePaid || !isOpsPaid) {
@@ -262,7 +262,7 @@ const Item: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isSuccess ? '实际集合质押' : '节点目标'}</span>
+            <span className="text-gray-dark">{state.isSuccess ? '集合质押' : '质押目标'}</span>
             <span className="fw-500">
               <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (
@@ -277,7 +277,7 @@ const Item: React.FC<{
             </span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">参建者分配比例</span>
+            <span className="text-gray-dark">建设者获得</span>
             <span className="fw-500">{priorityRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">

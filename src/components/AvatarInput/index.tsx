@@ -8,7 +8,7 @@ import type { AxiosProgressEvent, AxiosRequestConfig } from 'axios';
 import Avatar from '../Avatar';
 import { presign } from '@/apis/raise';
 import { catchify } from '@/utils/hackify';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 
 export type AvatarInputProps = {
   size?: number;
@@ -71,7 +71,7 @@ function getFileList(val?: string) {
 }
 
 const AvatarInput: React.FC<AvatarInputProps> = ({ size, value, onChange }) => {
-  const { account } = useAccounts();
+  const { account } = useAccount();
   const [url, setUrl] = useState(value);
 
   useUpdateEffect(() => {

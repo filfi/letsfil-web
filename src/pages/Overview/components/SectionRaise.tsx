@@ -2,17 +2,13 @@ import { useMemo } from 'react';
 
 import * as F from '@/utils/format';
 import * as U from '@/utils/utils';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
-import useRaiseRate from '@/hooks/useRaiseRate';
-import useRaiseState from '@/hooks/useRaiseState';
-import useIncomeRate from '@/hooks/useIncomeRate';
-import { ItemProps } from './types';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 
-const SectionRaise: React.FC<ItemProps> = ({ data }) => {
-  const { rate } = useIncomeRate(data);
-  const { isStarted } = useRaiseState(data);
-  const { opsRatio, priorityRate } = useRaiseRate(data);
-  const { actual, minRate, target, progress } = useRaiseInfo(data);
+const SectionRaise: React.FC = () => {
+  const { data, income, info, rate, state } = useRaiseDetail();
+  const { isStarted } = state;
+  const { opsRatio, priorityRate } = rate;
+  const { actual, minRate, target, progress } = info;
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
@@ -24,7 +20,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">节点目标</p>
+              <p className="mb-1 text-gray-dark">质押目标</p>
               <p className="mb-0 d-flex align-items-center">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3 text-uppercase">{F.formatNum(target, '0.0a')}</span>
@@ -38,13 +34,13 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">参建者获得节点激励</p>
+              <p className="mb-1 text-gray-dark">建设者分配比例</p>
               <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3">{priorityRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
-                <span className="badge badge-primary ms-auto">预估年化{F.formatRate(rate, '0.00%')}</span>
+                <span className="badge badge-primary ms-auto">预估年化{F.formatRate(income.rate, '0.00%')}</span>
                 {/* <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
                   <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
@@ -59,14 +55,14 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         {isStarted ? (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">集合质押截止</div>
+              <div className="col-4 table-cell th">参与截止</div>
               <div className="col-8 table-cell">{data ? F.formatUnixDate(data.closing_time) : '-'}</div>
             </div>
           </div>
         ) : (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">集合质押时间</div>
+              <div className="col-4 table-cell th">参与时间</div>
               <div className="col-8 table-cell">{data ? data.raise_days : '-'}天</div>
             </div>
           </div>
@@ -79,7 +75,7 @@ const SectionRaise: React.FC<ItemProps> = ({ data }) => {
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">已集合质押</div>
+            <div className="col-4 table-cell th">已参与</div>
             <div className="col-8 table-cell">
               <span>{F.formatAmount(actual, 2)} FIL</span>
               {isStarted && <span> · {F.formatRate(Math.floor(progress))}</span>}

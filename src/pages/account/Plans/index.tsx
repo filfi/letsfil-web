@@ -12,7 +12,7 @@ import Dialog from '@/components/Dialog';
 import Result from '@/components/Result';
 import { catchify } from '@/utils/hackify';
 import { isEqual, sleep } from '@/utils/utils';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 import useProviders from '@/hooks/useProviders';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
@@ -27,7 +27,7 @@ export default function AccountPlans() {
   const { user } = useUser();
   const { getProvider } = useProviders();
   const [, setModel] = useModel('stepform');
-  const { account, withAccount } = useAccounts();
+  const { account, withAccount } = useAccount();
 
   const service = withAccount((address) => {
     return A.investList({ address, page_size: 100 });
@@ -68,7 +68,7 @@ export default function AccountPlans() {
       await sleep(500);
       Dialog.alert({
         icon: 'error',
-        title: '操作失败',
+        title: '删除失败',
         content: e.message,
       });
       return;
