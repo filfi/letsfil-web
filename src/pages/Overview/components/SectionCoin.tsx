@@ -60,7 +60,7 @@ const SectionCoin: React.FC = () => {
             <div className="col-12 col-md-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">优先建设者(优先质押币)</p>
+                <p className="reward-label">优先建设者(优先质押)</p>
                 <p className="reward-text">
                   <span className="text-decimal">{investRate}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -70,7 +70,7 @@ const SectionCoin: React.FC = () => {
             <div className="col-12 col-md-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#7FC4FD' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">技术运维保证金(劣后质押币)</p>
+                <p className="reward-label">技术运维保证金(劣后质押)</p>
                 <p className="reward-text">
                   <span className="text-decimal">{opsRatio}</span>
                   <span className="ms-2 text-neutral">%</span>
