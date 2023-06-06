@@ -31,7 +31,7 @@ const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalP
   ref?: React.Ref<ModalAttrs> | null,
 ) => {
   const modal = useRef<ModalAttrs>(null);
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState('metaMask');
 
   useImperativeHandle(
     ref,

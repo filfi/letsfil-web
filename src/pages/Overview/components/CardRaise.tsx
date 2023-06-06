@@ -278,7 +278,7 @@ const CardRaise: React.FC = () => {
                   : isRaising
                   ? '正在集合质押中！距离截止时间'
                   : isWaitSeal || isPreSeal
-                  ? '集合质押成功，等待封装'
+                  ? '集合质押成功'
                   : isSealing
                   ? '封装倒计时'
                   : isDelayed

@@ -27,18 +27,18 @@ export default function AccountPlans() {
   const { user } = useUser();
   const { getProvider } = useProviders();
   const [, setModel] = useModel('stepform');
-  const { account, withAccount } = useAccount();
+  const { address, withAccount } = useAccount();
 
   const service = withAccount((address) => {
     return A.investList({ address, page_size: 100 });
   });
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
+  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [address] });
   const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data?.total, loading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
   const investIds = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
-  const raises = useMemo(() => filter(lists, { raiser: account }), [lists, account]);
-  const services = useMemo(() => filter(lists, { service_provider_address: account }), [lists, account]);
+  const raises = useMemo(() => filter(lists, { raiser: address }), [lists, address]);
+  const services = useMemo(() => filter(lists, { service_provider_address: address }), [lists, address]);
   const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
 
   const handleCreate = withAccount(async () => {

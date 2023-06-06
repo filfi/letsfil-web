@@ -14,8 +14,8 @@ const isNum = (v: unknown): v is number => typeof v === 'number';
 const isUrl = (v: unknown): v is string => isStr(v) && /^http/.test(v);
 
 const Avatar: React.FC<AvatarProps> = ({ className, address, size, src, ...props }) => {
-  const { account } = useAccount();
   const responsive = useResponsive();
+  const { address: account } = useAccount();
 
   if (isUrl(src)) {
     return <AntAvatar className={className} size={size} src={src} {...props} />;

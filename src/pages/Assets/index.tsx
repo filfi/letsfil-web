@@ -310,7 +310,7 @@ export default function Assets() {
                       aria-controls="activity"
                     >
                       <span className="bi bi-activity"></span>
-                      <span className="ms-2 fs-16 fw-600">活动</span>
+                      <span className="ms-2 fs-16 fw-600">事件</span>
                     </button>
                   </h4>
                   <div id="activity" className="accordion-collapse collapse show" aria-labelledby="Activity">

@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
-import { useBalance } from 'wagmi';
 import { useMemo, useRef } from 'react';
 import { useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 import { FormattedMessage, history, Link, useLocation, useModel } from '@umijs/max';
@@ -29,12 +28,9 @@ const Header: React.FC = () => {
   const [isHover, { setTrue, setFalse }] = useBoolean(false);
 
   // hooks
-  const { data } = useBalance();
   const position = useScroll();
   const location = useLocation();
-  const { account, balance, connecting, connect, disconnect } = useAccount();
-
-  console.log(data);
+  const { address, balance, connecting, connect, disconnect } = useAccount();
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
@@ -90,7 +86,7 @@ const Header: React.FC = () => {
           </Link>
 
           <div className="btn-group assets-bar" role="group" aria-label="Assets Bar">
-            {!!account ? (
+            {!!address ? (
               <>
                 {initialState?.processing ? (
                   <SpinBtn className="btn btn-outline-light" loading>

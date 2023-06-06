@@ -35,7 +35,7 @@ const EVENTS_MAP: Record<string, string> = {
   ECreateAssetPack: '主办人签名',
   ESpecifyOpsPayer: '指定运维付款人',
   ERaiseSecurityFund: '存入主办人保证金',
-  EStackFromInvestor: '建设者认购',
+  EStackFromInvestor: '建设者质押',
   EUnstackFromInverstor: '建设者赎回',
   EDepositOPSSecurityFund: '存入技术运维保证金',
   EInverstorWithdrawProfit: '建设者提取节点激励',
@@ -71,7 +71,7 @@ const SectionEvents: React.FC = () => {
 
   const columns: ColumnsType<API.Base> = [
     {
-      title: '活动',
+      title: '事件',
       dataIndex: 'event_sign',
       className: 'text-gray',
       render: withEmpty(renderName),

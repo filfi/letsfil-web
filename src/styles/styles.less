@@ -366,6 +366,10 @@ svg[fill='currentColor'] path {
     max-width: calc(var(--ffi-form-check-item-max-width) - var(--ffi-form-check-item-gap) / 2);
     box-shadow: 0 1px 2px rgb(16 24 40 / 5%);
 
+    &:not(.disabled) {
+      cursor: pointer;
+    }
+
     &.active {
       --bs-list-group-border-width: 2px;
       --bs-list-group-item-padding-x: 15px;

@@ -296,7 +296,7 @@ function RaiseContent() {
                 {isStarted && (
                   <li className="nav-item">
                     <a className="nav-link" href="#events">
-                      活动
+                      事件
                     </a>
                   </li>
                 )}
@@ -382,8 +382,8 @@ function RaiseContent() {
               {isStarted && (
                 <section id="events" className="section">
                   <div className="section-header">
-                    <h4 className="section-title">活动</h4>
-                    <p className="mb-0">节点计划发生的重要活动以及链上相关消息</p>
+                    <h4 className="section-title">事件</h4>
+                    <p className="mb-0">节点计划发生的重要事件以及链上相关消息</p>
                   </div>
 
                   <SectionEvents />

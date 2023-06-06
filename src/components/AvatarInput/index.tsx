@@ -71,7 +71,7 @@ function getFileList(val?: string) {
 }
 
 const AvatarInput: React.FC<AvatarInputProps> = ({ size, value, onChange }) => {
-  const { account } = useAccount();
+  const { address } = useAccount();
   const [url, setUrl] = useState(value);
 
   useUpdateEffect(() => {
@@ -124,7 +124,7 @@ const AvatarInput: React.FC<AvatarInputProps> = ({ size, value, onChange }) => {
       customRequest={customUpload}
       onChange={handleChange}
     >
-      {url ? <img className="w-100 h-100 d-block rounded-circle object-fit-cover" src={url} /> : <Avatar address={account} size={size} />}
+      {url ? <img className="w-100 h-100 d-block rounded-circle object-fit-cover" src={url} /> : <Avatar address={address} size={size} />}
     </Upload>
   );
 };

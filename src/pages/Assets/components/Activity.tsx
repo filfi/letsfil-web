@@ -10,15 +10,15 @@ import { formatAddr, formatEther, formatUnixDate } from '@/utils/format';
 
 const Activity: React.FC = () => {
   const param = useParams();
-  const { account } = useAccount();
+  const { address } = useAccount();
 
   const service = async ({ page, pageSize }: API.Base) => {
-    if (account && param.id) {
+    if (address && param.id) {
       const params = {
         page,
         page_size: pageSize,
         asset_pack_id: param.id,
-        wallet_address: account,
+        wallet_address: address,
       };
 
       return await listActivities(params);
@@ -30,7 +30,7 @@ const Activity: React.FC = () => {
     };
   };
 
-  const { data, loading } = usePagination(service, { pageSize: 100, refreshDeps: [param.id, account] });
+  const { data, loading } = usePagination(service, { pageSize: 100, refreshDeps: [param.id, address] });
 
   const columns: ColumnsType<API.Base> = [
     {

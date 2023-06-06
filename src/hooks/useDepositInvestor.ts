@@ -17,7 +17,7 @@ import { accDiv, isDef } from '@/utils/utils';
  * @returns
  */
 export default function useDepositInvestor(data?: API.Plan) {
-  const { account } = useAccount();
+  const { address } = useAccount();
   const { actual } = useRaiseInfo(data);
   const contract = useRaiseContract(data?.raise_address);
 
@@ -33,9 +33,9 @@ export default function useDepositInvestor(data?: API.Plan) {
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data?.raising_id) return;
 
-    if (account) {
-      const info = await contract.getInvestorInfo(data.raising_id, account);
-      const back = await contract.getBackAssets(data.raising_id, account);
+    if (address) {
+      const info = await contract.getInvestorInfo(data.raising_id, address);
+      const back = await contract.getBackAssets(data.raising_id, address);
 
       const amount = info?.pledgeAmount; // 账户余额
       const record = info?.pledgeCalcAmount; // 账户总质押
@@ -43,7 +43,7 @@ export default function useDepositInvestor(data?: API.Plan) {
       const backAmount = back?.[0]; // 退回金额
       const backInterest = back?.[1]; // 利息补偿
 
-      isDef(account) && setAmount(toNumber(amount));
+      isDef(amount) && setAmount(toNumber(amount));
       isDef(record) && setRecord(toNumber(record));
       isDef(withdraw) && setWithdraw(toNumber(withdraw));
       isDef(backAmount) && setBackAmount(toNumber(backAmount));
@@ -57,7 +57,7 @@ export default function useDepositInvestor(data?: API.Plan) {
     await contract.unStaking(data.raising_id);
   });
 
-  useAsyncEffect(fetchData, [account, data?.raising_id]);
+  useAsyncEffect(fetchData, [address, data?.raising_id]);
 
   useEmittHandler({
     [EventType.onStaking]: fetchData,

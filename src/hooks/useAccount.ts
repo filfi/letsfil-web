@@ -7,10 +7,10 @@ import { FoxWalletConnector, MetaMaskConnector, TokenPocketConnector } from '@/c
 
 export default function useAccount() {
   const { address, status } = useWagmi();
-  const { data: balance } = useBalance({ address });
 
   const { connectAsync } = useConnect();
   const { disconnectAsync } = useDisconnect();
+  const { data: balance } = useBalance({ address });
 
   const connected = useMemo(() => status === 'connected', [status]);
   const connecting = useMemo(() => status === 'connecting' || status === 'reconnecting', [status]);
@@ -72,7 +72,7 @@ export default function useAccount() {
   };
 
   return {
-    account: address,
+    address,
     balance,
     connected,
     connecting,

@@ -16,7 +16,7 @@ import useRaiseContract from './useRaiseContract';
  * @returns
  */
 export default function useRewardInvestor(data?: API.Plan) {
-  const { account } = useAccount();
+  const { address } = useAccount();
   const contract = useRaiseContract(data?.raise_address);
 
   const [total, setTotal] = useState(0); // 总节点激励
@@ -25,12 +25,12 @@ export default function useRewardInvestor(data?: API.Plan) {
   const [pending, setPending] = useState(0); // 待释放
 
   const [loading, fetchData] = useLoadingify(async () => {
-    if (!account || !data?.raising_id) return;
+    if (!address || !data?.raising_id) return;
 
-    const info = await contract.getInvestorInfo(data.raising_id, account);
-    const total = await contract.getInvestorTotalReward(data.raising_id, account);
-    const reward = await contract.getInvestorAvailableReward(data.raising_id, account);
-    const pending = await contract.getInvestorPendingReward(data.raising_id, account);
+    const info = await contract.getInvestorInfo(data.raising_id, address);
+    const total = await contract.getInvestorTotalReward(data.raising_id, address);
+    const reward = await contract.getInvestorAvailableReward(data.raising_id, address);
+    const pending = await contract.getInvestorPendingReward(data.raising_id, address);
     const record = info?.withdrawAmount;
 
     isDef(total) && setTotal(toNumber(total));
@@ -45,7 +45,7 @@ export default function useRewardInvestor(data?: API.Plan) {
     await contract.investorWithdraw(data.raising_id);
   });
 
-  useAsyncEffect(fetchData, [account, data?.raising_id]);
+  useAsyncEffect(fetchData, [address, data?.raising_id]);
 
   useEmittHandler({
     [EventType.onInvestorWithdraw]: fetchData,

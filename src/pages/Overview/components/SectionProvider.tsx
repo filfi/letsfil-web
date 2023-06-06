@@ -1,6 +1,6 @@
-import { Avatar } from 'antd';
 import classNames from 'classnames';
 
+import Avatar from '@/components/Avatar';
 import { formatSponsor } from '@/utils/format';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
 

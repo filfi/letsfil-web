@@ -21,14 +21,14 @@ import ProviderSelect from '@/components/ProviderRadio';
 
 export default function CreateStorage() {
   const [form] = Form.useForm();
-  const { account } = useAccount();
+  const { address } = useAccount();
   const [model, setModel] = useModel('stepform');
   const { user, createOrUpdate } = useUser();
   const { list, loading: pFetching } = useProviders();
 
   useUpdateEffect(() => {
-    form.setFieldValue('raiser', account);
-  }, [account]);
+    form.setFieldValue('raiser', address);
+  }, [address]);
   useUpdateEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -122,11 +122,11 @@ export default function CreateStorage() {
         layout="vertical"
         initialValues={{
           minerType: 1,
-          raiser: account,
+          raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
-          sponsorCompany: account,
+          sponsorCompany: address,
           hisBlance: '0',
           hisPower: '0',
           hisInitialPledge: '0',
@@ -175,7 +175,7 @@ export default function CreateStorage() {
               <div className="flex-grow-1">
                 <div className="row">
                   <div className="col-12 col-md-8 col-lg-6">
-                    <Form.Item name="sponsorCompany" help={<span>钱包地址：{formatAddr(account)}</span>}>
+                    <Form.Item name="sponsorCompany" help={<span>钱包地址：{formatAddr(address)}</span>}>
                       <Input maxLength={30} placeholder="输入您的名称" />
                     </Form.Item>
                   </div>

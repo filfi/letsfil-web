@@ -7,13 +7,13 @@ import useAccount from '@/hooks/useAccount';
 import LoadingView from '@/components/LoadingView';
 
 export default function AccountAssets() {
-  const { account, withAccount } = useAccount();
+  const { address, withAccount } = useAccount();
 
   const service = withAccount((address) => {
     return listPacks({ address, page: 1, page_size: 100 });
   });
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
+  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [address] });
 
   const list = useMemo(() => data?.list, [data?.list]);
 

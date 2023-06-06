@@ -16,7 +16,7 @@ import { accDiv, isDef, isEqual } from '@/utils/utils';
  * @returns
  */
 export default function useRaiseInfo(data?: API.Plan) {
-  const { account } = useAccount();
+  const { address } = useAccount();
   const contract = useRaiseContract(data?.raise_address);
 
   const [sealed, setSealed] = useState(0); // 已封装金额
@@ -29,8 +29,8 @@ export default function useRaiseInfo(data?: API.Plan) {
   const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 质押目标
   const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 主办人
   const servicer = useMemo(() => data?.service_provider_address ?? '', [data?.service_provider_address]); // 服务商
-  const isRaiser = useMemo(() => isEqual(account, raiser), [account, raiser]);
-  const isServicer = useMemo(() => isEqual(account, servicer), [account, servicer]);
+  const isRaiser = useMemo(() => isEqual(address, raiser), [address, raiser]);
+  const isServicer = useMemo(() => isEqual(address, servicer), [address, servicer]);
   const isSigned = useMemo(() => data?.sp_sign_status === 1, [data?.sp_sign_status]);
   const isOpsPaid = useMemo(() => data?.sp_margin_status === 1, [data?.sp_margin_status]);
   const isRaisePaid = useMemo(() => data?.raise_margin_status === 1, [data?.raise_margin_status]);
