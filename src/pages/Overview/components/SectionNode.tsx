@@ -26,7 +26,7 @@ const SectionNode: React.FC = () => {
           <table className="table mb-0">
             <tbody>
               <tr>
-                <th className="ps-3 ps-lg-4">新增容量</th>
+                <th className="ps-3 ps-lg-4">建设目标（QAP）</th>
                 <td>
                   <span className="text-decimal me-1">{size?.[0]}</span>
                   <span className="text-neutral small fw-bold">{size?.[1]}</span>
@@ -43,9 +43,9 @@ const SectionNode: React.FC = () => {
                   <span className="text-decimal me-1">{byte2gb(data?.sector_size)}</span>
                   <span className="text-neutral small fw-bold">GB</span>
                 </td>
-                <th>封装时间</th>
+                <th>封装承诺</th>
                 <td className="pe-3 pe-lg-4">
-                  <span className="text-decimal me-1">{data?.seal_days}</span>
+                  <span className="text-decimal me-1">&lt; {data?.seal_days}</span>
                   <span className="text-neutral small fw-bold">天</span>
                 </td>
               </tr>

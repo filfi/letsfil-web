@@ -1,12 +1,12 @@
 import { Input } from 'antd';
 import { useMemo } from 'react';
 import classNames from 'classnames';
-import { useModel } from '@umijs/max';
 
 import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import Avatar from '@/components/Avatar';
 import SpinBtn from '@/components/SpinBtn';
+import useProcessing from '@/hooks/useProcessing';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
 import { accAdd, accDiv, accMul } from '@/utils/utils';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
@@ -16,12 +16,12 @@ import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
 
 const RaiserCard: React.FC = () => {
-  const { initialState } = useModel('@@initialState');
+  const [processing] = useProcessing();
+  const { data, info, role, state } = useRaiseDetail();
+  const { amount, total, fines, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
 
-  const { data, info, state } = useRaiseDetail();
-  const { amount, total, fines, paying, processing, pay, withdraw } = useDepositRaiser(data);
-
-  const { actual, raiser, isRaiser, isRaisePaid } = info;
+  const { actual } = info;
+  const { raiser, isRaiser, isRaisePaid } = role;
   const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = state;
 
   const fee = useMemo(() => accMul(actual, 0.003), [actual]); // 手续费
@@ -44,9 +44,9 @@ const RaiserCard: React.FC = () => {
               <SpinBtn
                 className="btn btn-primary ms-auto"
                 style={{ minWidth: 120 }}
-                loading={processing}
-                disabled={amount <= 0 || initialState?.processing}
-                onClick={withdraw}
+                loading={withdrawing}
+                disabled={amount <= 0 || processing}
+                onClick={withdrawAction}
               >
                 取回
               </SpinBtn>
@@ -54,7 +54,7 @@ const RaiserCard: React.FC = () => {
               <IconChecked />
             )
           ) : payable ? (
-            <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} disabled={isPending} loading={paying} onClick={pay}>
+            <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} disabled={isPending || processing} loading={paying} onClick={payAction}>
               存入
             </SpinBtn>
           ) : null}
@@ -124,17 +124,18 @@ const RaiserCard: React.FC = () => {
 };
 
 const ServiceCard: React.FC = () => {
-  const { initialState } = useModel('@@initialState');
-  const { data, info, rate, state, provider } = useRaiseDetail();
-  const { amount, fines, over, remain, total, totalInterest, paying, processing, pay, withdraw } = useDepositServicer(data);
+  const [processing] = useProcessing();
+  const { data, info, rate, role, state, provider } = useRaiseDetail();
+  const { amount, fines, over, remain, total, interest, paying, withdrawing, payAction, withdrawAction } = useDepositServicer(data);
 
+  const { actual } = info;
   const { investRate, opsRatio } = rate;
-  const { actual, isOpsPaid, servicer, isServicer } = info;
+  const { isOpsPaid, servicer, isServicer } = role;
   const { isPending, isWaiting, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = state;
 
   const payable = useMemo(() => isServicer && isWaiting, [isServicer, isWaiting]);
+  const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]); // 利息补偿
   const withdrawable = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isServicer, isClosed, isFailed, isDestroyed]);
-  const opsInterest = useMemo(() => accMul(totalInterest, accDiv(total, accAdd(total, actual))), [total, totalInterest, actual]); // 利息补偿
   const showExtra = useMemo(() => isClosed || isFailed || isSuccess || isWorking || fines > 0, [isClosed, isFailed, isSuccess, isWorking, fines]);
 
   return (
@@ -144,7 +145,10 @@ const ServiceCard: React.FC = () => {
           <div className="d-flex align-items-center me-auto">
             <div className="flex-shrink-0">{isOpsPaid ? <IconSuccess /> : <IconDander />}</div>
             <div className="flex-grow-1 ms-2">
-              <h4 className="card-title fw-600 mb-0">技术运维保证金(预存)</h4>
+              <h4 className="card-title fw-600 mb-0">
+                <span>技术运维保证金</span>
+                {data && !isSuccess && <span>(预存)</span>}
+              </h4>
             </div>
           </div>
 
@@ -153,9 +157,9 @@ const ServiceCard: React.FC = () => {
               <SpinBtn
                 className="btn btn-primary ms-auto"
                 style={{ minWidth: 120 }}
-                loading={processing}
-                disabled={amount <= 0 || initialState?.processing}
-                onClick={withdraw}
+                loading={withdrawing}
+                disabled={amount <= 0 || processing}
+                onClick={withdrawAction}
               >
                 取回
               </SpinBtn>
@@ -167,7 +171,7 @@ const ServiceCard: React.FC = () => {
               className="btn btn-primary ms-auto"
               style={{ minWidth: 120 }}
               loading={paying}
-              disabled={initialState?.processing || isPending}
+              disabled={isPending || processing}
               data-bs-toggle="modal"
               data-bs-target="#deposit-confirm"
             >
@@ -236,7 +240,14 @@ const ServiceCard: React.FC = () => {
         </div>
       </div>
 
-      <Modal.Confirm id="deposit-confirm" footerClassName="border-0" title="预存技术运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={pay}>
+      <Modal.Confirm
+        id="deposit-confirm"
+        footerClassName="border-0"
+        title="预存技术运维保证金"
+        confirmText="存入"
+        confirmLoading={paying}
+        onConfirm={payAction}
+      >
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">
             <span>技术运维保证金认购节点计划的份额，成为劣后质押币，与建设者的优先质押一同封装到存储节点中。</span>

@@ -11,8 +11,10 @@ import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg';
 
 const SectionContract: React.FC = () => {
-  const { data, info, state } = useRaiseDetail();
-  const { hasOwner, isRaiser, isSigned, isServicer } = info;
+  const { data, info, role, state } = useRaiseDetail();
+
+  const { hasOwner } = info;
+  const { isRaiser, isSigned, isServicer } = role;
   const { isClosed, isFailed, isDestroyed, isPending } = state;
 
   const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
@@ -62,7 +64,7 @@ const SectionContract: React.FC = () => {
               <p className="text-gray mb-0">{hasOwner ? '恢复为原始Owner' : '已恢复为原始Owner'}</p>
             </div>
             {hasOwner ? (
-              <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#restore-modal">
+              <button className="btn btn-primary my-auto" type="button" data-bs-toggle="modal" data-bs-target="#restore-modal">
                 收回 {data.miner_id} 的Owner权限
               </button>
             ) : (
@@ -74,8 +76,8 @@ const SectionContract: React.FC = () => {
         <div className="card mb-3">
           <div className="card-body d-flex">
             <div className="flex-grow-1 me-3">
-              <p className="fw-500 mb-2">{data.miner_id} 移交给FilFi智能合约</p>
-              {!isSigned && <p className="text-gray mb-0">需要技术服务商完成签名</p>}
+              <p className="fw-500 mb-0">{data.miner_id} 移交给FilFi智能合约</p>
+              {!isSigned && <p className="text-gray mt-2 mb-0">需要技术服务商完成签名</p>}
             </div>
             <span className={classNames('badge my-auto', isSigned ? 'badge-success' : 'badge-warning')}>{isSigned ? '已移交' : '未移交'}</span>
           </div>

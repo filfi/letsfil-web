@@ -5,29 +5,10 @@ import { ethers, BigNumber } from 'ethers';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
-import abi from '@/abis/raise.abi.json';
 import { toFixed } from '@/utils/format';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
-
-let provider: ethers.providers.Web3Provider | undefined = undefined;
-
-export function getWeb3Provider() {
-  if (!provider && window.ethereum) {
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-  }
-
-  return provider;
-}
-
-export function createContract(address?: string) {
-  const _provider = getWeb3Provider();
-
-  if (address && _provider) {
-    return new ethers.Contract(address, abi, _provider.getSigner());
-  }
-}
 
 export async function callRPC(method: string, params: (number | string)[]) {
   const url = `${RPC_URL}/v1`;

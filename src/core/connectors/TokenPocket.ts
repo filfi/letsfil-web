@@ -18,7 +18,7 @@ export type TokenPocketConnectorOptions = {
 };
 
 export class TokenPocketConnector extends InjectedConnector {
-  readonly id = 'tokenPocket';
+  readonly id = 'TokenPocket';
 
   protected shimDisconnectKey = `${this.id}.shimDisconnect`;
 

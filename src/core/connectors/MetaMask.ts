@@ -18,7 +18,7 @@ export type MetaMaskConnectorOptions = {
 };
 
 export class MetaMaskConnector extends InjectedConnector {
-  readonly id = 'metaMask';
+  readonly id = 'MetaMask';
 
   protected shimDisconnectKey = `${this.id}.shimDisconnect`;
 

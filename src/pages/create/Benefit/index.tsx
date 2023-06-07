@@ -28,15 +28,15 @@ import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 type Values = ReturnType<typeof H.calcEachEarn>;
 
 const defaultTreeData = {
-  label: '总节点激励/算力',
+  label: '总激励/算力',
   rate: 100,
-  desc: '全部算力的全部产出',
+  desc: '全部产出',
   children: [
     {
       label: '建设者分成',
       active: true,
       rate: 0,
-      desc: '质押的权益',
+      desc: '建设者的权益',
       // children: [
       //   {
       //     label: '优先建设者分成',
@@ -52,9 +52,9 @@ const defaultTreeData = {
       // ],
     },
     {
-      label: '建设方分成',
+      label: '服务方分成',
       rate: 0,
-      desc: '建设方的权益',
+      desc: '服务方的权益',
       children: [
         {
           label: '技术运维服务费',
@@ -72,7 +72,7 @@ const defaultTreeData = {
           label: 'FilFi协议分成',
           rate: 0,
           locked: true,
-          desc: '固定为建设方权益的8%',
+          desc: '固定为服务方权益的8%',
         },
       ],
     },
@@ -253,7 +253,7 @@ export default function CreateBenefit() {
                     prefix={
                       <div className="d-flex">
                         <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
-                        <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
+                        <span className="ms-1 text-gray-dark">{provider?.full_name}</span>
                       </div>
                     }
                     suffix="%"
@@ -278,7 +278,7 @@ export default function CreateBenefit() {
                 </Form.Item>
               </div>
               <div className="col pt-3">
-                <BenefitPie name={provider?.short_name} value={pieVal} />
+                <BenefitPie name={provider?.full_name} value={pieVal} />
               </div>
             </div>
           </div>
@@ -392,7 +392,7 @@ export default function CreateBenefit() {
                       prefix={
                         <div className="d-flex">
                           <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
-                          <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
+                          <span className="ms-1 text-gray-dark">{provider?.full_name}</span>
                         </div>
                       }
                       suffix="%"
@@ -416,7 +416,7 @@ export default function CreateBenefit() {
                       prefix={
                         <div className="d-flex">
                           <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
-                          <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
+                          <span className="ms-1 text-gray-dark">{provider?.full_name}</span>
                         </div>
                       }
                       suffix="%"

@@ -14,8 +14,8 @@ import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
 import useProviders from '@/hooks/useProviders';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useAssetPack from '@/hooks/useAssetPack';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -40,16 +40,16 @@ export default function Assets() {
 
   const { getProvider } = useProviders();
   const { isInvestor } = useDepositInvestor(data);
-  const { isRaiser, isServicer } = useRaiseInfo(data);
+  const { isRaiser, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
   const { pack, investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data);
   const { remains } = useRaiseSeals(data, pack);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
-  const [role, setRole] = useState(roles.findIndex(Boolean));
   const raiser = useRewardRaiser(data); // 主办人的节点激励
   const investor = useRewardInvestor(data); // 建设者的节点激励
   const servicer = useRewardServicer(data); // 服务商的节点激励
+  const [role, setRole] = useState(roles.findIndex(Boolean));
 
   const title = useMemo(() => (data ? `${F.formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
   const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
@@ -121,7 +121,7 @@ export default function Assets() {
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-0 fw-500">{provider?.short_name}</p>
+                    <p className="mb-0 fw-500">{provider?.full_name}</p>
                   </div>
 
                   <div className="flex-shrink-0">

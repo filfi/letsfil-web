@@ -105,7 +105,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                     <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={20} />
                   </span>
                   <span className="align-middle">
-                    <span className="mx-1">{provider?.short_name}</span>
+                    <span className="mx-1">{provider?.full_name}</span>
                     <span className="mx-1">·</span>
                     <span className="mx-1">保证金占比</span>
                     <span className="fw-bold">{opsRatio}%</span>

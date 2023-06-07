@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useAsyncEffect } from 'ahooks';
+import { useDebounceEffect } from 'ahooks';
 
 import { isDef } from '@/utils/utils';
-import { toNumber } from '@/utils/format';
+import useContract from './useContract';
 import useLoadingify from './useLoadingify';
-import useRaiseContract from './useRaiseContract';
 
 /**
  * 节点计划的节点激励
@@ -15,19 +14,24 @@ export default function useRaiseReward(data?: API.Plan) {
   const [fines, setFines] = useState(0);
   const [reward, setReward] = useState(0);
 
-  const contract = useRaiseContract(data?.raise_address);
+  const contract = useContract(data?.raise_address);
 
   const [loading, fetchData] = useLoadingify(async () => {
     if (!data?.raising_id) return;
 
-    const total = await contract.getTotalReward(data.raising_id);
-    const fines = await contract.getServicerFines(data.raising_id);
+    const [total, fines] = await Promise.all([contract.getTotalReward(data.raising_id), contract.getServicerFines(data.raising_id)]);
 
-    isDef(fines) && setFines(toNumber(fines));
-    isDef(total) && setReward(toNumber(total));
+    isDef(fines) && setFines(fines);
+    isDef(total) && setReward(total);
   });
 
-  useAsyncEffect(fetchData, [data?.raising_id]);
+  useDebounceEffect(
+    () => {
+      fetchData();
+    },
+    [data?.raising_id],
+    { wait: 300, leading: true },
+  );
 
   return {
     fines,

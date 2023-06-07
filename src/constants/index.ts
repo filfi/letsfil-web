@@ -16,7 +16,8 @@ export const SUPPORTED_CHAINS =
         '0x13a', // 314, // Filecoin - Mainnet
       ]
     : [
-        '0xc45', // 3141, // Hypersapce testnet
+        // '0x13a', // 314, // Filecoin Mainnet
+        // '0xc45', // 3141, // Hypersapce testnet
         '0x4cb2f', // 314159, // Calibration testnet
       ];
 

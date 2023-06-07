@@ -1,44 +1,70 @@
 import { useMemo } from 'react';
-import { useAccount as useWagmi, useConnect, useDisconnect, Connector, useBalance } from 'wagmi';
+import { useAccount as useWagmi, useConnect, useDisconnect, useBalance } from 'wagmi';
 
+import { useMount } from 'ahooks';
+import Dialog from '@/components/Dialog';
 import { catchify } from '@/utils/hackify';
+import { chains } from '@/constants/config';
 import ClientModal from '@/components/ClientModal';
-import { FoxWalletConnector, MetaMaskConnector, TokenPocketConnector } from '@/core/connectors';
+import { connectorAdapter } from '@/core/connectors';
+
+let _autoConnect = false;
+
+function getStorage<V = any>(key: string) {
+  const data = localStorage.getItem(key);
+
+  if (data) {
+    try {
+      return JSON.parse(data) as V;
+    } catch (e) {}
+
+    return data as V;
+  }
+
+  return null;
+}
 
 export default function useAccount() {
   const { address, status } = useWagmi();
 
-  const { connectAsync } = useConnect();
   const { disconnectAsync } = useDisconnect();
-  const { data: balance } = useBalance({ address });
+  const { connectAsync } = useConnect({ chainId: chains[0].id });
+  const { data: balance } = useBalance({ address, watch: true });
 
   const connected = useMemo(() => status === 'connected', [status]);
   const connecting = useMemo(() => status === 'connecting' || status === 'reconnecting', [status]);
 
-  const handleConfirm = async (id: string) => {
-    let connector: Connector | undefined;
-
-    switch (id) {
-      case 'foxWallet':
-        connector = new FoxWalletConnector();
-        break;
-      case 'tokenPocket':
-        connector = new TokenPocketConnector();
-        break;
-      case 'metaMask':
-        connector = new MetaMaskConnector();
-        break;
-    }
+  const _connect = async (wallet: string) => {
+    const connector = connectorAdapter(wallet);
 
     if (!connector) return;
 
-    const [e, res] = await catchify(connectAsync)({ connector });
+    return await connectAsync({ connector });
+  };
+
+  useMount(() => {
+    if (_autoConnect) return;
+
+    _autoConnect = true;
+
+    const wallet = getStorage<string>('wagmi.wallet');
+    const connected = getStorage<boolean>('wagmi.connected');
+
+    if (wallet && connected) {
+      _connect(wallet);
+    }
+  });
+
+  const handleConfirm = async (wallet: string) => {
+    const [e] = await catchify(_connect)(wallet);
 
     if (e?.name === 'ConnectorNotFoundError') {
-      console.log(e.message);
+      Dialog.alert({
+        icon: 'error',
+        title: '连接失败',
+        content: '未检测到' + wallet + '客户端',
+      });
     }
-
-    console.log(res);
   };
 
   const connect = () => {

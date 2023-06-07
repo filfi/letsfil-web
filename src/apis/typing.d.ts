@@ -1,4 +1,5 @@
 declare namespace API {
+  type Address = `0x${string}`;
   type Base = Record<string, any>;
 
   type PagingParams = {
@@ -42,7 +43,7 @@ declare namespace API {
     closing_time: number;
     delay_seal_time: number;
     end_seal_time: number;
-    factory_contract: string;
+    factory_contract: Address;
     ffi_protocol_fee: string;
     ffi_protocol_fee_pay_meth: number;
     his_blance: string;
@@ -61,7 +62,7 @@ declare namespace API {
     plan_open: number;
     power_progress: number;
     progress: number;
-    raise_address: string;
+    raise_address: Address;
     raise_create_time: number;
     raise_days: 2592000;
     raise_his_asset_rate: number;
@@ -78,7 +79,7 @@ declare namespace API {
     sector_period: number;
     sector_size: number;
     service_id: number;
-    service_provider_address: string;
+    service_provider_address: Address;
     sp_margin_status: number;
     sp_sign_status: number;
     sponsor_company: string;

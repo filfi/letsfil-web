@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { Link, history } from '@umijs/max';
 
 import styles from './styles.less';
-import useAuthHandler from '@/hooks/useAuthHandler';
+import useAccount from '@/hooks/useAccount';
 import { ReactComponent as IconThumbs } from './imgs/icon-thumbs.svg';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 import { ReactComponent as IconClock } from './imgs/icon-clock.svg';
@@ -12,9 +12,11 @@ import { ReactComponent as IconDots } from './imgs/icon-dots.svg';
 import { ReactComponent as IconShield } from './imgs/icon-shield.svg';
 
 export default function Home() {
+  const { withConnect } = useAccount();
+
   useTitle('首页 - FilFi', { restoreOnUnmount: true });
 
-  const handleCreate = useAuthHandler(async () => {
+  const handleCreate = withConnect(async () => {
     history.push('/account');
   });
 

@@ -53,7 +53,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
           </Form.Item>
         </div>
         <div className="ffi-item bg-primary-tertiary p-4 mb-0">
-          <p className="mb-1 fw-500">建设方分成</p>
+          <p className="mb-1 fw-500">服务方分成</p>
           <Form.Item noStyle name="inferior">
             <Input className="bg-light" readOnly suffix="%" />
           </Form.Item>
@@ -108,7 +108,7 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
     <Form form={form} size="large" layout="vertical" initialValues={values} onFinish={handleFinish}>
       <div className="ffi-form">
         <div className="ffi-item px-4 pt-4">
-          <p className="mb-1 fw-500">建设方分成</p>
+          <p className="mb-1 fw-500">服务方分成</p>
           <Form.Item noStyle name="inferior">
             <Input className="bg-light" readOnly suffix="%" />
           </Form.Item>
@@ -138,7 +138,7 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
             <div className="col">
               <div className="ffi-ite mb-0">
                 <p className="mb-1 fw-500">FilFi协议分成</p>
-                <Form.Item className="mb-0" name="ffiRate" help="服务商 * 8%">
+                <Form.Item className="mb-0" name="ffiRate" help="服务方 * 8%">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
               </div>

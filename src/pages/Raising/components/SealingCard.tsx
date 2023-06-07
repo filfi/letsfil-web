@@ -4,7 +4,7 @@ import { Link } from '@umijs/max';
 import Avatar from '@/components/Avatar';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
-import { formatEther, formatRate, formatSponsor } from '@/utils/format';
+import { formatEther, formatRate, formatSeals, formatSponsor } from '@/utils/format';
 
 export type SealingCardProps = {
   data: API.Plan;
@@ -36,7 +36,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
             <span className="text-gray-dark">封装进度</span>
             {data.begin_seal_time > 0 ? (
               <span className="ms-auto">
-                第{running}天 · {formatRate(progress)}
+                第{formatSeals(running)}天 · {formatRate(progress)}
               </span>
             ) : (
               <span className="ms-auto text-gray">准备封装</span>

@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
-import { useModel } from '@umijs/max';
 import { useEffect, useMemo, useState } from 'react';
 
 import * as H from '@/helpers/app';
@@ -8,10 +7,10 @@ import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useContract from '@/hooks/useContract';
 import useProcessify from '@/hooks/useProcessify';
 import { day2sec, toF4Address } from '@/utils/utils';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
-import useRaiseContract from '@/hooks/useRaiseContract';
 import { formatAmount, formatPower } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
@@ -28,14 +27,13 @@ const calcTime = (mill: number) => {
 
 const CardRaise: React.FC = () => {
   const { createRaisePlan } = useFactoryContract();
-  const { initialState } = useModel('@@initialState');
-  const { data, asset, info, state } = useRaiseDetail();
+  const { data, asset, role, state } = useRaiseDetail();
 
   const { power, pledge } = asset;
 
-  const { startRaisePlan, startPreSeal, servicerSign } = useRaiseContract(data?.raise_address);
+  const { startRaisePlan, startPreSeal, servicerSign } = useContract(data?.raise_address);
 
-  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = info;
+  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = role;
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = state;
 
   const [targetDate, setTargetDate] = useState(0);
@@ -189,13 +187,7 @@ const CardRaise: React.FC = () => {
         return (
           <>
             <div>
-              <SpinBtn
-                className="btn btn-primary btn-lg w-100"
-                loading={signing}
-                disabled={initialState?.processing}
-                data-bs-toggle="modal"
-                data-bs-target="#signer-confirm"
-              >
+              <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={processing} data-bs-toggle="modal" data-bs-target="#signer-confirm">
                 技术服务商签名
               </SpinBtn>
             </div>

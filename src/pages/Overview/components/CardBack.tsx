@@ -7,7 +7,7 @@ import useDepositInvestor from '@/hooks/useDepositInvestor';
 const CardBack: React.FC = () => {
   const { data, state } = useRaiseDetail();
   const { isClosed, isFailed, isWorking } = state;
-  const { amount, backAmount, backInterest, processing, isInvestor, unStaking } = useDepositInvestor(data);
+  const { amount, backAmount, backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
 
   if (isInvestor && (isClosed || isFailed || isWorking)) {
     return (
@@ -41,7 +41,7 @@ const CardBack: React.FC = () => {
             </p>
           </div>
           <div className="card-footer">
-            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={processing} onClick={unStaking}>
+            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={unstaking} onClick={unStakeAction}>
               取回
             </SpinBtn>
           </div>

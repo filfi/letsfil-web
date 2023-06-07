@@ -1,12 +1,14 @@
 import { Table } from 'antd';
 import { useMemo } from 'react';
+import { useResponsive } from 'ahooks';
 import type { ColumnsType } from 'antd/es/table';
 
 import { isDef } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { getEvents } from '@/apis/raise';
-import usePagination from '@/hooks/usePagination';
+import SpinBtn from '@/components/SpinBtn';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useInfiniteLoad from '@/hooks/useInfiniteLoad';
 import { formatAddr, formatUnixNow } from '@/utils/format';
 
 function withEmpty<D = any>(render: (value: any, row: D, index: number) => React.ReactNode) {
@@ -48,7 +50,11 @@ function renderName(event: string) {
 }
 
 function sortEvents(a: API.Event, b: API.Event) {
-  if (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') {
+  if (
+    (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') ||
+    (a.event_sign === 'ERaiseSuccess' && b.event_sign === 'EStackFromInvestor') ||
+    (a.event_sign === 'ESealEnd' && b.event_sign === 'ESealProgress')
+  ) {
     return -1;
   }
 
@@ -57,6 +63,7 @@ function sortEvents(a: API.Event, b: API.Event) {
 
 const SectionEvents: React.FC = () => {
   const { data } = useRaiseDetail();
+  const responsive = useResponsive();
 
   const service = async ({ page, pageSize }: any) => {
     if (data?.raising_id) {
@@ -66,50 +73,63 @@ const SectionEvents: React.FC = () => {
     return { list: [], total: 0 };
   };
 
-  const { data: list, loading } = usePagination(service, { pageSize: 100, refreshDeps: [data?.raising_id] });
+  const { data: list, page, noMore, loading, changePage } = useInfiniteLoad(service, { pageSize: 20, refreshDeps: [data?.raising_id] });
+
   const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')).sort(sortEvents), [list]);
 
-  const columns: ColumnsType<API.Base> = [
-    {
-      title: '事件',
-      dataIndex: 'event_sign',
-      className: 'text-gray',
-      render: withEmpty(renderName),
-    },
-    {
-      title: '信息',
-      className: 'text-gray',
-      dataIndex: 'event_sign',
-    },
-    {
-      title: '链上消息',
-      dataIndex: 'tx',
-      render: withEmpty((hash) => (
-        <a className="fw-bold" href={`${SCAN_URL}/message/${hash}`} target="_blank" rel="noreferrer">
-          {formatAddr(hash)}
-        </a>
-      )),
-    },
-    {
-      title: '时间',
-      className: 'fw-500',
-      dataIndex: 'CreatedAt',
-      render: withEmpty(formatUnixNow),
-    },
-  ];
+  const handleMore = async () => {
+    if (noMore) return;
+
+    await changePage(page + 1);
+  };
+
+  const columns = useMemo(() => {
+    const cols: ColumnsType<API.Base> = [
+      {
+        title: '事件',
+        dataIndex: 'event_sign',
+        className: 'text-gray',
+        render: withEmpty(renderName),
+      },
+      {
+        title: '链上消息',
+        dataIndex: 'tx',
+        render: withEmpty((hash) => (
+          <a className="fw-bold" href={`${SCAN_URL}/message/${hash}`} target="_blank" rel="noreferrer">
+            {formatAddr(hash)}
+          </a>
+        )),
+      },
+      {
+        title: '时间',
+        className: 'fw-500',
+        dataIndex: 'CreatedAt',
+        render: withEmpty(formatUnixNow),
+      },
+    ];
+
+    if (responsive.md) {
+      cols.splice(1, 0, {
+        title: '信息',
+        className: 'text-gray',
+        dataIndex: 'event_sign',
+      });
+    }
+
+    return cols;
+  }, [responsive.md]);
 
   return (
     <>
-      <Table
-        rowKey="ID"
-        size="middle"
-        className="table mb-0"
-        loading={loading}
-        columns={columns}
-        dataSource={dataSource}
-        pagination={false}
-        scroll={{ x: 560 }}
-      />
+      <div className="mb-3">
+        <Table rowKey="ID" size="middle" className="table" loading={loading} columns={columns} dataSource={dataSource} pagination={false} />
+      </div>
+
+      <p className="mb-0 text-center">
+        <SpinBtn className="btn btn-light" disabled={noMore} loading={loading} onClick={handleMore}>
+          {noMore ? '已加载全部' : '加载更多'}
+        </SpinBtn>
+      </p>
     </>
   );
 };

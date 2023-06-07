@@ -5,6 +5,7 @@ import { packInfo } from '@/apis/packs';
 import { toNumber } from '@/utils/format';
 import useRaiseInfo from './useRaiseInfo';
 import useRaiseRate from './useRaiseRate';
+import useRaiseRole from './useRaiseRole';
 import useDepositInvestor from './useDepositInvestor';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
@@ -17,8 +18,9 @@ export default function useAssetPack(plan?: API.Plan) {
 
   const { data: pack, loading, refresh } = useRequest(service, { refreshDeps: [plan?.raising_id] });
 
+  const { actual } = useRaiseInfo(plan);
+  const { isRaiser, isServicer } = useRaiseRole(plan);
   const { amount, ratio, record } = useDepositInvestor(plan);
-  const { actual, isRaiser, isServicer } = useRaiseInfo(plan);
   const { investRate, raiserRate, opsRate, servicerRate } = useRaiseRate(plan);
 
   const power = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);

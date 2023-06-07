@@ -89,7 +89,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
                 prefix={
                   <div className="d-flex algin-items-center">
                     <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={24} />
-                    <span className="ms-2">{provider?.short_name}</span>
+                    <span className="ms-2">{provider?.full_name}</span>
                   </div>
                 }
                 suffix="%"

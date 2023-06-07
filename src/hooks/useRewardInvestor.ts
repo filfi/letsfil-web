@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { useAsyncEffect } from 'ahooks';
+import { useDebounceEffect } from 'ahooks';
 
 import { isDef } from '@/utils/utils';
 import useAccount from './useAccount';
+import useContract from './useContract';
 import { EventType } from '@/utils/mitt';
-import { toNumber } from '@/utils/format';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
 
 /**
  * 建设者节点激励
@@ -16,36 +15,41 @@ import useRaiseContract from './useRaiseContract';
  * @returns
  */
 export default function useRewardInvestor(data?: API.Plan) {
-  const { address } = useAccount();
-  const contract = useRaiseContract(data?.raise_address);
+  const { address, withConnect } = useAccount();
+  const contract = useContract(data?.raise_address);
 
   const [total, setTotal] = useState(0); // 总节点激励
   const [reward, setReward] = useState(0); // 可提取
-  const [record, setRecord] = useState(0); // 已提取
-  const [pending, setPending] = useState(0); // 待释放
+  const [record] = useState(0); // 已提取
+  const [pending] = useState(0); // 待释放
 
   const [loading, fetchData] = useLoadingify(async () => {
     if (!address || !data?.raising_id) return;
 
-    const info = await contract.getInvestorInfo(data.raising_id, address);
-    const total = await contract.getInvestorTotalReward(data.raising_id, address);
-    const reward = await contract.getInvestorAvailableReward(data.raising_id, address);
-    const pending = await contract.getInvestorPendingReward(data.raising_id, address);
-    const record = info?.withdrawAmount;
+    const [total, reward] = await Promise.all([
+      contract.getInvestorTotalReward(data.raising_id, address),
+      contract.getInvestorAvailableReward(data.raising_id, address),
+    ]);
 
-    isDef(total) && setTotal(toNumber(total));
-    isDef(reward) && setReward(toNumber(reward));
-    isDef(record) && setRecord(toNumber(record));
-    isDef(pending) && setPending(toNumber(pending));
+    isDef(total) && setTotal(total);
+    isDef(reward) && setReward(reward);
   });
 
-  const [processing, withdraw] = useProcessify(async () => {
-    if (!data) return;
+  const [processing, withdraw] = useProcessify(
+    withConnect(async () => {
+      if (!data) return;
 
-    await contract.investorWithdraw(data.raising_id);
-  });
+      return await contract.investorWithdraw(data.raising_id);
+    }),
+  );
 
-  useAsyncEffect(fetchData, [address, data?.raising_id]);
+  useDebounceEffect(
+    () => {
+      fetchData();
+    },
+    [address, data?.raising_id],
+    { wait: 300, leading: true },
+  );
 
   useEmittHandler({
     [EventType.onInvestorWithdraw]: fetchData,

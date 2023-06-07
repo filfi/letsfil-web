@@ -53,7 +53,7 @@ export default function Raising() {
   const items = useMemo(() => (banner ? list?.concat(banner) : list), [list, banner]);
 
   return (
-    <div className="container pt-4 pt-lg-5">
+    <div className={classNames('container pt-4 pt-lg-5', styles.container)}>
       <LoadingView data={items} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">

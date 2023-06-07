@@ -7,13 +7,13 @@ import { getInfo } from '@/apis/raise';
 import { accAdd } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
 import useAssetPack from '@/hooks/useAssetPack';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
-import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const { data: info } = useRequest(() => getInfo(data.raising_id), { refreshDeps: [data.raising_id] });
@@ -22,7 +22,7 @@ const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
   const investor = useRewardInvestor(info);
   const servicer = useRewardServicer(info);
   const { isInvestor } = useDepositInvestor(info);
-  const { isRaiser, isServicer } = useRaiseInfo(info);
+  const { isRaiser, isServicer } = useRaiseRole(info);
   const { holdPower, holdPledge } = useAssetPack(info);
 
   const rewward = useMemo(() => {

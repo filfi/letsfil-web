@@ -56,9 +56,9 @@ function RaiseContent() {
   const responsive = useResponsive();
   const [, setModel] = useModel('stepform');
 
-  const { data, error, loading, info, state, refresh } = useRaiseDetail();
+  const { data, error, loading, role, state, refresh } = useRaiseDetail();
 
-  const { isRaiser } = info;
+  const { isRaiser } = role;
   const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = state;
 
   const actions = useRaiseActions(data);
@@ -166,7 +166,7 @@ function RaiseContent() {
         {!isPending && (
           <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
             <IconShare4 />
-            <span className="align-middle ms-1">查看智能合约</span>
+            <span className="align-middle ms-1">智能合约</span>
           </a>
         )}
 
@@ -188,44 +188,6 @@ function RaiseContent() {
         )}
       </>
     );
-  };
-
-  const renderMain = () => {
-    if (responsive.lg) return null;
-
-    return (
-      <>
-        <CardRaise />
-
-        <CardStaking />
-
-        <CardBack />
-
-        <CardAssets />
-
-        {/* <CardCalc /> */}
-      </>
-    );
-  };
-
-  const renderCard = () => {
-    if (responsive.lg) {
-      return (
-        <>
-          <CardRaise />
-
-          <CardStaking />
-
-          <CardBack />
-
-          <CardAssets />
-
-          {/* <CardCalc /> */}
-        </>
-      );
-    }
-
-    return null;
   };
 
   return (
@@ -269,18 +231,18 @@ function RaiseContent() {
                   </a>
                 </li>
                 <li className="nav-item">
+                  <a className="nav-link" href="#deposit">
+                    保证金
+                  </a>
+                </li>
+                <li className="nav-item">
                   <a className="nav-link" href="#reward">
                     分配方案
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="#node">
+                  <a className="nav-link" href="#sector">
                     建设方案
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#deposit">
-                    保证金
                   </a>
                 </li>
                 <li className="nav-item">
@@ -302,12 +264,30 @@ function RaiseContent() {
                 )}
               </ul>
             </div>
-            <div className={classNames('flex-grow-1')} tabIndex={0} data-bs-spy="scroll" data-bs-target="#nav-pills" data-bs-smooth-scroll="true">
+            <div
+              className={classNames('d-flex flex-column flex-grow-1', styles.main)}
+              tabIndex={0}
+              data-bs-spy="scroll"
+              data-bs-target="#nav-pills"
+              data-bs-smooth-scroll="true"
+            >
               <section id="raising" className="section">
                 <div className="d-flex flex-column gap-3">
                   <SectionRaise />
 
-                  {renderMain()}
+                  {responsive.lg ? null : (
+                    <>
+                      <CardRaise />
+
+                      <CardStaking />
+
+                      <CardBack />
+
+                      <CardAssets />
+
+                      {/* <CardCalc /> */}
+                    </>
+                  )}
                 </div>
               </section>
               <section id="provider" className="section">
@@ -318,10 +298,18 @@ function RaiseContent() {
 
                 <SectionProvider />
               </section>
+              <section id="deposit" className="section">
+                <div className="section-header">
+                  <h4 className="section-title">保证金</h4>
+                  <p className="mb-0">保障节点计划执行，违约自动触发惩罚机制，保护建设者权益。</p>
+                </div>
+
+                <SectionDeposit />
+              </section>
               <section id="reward">
                 <div className="section">
                   <div className="section-header">
-                    <h4 className="section-title">节点激励分配方案</h4>
+                    <h4 className="section-title">分配方案</h4>
                     <p className="mb-0">节点计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
                   </div>
 
@@ -337,31 +325,25 @@ function RaiseContent() {
                   <SectionCoin />
                 </div>
               </section>
-              <section id="node" className="section">
-                <div className="section-header">
-                  <h4 className="section-title">建设方案</h4>
-                  <p className="mb-0">集合质押FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
-                </div>
-
-                <SectionNode />
-              </section>
-              {isSuccess && (
-                <section id="sector" className="section">
+              <section id="sector">
+                <div className="section">
                   <div className="section-header">
-                    <h4 className="section-title">封装扇区</h4>
-                    <p className="mb-0">封装进展一览无余</p>
+                    <h4 className="section-title">建设方案</h4>
+                    <p className="mb-0">集合质押FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
                   </div>
 
-                  <SectionSector />
-                </section>
-              )}
-              <section id="deposit" className="section">
-                <div className="section-header">
-                  <h4 className="section-title">保证金</h4>
-                  <p className="mb-0">保障节点计划执行，违约自动触发惩罚机制，保护建设者权益。</p>
+                  <SectionNode />
                 </div>
+                {isSuccess && (
+                  <div className="section">
+                    <div className="section-header">
+                      <h4 className="section-title">封装扇区</h4>
+                      <p className="mb-0">封装进展一览无余</p>
+                    </div>
 
-                <SectionDeposit />
+                    <SectionSector />
+                  </div>
+                )}
               </section>
               <section id="timeline" className="section">
                 <div className="section-header">
@@ -390,7 +372,21 @@ function RaiseContent() {
                 </section>
               )}
             </div>
-            <div className={classNames('flex-shrink-0', styles.sidebar)}>{renderCard()}</div>
+            <div className={classNames('flex-shrink-0', styles.sidebar)}>
+              {responsive.lg ? (
+                <>
+                  <CardRaise />
+
+                  <CardStaking />
+
+                  <CardBack />
+
+                  <CardAssets />
+
+                  {/* <CardCalc /> */}
+                </>
+              ) : null}
+            </div>
           </div>
         </LoadingView>
       </div>

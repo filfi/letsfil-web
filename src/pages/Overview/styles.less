@@ -1,14 +1,9 @@
 .content {
   --content-item-gap: 24px;
-  --section-spacer-y: 24px;
   --section-header-padding-y: 12px;
   --section-header-spacer-y: 16px;
 
   :global {
-    .section {
-      margin-bottom: var(--section-spacer-y);
-    }
-
     .section-header {
       padding-top: var(--section-header-padding-y);
       padding-bottom: var(--section-header-padding-y);
@@ -250,6 +245,11 @@
   }
 }
 
+.content > *,
+.main > * {
+  margin-bottom: var(--content-item-gap);
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -265,17 +265,8 @@
   }
 }
 
-@media screen and (max-width: 991px) {
-  .content {
-    > * {
-      margin-bottom: var(--content-item-gap);
-    }
-  }
-}
-
 @media screen and (min-width: 992px) {
   .content {
-    --section-spacer-y: var(--content-item-gap);
     --section-header-padding-y: 20px;
     --section-header-spacer-y: 24px;
 
@@ -299,7 +290,6 @@
 
   .tabs {
     width: 15%;
-    // padding-right: var(--content-item-gap);
 
     :global {
       .nav {
@@ -311,13 +301,8 @@
     }
   }
 
-  // .main {
-  //   padding: 0 var(--content-item-gap);
-  // }
-
   .sidebar {
     width: 33.125%;
-    // padding-left: var(--content-item-gap);
   }
 }
 

@@ -1,7 +1,9 @@
+import { toHex } from 'viem';
 import { useMount } from 'ahooks';
+import { Outlet } from '@umijs/max';
 import { createPortal } from 'react-dom';
 import { useMemo, useState } from 'react';
-import { Outlet, useModel } from '@umijs/max';
+import { useChainId, useConfig } from 'wagmi';
 
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
@@ -30,11 +32,23 @@ function removeDom() {
 }
 
 const BasicLayout: React.FC = () => {
-  const { initialState } = useModel('@@initialState');
+  const config = useConfig();
+  const chainId = useChainId();
+
   const [node, setNode] = useState<React.ReactNode>();
-  const showAlert = useMemo(() => initialState?.connected && initialState?.chainId && !SUPPORTED_CHAINS.includes(initialState.chainId), [initialState]);
+
+  const connected = useMemo(() => config.status === 'connected', [config.status]);
+  const showAlert = useMemo(() => connected && chainId && !SUPPORTED_CHAINS.includes(toHex(chainId)), [chainId, connected]);
 
   useInputScrollAction();
+
+  const handleSwitch = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    e.preventDefault();
+
+    const chain = config.chains?.[0];
+
+    if (chain) config.connector?.switchChain?.(chain.id);
+  };
 
   useMount(() => {
     // @ts-ignore
@@ -54,7 +68,15 @@ const BasicLayout: React.FC = () => {
     <>
       {showAlert && (
         <div className="alert alert-danger fixed-top rounded-0">
-          <div className="container text-center">不支持当前网络，请切换到支持的网络</div>
+          <div className="container">
+            <p className="mb-0 text-center">
+              <span>不支持当前网络，请</span>
+              <a className="fw-500 text-underline" href="#" onClick={handleSwitch}>
+                切换
+              </a>
+              <span>到支持的网络</span>
+            </p>
+          </div>
         </div>
       )}
 

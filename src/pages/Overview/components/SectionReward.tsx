@@ -29,10 +29,11 @@ const config: PieConfig = {
 };
 
 const SectionReward: React.FC = () => {
-  const { info, rate } = useRaiseDetail();
   const { perFil, perPledge } = useChainInfo();
+  const { info, rate, role } = useRaiseDetail();
 
-  const { period, target, isRaiser, isServicer } = info;
+  const { period, target } = info;
+  const { isRaiser, isServicer } = role;
   const { priorityRate, raiserRate, opsRatio, ffiRate } = rate;
 
   // 预估节点激励 = 24小时产出效率 * 封装天数 * 总算力(质押目标 / 当前扇区质押量)
@@ -126,7 +127,7 @@ const SectionReward: React.FC = () => {
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">Gas费</div>
+            <div className="col-4 table-cell th">封装Gas费</div>
             <div className="col-8 table-cell">由主办人承担</div>
           </div>
         </div>

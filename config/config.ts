@@ -35,6 +35,9 @@ export default defineConfig({
   cssLoaderModules: {
     exportLocalsConvention: 'camelCase',
   },
+  jsMinifierOptions: {
+    target: 'es2020',
+  },
   svgo: {
     plugins: [
       {

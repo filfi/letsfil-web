@@ -12,6 +12,7 @@ import ShareBtn from '@/components/ShareBtn';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -58,7 +59,8 @@ const Item: React.FC<{
   const { pack, power } = useAssetPack(data);
   const { amount } = useDepositInvestor(data);
   const { priorityRate, opsRatio } = useRaiseRate(data);
-  const { actual, progress, target, isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
+  const { actual, progress, target } = useRaiseInfo(data);
+  const { isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
 
   const calcSealDays = (data: API.Plan) => {
     const r: string[] = [];
@@ -66,7 +68,7 @@ const Item: React.FC<{
     // 生产中
     if (state.isWorking) {
       const sec = Math.max(accSub(data.end_seal_time, data.begin_seal_time), 0);
-      r.push(`${sec2day(sec)}天`);
+      r.push(`${F.formatSeals(sec2day(sec))}天`);
       r.push(`承诺${data.seal_days}天`);
 
       return r;

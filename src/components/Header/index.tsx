@@ -1,13 +1,15 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
 import { useMemo, useRef } from 'react';
+import { useAccount as useWagmi, useBalance } from 'wagmi';
 import { useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
-import { FormattedMessage, history, Link, useLocation, useModel } from '@umijs/max';
+import { FormattedMessage, history, Link, useLocation } from '@umijs/max';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
 import useAccount from '@/hooks/useAccount';
 import { formatAmount } from '@/utils/format';
+import useProcessing from '@/hooks/useProcessing';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
 import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
@@ -21,16 +23,16 @@ const Header: React.FC = () => {
   // refs
   const header = useRef<HTMLDivElement>(null);
 
-  // models
-  const { initialState } = useModel('@@initialState');
-
   // states
   const [isHover, { setTrue, setFalse }] = useBoolean(false);
 
   // hooks
   const position = useScroll();
   const location = useLocation();
-  const { address, balance, connecting, connect, disconnect } = useAccount();
+  const [processing] = useProcessing();
+  const { connect, disconnect } = useAccount();
+  const { address, isConnecting } = useWagmi();
+  const { data: balance } = useBalance({ address, watch: true });
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
@@ -88,7 +90,7 @@ const Header: React.FC = () => {
           <div className="btn-group assets-bar" role="group" aria-label="Assets Bar">
             {!!address ? (
               <>
-                {initialState?.processing ? (
+                {processing ? (
                   <SpinBtn className="btn btn-outline-light" loading>
                     <FormattedMessage id="notify.transaction.processing" />
                   </SpinBtn>
@@ -115,7 +117,7 @@ const Header: React.FC = () => {
                   </Link>
 
                   <ul
-                    className={classNames('dropdown-menu dropdown-menu-end border-0 shadow rounded-4', { show: isHover })}
+                    className={classNames('dropdown-menu dropdown-menu-end border-0 py-3 shadow rounded-3', { show: isHover })}
                     data-bs-popper={isHover ? 'static' : undefined}
                   >
                     <li>
@@ -135,7 +137,7 @@ const Header: React.FC = () => {
                 </div>
               </>
             ) : (
-              <SpinBtn className="btn btn-outline-light btn-lg" loading={connecting} onClick={handleConnect}>
+              <SpinBtn className="btn btn-outline-light btn-lg" loading={isConnecting} onClick={handleConnect}>
                 <FormattedMessage id="actions.button.connect" />
               </SpinBtn>
             )}

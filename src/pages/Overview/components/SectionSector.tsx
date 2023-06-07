@@ -35,7 +35,7 @@ const SectionSector: React.FC = () => {
               className={classNames('indicator', { warning: isDelayed, success: isFinished })}
               style={{ left: isFinished ? 'calc(100% - 23px)' : `calc((100% - 46px) * ${percent})` }}
             >
-              <span className="indicator-label">{isFinished ? sealdays : running} 天</span>
+              <span className="indicator-label">{isFinished ? sealdays : F.formatSeals(running)} 天</span>
               <span className="indicator-caret"></span>
             </div>
             <div className="progress-stacked flex-fill">
@@ -107,19 +107,28 @@ const SectionSector: React.FC = () => {
                 <th>完成比例</th>
                 <td>{F.formatRate(progress)}</td>
               </tr>
-              <tr>
-                <th>超期时间</th>
-                <td>{sec2day(delay)} 天</td>
-                <th>累计罚金</th>
-                <td>
-                  <span className="me-auto">{F.formatAmount(fines, 2, 2)} FIL</span>
-                  {/* {isDelayed && fines > 0 && (
-                    <a className="text-underline" href="#fines-modal" data-bs-toggle="modal">
-                      这是什么？
-                    </a>
-                  )} */}
-                </td>
-              </tr>
+              {delay ? (
+                <tr>
+                  <th>超期时间</th>
+                  <td>{sec2day(delay)} 天</td>
+                  <th>累计罚金</th>
+                  <td>
+                    <span className="me-auto">{F.formatAmount(fines, 2, 2)} FIL</span>
+                    {/* {isDelayed && fines > 0 && (
+                      <a className="text-underline" href="#fines-modal" data-bs-toggle="modal">
+                        这是什么？
+                      </a>
+                    )} */}
+                  </td>
+                </tr>
+              ) : (
+                <tr>
+                  <th>超期时间</th>
+                  <td>-</td>
+                  <th>累计罚金</th>
+                  <td>-</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

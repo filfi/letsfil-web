@@ -11,12 +11,13 @@ import useUser from '@/hooks/useUser';
 import Dialog from '@/components/Dialog';
 import Result from '@/components/Result';
 import { catchify } from '@/utils/hackify';
-import { isEqual, sleep } from '@/utils/utils';
 import useAccount from '@/hooks/useAccount';
+import useContract from '@/hooks/useContract';
+import { isEqual, sleep } from '@/utils/utils';
+import { transformModel } from '@/helpers/app';
 import useProviders from '@/hooks/useProviders';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
-import { createContract, transformModel } from '@/helpers/app';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 
 const isArrs = function <V>(v: V | undefined): v is V {
@@ -27,7 +28,7 @@ export default function AccountPlans() {
   const { user } = useUser();
   const { getProvider } = useProviders();
   const [, setModel] = useModel('stepform');
-  const { address, withAccount } = useAccount();
+  const { address, withAccount, withConnect } = useAccount();
 
   const service = withAccount((address) => {
     return A.investList({ address, page_size: 100 });
@@ -41,13 +42,13 @@ export default function AccountPlans() {
   const services = useMemo(() => filter(lists, { service_provider_address: address }), [lists, address]);
   const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
 
-  const handleCreate = withAccount(async () => {
+  const handleCreate = withConnect(async () => {
     setModel(undefined);
 
     history.push('/create');
   });
 
-  const handleEdit = (data: API.Plan) => {
+  const handleEdit = withConnect(async (data: API.Plan) => {
     const model = Object.keys(data).reduce(
       (d, key) => ({
         ...d,
@@ -59,13 +60,14 @@ export default function AccountPlans() {
     setModel(transformModel(model));
 
     history.push('/create');
-  };
+  });
 
-  const handleDelete = async (data: API.Plan) => {
+  const handleDelete = withConnect(async (data: API.Plan) => {
     const [e] = await catchify(A.del)(data.raising_id);
 
     if (e) {
       await sleep(500);
+
       Dialog.alert({
         icon: 'error',
         title: '删除失败',
@@ -75,17 +77,20 @@ export default function AccountPlans() {
     }
 
     refresh();
-  };
-
-  const [, handleStart] = useProcessify(async (data: API.Plan) => {
-    const contract = createContract(data.raise_address);
-
-    await contract?.startRaisePlan(data.raising_id);
-
-    await sleep(1e3);
-
-    refresh();
   });
+
+  const [, handleStart] = useProcessify(
+    withConnect(async (data: API.Plan) => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const contract = useContract(data.raise_address);
+
+      await contract.startRaisePlan(data.raising_id);
+
+      await sleep(2_000);
+
+      refresh();
+    }),
+  );
 
   return (
     <>

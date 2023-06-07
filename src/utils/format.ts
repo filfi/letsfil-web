@@ -55,7 +55,7 @@ export function formatUnix(date: number, fmt = 'YYYY-MM-DD HH:mm') {
 
 export function formatAddr(addr?: unknown) {
   if (typeof addr === 'string') {
-    return addr.slice(0, 6) + '......' + addr.slice(-4);
+    return addr.slice(0, 6) + '...' + addr.slice(-4);
   }
 
   return '';
@@ -81,6 +81,10 @@ export function formatPower(power?: number | string, decimals = 2, mode: BigNumb
   if (typeof power !== 'undefined') {
     return formatBytes(power, decimals, mode).split(' ');
   }
+}
+
+export function formatSeals(days: number) {
+  return Math.round(days + 0.5);
 }
 
 export function formatRemain(...args: (number | string)[]) {

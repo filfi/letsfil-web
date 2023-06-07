@@ -18,7 +18,7 @@ export type FoxWalletConnectorOptions = {
 };
 
 export class FoxWalletConnector extends InjectedConnector {
-  readonly id = 'foxWallet';
+  readonly id = 'FoxWallet';
 
   protected shimDisconnectKey = `${this.id}.shimDisconnect`;
 

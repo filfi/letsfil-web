@@ -8,11 +8,11 @@ import useDepositServicer from '@/hooks/useDepositServicer';
 import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 
 const CardAssets: React.FC = () => {
-  const { data, asset, info, rate, seals, state } = useRaiseDetail();
+  const { data, asset, role, rate, seals, state } = useRaiseDetail();
 
   const { progress } = seals;
   const { isWorking } = state;
-  const { isRaiser, isServicer } = info;
+  const { isRaiser, isServicer } = role;
   const { pack, investPower, raiserPower } = asset;
   const { raiserRate, opsRate, servicerRate } = rate;
 

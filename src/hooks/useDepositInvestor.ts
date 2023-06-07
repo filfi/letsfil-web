@@ -1,14 +1,14 @@
-import { useAsyncEffect } from 'ahooks';
 import { useMemo, useState } from 'react';
+import { useDebounceEffect } from 'ahooks';
+import { parseEther } from 'ethers/lib/utils';
 
 import useAccount from './useAccount';
+import useContract from './useContract';
 import { EventType } from '@/utils/mitt';
-import { toNumber } from '@/utils/format';
 import useRaiseInfo from './useRaiseInfo';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
 import { accDiv, isDef } from '@/utils/utils';
 
 /**
@@ -17,9 +17,9 @@ import { accDiv, isDef } from '@/utils/utils';
  * @returns
  */
 export default function useDepositInvestor(data?: API.Plan) {
-  const { address } = useAccount();
   const { actual } = useRaiseInfo(data);
-  const contract = useRaiseContract(data?.raise_address);
+  const { address, withConnect } = useAccount();
+  const contract = useContract(data?.raise_address);
 
   const [amount, setAmount] = useState(0); // 用户质押金额
   const [record, setRecord] = useState(0); // 用户累计质押金额
@@ -34,30 +34,47 @@ export default function useDepositInvestor(data?: API.Plan) {
     if (!data?.raising_id) return;
 
     if (address) {
-      const info = await contract.getInvestorInfo(data.raising_id, address);
-      const back = await contract.getBackAssets(data.raising_id, address);
+      const [back, info] = await Promise.all([contract.getBackAssets(data.raising_id, address), contract.getInvestorInfo(data.raising_id, address)]);
 
-      const amount = info?.pledgeAmount; // 账户余额
-      const record = info?.pledgeCalcAmount; // 账户总质押
-      const withdraw = info?.withdrawAmount; // 已提取
       const backAmount = back?.[0]; // 退回金额
       const backInterest = back?.[1]; // 利息补偿
+      const amount = info?.[0]; // 账户余额
+      const record = info?.[1]; // 账户总质押
+      const withdraw = info?.[3]; // 已提取
 
-      isDef(amount) && setAmount(toNumber(amount));
-      isDef(record) && setRecord(toNumber(record));
-      isDef(withdraw) && setWithdraw(toNumber(withdraw));
-      isDef(backAmount) && setBackAmount(toNumber(backAmount));
-      isDef(backInterest) && setBackInterest(toNumber(backInterest));
+      isDef(amount) && setAmount(amount);
+      isDef(record) && setRecord(record);
+      isDef(withdraw) && setWithdraw(withdraw);
+      isDef(backAmount) && setBackAmount(backAmount);
+      isDef(backInterest) && setBackInterest(backInterest);
     }
   });
 
-  const [processing, unStaking] = useProcessify(async () => {
-    if (!data) return;
+  const [staking, stakeAction] = useProcessify(
+    withConnect(async (amount: number | string) => {
+      if (!data) return;
 
-    await contract.unStaking(data.raising_id);
-  });
+      return await contract.staking(data.raising_id, {
+        value: parseEther(`${amount}`),
+      });
+    }),
+  );
 
-  useAsyncEffect(fetchData, [address, data?.raising_id]);
+  const [unstaking, unStakeAction] = useProcessify(
+    withConnect(async () => {
+      if (!data) return;
+
+      return await contract.unStaking(data.raising_id);
+    }),
+  );
+
+  useDebounceEffect(
+    () => {
+      fetchData();
+    },
+    [address, data],
+    { wait: 300, leading: true },
+  );
 
   useEmittHandler({
     [EventType.onStaking]: fetchData,
@@ -73,8 +90,10 @@ export default function useDepositInvestor(data?: API.Plan) {
     backInterest,
     isInvestor,
     loading,
-    processing,
-    unStaking,
+    staking,
+    unstaking,
+    stakeAction,
+    unStakeAction,
     refresh: fetchData,
   };
 }

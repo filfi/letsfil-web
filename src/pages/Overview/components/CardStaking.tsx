@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
@@ -6,16 +5,13 @@ import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
-import useProcessify from '@/hooks/useProcessify';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
-import useRaiseContract from '@/hooks/useRaiseContract';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const CardStaking: React.FC = () => {
   const [form] = Form.useForm();
   const { data, info, state } = useRaiseDetail();
-  const { staking } = useRaiseContract(data?.raise_address);
-  const { amount } = useDepositInvestor(data);
+  const { amount, staking, stakeAction } = useDepositInvestor(data);
 
   const { actual, target } = info;
   const { isRaising, isSealing } = state;
@@ -36,15 +32,11 @@ const CardStaking: React.FC = () => {
     }
   };
 
-  const [loading, handleStaking] = useProcessify(async ({ amount }: { amount: string }) => {
-    if (!data) return;
-
-    await staking(data.raising_id, {
-      value: ethers.utils.parseEther(`${amount}`),
-    });
+  const handleStake = async ({ amount }: { amount: string }) => {
+    await stakeAction(amount);
 
     form.resetFields();
-  });
+  };
 
   if (isRaising || isSealing) {
     return (
@@ -63,7 +55,7 @@ const CardStaking: React.FC = () => {
                 {isSealing ? '正在封装' : '等待封装'}
               </SpinBtn>
             ) : (
-              <Form className="ffi-form" form={form} onFinish={handleStaking}>
+              <Form className="ffi-form" form={form} onFinish={handleStake}>
                 <Form.Item name="amount" rules={[{ required: true, message: '请输入数量' }, { validator: amountValidator }]}>
                   <Input
                     type="number"
@@ -76,7 +68,7 @@ const CardStaking: React.FC = () => {
                 </Form.Item>
 
                 <p className="mb-0">
-                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
+                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={staking}>
                     质押
                   </SpinBtn>
                 </p>

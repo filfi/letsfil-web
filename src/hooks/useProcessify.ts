@@ -1,18 +1,18 @@
-import { useModel } from '@umijs/max';
 import useLoadingify from './useLoadingify';
+import useProcessing from './useProcessing';
 import type { Options, Result } from './useLoadingify';
 
 export default function useProcessify<R = any, P extends unknown[] = any>(handler: (...args: P) => Promise<R>, options?: Options): Result<R, P> {
-  const { setInitialState } = useModel('@@initialState');
+  const [, setProcessing] = useProcessing();
 
   const result = useLoadingify<R, P>(
     async (...args: P) => {
-      setInitialState((d: any) => ({ ...d, processing: true }));
+      setProcessing(true);
 
       try {
         return await handler(...args);
       } finally {
-        setInitialState((d: any) => ({ ...d, processing: false }));
+        setProcessing(false);
       }
     },
     { loadingDelay: 1e3, ...options },

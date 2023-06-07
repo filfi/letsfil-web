@@ -21,9 +21,9 @@ export type ClientModalStatic = React.ForwardRefExoticComponent<ClientModalProps
 };
 
 const items = [
-  { icon: <IconMetaMask />, label: 'MetaMask', value: 'metaMask' },
-  { icon: <IconTokenPocket />, label: 'TokenPocket', value: 'tokenPocket' },
-  { icon: <IconFoxWallet />, label: 'FoxWallet', value: 'foxWallet' },
+  { icon: <IconMetaMask />, label: 'MetaMask', value: 'MetaMask' },
+  { icon: <IconTokenPocket />, label: 'TokenPocket', value: 'TokenPocket' },
+  { icon: <IconFoxWallet />, label: 'FoxWallet', value: 'FoxWallet' },
 ];
 
 const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalProps> = (

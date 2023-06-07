@@ -1,13 +1,14 @@
-import { useAsyncEffect } from 'ahooks';
 import { useMemo, useState } from 'react';
+import { useDebounceEffect } from 'ahooks';
 
-import { accAdd, isDef } from '@/utils/utils';
+import useAccount from './useAccount';
+import useContract from './useContract';
 import { EventType } from '@/utils/mitt';
-import { toNumber } from '@/utils/format';
+import useRaiseRole from './useRaiseRole';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
+import { accAdd, isDef } from '@/utils/utils';
 
 /**
  * 主办人节点激励
@@ -15,35 +16,45 @@ import useRaiseContract from './useRaiseContract';
  * @returns
  */
 export default function useRewardRaiser(data?: API.Plan) {
-  const contract = useRaiseContract(data?.raise_address);
+  const { withConnect } = useAccount();
+  const { isRaiser } = useRaiseRole(data);
+  const contract = useContract(data?.raise_address);
 
   const [reward, setReward] = useState(0); // 可提取
   const [record, setRecord] = useState(0); // 已提取
   const [pending, setPending] = useState(0); // 待释放
 
-  const total = useMemo(() => accAdd(accAdd(record, reward), pending), [record, reward, pending]);
+  const total = useMemo(() => accAdd(record, reward, pending), [record, reward, pending]);
 
   const [loading, fetchData] = useLoadingify(async () => {
-    if (!data?.raising_id) return;
+    if (!data?.raising_id || !isRaiser) return;
 
-    console.log('[raiser raward]: ', data.raising_id);
+    const [reward, record, pending] = await Promise.all([
+      contract.getRaiserAvailableReward(data.raising_id),
+      contract.getRaiserWithdrawnReward(data.raising_id),
+      contract.getRaiserPendingReward(data.raising_id),
+    ]);
 
-    const reward = await contract.getRaiserAvailableReward(data.raising_id);
-    const record = await contract.getRaiserWithdrawnReward(data.raising_id);
-    const pending = await contract.getRaiserPendingReward(data.raising_id);
-
-    isDef(reward) && setReward(toNumber(reward));
-    isDef(record) && setRecord(toNumber(record));
-    isDef(pending) && setPending(toNumber(pending));
+    isDef(reward) && setReward(reward);
+    isDef(record) && setRecord(record);
+    isDef(pending) && setPending(pending);
   });
 
-  const [processing, withdraw] = useProcessify(async () => {
-    if (!data) return;
+  const [processing, withdraw] = useProcessify(
+    withConnect(async () => {
+      if (!data) return;
 
-    await contract.raiserWithdraw(data.raising_id);
-  });
+      return await contract.raiserWithdraw(data.raising_id);
+    }),
+  );
 
-  useAsyncEffect(fetchData, [data?.raising_id]);
+  useDebounceEffect(
+    () => {
+      fetchData();
+    },
+    [isRaiser, data?.raising_id],
+    { wait: 300, leading: true },
+  );
 
   useEmittHandler({
     [EventType.onRaiserWithdraw]: fetchData,
