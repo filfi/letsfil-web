@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
-import { camelCase } from 'lodash';
 import classNames from 'classnames';
 import { ScrollSpy } from 'bootstrap';
+import { NavLink, useParams } from '@umijs/max';
 import { useResponsive, useUpdateEffect } from 'ahooks';
-import { NavLink, history, useModel, useParams } from '@umijs/max';
 
 import styles from './styles.less';
-import * as H from '@/helpers/app';
 import { SCAN_URL } from '@/constants';
 import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
@@ -54,8 +52,6 @@ function updateScrollSpy() {
 function RaiseContent() {
   const param = useParams();
   const responsive = useResponsive();
-  const [, setModel] = useModel('stepform');
-
   const { data, error, loading, role, state, refresh } = useRaiseDetail();
 
   const { isRaiser } = role;
@@ -82,27 +78,12 @@ function RaiseContent() {
     [EventType.onWithdrawRaiseFund]: refresh,
   });
 
-  const handleEdit = () => {
-    if (!data) return;
-
-    const model = Object.keys(data).reduce(
-      (d, key) => ({
-        ...d,
-        [camelCase(key)]: data[key as keyof typeof data],
-      }),
-      {},
-    );
-
-    setModel(H.transformModel(model));
-
-    history.replace('/create');
-  };
-
   const handleDelete = () => {
     const hide = Dialog.confirm({
       icon: 'delete',
       title: '删除节点计划',
       summary: '未签名的节点计划可以永久删除。',
+      confirmLoading: actions.removing,
       onConfirm: () => {
         hide();
 
@@ -148,7 +129,7 @@ function RaiseContent() {
       <>
         {isPending && isRaiser && (
           <>
-            <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
+            <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={actions.edit}>
               修改节点计划
             </SpinBtn>
 
@@ -219,7 +200,7 @@ function RaiseContent() {
 
           <div className={classNames('d-flex flex-column flex-lg-row', styles.content)}>
             <div id="nav-pills" className={classNames('d-none d-lg-block flex-shrink-0', styles.tabs)}>
-              <ul className="nav nav-pills flex-lg-column mb-2">
+              <ul className="nav nav-pills d-flex flex-lg-column mb-2">
                 <li className="nav-item">
                   <a className="nav-link" href="#raising">
                     质押目标
@@ -230,7 +211,7 @@ function RaiseContent() {
                     服务商
                   </a>
                 </li>
-                <li className="nav-item">
+                <li className={classNames('nav-item', { 'order-1': data && isSuccess })}>
                   <a className="nav-link" href="#deposit">
                     保证金
                   </a>
@@ -250,13 +231,13 @@ function RaiseContent() {
                     时间进度
                   </a>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item order-2">
                   <a className="nav-link" href="#contract">
                     智能合约
                   </a>
                 </li>
                 {isStarted && (
-                  <li className="nav-item">
+                  <li className="nav-item order-3">
                     <a className="nav-link" href="#events">
                       事件
                     </a>
@@ -298,7 +279,7 @@ function RaiseContent() {
 
                 <SectionProvider />
               </section>
-              <section id="deposit" className="section">
+              <section id="deposit" className={classNames('section', { 'order-1': data && isSuccess })}>
                 <div className="section-header">
                   <h4 className="section-title">保证金</h4>
                   <p className="mb-0">保障节点计划执行，违约自动触发惩罚机制，保护建设者权益。</p>
@@ -353,7 +334,7 @@ function RaiseContent() {
 
                 <SectionTimeline />
               </section>
-              <section id="contract" className="section">
+              <section id="contract" className="section order-2">
                 <div className="section-header">
                   <h4 className="section-title">智能合约</h4>
                   <p className="mb-0">节点计划是部署在Filecoin上的智能合约，存储节点的质押和节点激励分配完全由智能合约管理。</p>
@@ -362,7 +343,7 @@ function RaiseContent() {
                 <SectionContract />
               </section>
               {isStarted && (
-                <section id="events" className="section">
+                <section id="events" className="section order-3">
                   <div className="section-header">
                     <h4 className="section-title">事件</h4>
                     <p className="mb-0">节点计划发生的重要事件以及链上相关消息</p>

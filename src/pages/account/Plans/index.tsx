@@ -1,23 +1,21 @@
+import { filter } from 'lodash';
 import { useMemo } from 'react';
 import classNames from 'classnames';
 import { useRequest } from 'ahooks';
-import { camelCase, filter } from 'lodash';
 import { Link, history, useModel } from '@umijs/max';
 
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Item from './components/Item';
 import useUser from '@/hooks/useUser';
-import Dialog from '@/components/Dialog';
 import Result from '@/components/Result';
-import { catchify } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
 import { isEqual, sleep } from '@/utils/utils';
-import { transformModel } from '@/helpers/app';
 import useProviders from '@/hooks/useProviders';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
+import useRaiseActions from '@/hooks/useRaiseActions';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 
 const isArrs = function <V>(v: V | undefined): v is V {
@@ -48,49 +46,26 @@ export default function AccountPlans() {
     history.push('/create');
   });
 
-  const handleEdit = withConnect(async (data: API.Plan) => {
-    const model = Object.keys(data).reduce(
-      (d, key) => ({
-        ...d,
-        [camelCase(key)]: data[key as keyof typeof data],
-      }),
-      {},
-    );
+  const handleEdit = async (data: API.Plan) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useRaiseActions(data).edit();
+  };
 
-    setModel(transformModel(model));
+  const handleDelete = async (data: API.Plan) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    await useRaiseActions(data).remove();
 
-    history.push('/create');
-  });
+    refresh();
+  };
 
-  const handleDelete = withConnect(async (data: API.Plan) => {
-    const [e] = await catchify(A.del)(data.raising_id);
+  const [, handleStart] = useProcessify(async (data: API.Plan) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    await useContract(data.raise_address).startRaisePlan(data.raising_id);
 
-    if (e) {
-      await sleep(500);
-
-      Dialog.alert({
-        icon: 'error',
-        title: '删除失败',
-        content: e.message,
-      });
-      return;
-    }
+    await sleep(2_000);
 
     refresh();
   });
-
-  const [, handleStart] = useProcessify(
-    withConnect(async (data: API.Plan) => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const contract = useContract(data.raise_address);
-
-      await contract.startRaisePlan(data.raising_id);
-
-      await sleep(2_000);
-
-      refresh();
-    }),
-  );
 
   return (
     <>

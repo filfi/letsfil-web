@@ -4,6 +4,10 @@
   --section-header-spacer-y: 16px;
 
   :global {
+    .section {
+      margin-bottom: var(--content-item-gap);
+    }
+
     .section-header {
       padding-top: var(--section-header-padding-y);
       padding-bottom: var(--section-header-padding-y);
@@ -245,8 +249,7 @@
   }
 }
 
-.content > *,
-.main > * {
+.content > * {
   margin-bottom: var(--content-item-gap);
 }
 

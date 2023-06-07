@@ -2,7 +2,6 @@ import { camelCase } from 'lodash';
 import { history, useModel } from '@umijs/max';
 
 import { del } from '@/apis/raise';
-import useAccount from './useAccount';
 import useContract from './useContract';
 import Dialog from '@/components/Dialog';
 import { catchify } from '@/utils/hackify';
@@ -13,10 +12,9 @@ import { transformModel } from '@/helpers/app';
 export default function useRaiseActions(data?: API.Plan) {
   const [, setModel] = useModel('stepform');
 
-  const { withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
-  const edit = () => {
+  const edit = async () => {
     if (!data) return;
 
     const model = Object.keys(data).reduce(
@@ -32,13 +30,11 @@ export default function useRaiseActions(data?: API.Plan) {
     history.replace('/create');
   };
 
-  const [closing, close] = useProcessify(
-    withConnect(async () => {
-      if (!data?.raising_id) return;
+  const [closing, close] = useProcessify(async () => {
+    if (!data?.raising_id) return;
 
-      return await contract.closeRaisePlan(data.raising_id);
-    }),
-  );
+    return await contract.closeRaisePlan(data.raising_id);
+  });
 
   const [removing, remove] = useLoadingify(async () => {
     if (!data?.raising_id) return;
