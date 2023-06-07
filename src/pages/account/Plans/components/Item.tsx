@@ -269,7 +269,7 @@ const Item: React.FC<{
                   <span> · </span>
                   <span>
                     {state.isSuccess ? '达到目标的' : '已集合质押'}
-                    {F.formatRate(progress)}
+                    {F.formatProgress(progress)}
                   </span>
                 </>
               )}

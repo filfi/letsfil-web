@@ -43,6 +43,12 @@ export function formatRate(rate: number | string, fmt = '0%') {
   return formatNum(rate, fmt);
 }
 
+export function formatProgress(value: number | string, fmt = '0%') {
+  const v = (+value * 100 - 0.5) / 100;
+
+  return formatRate(Number.isNaN(v) ? 0 : v, fmt);
+}
+
 export function formatUnix(date: number, fmt = 'YYYY-MM-DD HH:mm') {
   return dayjs(date * 1000).format(fmt);
 }

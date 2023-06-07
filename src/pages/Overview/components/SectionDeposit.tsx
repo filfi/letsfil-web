@@ -1,10 +1,11 @@
+import { Input } from 'antd';
 import { useMemo } from 'react';
 import classNames from 'classnames';
-import { Avatar, Input } from 'antd';
 import { useModel } from '@umijs/max';
 
 import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
+import Avatar from '@/components/Avatar';
 import SpinBtn from '@/components/SpinBtn';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
 import { accAdd, accDiv, accMul } from '@/utils/utils';
@@ -253,7 +254,7 @@ const ServiceCard: React.FC = () => {
                   size="large"
                   prefix={
                     <div className="d-flex algin-items-center">
-                      <Avatar src={provider?.logo_url} size={24} />
+                      <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={24} />
                       <span className="ms-2">{provider?.short_name}</span>
                     </div>
                   }

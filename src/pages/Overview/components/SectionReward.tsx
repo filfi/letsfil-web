@@ -57,7 +57,7 @@ const SectionReward: React.FC = () => {
         </div>
         <div className="col-12 col-md-8 col-xl-9">
           <div className="row g-2">
-            <div className="col-6 col-md-6">
+            <div className="col-6 col-md-4">
               <div className="reward-item mb-3">
                 <span className="reward-dot reward-dot-circle"></span>
                 <p className="reward-label">{period}天总激励(估)</p>
@@ -67,7 +67,7 @@ const SectionReward: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="col-6 col-md-6">
+            <div className="col-6 col-md-8">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>
                 <p className="reward-label">建设者</p>

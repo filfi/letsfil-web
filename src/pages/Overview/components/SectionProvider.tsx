@@ -17,7 +17,7 @@ const SectionProvider: React.FC = () => {
             <div className="d-flex align-items-center flex-wrap gap-3">
               <div className="d-flex align-items-center me-auto">
                 <div className="flex-shrink-0">
-                  <Avatar size={32} src={data?.sponsor_logo} />
+                  <Avatar address={data?.raiser} size={32} src={data?.sponsor_logo} />
                 </div>
                 <div className="flex-grow-1 ms-2">
                   <p className="mb-0">{formatSponsor(data?.sponsor_company)}</p>
@@ -41,10 +41,10 @@ const SectionProvider: React.FC = () => {
             <div className="d-flex align-items-center flex-wrap gap-3">
               <div className="d-flex align-items-center me-auto">
                 <div className="flex-shrink-0">
-                  <Avatar size={32} src={provider?.logo_url} />
+                  <Avatar address={provider?.wallet_address} size={32} src={provider?.logo_url} />
                 </div>
                 <div className="flex-grow-1 ms-2">
-                  <p className="mb-0">{provider?.full_name}</p>
+                  <p className="mb-0">{provider?.short_name}</p>
                   <p className="mb-0 text-gray d-lg-none">技术服务商</p>
                   {/* <p className="mb-0 text-gray-dark">{F.formatAddr(provider.wallet_address)}</p> */}
                 </div>

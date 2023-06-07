@@ -38,7 +38,7 @@ const SectionNode: React.FC = () => {
                 </td>
               </tr>
               <tr>
-                <td className="ps-3 ps-lg-4">扇区大小</td>
+                <th className="ps-3 ps-lg-4">扇区大小</th>
                 <td>
                   <span className="text-decimal me-1">{byte2gb(data?.sector_size)}</span>
                   <span className="text-neutral small fw-bold">GB</span>

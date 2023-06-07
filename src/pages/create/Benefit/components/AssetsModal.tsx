@@ -1,8 +1,9 @@
-import { Avatar, Checkbox, Form, Input } from 'antd';
+import { Checkbox, Form, Input } from 'antd';
 import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 
 import Modal from '@/components/Modal';
 import { accSub } from '@/utils/utils';
+import Avatar from '@/components/Avatar';
 import { catchify } from '@/utils/hackify';
 import useProviders from '@/hooks/useProviders';
 import { formatEther, formatNum } from '@/utils/format';
@@ -87,7 +88,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
                 size="large"
                 prefix={
                   <div className="d-flex algin-items-center">
-                    <Avatar src={provider?.logo_url} size={24} />
+                    <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={24} />
                     <span className="ms-2">{provider?.short_name}</span>
                   </div>
                 }

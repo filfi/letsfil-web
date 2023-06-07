@@ -235,7 +235,7 @@ function RaiseContent() {
           <PageHeader
             className={classNames({ 'border-bottom': !isWorking, 'mb-3 pb-0': isWorking })}
             title={title}
-            desc={isWorking ? `算力包：${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储'}
+            desc={isWorking ? `算力包：${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储节点'}
           >
             <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div>
           </PageHeader>
@@ -330,8 +330,8 @@ function RaiseContent() {
 
                 <div className="section">
                   <div className="section-header">
-                    <h4 className="section-title">质押的归属</h4>
-                    <p className="mb-0">质押的所有权永恒不变，投入多少返回多少。</p>
+                    <h4 className="section-title">质押FIL的归属</h4>
+                    <p className="mb-0">质押FIL的所有权永恒不变，投入多少返回多少。</p>
                   </div>
 
                   <SectionCoin />
@@ -358,7 +358,7 @@ function RaiseContent() {
               <section id="deposit" className="section">
                 <div className="section-header">
                   <h4 className="section-title">保证金</h4>
-                  <p className="mb-0">保障节点计划执行，异常自动触发惩罚机制，保护建设者权益。</p>
+                  <p className="mb-0">保障节点计划执行，违约自动触发惩罚机制，保护建设者权益。</p>
                 </div>
 
                 <SectionDeposit />

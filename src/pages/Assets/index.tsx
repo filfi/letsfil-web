@@ -121,7 +121,7 @@ export default function Assets() {
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-0 fw-500">{provider?.full_name}</p>
+                    <p className="mb-0 fw-500">{provider?.short_name}</p>
                   </div>
 
                   <div className="flex-shrink-0">

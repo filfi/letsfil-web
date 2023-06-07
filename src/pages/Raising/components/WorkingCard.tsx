@@ -1,9 +1,9 @@
-import { Avatar } from 'antd';
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import { useRequest } from 'ahooks';
 
 import { count } from '@/apis/raise';
+import Avatar from '@/components/Avatar';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseReward from '@/hooks/useRaiseReward';
 import { formatAmount, formatEther, formatSponsor } from '@/utils/format';
@@ -53,7 +53,7 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data, getProvider }) => {
         </div>
         <div className="card-footer d-flex gap-2">
           <div className="flex-shrink-0">
-            <Avatar src={provider?.logo_url} size={32} />
+            <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={32} />
           </div>
           <div className="flex-grow-1 d-flex flex-column flex-md-row gap-2 my-auto">
             <span className="align-middle me-auto">
