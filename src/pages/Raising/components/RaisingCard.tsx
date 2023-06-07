@@ -62,7 +62,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 </div>
               </div>
               <Link className="btn btn-primary btn-lg btn-join" to={`/overview/${data.raising_id}`}>
-                立刻参加
+                立刻质押
               </Link>
             </div>
           </div>
@@ -77,7 +77,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
                 <span className="mx-1 fw-bold">{formatAmount(target)}</span>
                 <span>FIL</span>
                 <span className="mx-2">·</span>
-                <span>已募</span>
+                <span>达成</span>
                 <span className="ms-1 fw-bold">{formatProgress(progress)}</span>
               </p>
 

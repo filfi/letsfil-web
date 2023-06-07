@@ -17,7 +17,7 @@ export default function useProviders() {
   };
 
   const renderLabel = (id?: number | string) => {
-    return getProvider(id)?.full_name;
+    return getProvider(id)?.short_name;
   };
 
   return {

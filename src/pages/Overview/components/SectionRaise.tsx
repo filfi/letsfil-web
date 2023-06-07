@@ -23,10 +23,10 @@ const SectionRaise: React.FC = () => {
               <p className="mb-1 text-gray-dark">质押目标</p>
               <p className="mb-0 d-flex align-items-center">
                 <span className="fs-5 fw-bold">
-                  <span className="fs-3 text-uppercase">{F.formatNum(target, '0.0a')}</span>
+                  <span className="fs-3 text-uppercase">{F.formatAmount(target)}</span>
                   <span className="ms-1 text-neutral">FIL</span>
                 </span>
-                <span className="badge badge-success ms-auto">已募{F.formatProgress(progress)}</span>
+                <span className="badge badge-success ms-auto">达成{F.formatProgress(progress)}</span>
               </p>
             </div>
           </div>
@@ -62,7 +62,7 @@ const SectionRaise: React.FC = () => {
         ) : (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">参与时间</div>
+              <div className="col-4 table-cell th">质押时间</div>
               <div className="col-8 table-cell">{data ? data.raise_days : '-'}天</div>
             </div>
           </div>
@@ -78,7 +78,7 @@ const SectionRaise: React.FC = () => {
             <div className="col-4 table-cell th">已参与</div>
             <div className="col-8 table-cell">
               <span>{F.formatAmount(actual, 2)} FIL</span>
-              {isStarted && <span> · {F.formatProgress(progress)}</span>}
+              {isStarted && <span> · 达成{F.formatProgress(progress)}</span>}
             </div>
           </div>
         </div>

@@ -2,15 +2,21 @@
   --bs-card-bg: rgb(36 28 59);
   --bs-card-color: #fff;
   --bs-card-border-width: 0;
+  --bs-card-cap-color: #fff;
   --bs-card-cap-padding-top: 80px;
+  --bs-card-cap-font-size: 24px;
   --bs-item-cell-width: 30%;
 
   background-size: cover;
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: left center;
   background-image: url('./imgs/bg.png');
 
   :global {
+    .card-title {
+      font-weight: 600;
+    }
+
     .card-body {
       padding-top: var(--bs-card-cap-padding-top);
     }
@@ -60,6 +66,7 @@
   .banner {
     --bs-card-spacer-x: 32px;
     --bs-card-spacer-y: 32px;
+    --bs-card-cap-font-size: 30px;
     --bs-card-cap-padding-top: 100px;
   }
 }

@@ -66,7 +66,7 @@ export default function Raising() {
             {isArrs(raises) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">开放集合质押中</h3>
+                  <h3 className="mb-1 fs-18 fw-600">正在集合质押</h3>
                 </div>
                 <div className="row row-cols-1 g-3 g-lg-4 mb-4 mb-lg-5">
                   {raises.map((item) => (
@@ -96,7 +96,7 @@ export default function Raising() {
             {isArrs(workes) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">集合质押成功，已投入生产</h3>
+                  <h3 className="mb-1 fs-18 fw-600">存储运行中</h3>
                   <p className="text-gray-dark">募得的FIL做为质押，完全用于建设联合节点，按照节点计划的约定，智能合约持续分配节点激励。</p>
                 </div>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4">
