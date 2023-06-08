@@ -226,7 +226,7 @@ function RaiseContent() {
                     建设方案
                   </a>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item order-2">
                   <a className="nav-link" href="#timeline">
                     时间进度
                   </a>
@@ -237,7 +237,7 @@ function RaiseContent() {
                   </a>
                 </li>
                 {isStarted && (
-                  <li className="nav-item order-3">
+                  <li className="nav-item order-2">
                     <a className="nav-link" href="#events">
                       事件
                     </a>
@@ -326,7 +326,7 @@ function RaiseContent() {
                   </div>
                 )}
               </section>
-              <section id="timeline" className="section">
+              <section id="timeline" className="section order-2">
                 <div className="section-header">
                   <h4 className="section-title">时间进度</h4>
                   <p className="mb-0">建设者对每一步进展尽在掌握。</p>
@@ -343,7 +343,7 @@ function RaiseContent() {
                 <SectionContract />
               </section>
               {isStarted && (
-                <section id="events" className="section order-3">
+                <section id="events" className="section order-2">
                   <div className="section-header">
                     <h4 className="section-title">事件</h4>
                     <p className="mb-0">节点计划发生的重要事件以及链上相关消息</p>
