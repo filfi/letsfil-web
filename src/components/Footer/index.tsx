@@ -1,6 +1,22 @@
 import { FormattedMessage, Link } from '@umijs/max';
+
 import styles from './styles.less';
 import { ReactComponent as Logo } from '@/assets/brand.svg';
+
+const socials = [
+  {
+    title: 'Discord',
+    url: 'https://discord.gg/tht348jhuy',
+  },
+  {
+    title: 'Twitter',
+    url: 'https://twitter.com/filfi_io',
+  },
+  {
+    title: 'Telegram',
+    url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+  },
+];
 
 const Footer: React.FC = () => {
   return (
@@ -14,7 +30,7 @@ const Footer: React.FC = () => {
             <p>Keep FIL flowing, never sleeping</p>
           </div>
           <div className="col-12 col-lg-8">
-            <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 g-xxl-4">
+            <div className="row row-cols-2 row-cols-lg-4 g-3 g-xxl-4">
               <div className="col">
                 <dl className="fw-semibold">
                   <dt className="mb-3">FIL Holder</dt>
@@ -56,15 +72,13 @@ const Footer: React.FC = () => {
                     <FormattedMessage id="menu.dao" />
                   </dt>
                   <dd className="d-flex flex-column">
-                    <p>
-                      <a href="#">FilFi DAO guide</a>
-                    </p>
-                    <p>
-                      <a href="#">Ambassador</a>
-                    </p>
-                    <p>
-                      <a href="#">Governance process</a>
-                    </p>
+                    {socials.map((item, key) => (
+                      <p key={key}>
+                        <a href={item.url} title={item.title}>
+                          {item.title}
+                        </a>
+                      </p>
+                    ))}
                   </dd>
                 </dl>
               </div>

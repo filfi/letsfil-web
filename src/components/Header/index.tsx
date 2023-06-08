@@ -19,6 +19,27 @@ import { ReactComponent as IconTelegram } from '@/assets/socials/telegram.svg';
 
 const headerHeight = 80;
 
+const socials = [
+  {
+    icon: IconDiscord,
+    title: 'Discord',
+    desc: 'Ask us question',
+    url: 'https://discord.gg/tht348jhuy',
+  },
+  {
+    icon: IconTwitter,
+    title: 'Twitter',
+    desc: 'Follow us on @FilFi',
+    url: 'https://twitter.com/filfi_io',
+  },
+  {
+    icon: IconTelegram,
+    title: 'Telegram',
+    desc: 'Join disscution',
+    url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+  },
+];
+
 const Header: React.FC = () => {
   // refs
   const header = useRef<HTMLDivElement>(null);
@@ -57,27 +78,6 @@ const Header: React.FC = () => {
 
     history.replace('/');
   };
-
-  const socials = [
-    {
-      icon: IconDiscord,
-      title: 'Discord',
-      desc: 'Ask us question',
-      url: 'https://discord.gg/tht348jhuy',
-    },
-    {
-      icon: IconTwitter,
-      title: 'Twitter',
-      desc: 'Follow us on @FilFi',
-      url: 'https://twitter.com/filfi_io',
-    },
-    {
-      icon: IconTelegram,
-      title: 'Telegram',
-      desc: 'Join disscution',
-      url: 'https://t.me/+eDw3nnwV7xQwZGM9',
-    },
-  ];
 
   return (
     <header ref={header} className={classNames('header fixed-top bg-white')} style={{ boxShadow: `0 3px 10px rgba(0, 0, 0, ${percent * 0.15})` }}>
