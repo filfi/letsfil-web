@@ -261,7 +261,7 @@ export default function CreateStorage() {
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">技术服务商（SP Foundry）</h4>
+            <h4 className="ffi-label">技术服务商</h4>
             <p className="text-gray">
               技术服务商提供扇区封装、技术运维、IDC数据中心整体解决方案，是存储节点长期健康运行的最终保障。
               {/* <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">

@@ -6,7 +6,7 @@ import { useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import { SCAN_URL } from '@/constants';
-import { EventType } from '@/utils/mitt';
+// import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
@@ -15,8 +15,10 @@ import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RaiseProvider from '@/components/RaiseProvider';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
-import useEmittHandler from '@/hooks/useEmitHandler';
+// import useEmittHandler from '@/hooks/useEmitHandler';
 import useRaiseActions from '@/hooks/useRaiseActions';
+import useContractEvent from '@/hooks/useContractEvent';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 // import CardFAQ from './components/CardFAQ';
 // import CardCalc from './components/CardCalc';
 import CardBack from './components/CardBack';
@@ -54,29 +56,43 @@ function RaiseContent() {
   const responsive = useResponsive();
   const { data, error, loading, role, state, refresh } = useRaiseDetail();
 
-  const { isRaiser } = role;
+  const { isRaiser, isServicer } = role;
+  const { isInvestor } = useDepositInvestor(data);
   const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = state;
 
   const actions = useRaiseActions(data);
 
   const title = useMemo(() => (data ? `${formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
+  const showAsset = useMemo(() => isWorking && (isInvestor || isRaiser || isServicer), [isInvestor, isRaiser, isServicer, isWorking]);
 
   useUpdateEffect(updateScrollSpy, [data, isStarted]);
 
-  useEmittHandler<any>({
-    [EventType.onStaking]: refresh,
-    [EventType.onUnstaking]: refresh,
-    [EventType.onStartPreSeal]: refresh,
-    [EventType.onDepositOpsFund]: refresh,
-    [EventType.onServicerSigned]: refresh,
-    [EventType.onStartRaisePlan]: refresh,
-    [EventType.onCreateRaisePlan]: refresh,
-    [EventType.onDepositRaiseFund]: refresh,
-    [EventType.onNodeStateChange]: refresh,
-    [EventType.onRaiseStateChange]: refresh,
-    [EventType.onWithdrawOpsFund]: refresh,
-    [EventType.onWithdrawRaiseFund]: refresh,
-  });
+  const { onRaiseStateChange } = useContractEvent(data?.raise_address);
+
+  // useEmittHandler<any>({
+  //   [EventType.onStaking]: refresh,
+  //   [EventType.onUnstaking]: refresh,
+  //   [EventType.onStartPreSeal]: refresh,
+  //   [EventType.onDepositOpsFund]: refresh,
+  //   [EventType.onServicerSigned]: refresh,
+  //   [EventType.onStartRaisePlan]: refresh,
+  //   [EventType.onCreateRaisePlan]: refresh,
+  //   [EventType.onDepositRaiseFund]: refresh,
+  //   [EventType.onNodeStateChange]: refresh,
+  //   [EventType.onRaiseStateChange]: refresh,
+  //   [EventType.onWithdrawOpsFund]: refresh,
+  //   [EventType.onWithdrawRaiseFund]: refresh,
+  // });
+
+  useUpdateEffect(() => {
+    if (data) {
+      const unwatch = onRaiseStateChange(data.raising_id, (args) => {
+        console.log(args);
+      });
+
+      return unwatch;
+    }
+  }, [data]);
 
   const handleDelete = () => {
     const hide = Dialog.confirm({
@@ -176,14 +192,14 @@ function RaiseContent() {
       <div className="container">
         <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
           <PageHeader
-            className={classNames({ 'border-bottom': !isWorking, 'mb-3 pb-0': isWorking })}
+            className={classNames({ 'border-bottom': !showAsset, 'mb-3 pb-0': showAsset })}
             title={title}
-            desc={isWorking ? `算力包：${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储节点'}
+            desc={isWorking ? `算力包 ${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储节点'}
           >
             <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div>
           </PageHeader>
 
-          {isWorking && (
+          {showAsset && (
             <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
               <li className="nav-item">
                 <NavLink className="nav-link" to={`/assets/${param.id}`}>
@@ -222,10 +238,22 @@ function RaiseContent() {
                   </a>
                 </li>
                 <li className="nav-item">
+                  <a className="nav-link" href="#pledge">
+                    质押FIL的归属
+                  </a>
+                </li>
+                <li className="nav-item">
                   <a className="nav-link" href="#sector">
                     建设方案
                   </a>
                 </li>
+                {isSuccess && (
+                  <li className="nav-item">
+                    <a className="nav-link" href="#seals">
+                      封装进度
+                    </a>
+                  </li>
+                )}
                 <li className="nav-item order-2">
                   <a className="nav-link" href="#timeline">
                     时间进度
@@ -287,45 +315,40 @@ function RaiseContent() {
 
                 <SectionDeposit />
               </section>
-              <section id="reward">
-                <div className="section">
-                  <div className="section-header">
-                    <h4 className="section-title">分配方案</h4>
-                    <p className="mb-0">节点计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
-                  </div>
-
-                  <SectionReward />
+              <section id="reward" className="section">
+                <div className="section-header">
+                  <h4 className="section-title">分配方案</h4>
+                  <p className="mb-0">节点计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
                 </div>
 
-                <div className="section">
-                  <div className="section-header">
-                    <h4 className="section-title">质押FIL的归属</h4>
-                    <p className="mb-0">质押FIL的所有权永恒不变，投入多少返回多少。</p>
-                  </div>
-
-                  <SectionCoin />
-                </div>
+                <SectionReward />
               </section>
-              <section id="sector">
-                <div className="section">
-                  <div className="section-header">
-                    <h4 className="section-title">建设方案</h4>
-                    <p className="mb-0">集合质押FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
-                  </div>
-
-                  <SectionNode />
+              <section id="pledge" className="section">
+                <div className="section-header">
+                  <h4 className="section-title">质押FIL的归属</h4>
+                  <p className="mb-0">质押FIL的所有权永恒不变，投入多少返回多少。</p>
                 </div>
-                {isSuccess && (
-                  <div className="section">
-                    <div className="section-header">
-                      <h4 className="section-title">封装扇区</h4>
-                      <p className="mb-0">封装进展一览无余</p>
-                    </div>
 
-                    <SectionSector />
-                  </div>
-                )}
+                <SectionCoin />
               </section>
+              <section id="sector" className="section">
+                <div className="section-header">
+                  <h4 className="section-title">建设方案</h4>
+                  <p className="mb-0">集合质押FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
+                </div>
+
+                <SectionNode />
+              </section>
+              {isSuccess && (
+                <section id="seals" className="section">
+                  <div className="section-header">
+                    <h4 className="section-title">封装进度</h4>
+                    <p className="mb-0">封装进展一览无余</p>
+                  </div>
+
+                  <SectionSector />
+                </section>
+              )}
               <section id="timeline" className="section order-2">
                 <div className="section-header">
                   <h4 className="section-title">时间进度</h4>

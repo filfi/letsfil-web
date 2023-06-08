@@ -8,8 +8,9 @@ import useDepositServicer from '@/hooks/useDepositServicer';
 import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 
 const CardAssets: React.FC = () => {
-  const { data, asset, role, rate, seals, state } = useRaiseDetail();
+  const { data, asset, info, role, rate, seals, state } = useRaiseDetail();
 
+  const { actual } = info;
   const { progress } = seals;
   const { isWorking } = state;
   const { isRaiser, isServicer } = role;
@@ -19,8 +20,8 @@ const CardAssets: React.FC = () => {
   const { amount } = useDepositServicer(data);
   const { ratio, record, isInvestor } = useDepositInvestor(data);
 
-  // 已封装质押币 = 投资额 * 投资占比 * 封装进度
-  const pledge = useMemo(() => accMul(record, Math.min(ratio, 1), progress), [ratio, record, progress]);
+  // 已封装质押币 = 总投资额 * 投资占比 * 封装进度
+  const pledge = useMemo(() => accMul(actual, Math.min(ratio, 1), progress), [actual, ratio, progress]);
 
   const goDepositCard = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();

@@ -1,4 +1,3 @@
-import { filter } from 'lodash';
 import { useMemo } from 'react';
 import classNames from 'classnames';
 import { useRequest } from 'ahooks';
@@ -33,12 +32,12 @@ export default function AccountPlans() {
   });
 
   const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [address] });
-  const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data?.total, loading]);
+  const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data, loading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
-  const investIds = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
-  const raises = useMemo(() => filter(lists, { raiser: address }), [lists, address]);
-  const services = useMemo(() => filter(lists, { service_provider_address: address }), [lists, address]);
-  const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
+  const investors = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
+  const raises = useMemo(() => lists?.filter((item) => isEqual(item.raiser, address)), [lists, address]);
+  const services = useMemo(() => lists?.filter((item) => isEqual(item.service_provider_address, address)), [lists, address]);
+  const invests = useMemo(() => lists?.filter((item) => investors?.some((id) => isEqual(id, item.raising_id))), [lists, investors]);
 
   const handleCreate = withConnect(async () => {
     setModel(undefined);

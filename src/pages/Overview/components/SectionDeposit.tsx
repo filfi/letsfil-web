@@ -28,6 +28,18 @@ const RaiserCard: React.FC = () => {
   const payable = useMemo(() => isRaiser && isWaiting, [isRaiser, isWaiting]);
   const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isWorking), [isRaiser, isClosed, isFailed, isWorking]);
 
+  const handlePay = async () => {
+    await payAction();
+
+    info.refresh();
+  };
+
+  const handleWithdraw = async () => {
+    await withdrawAction();
+
+    info.refresh();
+  };
+
   return (
     <>
       <div className={classNames('card mb-4', { 'card-danger': isRaiser && isWaiting && !isRaisePaid })}>
@@ -46,7 +58,7 @@ const RaiserCard: React.FC = () => {
                 style={{ minWidth: 120 }}
                 loading={withdrawing}
                 disabled={amount <= 0 || processing}
-                onClick={withdrawAction}
+                onClick={handleWithdraw}
               >
                 取回
               </SpinBtn>
@@ -54,7 +66,7 @@ const RaiserCard: React.FC = () => {
               <IconChecked />
             )
           ) : payable ? (
-            <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} disabled={isPending || processing} loading={paying} onClick={payAction}>
+            <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} disabled={isPending || processing} loading={paying} onClick={handlePay}>
               存入
             </SpinBtn>
           ) : null}
@@ -138,6 +150,18 @@ const ServiceCard: React.FC = () => {
   const withdrawable = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isServicer, isClosed, isFailed, isDestroyed]);
   const showExtra = useMemo(() => isClosed || isFailed || isSuccess || isWorking || fines > 0, [isClosed, isFailed, isSuccess, isWorking, fines]);
 
+  const handlePay = async () => {
+    await payAction();
+
+    info.refresh();
+  };
+
+  const handleWithdraw = async () => {
+    await withdrawAction();
+
+    info.refresh();
+  };
+
   return (
     <>
       <div className={classNames('card', { 'card-danger': isServicer && isWaiting && !isOpsPaid })}>
@@ -159,7 +183,7 @@ const ServiceCard: React.FC = () => {
                 style={{ minWidth: 120 }}
                 loading={withdrawing}
                 disabled={amount <= 0 || processing}
-                onClick={withdrawAction}
+                onClick={handleWithdraw}
               >
                 取回
               </SpinBtn>
@@ -246,7 +270,7 @@ const ServiceCard: React.FC = () => {
         title="预存技术运维保证金"
         confirmText="存入"
         confirmLoading={paying}
-        onConfirm={payAction}
+        onConfirm={handlePay}
       >
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">

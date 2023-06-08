@@ -9,7 +9,7 @@ import useRaiseRole from './useRaiseRole';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import { accAdd, accDiv, accMul, accSub, isDef } from '@/utils/utils';
+import { accAdd, accDiv, accMul, accSub, isDef, sleep } from '@/utils/utils';
 
 /**
  * 服务商节点激励
@@ -65,7 +65,12 @@ export default function useRewardServicer(data?: API.Plan) {
     withConnect(async () => {
       if (!data) return;
 
-      await contract.servicerWithdraw(data.raising_id);
+      const res = await contract.servicerWithdraw(data.raising_id);
+
+      await sleep(200);
+      fetchData();
+
+      return res;
     }),
   );
 

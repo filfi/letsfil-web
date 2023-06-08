@@ -1,7 +1,7 @@
+import { parseEther } from 'viem';
 import { useMemo, useState } from 'react';
 import { useDebounceEffect } from 'ahooks';
 
-import { isDef } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import { EventType } from '@/utils/mitt';
@@ -10,6 +10,7 @@ import useRaiseRole from './useRaiseRole';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
+import { isDef, sleep } from '@/utils/utils';
 
 /**
  * 主办人的投资信息
@@ -39,9 +40,14 @@ export default function useDepositRaiser(data?: API.Plan) {
     withConnect(async () => {
       if (!data) return;
 
-      return await contract.depositRaiserFund(data.raising_id, {
-        value: data.raise_security_fund,
+      const res = await contract.depositRaiserFund(data.raising_id, {
+        value: parseEther(`${toNumber(data.raise_security_fund)}`),
       });
+
+      await sleep(1_000);
+      fetchData();
+
+      return res;
     }),
   );
 
@@ -49,7 +55,12 @@ export default function useDepositRaiser(data?: API.Plan) {
     withConnect(async () => {
       if (!data) return;
 
-      return await contract.withdrawRaiserFund(data.raising_id);
+      const res = await contract.withdrawRaiserFund(data.raising_id);
+
+      await sleep(200);
+      fetchData();
+
+      return res;
     }),
   );
 

@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useDebounceEffect } from 'ahooks';
 
-import { isDef } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import { EventType } from '@/utils/mitt';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
+import { isDef, sleep } from '@/utils/utils';
 
 /**
  * 建设者节点激励
@@ -39,7 +39,12 @@ export default function useRewardInvestor(data?: API.Plan) {
     withConnect(async () => {
       if (!data) return;
 
-      return await contract.investorWithdraw(data.raising_id);
+      const res = await contract.investorWithdraw(data.raising_id);
+
+      await sleep(200);
+      fetchData();
+
+      return res;
     }),
   );
 

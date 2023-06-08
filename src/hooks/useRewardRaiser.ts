@@ -8,7 +8,7 @@ import useRaiseRole from './useRaiseRole';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import { accAdd, isDef } from '@/utils/utils';
+import { accAdd, isDef, sleep } from '@/utils/utils';
 
 /**
  * 主办人节点激励
@@ -44,7 +44,12 @@ export default function useRewardRaiser(data?: API.Plan) {
     withConnect(async () => {
       if (!data) return;
 
-      return await contract.raiserWithdraw(data.raising_id);
+      const res = await contract.raiserWithdraw(data.raising_id);
+
+      await sleep(200);
+      fetchData();
+
+      return res;
     }),
   );
 

@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
-import { getContract } from 'viem';
 import { usePublicClient, useWalletClient } from 'wagmi';
+import { Account } from 'viem';
 
 import { isDef } from '@/utils/utils';
 import abi from '@/abis/raise.abi.json';
@@ -17,20 +16,7 @@ function toEther(v: unknown) {
 
 export default function useContract(address?: API.Address) {
   const publicClient = usePublicClient();
-  const walletClient = useWalletClient();
-
-  const contract = useMemo(
-    () =>
-      address
-        ? getContract({
-            abi,
-            address,
-            publicClient,
-            walletClient: walletClient.data!,
-          })
-        : undefined,
-    [address],
-  );
+  const { data: walletClient } = useWalletClient();
 
   const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | undefined>) {
     return async (...args: P) => {
@@ -38,6 +24,8 @@ export default function useContract(address?: API.Address) {
 
       if (hash) {
         const res = await publicClient.waitForTransactionReceipt({ hash });
+
+        console.log(res);
 
         if (res.status === 'reverted') {
           throw new RevertedError('交易失败', res);
@@ -48,382 +36,313 @@ export default function useContract(address?: API.Address) {
     };
   };
 
+  const readContract = async function <R = any, P extends unknown[] = any>(functionName: string, args: P, _address?: API.Address) {
+    const addr = _address ?? address;
+
+    if (!addr) return;
+
+    const res = await publicClient.readContract({
+      abi,
+      args,
+      functionName,
+      address: addr,
+    });
+
+    return res as R;
+  };
+
+  const writeContract = async function <P extends unknown[] = any>(
+    functionName: string,
+    args: P,
+    { account, address: _address, ...opts }: TxOptions & { address?: API.Address; account?: Account } = {},
+  ) {
+    const addr = _address ?? address;
+
+    if (!addr || !walletClient) return;
+
+    return await waitTransaction(walletClient.writeContract)({
+      abi,
+      args,
+      account,
+      functionName,
+      address: addr,
+      ...(opts as any),
+    });
+  };
+
   /**
    * 获取Owner权限
    */
-  const getOwner = async () => {
-    if (contract) return (await contract.read.gotMiner([])) as boolean;
+  const getOwner = async (_address = address) => {
+    return await readContract<boolean>('gotMiner', [], _address);
   };
 
   /**
    * 获取运维保证金
    */
-  const getFundOps = async (id: string) => {
-    if (contract) return toEther(await contract.read.opsSecurityFundRemain([id]));
+  const getFundOps = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('opsSecurityFundRemain', [id], _address));
   };
 
   /**
    * 获取总运维保证金
    */
-  const getFundOpsCalc = async (id: string) => {
-    if (contract) return toEther(await contract.read.opsCalcFund([id]));
+  const getFundOpsCalc = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('opsCalcFund', [id], _address));
   };
 
   /**
    * 获取主办人保证金
    */
-  const getFundRaiser = async (id: string) => {
-    if (contract) return toEther(await contract.read.securityFundRemain([id]));
+  const getFundRaiser = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('securityFundRemain', [id], _address));
   };
 
   /**
    * 获取节点状态
    */
-  const getNodeState = async (id: string) => {
-    if (contract) return (await contract.read.nodeState([id])) as NodeState;
+  const getNodeState = async (id: string, _address = address) => {
+    return await readContract<NodeState>('nodeState', [id], _address);
   };
 
   /**
    * 获取节点计划状态
    */
-  const getRaiseState = async (id: string) => {
-    if (contract) return (await contract.read.raiseState([id])) as RaiseState;
+  const getRaiseState = async (id: string, _address = address) => {
+    return await readContract<RaiseState>('raiseState', [id], _address);
   };
 
   /**
    * 获取退回资产
    */
-  const getBackAssets = async (id: string, address: string) => {
-    if (contract) {
-      const res = (await contract.read.getBack([id, address])) as [number, number];
+  const getBackAssets = async (id: string, account: string, _address = address) => {
+    const res = await readContract<[bigint, bigint]>('getBack', [id, account], _address);
 
-      return res.map(toEther);
+    if (res) {
+      return res.map(toEther) as [number, number];
     }
   };
 
   /**
    * 获取建设者信息
    */
-  const getInvestorInfo = async (id: string, address: string) => {
-    if (contract) {
-      const res = (await contract.read.investorInfo([id, address])) as [number, number, number, number];
+  const getInvestorInfo = async (id: string, account: string, _address = address) => {
+    const res = await readContract<[bigint, bigint, bigint, bigint]>('investorInfo', [id, account], _address);
 
-      return res.map(toEther);
+    if (res) {
+      return res.map(toEther) as [number, number, number, number];
     }
   };
 
   /**
    * 获取已质押总额
    */
-  const getTotalPledge = async (id: string) => {
-    if (contract) return toEther(await contract.read.pledgeTotalCalcAmount([id]));
+  const getTotalPledge = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('pledgeTotalCalcAmount', [id], _address));
   };
 
   /**
    * 获取已封装总额
    */
-  const getTotalSealed = async (id: string) => {
-    if (contract) return toEther(await contract.read.sealedAmount([id]));
+  const getTotalSealed = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('sealedAmount', [id], _address));
   };
 
   /**
    * 获取节点总节点激励
    */
-  const getTotalReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.totalRewardAmount([id]));
+  const getTotalReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('totalRewardAmount', [id], _address));
   };
 
   /**
    * 获取总利息
    */
-  const getTotalInterest = async (id: string) => {
-    if (contract) return toEther(await contract.read.totalInterest([id]));
+  const getTotalInterest = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('totalInterest', [id], _address));
   };
 
   /**
    * 获取节点待释放的总节点激励
    */
-  const getPendingReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.totalReleasedRewardAmount([id]));
+  const getPendingReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('totalReleasedRewardAmount', [id], _address));
   };
 
   /**
    * 获取建设者总节点激励
    */
-  const getInvestorTotalReward = async (id: string, address: string) => {
-    if (contract) return toEther(await contract.read.totalRewardOf([id, address]));
+  const getInvestorTotalReward = async (id: string, account: string, _address = address) => {
+    return toEther(await readContract<bigint>('totalRewardOf', [id, account], _address));
   };
 
   /**
    * 获取建设者待释放节点激励
    */
-  const getInvestorPendingReward = async (id: string, address: string) => {
-    if (contract) return toEther(await contract.read.willReleaseOf([id, address]));
+  const getInvestorPendingReward = async (id: string, account: string, _address = address) => {
+    return toEther(await readContract<bigint>('willReleaseOf', [id, account], _address));
   };
 
   /**
    * 获取建设者可提取节点激励
    */
-  const getInvestorAvailableReward = async (id: string, address: string) => {
-    if (contract) return toEther(await contract.read.availableRewardOf([id, address]));
+  const getInvestorAvailableReward = async (id: string, account: string, _address = address) => {
+    return toEther(await readContract<bigint>('availableRewardOf', [id, account], _address));
   };
 
   /**
    * 获取建设者已提取节点激励
    */
-  const getInvestorWithdrawnRecord = async (id: string, address: string) => {
-    if (contract) return toEther(await contract.read.withdrawRecord([id, address]));
+  const getInvestorWithdrawnRecord = async (id: string, account: string, _address = address) => {
+    return toEther(await readContract<bigint>('withdrawRecord', [id, account], _address));
   };
 
   /**
    * 获取主办人待释放的节点激励
    */
-  const getRaiserPendingReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.raiserWillReleaseReward([id]));
+  const getRaiserPendingReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('raiserWillReleaseReward', [id], _address));
   };
 
   /**
    * 获取主办人可领取的节点激励
    */
-  const getRaiserAvailableReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.raiserRewardAvailableLeft([id]));
+  const getRaiserAvailableReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('raiserRewardAvailableLeft', [id], _address));
   };
 
   /**
    * 获取主办人已领取的节点激励
    */
-  const getRaiserWithdrawnReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.gotRaiserReward([id]));
+  const getRaiserWithdrawnReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('gotRaiserReward', [id], _address));
   };
 
   /**
    * 获取服务商罚金
    */
-  const getServicerFines = async (id: string) => {
-    if (contract) return toEther(await contract.read.spFine([id]));
+  const getServicerFines = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spFine', [id], _address));
   };
 
   /**
    * 获取服务商锁定节点激励
    */
-  const getServicerLockedReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.spRewardLock([id]));
+  const getServicerLockedReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spRewardLock', [id], _address));
   };
 
   /**
    * 获取服务商待释放的节点激励
    */
-  const getServicerPendingReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.spWillReleaseReward([id]));
+  const getServicerPendingReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spWillReleaseReward', [id], _address));
   };
 
   /**
    * 获取服务商可领取的节点激励
    */
-  const getServicerAvailableReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.spRewardAvailableLeft([id]));
+  const getServicerAvailableReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spRewardAvailableLeft', [id], _address));
   };
 
   /**
    * 获取服务商已领取的节点激励
    */
-  const getServicerWithdrawnReward = async (id: string) => {
-    if (contract) return toEther(await contract.read.gotSpReward([id]));
+  const getServicerWithdrawnReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('gotSpReward', [id], _address));
   };
 
   /**
    * 质押
    */
-  const staking = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.staking([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const staking = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('staking', [id], opts);
+  });
 
   /**
    * 解除质押|赎回
    */
-  const unStaking = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.unStaking([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const unStaking = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('unStaking', [id], opts);
+  });
 
   /**
    * 缴纳运维保证金
    */
-  const depositOpsFund = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.payOpsSecurityFund([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const depositOpsFund = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('payOpsSecurityFund', [id], opts);
+  });
 
   /**
    * 缴纳主办人保证金
    */
-  const depositRaiserFund = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.paySecurityFund([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const depositRaiserFund = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('paySecurityFund', [id], opts);
+  });
 
   /**
    * 服务商签名
    */
-  const servicerSign = toastify(
-    waitTransaction(async (opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.spSignWithMiner([
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const servicerSign = toastify(async (opts?: TxOptions) => {
+    return await writeContract('spSignWithMiner', [], opts);
+  });
 
   /**
    * 启动预封装
    */
-  const startPreSeal = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.startPreSeal([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const startPreSeal = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('startPreSeal', [id], opts);
+  });
 
   /**
    * 关闭节点计划
    */
-  const closeRaisePlan = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.closeRaisePlan([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const closeRaisePlan = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('closeRaisePlan', [id], opts);
+  });
 
   /**
    * 启动节点计划
    */
-  const startRaisePlan = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.startRaisePlan([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const startRaisePlan = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('startRaisePlan', [id], opts);
+  });
 
   /**
    * 主办人提取节点激励
    */
-  const raiserWithdraw = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.raiserWithdraw([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const raiserWithdraw = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('raiserWithdraw', [id], opts);
+  });
 
   /**
    * 建设者提取节点激励
    */
-  const investorWithdraw = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.investorWithdraw([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const investorWithdraw = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('investorWithdraw', [id], opts);
+  });
 
   /**
    * 服务商提取节点激励
    */
-  const servicerWithdraw = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.spWithdraw([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const servicerWithdraw = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('spWithdraw', [id], opts);
+  });
 
   /**
    * 提取运维保证金
    */
-  const withdrawOpsFund = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.withdrawOpsSecurityFund([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const withdrawOpsFund = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('withdrawOpsSecurityFund', [id], opts);
+  });
 
   /**
    * 提取主办人保证金
    */
-  const withdrawRaiserFund = toastify(
-    waitTransaction(async (id: string, opts?: TxOptions) => {
-      if (contract)
-        return await contract.write.withdrawSecurityFund([
-          id,
-          {
-            ...opts,
-          },
-        ]);
-    }),
-  );
+  const withdrawRaiserFund = toastify(async (id: string, opts?: TxOptions) => {
+    return await writeContract('withdrawSecurityFund', [id], opts);
+  });
 
   return {
     getOwner,

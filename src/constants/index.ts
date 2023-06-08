@@ -27,7 +27,7 @@ const RAISE_ADDR = '0x390CB629D5057AB6F990471a725179FdfB64dEFD'; // 5000
 /**
  * Raise Facory Contract Address
  */
-export const RAISE_ADDRESS = RUN_ENV === 'main' ? ADDRESS : RAISE_ADDR;
+export const RAISE_ADDRESS = (RUN_ENV === 'main' ? ADDRESS : RAISE_ADDR) as API.Address;
 
 const SCAN_URL_MAIN = 'https://filfox.info/en'; // mainnet
 const SCAN_URL_CB = 'https://calibration.filscan.io'; // calibration testnet

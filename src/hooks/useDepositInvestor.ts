@@ -1,6 +1,6 @@
+import { parseEther } from 'viem';
 import { useMemo, useState } from 'react';
 import { useDebounceEffect } from 'ahooks';
-import { parseEther } from 'ethers/lib/utils';
 
 import useAccount from './useAccount';
 import useContract from './useContract';
@@ -9,7 +9,7 @@ import useRaiseInfo from './useRaiseInfo';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import useEmittHandler from './useEmitHandler';
-import { accDiv, isDef } from '@/utils/utils';
+import { accDiv, isDef, sleep } from '@/utils/utils';
 
 /**
  * 建设者的投资信息
@@ -54,9 +54,14 @@ export default function useDepositInvestor(data?: API.Plan) {
     withConnect(async (amount: number | string) => {
       if (!data) return;
 
-      return await contract.staking(data.raising_id, {
-        value: parseEther(`${amount}`),
+      const res = await contract.staking(data.raising_id, {
+        value: parseEther(`${+amount}`),
       });
+
+      await sleep(200);
+      fetchData();
+
+      return res;
     }),
   );
 
@@ -64,7 +69,12 @@ export default function useDepositInvestor(data?: API.Plan) {
     withConnect(async () => {
       if (!data) return;
 
-      return await contract.unStaking(data.raising_id);
+      const res = await contract.unStaking(data.raising_id);
+
+      await sleep(200);
+      fetchData();
+
+      return res;
     }),
   );
 

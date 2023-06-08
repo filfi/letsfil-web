@@ -19,12 +19,11 @@ declare global {
   type MaybeRef<T> = T | React.MutableRefObject<T>;
 
   interface TxOptions {
-    gas?: BigNumberish;
-    gasLimit?: BigNumberish;
-    gasPrice?: BigNumberish;
-    maxFeePerGas?: ethers.BigNumber;
-    maxPriorityFeePerGas?: BigNumberish;
-    value?: BigNumberish;
+    gasPrice?: bigint;
+    maxFeePerGas?: bigint;
+    maxPriorityFeePerGas?: bigint;
+    nonce?: number;
+    value?: bigint;
   }
 
   /**

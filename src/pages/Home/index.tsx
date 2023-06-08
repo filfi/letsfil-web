@@ -25,7 +25,7 @@ export default function Home() {
       <section className={classNames(styles.section, styles.banner)}>
         <div className="container">
           <div className="row g-4 align-items-lg-center">
-            <div className="col-12 col-lg-5">
+            <div className="col-12 col-lg-6">
               <p className="mb-4">
                 <span className="badge badge-primary ps-1">
                   <span className="badge badge-primary bg-white lh-sm">FilFi联合节点</span>
@@ -46,7 +46,7 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            <div className="col-12 col-lg-7 text-center">
+            <div className="col-12 col-lg-6 text-center">
               <img className="img-fluid" src={require('./imgs/snapshot.png')} />
             </div>
           </div>

@@ -9,8 +9,9 @@ import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useContract from '@/hooks/useContract';
 import useProcessify from '@/hooks/useProcessify';
-import { day2sec, toF4Address } from '@/utils/utils';
+import useProcessing from '@/hooks/useProcessing';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
+import { day2sec, toF4Address } from '@/utils/utils';
 import { formatAmount, formatPower } from '@/utils/format';
 import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
@@ -26,6 +27,7 @@ const calcTime = (mill: number) => {
 };
 
 const CardRaise: React.FC = () => {
+  const [processing] = useProcessing();
   const { createRaisePlan } = useFactoryContract();
   const { data, asset, role, state } = useRaiseDetail();
 
@@ -224,20 +226,20 @@ const CardRaise: React.FC = () => {
       <>
         <div className="card section-card">
           <div className="card-header d-flex align-items-center border-0">
-            <h4 className="card-title mb-0 me-2">节点计划·已完成</h4>
+            <h4 className="card-title mb-0 me-2">节点计划 · 已完成</h4>
             <span className="badge badge-success ms-auto">集合质押成功</span>
             <span className="badge badge-success ms-2">封装完成</span>
           </div>
           <div className="card-body py-2 fs-16 text-main">
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>封装容量</span>
+              <span>新增算力</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{formatPower(power)?.[0]}</span>
                 <span className="ms-1 text-neutral">{formatPower(power)?.[1]}</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>封装质押币</span>
+              <span>封装消耗</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{formatAmount(pledge)}</span>
                 <span className="ms-1 text-neutral">FIL</span>

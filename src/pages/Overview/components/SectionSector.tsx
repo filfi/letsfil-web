@@ -48,7 +48,9 @@ const SectionSector: React.FC = () => {
                 aria-valuenow={isDelayed ? 66.67 : 100}
                 style={{ width: isDelayed ? '66.6666%' : '100%' }}
               >
-                <div className="progress-bar fw-bold">承诺封装时间·{period}天</div>
+                <div className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isSealing })}>
+                  <span className="fw-bold">承诺封装时间·{period}天</span>
+                </div>
               </div>
               {isDelayed && (
                 <div
@@ -60,7 +62,9 @@ const SectionSector: React.FC = () => {
                   aria-valuenow={33.33}
                   style={{ width: '33.3333%' }}
                 >
-                  <div className="progress-bar fw-bold">展期·{hibit}天</div>
+                  <div className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isDelayed })}>
+                    <span className="fw-bold">展期·{hibit}天</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -102,9 +106,9 @@ const SectionSector: React.FC = () => {
                 <td>{sector} 个</td>
               </tr>
               <tr>
-                <th>消耗质押币</th>
+                <th>消耗质押</th>
                 <td>{F.formatAmount(pledge)} FIL</td>
-                <th>完成比例</th>
+                <th>封装进度</th>
                 <td>{F.formatRate(progress)}</td>
               </tr>
               {delay ? (
@@ -181,9 +185,9 @@ const SectionSector: React.FC = () => {
               <td>-</td>
             </tr>
             <tr>
-              <th>消耗质押币</th>
+              <th>消耗质押</th>
               <td>-</td>
-              <th>完成比例</th>
+              <th>封装进度</th>
               <td>-</td>
             </tr>
             <tr>

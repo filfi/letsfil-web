@@ -1,6 +1,7 @@
 import { isEqual } from './utils';
 import Modal from '@/components/Modal';
 import type { AlertOptions } from '@/components/Modal';
+import { BaseError, UserRejectedRequestError } from 'viem';
 
 export type Service<R = any, P extends unknown[] = any> = (...args: P) => Promise<R>;
 
@@ -23,7 +24,16 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
     try {
       return await service(...args);
     } catch (e: any) {
-      console.log(e);
+      console.log(e.name);
+
+      if (e instanceof BaseError) {
+        console.log('BaseError', e.cause);
+
+        if (e.cause instanceof UserRejectedRequestError) {
+          console.log('User rejected request!');
+          throw e;
+        }
+      }
 
       if (!isEqual(e.code, 'ACTION_REJECTED')) {
         const content = e.reason ?? e.data?.message ?? e.message;

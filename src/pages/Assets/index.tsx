@@ -95,7 +95,7 @@ export default function Assets() {
     <>
       <div className="container">
         <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
-          <PageHeader className="mb-3 pb-0" title={title} desc={`算力包：${param.id}`} />
+          <PageHeader className="mb-3 pb-0" title={title} desc={`算力包 ${param.id}`} />
 
           <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
             <li className="nav-item">
@@ -254,13 +254,13 @@ export default function Assets() {
                     </div> */}
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">锁定节点激励</p>
+                        <p className="mb-1 fw-500">锁定激励</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
                       </div>
                     </div>
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">累计节点激励</p>
+                        <p className="mb-1 fw-500">累计激励</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
                       </div>
                     </div>

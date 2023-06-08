@@ -10,7 +10,7 @@ import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const CardStaking: React.FC = () => {
   const [form] = Form.useForm();
-  const { data, info, state } = useRaiseDetail();
+  const { data, info, state, refresh } = useRaiseDetail();
   const { amount, staking, stakeAction } = useDepositInvestor(data);
 
   const { actual, target } = info;
@@ -34,6 +34,9 @@ const CardStaking: React.FC = () => {
 
   const handleStake = async ({ amount }: { amount: string }) => {
     await stakeAction(amount);
+
+    refresh();
+    info.refresh();
 
     form.resetFields();
   };
