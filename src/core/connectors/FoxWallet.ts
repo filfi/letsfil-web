@@ -36,9 +36,7 @@ export class FoxWalletConnector extends InjectedConnector {
       shimDisconnect: true,
       getProvider() {
         if (typeof window === 'undefined') return;
-        const ethereum =
-          (window as unknown as { foxwallet?: { ethereum?: WindowProvider } }).foxwallet?.ethereum ??
-          (window as unknown as { ethereum?: WindowProvider }).ethereum;
+        const ethereum = (window as unknown as { foxwallet?: { ethereum?: WindowProvider } }).foxwallet?.ethereum;
 
         return ethereum;
       },
