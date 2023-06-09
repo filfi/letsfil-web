@@ -3,9 +3,13 @@
  */
 
 import { WagmiConfig } from 'wagmi';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { config } from '@/constants/config';
 import { getLocale, setLocale } from '@/utils/storage';
+import { config, queryClient } from '@/constants/config';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 /**
  * @see https://v3.umijs.org/zh-CN/plugins/plugin-locale#%E8%BF%90%E8%A1%8C%E6%97%B6%E9%85%8D%E7%BD%AE
@@ -30,5 +34,11 @@ export async function getInitialState() {
 }
 
 export function rootContainer(root?: React.ReactNode) {
-  return <WagmiConfig config={config}>{root}</WagmiConfig>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <WagmiConfig config={config}>{root}</WagmiConfig>
+
+      {isDev && <ReactQueryDevtools panelPosition="right" position="bottom-right" />}
+    </QueryClientProvider>
+  );
 }

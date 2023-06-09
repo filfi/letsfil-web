@@ -7,7 +7,6 @@ import { isDef } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { getEvents } from '@/apis/raise';
 import SpinBtn from '@/components/SpinBtn';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useInfiniteLoad from '@/hooks/useInfiniteLoad';
 import { formatAddr, formatUnixNow } from '@/utils/format';
 
@@ -61,8 +60,7 @@ function sortEvents(a: API.Event, b: API.Event) {
   return 0;
 }
 
-const SectionEvents: React.FC = () => {
-  const { data } = useRaiseDetail();
+const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
 
   const service = async ({ page, pageSize }: any) => {

@@ -1,25 +1,23 @@
-import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import { useCountDown } from 'ahooks';
 
 import Avatar from '@/components/Avatar';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
+import useSProvider from '@/hooks/useSProvider';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import { formatAmount, formatProgress, formatRate, formatSponsor } from '@/utils/format';
 
 export type RaisingCardProps = {
   data: API.Plan;
-  getProvider?: (id?: number | string) => API.Provider | undefined;
 };
 
-const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
+const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
   const { rate } = useIncomeRate(data);
+  const provider = useSProvider(data.service_id);
   const { progress, target } = useRaiseInfo(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
-
-  const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
 
   return (
     <>
@@ -96,7 +94,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data, getProvider }) => {
 
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-clock text-gray"></span>
-                  <span className="mx-1">承诺封装时间</span>
+                  <span className="mx-1">封装时间</span>
                   <span className="fw-bold">&lt; {data.seal_days}天</span>
                 </p>
 

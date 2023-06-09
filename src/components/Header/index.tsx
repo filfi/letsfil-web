@@ -2,14 +2,15 @@ import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
 import { useMemo, useRef } from 'react';
 import { useAccount as useWagmi, useBalance } from 'wagmi';
-import { useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
 import { FormattedMessage, history, Link, useLocation } from '@umijs/max';
+import { useBoolean, useMount, useResponsive, useScroll, useUpdateEffect } from 'ahooks';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
 import useAccount from '@/hooks/useAccount';
 import { formatAmount } from '@/utils/format';
 import useProcessing from '@/hooks/useProcessing';
+import { ReactComponent as Logo } from '@/assets/logo.svg';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
 import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
@@ -50,10 +51,11 @@ const Header: React.FC = () => {
   // hooks
   const position = useScroll();
   const location = useLocation();
+  const responsive = useResponsive();
   const [processing] = useProcessing();
   const { connect, disconnect } = useAccount();
   const { address, isConnecting } = useWagmi();
-  const { data: balance } = useBalance({ address, watch: true });
+  const { data: balance } = useBalance({ address });
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 
@@ -84,7 +86,7 @@ const Header: React.FC = () => {
       <nav className="navbar navbar-expand-lg">
         <div className="container position-relative">
           <Link className="navbar-brand" to="/">
-            <Brand />
+            {responsive.md ? <Brand /> : <Logo />}
           </Link>
 
           <div className="btn-group assets-bar" role="group" aria-label="Assets Bar">
@@ -101,7 +103,7 @@ const Header: React.FC = () => {
                     </span>
 
                     <span className="ms-1">
-                      {formatAmount(balance?.formatted)} {balance?.symbol}
+                      {formatAmount(balance?.formatted, 2)} {balance?.symbol}
                     </span>
 
                     {/* <span className="vr mx-2 d-none d-md-inline"></span>

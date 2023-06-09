@@ -8,19 +8,20 @@ import { catchify } from '@/utils/hackify';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import { transformModel } from '@/helpers/app';
+import type { WriteOptions } from './useContract';
 
-export default function useRaiseActions(data?: API.Plan) {
+export default function useRaiseActions(data?: API.Plan | null) {
   const [, setModel] = useModel('stepform');
 
   const contract = useContract(data?.raise_address);
 
-  const edit = async () => {
-    if (!data) return;
+  const edit = async (_data = data) => {
+    if (!_data) return;
 
-    const model = Object.keys(data).reduce(
+    const model = Object.keys(_data).reduce(
       (d, key) => ({
         ...d,
-        [camelCase(key)]: data[key as keyof typeof data],
+        [camelCase(key)]: _data[key as keyof typeof data],
       }),
       {},
     );
@@ -30,16 +31,16 @@ export default function useRaiseActions(data?: API.Plan) {
     history.replace('/create');
   };
 
-  const [closing, close] = useProcessify(async () => {
-    if (!data?.raising_id) return;
+  const [closing, close] = useProcessify(async (id = data?.raising_id, opts?: WriteOptions) => {
+    if (!id) return;
 
-    return await contract.closeRaisePlan(data.raising_id);
+    return await contract.closeRaisePlan(id, opts);
   });
 
-  const [removing, remove] = useLoadingify(async () => {
-    if (!data?.raising_id) return;
+  const [removing, remove] = useLoadingify(async (id = data?.raising_id) => {
+    if (!id) return;
 
-    const [e] = await catchify(del)(data.raising_id);
+    const [e] = await catchify(del)(id);
 
     if (e) {
       Dialog.alert({

@@ -27,7 +27,8 @@ export default function CreateProgram() {
   const target = Form.useWatch('targetAmount', form);
   const minRate = Form.useWatch('minRaiseRate', form);
   const amountType = Form.useWatch('amountType', form);
-  const { perPledge, loading: fetching } = useChainInfo();
+
+  const { perPledge, isLoading } = useChainInfo();
 
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
   const minAmount = useMemo(() => (Number.isNaN(+amount) ? 0 : accMul(amount, rate)), [amount, rate]);
@@ -174,7 +175,7 @@ export default function CreateProgram() {
               <div className="col">
                 <div className="card">
                   <div className="card-body">
-                    <Skeleton active loading={fetching} paragraph={{ rows: 1 }}>
+                    <Skeleton active loading={isLoading} paragraph={{ rows: 1 }}>
                       <div className="d-flex text-neutral mb-3">
                         <span className="fw-600">{['估算存储算力(QAP)', '需要质押FIL'][amountType]}</span>
                         <span className="ms-auto">{data?.sectorSize}G扇区</span>

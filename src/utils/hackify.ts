@@ -1,7 +1,7 @@
-import { isEqual } from './utils';
+import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError } from 'viem';
+
 import Modal from '@/components/Modal';
 import type { AlertOptions } from '@/components/Modal';
-import { BaseError, UserRejectedRequestError } from 'viem';
 
 export type Service<R = any, P extends unknown[] = any> = (...args: P) => Promise<R>;
 
@@ -25,6 +25,7 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
       return await service(...args);
     } catch (e: any) {
       console.log(e.name);
+      let msg = e.reason ?? e.data?.errorMessage ?? e.message;
 
       if (e instanceof BaseError) {
         console.log('BaseError', e.cause);
@@ -33,20 +34,28 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
           console.log('User rejected request!');
           throw e;
         }
+
+        const revertedError = e.walk((e) => e instanceof ContractFunctionRevertedError) as ContractFunctionRevertedError;
+
+        msg = revertedError?.data?.errorName ?? msg;
       }
 
-      if (!isEqual(e.code, 'ACTION_REJECTED')) {
-        const content = e.reason ?? e.data?.message ?? e.message;
-
-        Modal.alert({
-          content,
-          icon: 'warn',
-          title: '操作失败',
-          ...options,
-        });
-      }
+      Modal.alert({
+        icon: 'error',
+        title: '操作失败',
+        content: msg,
+        ...options,
+      });
 
       throw e;
     }
+  };
+}
+
+export function withNull<R = any, P extends unknown[] = any>(service: (...args: P) => Promise<R | undefined>) {
+  return async (...args: P) => {
+    const res = await service(...args);
+
+    return res ?? null;
   };
 }

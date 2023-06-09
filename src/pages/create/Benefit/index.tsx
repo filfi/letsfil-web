@@ -14,7 +14,7 @@ import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
-import useProviders from '@/hooks/useProviders';
+import useSProvider from '@/hooks/useSProvider';
 import BenefitPie from './components/BenefitPie';
 import StepsModal from './components/StepsModal';
 import AssetsModal from './components/AssetsModal';
@@ -97,9 +97,10 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
 export default function CreateBenefit() {
   const modal = useRef<ModalAttrs>(null);
 
-  const [form] = Form.useForm();
-  const { getProvider } = useProviders();
   const [model, setModel] = useModel('stepform');
+  const provider = useSProvider(model?.serviceId);
+
+  const [form] = Form.useForm();
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
   const ratio = Form.useWatch('opsSecurityFundRate', form);
@@ -108,7 +109,6 @@ export default function CreateBenefit() {
 
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
-  const provider = useMemo(() => getProvider(model?.serviceId), [model, getProvider]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0), [powerRate]);
   const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);

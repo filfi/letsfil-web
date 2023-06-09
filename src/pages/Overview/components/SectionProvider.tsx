@@ -2,11 +2,12 @@ import classNames from 'classnames';
 
 import Avatar from '@/components/Avatar';
 import { formatSponsor } from '@/utils/format';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useSProvider from '@/hooks/useSProvider';
+import useRaiseState from '@/hooks/useRaiseState';
 
-const SectionProvider: React.FC = () => {
-  const { data, state, provider } = useRaiseDetail();
-  const { isPending } = state;
+const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { isPending } = useRaiseState(data);
+  const provider = useSProvider(data?.service_id);
 
   return (
     <>

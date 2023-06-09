@@ -13,8 +13,10 @@ import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
+import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
+import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
@@ -53,19 +55,21 @@ const Item: React.FC<{
   onHide?: () => Promise<any>;
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
-  getProvider?: (id?: number | string) => API.Provider | undefined;
-}> = ({ data, invest, getProvider, onEdit, onDelete, onStart }) => {
+}> = ({ data, invest, onEdit, onDelete, onStart }) => {
   const state = useRaiseState(data);
   const { pack, power } = useAssetPack(data);
   const { amount } = useDepositInvestor(data);
+  const { progress: sealPercent } = useRaiseSeals(data);
   const { priorityRate, opsRatio } = useRaiseRate(data);
   const { actual, progress, target } = useRaiseInfo(data);
   const { isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
 
+  const provider = useSProvider(data.service_id);
+
   const calcSealDays = (data: API.Plan) => {
     const r: string[] = [];
 
-    // 生产中
+    // 运营中
     if (state.isWorking) {
       const sec = Math.max(accSub(data.end_seal_time, data.begin_seal_time), 0);
       r.push(`${F.formatSeals(sec2day(sec))}天`);
@@ -86,7 +90,6 @@ const Item: React.FC<{
   };
 
   const sealDays = useMemo(() => calcSealDays(data), [data, state]);
-  const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
 
   const [deleting, deleteAction] = useLoadingify(async () => {
@@ -181,9 +184,7 @@ const Item: React.FC<{
       return (
         <>
           <span className="badge badge-warning">封装中</span>
-          <span className="ms-2 fs-sm text-gray">
-            <Countdown time={data.end_seal_time} />
-          </span>
+          <span className="ms-2 fs-sm text-gray">{F.formatRate(sealPercent)}</span>
         </>
       );
     }
@@ -191,9 +192,7 @@ const Item: React.FC<{
       return (
         <>
           <span className="badge badge-warning">封装延期</span>
-          <span className="ms-2 fs-sm text-gray">
-            <Countdown time={data.end_seal_time} />
-          </span>
+          <span className="ms-2 fs-sm text-gray">{F.formatRate(sealPercent)}</span>
         </>
       );
     }
@@ -201,7 +200,7 @@ const Item: React.FC<{
       const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time), 0);
       return (
         <>
-          <span className="badge badge-primary">生产中</span>
+          <span className="badge badge-primary">运营中</span>
           <span className="ms-2 fs-sm text-gray">已运行 {sec2day(sec)} 天</span>
         </>
       );
@@ -282,7 +281,7 @@ const Item: React.FC<{
             <span className="fw-500">{priorityRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isWorking ? '实际封装时间' : '承诺封装时间'}</span>
+            <span className="text-gray-dark">封装时间</span>
             <span className="fw-500">{state.isWorking ? sealDays.join(' / ') : sealDays.join(' · ')}</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">

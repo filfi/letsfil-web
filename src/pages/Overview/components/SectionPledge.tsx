@@ -2,7 +2,9 @@ import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
 import { formatAmount } from '@/utils/format';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseRate from '@/hooks/useRaiseRate';
+import useRaiseState from '@/hooks/useRaiseState';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
 const config: PieConfig = {
@@ -27,12 +29,10 @@ const config: PieConfig = {
   },
 };
 
-const SectionCoin: React.FC = () => {
-  const { info, rate, state } = useRaiseDetail();
-
-  const { actual } = info;
-  const { opsRatio } = rate;
-  const { isSuccess } = state;
+const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { actual } = useRaiseInfo(data);
+  const { opsRatio } = useRaiseRate(data);
+  const { isSuccess } = useRaiseState(data);
 
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
   const ops = useMemo(() => accDiv(accMul(actual, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [actual, opsRatio]);
@@ -57,20 +57,20 @@ const SectionCoin: React.FC = () => {
         </div>
         <div className="col-12 col-md-8 col-xl-9">
           <div className="row g-2">
-            <div className="col-12 col-md-6">
+            <div className="col-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">优先建设者(优先质押)</p>
+                <p className="reward-label">优先质押</p>
                 <p className="reward-text">
                   <span className="text-decimal">{investRate}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>
             </div>
-            <div className="col-12 col-md-6">
+            <div className="col-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#7FC4FD' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">技术运维保证金(劣后质押)</p>
+                <p className="reward-label">劣后质押(技术运维保证金)</p>
                 <p className="reward-text">
                   <span className="text-decimal">{opsRatio}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -80,7 +80,7 @@ const SectionCoin: React.FC = () => {
             {isSuccess && (
               <div className="col-12">
                 <div className="reward-item mb-3">
-                  <span className="reward-dot"></span>
+                  <span className="reward-dot reward-dot-circle"></span>
                   <p className="reward-label">质押总额(优先质押+劣后质押)</p>
                   <p className="reward-text">
                     <span className="text-decimal">{formatAmount(totalAmount)}</span>
@@ -121,12 +121,12 @@ const SectionCoin: React.FC = () => {
       </div>
       <div className="table-row w-100">
         <div className="row g-0">
-          <div className="col-4 col-md-2 col-lg-4 col-xl-2 table-cell th">承诺比例</div>
-          <div className="col-8 col-md-10 col-lg-8 col-xl-10 table-cell">按集合质押金额等比例配比保证金，始终保持保证金占比{opsRatio}%</div>
+          <div className="col-4 col-md-2 col-lg-4 col-xl-2 table-cell th">保证金比例</div>
+          <div className="col-8 col-md-10 col-lg-8 col-xl-10 table-cell">按质押数额等比例配比保证金，始终保持保证金占比{opsRatio}%</div>
         </div>
       </div>
     </>
   );
 };
 
-export default SectionCoin;
+export default SectionPledge;

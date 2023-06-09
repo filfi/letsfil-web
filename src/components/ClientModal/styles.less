@@ -1,10 +1,11 @@
 .modal {
   --bs-modal-width: 30rem;
   --bs-modal-max-width: 30rem;
+  --bs-modal-header-icon-size: 40px;
 
   :global {
     .modal-icon {
-      width: 120px;
+      margin-right: 0.75rem;
     }
 
     .ffi-check {
@@ -12,19 +13,6 @@
       --ffi-form-check-icon-size: 48px;
       --ffi-form-check-item-gap: 12px;
       --ffi-form-check-item-max-width: 100%;
-    }
-
-    .ffi-check-item:first-child::after {
-      content: '';
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 20px;
-      height: 20px;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAmhJREFUWEfFmFuawiAMhcF51R2NWlemrsyqsyN9nTJfKnRCGkLagvpaij8nt0OtKfB77rbOGXve3G6nAttFW9gSGwIg7FMDsihgf1hn2vX9fihxcNijPGBhyDqABSEXAz52u5M17siFtEROVgXshVy5w6b9aefm5GLAUMFJAFI0j+a7mQK8CFAKLwbGKgKg6VaNtme+BZC2nimNfTagVr2gJFZxaOyK/HwbIFYR5+36dhcZsoDP7fZCJ8NU9YKKAAM5aDt7GXI0M3lEwLAZPWW2chMlDWGGAqF9U2pFMqBvwlEVCo052+ucaY01zWidoKIO0FupuaHNggsNPQkY5Yo/4dzQagBTLigNiEPpTOusvaZmrgpAsYjLxSRgVbVSsEwusoA1c00UUgv4EfU8OQ3zSMGPqacFhMnB9ipFkoc7yZL3qckdKUjDGySn4HRsce55iEZmnEX/SdZGgFx4NYAYjvq9/mDQiK299gqvuhYMa1j3urmhK0MNwDCrsRLhYNQchMOkcl0MsaQgPMNpCI64//NfewxuhwtVUUCuQCSngQFHNsoYwyqbmeuzFYzgfZ5ICg6hJP4vF2Jq7eIioWYSuYwkYGcvQ775NLDO7d2XO/fFQOyZCJibJFyY2CrGCoI7TrQRdj8hxFyrGvdB0qjhJa4V9O7GuT1uymEttBIonpQ5BXU5Z83dT8ajjgmzdogsWZf6TMK6mcXjbiKp9A3n835wya2utpKar1/Ze3EV+wVXCN+GctmQBYQNwmAvcSfRqIahVYDhhdmgExSjik4CxC8PsNALX43y/0IOF/Rgsby9yoUy9fwPxRNrR95ud+8AAAAASUVORK5CYII=');
     }
 
     .ffi-check-item-label {

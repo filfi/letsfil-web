@@ -12,7 +12,7 @@ import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
 import useAccount from '@/hooks/useAccount';
-import useProviders from '@/hooks/useProviders';
+import useProviders from '@/hooks/useSProviders';
 import FormRadio from '@/components/FormRadio';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
@@ -21,14 +21,15 @@ import ProviderSelect from '@/components/ProviderRadio';
 
 export default function CreateStorage() {
   const [form] = Form.useForm();
-  const { address } = useAccount();
   const [model, setModel] = useModel('stepform');
-  const { user, createOrUpdate } = useUser();
-  const { list, loading: pFetching } = useProviders();
 
-  useUpdateEffect(() => {
-    form.setFieldValue('raiser', address);
-  }, [address]);
+  const { address } = useAccount();
+  const { user, createOrUpdate } = useUser();
+  const { data: list, isLoading: pFetching } = useProviders();
+
+  // useUpdateEffect(() => {
+  //   form.setFieldValue('raiser', address);
+  // }, [address]);
   useUpdateEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -95,9 +96,10 @@ export default function CreateStorage() {
   };
 
   const [loading, handleSubmit] = useLoadingify(async (vals: API.Base) => {
+    const name = user?.name ?? address;
     const { sponsorCompany, sponsorLogo } = vals;
 
-    if (!user || user?.name !== sponsorCompany || user?.url !== sponsorLogo) {
+    if (!user || name !== sponsorCompany || user?.url !== sponsorLogo) {
       const [e] = await catchify(createOrUpdate)({ name: sponsorCompany, url: sponsorLogo });
 
       if (e) {
@@ -122,7 +124,7 @@ export default function CreateStorage() {
         layout="vertical"
         initialValues={{
           minerType: 1,
-          raiser: address,
+          // raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
@@ -176,7 +178,7 @@ export default function CreateStorage() {
                 <div className="row">
                   <div className="col-12 col-md-8 col-lg-6">
                     <Form.Item name="sponsorCompany" help={<span>钱包地址：{formatAddr(address)}</span>}>
-                      <Input maxLength={30} placeholder="输入您的名称" />
+                      <Input maxLength={30} placeholder={address} />
                     </Form.Item>
                   </div>
                 </div>

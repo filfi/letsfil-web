@@ -1,13 +1,12 @@
-import { toHex } from 'viem';
+import { useState } from 'react';
 import { useMount } from 'ahooks';
 import { Outlet } from '@umijs/max';
 import { createPortal } from 'react-dom';
-import { useMemo, useState } from 'react';
-import { useChainId, useConfig } from 'wagmi';
+import { useNetwork, useSwitchNetwork } from 'wagmi';
 
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
-import { SUPPORTED_CHAINS } from '@/constants';
+import { chains } from '@/constants/config';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 import useInputScrollAction from '@/hooks/useInputScrollAction';
 
@@ -32,22 +31,23 @@ function removeDom() {
 }
 
 const BasicLayout: React.FC = () => {
-  const config = useConfig();
-  const chainId = useChainId();
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork({
+    chainId: chains[0].id,
+    onError: (e) => {
+      console.log(e);
+      console.log(e.cause);
+    },
+  });
 
   const [node, setNode] = useState<React.ReactNode>();
-
-  const connected = useMemo(() => config.status === 'connected', [config.status]);
-  const showAlert = useMemo(() => connected && chainId && !SUPPORTED_CHAINS.includes(toHex(chainId)), [chainId, connected]);
 
   useInputScrollAction();
 
   const handleSwitch = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     e.preventDefault();
 
-    const chain = config.chains?.[0];
-
-    if (chain) config.connector?.switchChain?.(chain.id);
+    switchNetwork?.(chains[0].id);
   };
 
   useMount(() => {
@@ -66,7 +66,7 @@ const BasicLayout: React.FC = () => {
 
   return (
     <>
-      {showAlert && (
+      {chain?.unsupported && (
         <div className="alert alert-danger fixed-top rounded-0">
           <div className="container">
             <p className="mb-0 text-center">

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccount as useWagmi, useConnect, useDisconnect, useBalance } from 'wagmi';
+import { useAccount as useWagmi, useConnect, useDisconnect } from 'wagmi';
 
 import { useMount } from 'ahooks';
 import Dialog from '@/components/Dialog';
@@ -29,7 +29,6 @@ export default function useAccount() {
 
   const { disconnectAsync } = useDisconnect();
   const { connectAsync } = useConnect({ chainId: chains[0].id });
-  const { data: balance } = useBalance({ address, watch: true });
 
   const connected = useMemo(() => status === 'connected', [status]);
   const connecting = useMemo(() => status === 'connecting' || status === 'reconnecting', [status]);
@@ -68,9 +67,13 @@ export default function useAccount() {
   };
 
   const connect = () => {
-    ClientModal.show({
-      loading: connecting,
-      onConfirm: handleConfirm,
+    const hide = ClientModal.show({
+      showFooter: false,
+      onChange: (id) => {
+        hide();
+
+        handleConfirm(id);
+      },
     });
   };
 
@@ -99,7 +102,6 @@ export default function useAccount() {
 
   return {
     address,
-    balance,
     connected,
     connecting,
     withAccount,

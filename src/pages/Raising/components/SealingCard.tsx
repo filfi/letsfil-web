@@ -1,20 +1,17 @@
-import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
 import Avatar from '@/components/Avatar';
-import useAssetPack from '@/hooks/useAssetPack';
+import useSProvider from '@/hooks/useSProvider';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import { formatEther, formatRate, formatSeals, formatSponsor } from '@/utils/format';
 
 export type SealingCardProps = {
   data: API.Plan;
-  getProvider?: (id?: number | string) => API.Provider | undefined;
 };
 
-const SealingCard: React.FC<SealingCardProps> = ({ data, getProvider }) => {
-  const { pack } = useAssetPack(data);
-  const { progress, running } = useRaiseSeals(data, pack);
-  const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
+const SealingCard: React.FC<SealingCardProps> = ({ data }) => {
+  const provider = useSProvider(data.service_id);
+  const { progress, running } = useRaiseSeals(data);
 
   return (
     <>

@@ -1,21 +1,23 @@
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
-import { useRequest, useUpdateEffect } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 import { Link, NavLink, useParams } from '@umijs/max';
+import { useDebounceEffect, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
 import { getInfo } from '@/apis/raise';
 import { SCAN_URL } from '@/constants';
+import { withNull } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import Activity from './components/Activity';
 import FormRadio from '@/components/FormRadio';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
-import useProviders from '@/hooks/useProviders';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useAssetPack from '@/hooks/useAssetPack';
+import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -36,14 +38,14 @@ export default function Assets() {
     }
   };
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [param.id] });
+  const { data, error, isLoading, refetch } = useQuery(['raiseInfo', param.id], withNull(service));
 
-  const { getProvider } = useProviders();
+  const { remains } = useRaiseSeals(data);
+  const provider = useSProvider(data?.service_id);
   const { isInvestor } = useDepositInvestor(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
   const { pack, investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data);
-  const { remains } = useRaiseSeals(data, pack);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
   const raiser = useRewardRaiser(data); // 主办人的节点激励
@@ -52,7 +54,6 @@ export default function Assets() {
   const [role, setRole] = useState(roles.findIndex(Boolean));
 
   const title = useMemo(() => (data ? `${F.formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
-  const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
 
   const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
@@ -79,22 +80,30 @@ export default function Assets() {
     setRole(roles.findIndex(Boolean));
   }, [roles]);
 
+  useDebounceEffect(
+    () => {
+      param.id && refetch();
+    },
+    [param.id],
+    { wait: 200 },
+  );
+
   const [withdrawing, handleWithdraw] = useLoadingify(async () => {
     if (role === 1) {
-      await raiser.withdraw();
+      await raiser.withdrawAction();
     } else if (role === 2) {
-      await servicer.withdraw();
+      await servicer.withdrawAction();
     } else {
-      await investor.withdraw();
+      await investor.withdrawAction();
     }
 
-    refresh();
+    refetch();
   });
 
   return (
     <>
       <div className="container">
-        <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
+        <LoadingView data={data} error={!!error} loading={isLoading} retry={refetch}>
           <PageHeader className="mb-3 pb-0" title={title} desc={`算力包 ${param.id}`} />
 
           <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">

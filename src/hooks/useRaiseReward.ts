@@ -1,42 +1,61 @@
-import { useState } from 'react';
-import { useDebounceEffect } from 'ahooks';
+import { useMemo } from 'react';
+// import { useDebounceEffect } from 'ahooks';
+import { useQueries } from '@tanstack/react-query';
 
-import { isDef } from '@/utils/utils';
 import useContract from './useContract';
-import useLoadingify from './useLoadingify';
+import { withNull } from '@/utils/hackify';
+import { isRaiseOperating } from '@/helpers/raise';
 
 /**
  * 节点计划的节点激励
  * @param data
  * @returns
  */
-export default function useRaiseReward(data?: API.Plan) {
-  const [fines, setFines] = useState(0);
-  const [reward, setReward] = useState(0);
-
+export default function useRaiseReward(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
-  const [loading, fetchData] = useLoadingify(async () => {
-    if (!data?.raising_id) return;
+  const getTotalReward = async () => {
+    if (data && isRaiseOperating(data)) {
+      return await contract.getTotalReward(data.raising_id);
+    }
+  };
+  const getServicerFines = async () => {
+    if (data && isRaiseOperating(data)) {
+      return await contract.getServicerFines(data.raising_id);
+    }
+  };
 
-    const [total, fines] = await Promise.all([contract.getTotalReward(data.raising_id), contract.getServicerFines(data.raising_id)]);
-
-    isDef(fines) && setFines(fines);
-    isDef(total) && setReward(total);
+  const [rewardRes, finesRes] = useQueries({
+    queries: [
+      {
+        queryKey: ['totalReward', data?.raising_id],
+        queryFn: withNull(getTotalReward),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['servicerFines', data?.raising_id],
+        queryFn: withNull(getServicerFines),
+        staleTime: 60_000,
+      },
+    ],
   });
 
-  useDebounceEffect(
-    () => {
-      fetchData();
-    },
-    [data?.raising_id],
-    { wait: 300, leading: true },
-  );
+  const fines = useMemo(() => finesRes.data ?? 0, [finesRes.data]);
+  const reward = useMemo(() => rewardRes.data ?? 0, [rewardRes.data]);
+  const isLoading = useMemo(() => finesRes.isLoading || rewardRes.isLoading, [finesRes.isLoading, rewardRes.isLoading]);
+
+  const refetch = () => {
+    return Promise.all([rewardRes.refetch(), finesRes.refetch()]);
+  };
+
+  // useDebounceEffect(() => {
+  //   data && refetch();
+  // }, [data], { wait: 200 });
 
   return {
     fines,
     reward,
-    loading,
-    refresh: fetchData,
+    isLoading,
+    refetch,
   };
 }

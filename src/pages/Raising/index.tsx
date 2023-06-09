@@ -6,7 +6,6 @@ import { useRequest, useTitle } from 'ahooks';
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Empty from '@/components/Empty';
-import useProviders from '@/hooks/useProviders';
 import BannerCard from './components/BannerCard';
 import LoadingView from '@/components/LoadingView';
 import RaisingCard from './components/RaisingCard';
@@ -32,8 +31,6 @@ function isWorking(data: API.Plan) {
 
 export default function Raising() {
   useTitle('节点计划 - FilFi', { restoreOnUnmount: true });
-
-  const { getProvider } = useProviders();
 
   const service = async () => {
     return await A.list({
@@ -61,7 +58,7 @@ export default function Raising() {
           </div>
         ) : (
           <>
-            {banner && <BannerCard className={classNames('mb-5', styles.banner)} data={banner} getProvider={getProvider} />}
+            {banner && <BannerCard className={classNames('mb-5', styles.banner)} data={banner} />}
 
             {isArrs(raises) && (
               <>
@@ -71,7 +68,7 @@ export default function Raising() {
                 <div className="row row-cols-1 g-3 g-lg-4 mb-4 mb-lg-5">
                   {raises.map((item) => (
                     <div key={item.raise_address} className={classNames('col', styles.item)}>
-                      <RaisingCard data={item} getProvider={getProvider} />
+                      <RaisingCard data={item} />
                     </div>
                   ))}
                 </div>
@@ -86,7 +83,7 @@ export default function Raising() {
                 <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 mb-4 mb-lg-5">
                   {seals.map((item) => (
                     <div key={item.raise_address} className={classNames('col', styles.item)}>
-                      <SealingCard data={item} getProvider={getProvider} />
+                      <SealingCard data={item} />
                     </div>
                   ))}
                 </div>
@@ -96,13 +93,13 @@ export default function Raising() {
             {isArrs(workes) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">存储运行中</h3>
-                  <p className="text-gray-dark">募得的FIL做为质押，完全用于建设联合节点，按照节点计划的约定，智能合约持续分配节点激励。</p>
+                  <h3 className="mb-1 fs-18 fw-600">存储运营中</h3>
+                  <p className="text-gray-dark">集合质押的FIL完全用于建设联合节点，智能合约按照计划约定持续分配节点激励。</p>
                 </div>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4">
                   {workes.map((item) => (
                     <div key={item.raising_id} className={classNames('col', styles.item)}>
-                      <WorkingCard data={item} getProvider={getProvider} />
+                      <WorkingCard data={item} />
                     </div>
                   ))}
                 </div>

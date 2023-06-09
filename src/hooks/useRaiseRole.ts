@@ -8,7 +8,7 @@ import { isEqual } from '@/utils/utils';
  * @param data
  * @returns
  */
-export default function useRaiseRole(data?: API.Plan) {
+export default function useRaiseRole(data?: API.Plan | null) {
   const { address } = useAccount();
 
   const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 主办人

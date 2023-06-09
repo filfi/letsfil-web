@@ -7,7 +7,7 @@ import * as U from '@/utils/utils';
  * @param data
  * @returns
  */
-export default function useRaiseRate(data?: API.Plan) {
+export default function useRaiseRate(data?: API.Plan | null) {
   // 优先部分
   const priorityRate = useMemo(() => U.accSub(data?.raiser_coin_share ?? 70, 0), [data?.raiser_coin_share]);
   // 劣后部分

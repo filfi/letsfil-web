@@ -2,12 +2,9 @@ import { useMemo } from 'react';
 import { SCAN_URL } from '@/constants';
 import { byte2gb } from '@/utils/utils';
 import { formatPower } from '@/utils/format';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 
-const SectionNode: React.FC = () => {
-  const { data } = useRaiseDetail();
-
+const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const size = useMemo(() => formatPower(data?.target_power ?? 0), [data?.target_power]);
 
   return (
@@ -23,34 +20,44 @@ const SectionNode: React.FC = () => {
               链上查看
             </a>
           </div>
-          <table className="table mb-0">
-            <tbody>
-              <tr>
-                <th className="ps-3 ps-lg-4">建设目标（QAP）</th>
-                <td>
+          <div className="row row-cols-2 gx-0">
+            <div className="col table-row">
+              <div className="row g-0 px-2">
+                <div className="col-4 table-cell th">建设目标</div>
+                <div className="col-8 table-cell text-center">
                   <span className="text-decimal me-1">{size?.[0]}</span>
                   <span className="text-neutral small fw-bold">{size?.[1]}</span>
-                </td>
-                <th>扇区时间</th>
-                <td className="pe-3 pe-lg-4">
-                  <span className="text-decimal me-1">{data?.sector_period}</span>
-                  <span className="text-neutral small fw-bold">天</span>
-                </td>
-              </tr>
-              <tr>
-                <th className="ps-3 ps-lg-4">扇区大小</th>
-                <td>
-                  <span className="text-decimal me-1">{byte2gb(data?.sector_size)}</span>
-                  <span className="text-neutral small fw-bold">GB</span>
-                </td>
-                <th>封装承诺</th>
-                <td className="pe-3 pe-lg-4">
+                </div>
+              </div>
+            </div>
+            <div className="col table-row">
+              <div className="row g-0 px-2">
+                <div className="col-4 table-cell th">封装时间</div>
+                <div className="col-8 table-cell text-center">
                   <span className="text-decimal me-1">&lt; {data?.seal_days}</span>
                   <span className="text-neutral small fw-bold">天</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+            </div>
+            <div className="col table-row">
+              <div className="row g-0 px-2">
+                <div className="col-4 table-cell th">扇区大小</div>
+                <div className="col-8 table-cell text-center">
+                  <span className="text-decimal me-1">{byte2gb(data?.sector_size)}</span>
+                  <span className="text-neutral small fw-bold">GB</span>
+                </div>
+              </div>
+            </div>
+            <div className="col table-row">
+              <div className="row g-0 px-2">
+                <div className="col-4 table-cell th">扇区时间</div>
+                <div className="col-8 table-cell text-center">
+                  <span className="text-decimal me-1">{data?.sector_period}</span>
+                  <span className="text-neutral small fw-bold">天</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

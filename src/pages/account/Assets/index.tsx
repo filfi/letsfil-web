@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
-import { useRequest } from 'ahooks';
+import { useDebounceEffect } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 
 import { listPacks } from '@/apis/packs';
-import PackCard from './components/PackCard';
+import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
+import PackCard from './components/PackCard';
 import LoadingView from '@/components/LoadingView';
 
 export default function AccountAssets() {
@@ -13,13 +15,21 @@ export default function AccountAssets() {
     return listPacks({ address, page: 1, page_size: 100 });
   });
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [address] });
+  const { data, error, isLoading, refetch } = useQuery(['listPacks', address], withNull(service));
 
   const list = useMemo(() => data?.list, [data?.list]);
 
+  useDebounceEffect(
+    () => {
+      address && refetch();
+    },
+    [address],
+    { wait: 200 },
+  );
+
   return (
     <>
-      <LoadingView className="vh-50" data={list} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView className="vh-50" data={list} error={!!error} loading={isLoading} retry={refetch}>
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-3">
           {list?.map((item) => (
             <div key={item.asset_pack_id} className="col">

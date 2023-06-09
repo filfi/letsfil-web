@@ -1,4 +1,4 @@
-import { useRequest } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 
 import * as A from '@/apis/user';
 import useAccount from './useAccount';
@@ -6,14 +6,20 @@ import useAccount from './useAccount';
 export default function useUser() {
   const { address, withAccount } = useAccount();
 
-  const { data: user, loading, refresh } = useRequest(withAccount(A.query), { refreshDeps: [address] });
+  const {
+    data: user,
+    isLoading,
+    refetch,
+  } = useQuery(['user', address], withAccount(A.query), {
+    staleTime: 60_000,
+  });
 
   const create = async (data: Partial<Omit<API.User, 'address'>>) => {
     if (!address) return;
 
     await A.create({ ...data, address: address });
 
-    refresh();
+    refetch();
   };
 
   const update = async (data: Partial<Omit<API.User, 'address'>>) => {
@@ -21,7 +27,7 @@ export default function useUser() {
 
     await A.update(address, data);
 
-    refresh();
+    refetch();
   };
 
   const createOrUpdate = async (data: Partial<Omit<API.User, 'address'>>) => {
@@ -34,10 +40,10 @@ export default function useUser() {
 
   return {
     user,
-    loading,
+    isLoading,
     create,
     update,
-    refresh,
+    refetch,
     createOrUpdate,
   };
 }

@@ -2,20 +2,23 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
 import { accMul } from '@/utils/utils';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseRate from '@/hooks/useRaiseRate';
+import useRaiseRole from '@/hooks/useRaiseRole';
+import useRaiseSeals from '@/hooks/useRaiseSeals';
+import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 import useDepositServicer from '@/hooks/useDepositServicer';
 import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 
-const CardAssets: React.FC = () => {
-  const { data, asset, info, role, rate, seals, state } = useRaiseDetail();
-
-  const { actual } = info;
-  const { progress } = seals;
-  const { isWorking } = state;
-  const { isRaiser, isServicer } = role;
-  const { pack, investPower, raiserPower } = asset;
-  const { raiserRate, opsRate, servicerRate } = rate;
+const CardAssets: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { actual } = useRaiseInfo(data);
+  const { progress } = useRaiseSeals(data);
+  const { isWorking } = useRaiseState(data);
+  const { isRaiser, isServicer } = useRaiseRole(data);
+  const { pack, investPower, raiserPower } = useAssetPack(data);
+  const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
 
   const { amount } = useDepositServicer(data);
   const { ratio, record, isInvestor } = useDepositInvestor(data);

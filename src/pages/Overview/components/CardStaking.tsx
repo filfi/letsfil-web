@@ -1,20 +1,19 @@
 import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
-import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import { accSub, sleep } from '@/utils/utils';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
-const CardStaking: React.FC = () => {
+const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
-  const { data, info, state, refresh } = useRaiseDetail();
-  const { amount, staking, stakeAction } = useDepositInvestor(data);
-
-  const { actual, target } = info;
-  const { isRaising, isSealing } = state;
+  const { actual, target } = useRaiseInfo(data);
+  const { isRaising, isSealing } = useRaiseState(data);
+  const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
 
   const max = useMemo(() => Math.max(accSub(target, actual), 0), [actual, target]);
 
@@ -35,8 +34,9 @@ const CardStaking: React.FC = () => {
   const handleStake = async ({ amount }: { amount: string }) => {
     await stakeAction(amount);
 
-    refresh();
-    info.refresh();
+    await sleep(1_000);
+
+    refetch();
 
     form.resetFields();
   };
@@ -46,7 +46,7 @@ const CardStaking: React.FC = () => {
       <>
         <div className="card section-card">
           <div className="card-header d-flex flex-wrap align-items-center">
-            <h4 className="card-title mb-0 me-auto pe-2">我的资产</h4>
+            <h4 className="card-title mb-0 me-auto pe-2">我的质押</h4>
             <p className="mb-0">
               <span className="fs-5 fw-600">{formatAmount(amount)}</span>
               <span className="text-neutral ms-1">FIL</span>

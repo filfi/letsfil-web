@@ -5,6 +5,7 @@ import styles from './styles.less';
 import FormRadio from '../FormRadio';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 
+// import { defaultWallet } from '@/constants/config';
 import { ReactComponent as Logo } from '@/assets/logo.svg';
 import { ReactComponent as IconMetaMask } from './icons/metamask.svg';
 import { ReactComponent as IconFoxWallet } from './icons/foxwallet.svg';
@@ -12,7 +13,10 @@ import { ReactComponent as IconTokenPocket } from './icons/tokenpocket.svg';
 
 export type ClientModalProps = {
   loading?: boolean;
+  showFooter?: boolean;
+  showConfirm?: boolean;
   onHidden?: () => void;
+  onChange?: (id: string) => void;
   onConfirm?: (id: string) => void;
 };
 
@@ -27,11 +31,11 @@ const items = [
 ];
 
 const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalProps> = (
-  { loading, onHidden, onConfirm },
+  { loading, showConfirm, showFooter, onHidden, onChange, onConfirm },
   ref?: React.Ref<ModalAttrs> | null,
 ) => {
   const modal = useRef<ModalAttrs>(null);
-  const [value, setValue] = useState('metaMask');
+  const [value, setValue] = useState('');
 
   useImperativeHandle(
     ref,
@@ -42,6 +46,12 @@ const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalP
     }),
     [],
   );
+
+  const handleChange = (id: string) => {
+    setValue(id);
+
+    onChange?.(id);
+  };
 
   const handleConfirm = () => {
     if (value) {
@@ -55,12 +65,15 @@ const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalP
       icon={<Logo />}
       title="连接钱包"
       confirmText="连接"
+      bodyClassName="px-4 py-5"
       className={styles.modal}
       confirmLoading={loading}
+      showFooter={showFooter}
+      showConfirm={showConfirm}
       onHidden={onHidden}
       onConfirm={handleConfirm}
     >
-      <FormRadio grid value={value} items={items} onChange={setValue} />
+      <FormRadio grid value={value} items={items} onChange={handleChange} />
     </Modal.Alert>
   );
 };

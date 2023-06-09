@@ -1,22 +1,15 @@
 import { useMemo } from 'react';
-import { useRequest } from 'ahooks';
 
-import { packInfo } from '@/apis/packs';
 import { toNumber } from '@/utils/format';
+import usePackInfo from './usePackInfo';
 import useRaiseInfo from './useRaiseInfo';
 import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
 import useDepositInvestor from './useDepositInvestor';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
-export default function useAssetPack(plan?: API.Plan) {
-  const service = async () => {
-    if (plan?.raising_id) {
-      return await packInfo(plan.raising_id);
-    }
-  };
-
-  const { data: pack, loading, refresh } = useRequest(service, { refreshDeps: [plan?.raising_id] });
+export default function useAssetPack(plan?: API.Plan | null) {
+  const { data: pack, isLoading, refetch } = usePackInfo(plan);
 
   const { actual } = useRaiseInfo(plan);
   const { isRaiser, isServicer } = useRaiseRole(plan);
@@ -67,7 +60,7 @@ export default function useAssetPack(plan?: API.Plan) {
     servicerPledge,
     holdPower,
     holdPledge,
-    loading,
-    refresh,
+    isLoading,
+    refetch,
   };
 }

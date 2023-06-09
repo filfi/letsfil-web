@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import usePackInfo from './usePackInfo';
 import { toNumber } from '@/utils/format';
 import { accDiv, accSub, sec2day } from '@/utils/utils';
 
@@ -8,7 +9,9 @@ import { accDiv, accSub, sec2day } from '@/utils/utils';
  * @param data
  * @returns
  */
-export default function useRaiseSeals(data?: API.Plan, pack?: API.Pack) {
+export default function useRaiseSeals(data?: API.Plan | null) {
+  const { data: pack } = usePackInfo(data);
+
   const period = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]);
   const power = useMemo(() => +`${pack?.total_power ?? 0}`, [pack?.total_power]);
   const sector = useMemo(() => +`${pack?.total_sector ?? 0}`, [pack?.total_sector]);

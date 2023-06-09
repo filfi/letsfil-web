@@ -3,17 +3,17 @@ import classNames from 'classnames';
 
 import * as F from '@/utils/format';
 // import Modal from '@/components/Modal';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseSeals from '@/hooks/useRaiseSeals';
+import useRaiseState from '@/hooks/useRaiseState';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
-const SectionSector: React.FC = () => {
-  const { data, asset, seals, state } = useRaiseDetail();
-
+const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { fines } = useDepositRaiser(data);
-  const { pledge, sector } = asset;
-  const { period, sealdays, running, progress } = seals;
-  const { isWorking, isSealing, isDelayed, isFinished } = state;
+  const { pledge, sector } = useAssetPack(data);
+  const { period, sealdays, running, progress } = useRaiseSeals(data);
+  const { isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
 
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
@@ -46,13 +46,13 @@ const SectionSector: React.FC = () => {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={isDelayed ? 66.67 : 100}
-                style={{ width: isDelayed ? '66.6666%' : '100%' }}
+                style={{ width: data?.delay_seal_time ? '66.6666%' : '100%' }}
               >
                 <div className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isSealing })}>
                   <span className="fw-bold">承诺封装时间·{period}天</span>
                 </div>
               </div>
-              {isDelayed && (
+              {!!(data && data?.delay_seal_time) && (
                 <div
                   className="progress progress-warning"
                   role="progressbar"
@@ -89,17 +89,17 @@ const SectionSector: React.FC = () => {
                 {isDelayed ? (
                   <>
                     <th>展期截止</th>
-                    <td>{F.formatUnixDate(data?.delay_seal_time)}</td>
+                    <td>{F.formatUnixDate(data?.delay_seal_time, 'll')}</td>
                   </>
                 ) : isFinished ? (
                   <>
                     <th>完成时间</th>
-                    <td>{F.formatUnixDate(data?.end_seal_time)}</td>
+                    <td>{F.formatUnixDate(data?.end_seal_time, 'll')}</td>
                   </>
                 ) : (
                   <>
                     <th>截止时间</th>
-                    <td>{F.formatUnixDate(data?.end_seal_time)}</td>
+                    <td>{F.formatUnixDate(data?.end_seal_time, 'll')}</td>
                   </>
                 )}
                 <th>已封装扇区</th>
@@ -158,7 +158,7 @@ const SectionSector: React.FC = () => {
           </div>
           <div className="progress-stacked flex-fill">
             <div className="progress w-100" role="progressbar" aria-label="Processing" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
-              <div className="progress-bar fw-bold">承诺封装时间·{period}天</div>
+              <div className="progress-bar fw-bold">封装时间 · {period}天</div>
             </div>
           </div>
           <div
@@ -203,4 +203,4 @@ const SectionSector: React.FC = () => {
   );
 };
 
-export default SectionSector;
+export default SectionSeals;

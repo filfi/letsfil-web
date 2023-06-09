@@ -1,12 +1,19 @@
-import { usePublicClient, useWalletClient } from 'wagmi';
-import { Account } from 'viem';
+import { useFeeData, usePublicClient, useWalletClient } from 'wagmi';
+import type { Account } from 'viem';
 
 import { isDef } from '@/utils/utils';
-import abi from '@/abis/raise.abi.json';
 import { toNumber } from '@/utils/format';
 import { toastify } from '@/utils/hackify';
+import { RAISE_ADDRESS } from '@/constants';
+import raiseAbi from '@/abis/raise.abi.json';
+import factoryAbi from '@/abis/factory.abi.json';
 import { NodeState, RaiseState } from '@/constants/state';
 import { RevertedError } from '@/core/errors/RevertedError';
+
+export type WriteOptions = TxOptions & {
+  account?: Account;
+  address?: API.Address;
+};
 
 function toEther(v: unknown) {
   if (isDef(v)) {
@@ -17,6 +24,7 @@ function toEther(v: unknown) {
 export default function useContract(address?: API.Address) {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const { refetch: fetchFee } = useFeeData({ enabled: false });
 
   const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | undefined>) {
     return async (...args: P) => {
@@ -42,9 +50,9 @@ export default function useContract(address?: API.Address) {
     if (!addr) return;
 
     const res = await publicClient.readContract({
-      abi,
       args,
       functionName,
+      abi: raiseAbi,
       address: addr,
     });
 
@@ -54,20 +62,29 @@ export default function useContract(address?: API.Address) {
   const writeContract = async function <P extends unknown[] = any>(
     functionName: string,
     args: P,
-    { account, address: _address, ...opts }: TxOptions & { address?: API.Address; account?: Account } = {},
+    { account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
   ) {
+    const abi = _abi ?? raiseAbi;
     const addr = _address ?? address;
 
     if (!addr || !walletClient) return;
 
-    return await waitTransaction(walletClient.writeContract)({
+    const { data: fee } = await fetchFee();
+
+    const params = {
       abi,
       args,
       account,
       functionName,
       address: addr,
+      maxFeePerGas: fee?.maxFeePerGas,
+      maxPriorityFeePerGas: fee?.maxPriorityFeePerGas,
       ...(opts as any),
-    });
+    };
+
+    console.log(params);
+
+    return await waitTransaction(walletClient.writeContract)(params);
   };
 
   /**
@@ -256,91 +273,103 @@ export default function useContract(address?: API.Address) {
   /**
    * 质押
    */
-  const staking = toastify(async (id: string, opts?: TxOptions) => {
+  const staking = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('staking', [id], opts);
   });
 
   /**
    * 解除质押|赎回
    */
-  const unStaking = toastify(async (id: string, opts?: TxOptions) => {
+  const unStaking = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('unStaking', [id], opts);
   });
 
   /**
    * 缴纳运维保证金
    */
-  const depositOpsFund = toastify(async (id: string, opts?: TxOptions) => {
+  const depositOpsFund = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('payOpsSecurityFund', [id], opts);
   });
 
   /**
    * 缴纳主办人保证金
    */
-  const depositRaiserFund = toastify(async (id: string, opts?: TxOptions) => {
+  const depositRaiserFund = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('paySecurityFund', [id], opts);
   });
 
   /**
    * 服务商签名
    */
-  const servicerSign = toastify(async (opts?: TxOptions) => {
+  const servicerSign = toastify(async (opts?: WriteOptions) => {
     return await writeContract('spSignWithMiner', [], opts);
   });
 
   /**
    * 启动预封装
    */
-  const startPreSeal = toastify(async (id: string, opts?: TxOptions) => {
+  const startPreSeal = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('startPreSeal', [id], opts);
   });
 
   /**
    * 关闭节点计划
    */
-  const closeRaisePlan = toastify(async (id: string, opts?: TxOptions) => {
+  const closeRaisePlan = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('closeRaisePlan', [id], opts);
+  });
+
+  /**
+   * 创建节点计划
+   */
+  const createRaisePlan = toastify(async (raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: Omit<TxOptions, 'abi' | 'address'>) => {
+    console.log(raise, node, extra);
+    return await writeContract('createRaisePlan', [raise, node, extra], {
+      ...opts,
+      abi: factoryAbi,
+      address: RAISE_ADDRESS,
+    });
   });
 
   /**
    * 启动节点计划
    */
-  const startRaisePlan = toastify(async (id: string, opts?: TxOptions) => {
+  const startRaisePlan = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('startRaisePlan', [id], opts);
   });
 
   /**
    * 主办人提取节点激励
    */
-  const raiserWithdraw = toastify(async (id: string, opts?: TxOptions) => {
+  const raiserWithdraw = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('raiserWithdraw', [id], opts);
   });
 
   /**
    * 建设者提取节点激励
    */
-  const investorWithdraw = toastify(async (id: string, opts?: TxOptions) => {
+  const investorWithdraw = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('investorWithdraw', [id], opts);
   });
 
   /**
    * 服务商提取节点激励
    */
-  const servicerWithdraw = toastify(async (id: string, opts?: TxOptions) => {
+  const servicerWithdraw = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('spWithdraw', [id], opts);
   });
 
   /**
    * 提取运维保证金
    */
-  const withdrawOpsFund = toastify(async (id: string, opts?: TxOptions) => {
+  const withdrawOpsFund = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('withdrawOpsSecurityFund', [id], opts);
   });
 
   /**
    * 提取主办人保证金
    */
-  const withdrawRaiserFund = toastify(async (id: string, opts?: TxOptions) => {
+  const withdrawRaiserFund = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('withdrawSecurityFund', [id], opts);
   });
 
@@ -375,6 +404,7 @@ export default function useContract(address?: API.Address) {
     startPreSeal,
     closeRaisePlan,
     startRaisePlan,
+    createRaisePlan,
     depositOpsFund,
     depositRaiserFund,
     servicerSign,

@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
@@ -6,22 +5,21 @@ import { useCountDown } from 'ahooks';
 import Avatar from '@/components/Avatar';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
+import useSProvider from '@/hooks/useSProvider';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import { formatProgress, formatRate, formatSponsor } from '@/utils/format';
 
 export type BannerCardProps = {
   data: API.Plan;
   className?: string;
-  getProvider?: (id?: number | string) => API.Provider | undefined;
 };
 
-const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider }) => {
+const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
   const { rate } = useIncomeRate(data);
   const { progress } = useRaiseInfo(data);
+  const provider = useSProvider(data.service_id);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
-
-  const provider = useMemo(() => getProvider?.(data.service_id), [data.service_id, getProvider]);
 
   return (
     <>
@@ -43,7 +41,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
               </h3>
 
               <div className="mb-3 fs-16 fw-500">
-                <p className="mb-1">承诺封装时间 {data.seal_days}天</p>
+                <p className="mb-1">封装时间 &lt; {data.seal_days}天</p>
                 <p className="mb-0">预估年化 {formatRate(rate)}</p>
               </div>
 
@@ -102,7 +100,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, getProvider })
               </div>
             </div>
 
-            <Link className="btn btn-lg btn-join" to={`/overview/${data.raising_id}`}>
+            <Link className="btn btn-lg btn-join stretched-link" to={`/overview/${data.raising_id}`}>
               立刻质押
             </Link>
           </div>

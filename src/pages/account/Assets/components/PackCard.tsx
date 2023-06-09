@@ -1,13 +1,12 @@
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
-import { useRequest } from 'ahooks';
 
 import * as F from '@/utils/format';
-import { getInfo } from '@/apis/raise';
 import { accAdd } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRole from '@/hooks/useRaiseRole';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
@@ -16,7 +15,7 @@ import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
 
 const PackCard: React.FC<{ data: API.Pack }> = ({ data }) => {
-  const { data: info } = useRequest(() => getInfo(data.raising_id), { refreshDeps: [data.raising_id] });
+  const { data: info } = useRaiseDetail(data.raising_id);
 
   const raiser = useRewardRaiser(info);
   const investor = useRewardInvestor(info);

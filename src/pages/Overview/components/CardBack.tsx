@@ -1,12 +1,11 @@
 // import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
-const CardBack: React.FC = () => {
-  const { data, state } = useRaiseDetail();
-  const { isClosed, isFailed, isWorking } = state;
+const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { isClosed, isFailed, isWorking } = useRaiseState(data);
   const { amount, backAmount, backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
 
   if (isInvestor && (isClosed || isFailed || isWorking)) {

@@ -6,16 +6,16 @@ import { SCAN_URL } from '@/constants';
 import Modal from '@/components/Modal';
 import { toF4Address } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseRole from '@/hooks/useRaiseRole';
+import useRaiseState from '@/hooks/useRaiseState';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg';
 
-const SectionContract: React.FC = () => {
-  const { data, info, role, state } = useRaiseDetail();
-
-  const { hasOwner } = info;
-  const { isRaiser, isSigned, isServicer } = role;
-  const { isClosed, isFailed, isDestroyed, isPending } = state;
+const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { hasOwner } = useRaiseInfo(data);
+  const { isRaiser, isSigned, isServicer } = useRaiseRole(data);
+  const { isClosed, isFailed, isDestroyed, isPending } = useRaiseState(data);
 
   const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
 
@@ -85,7 +85,7 @@ const SectionContract: React.FC = () => {
       )}
 
       <div>
-        <label className="form-label">智能合约地址</label>
+        <label className="form-label">此节点计划的智能合约地址</label>
         <div className="input-group">
           <Input className="form-control" readOnly value={data.raise_address} />
 

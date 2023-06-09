@@ -6,32 +6,27 @@ import { useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import { SCAN_URL } from '@/constants';
-// import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import { formatSponsor } from '@/utils/format';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
-import RaiseProvider from '@/components/RaiseProvider';
+import useRaiseRole from '@/hooks/useRaiseRole';
+import useRaiseState from '@/hooks/useRaiseState';
 import useRaiseDetail from '@/hooks/useRaiseDetail';
-// import useEmittHandler from '@/hooks/useEmitHandler';
 import useRaiseActions from '@/hooks/useRaiseActions';
-import useContractEvent from '@/hooks/useContractEvent';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-// import CardFAQ from './components/CardFAQ';
-// import CardCalc from './components/CardCalc';
 import CardBack from './components/CardBack';
 import CardRaise from './components/CardRaise';
 import CardAssets from './components/CardAssets';
-// import Calculator from './components/Calculator';
 import CardStaking from './components/CardStaking';
-import SectionCoin from './components/SectionCoin';
 import SectionNode from './components/SectionNode';
 import SectionRaise from './components/SectionRaise';
+import SectionSeals from './components/SectionSeals';
 import SectionEvents from './components/SectionEvents';
+import SectionPledge from './components/SectionPledge';
 import SectionReward from './components/SectionReward';
-import SectionSector from './components/SectionSector';
 import SectionDeposit from './components/SectionDeposit';
 import SectionContract from './components/SectionContract';
 import SectionProvider from './components/SectionProvider';
@@ -51,14 +46,14 @@ function updateScrollSpy() {
   }
 }
 
-function RaiseContent() {
+export default function Overview() {
   const param = useParams();
   const responsive = useResponsive();
-  const { data, error, loading, role, state, refresh } = useRaiseDetail();
+  const { data, error, isLoading, refetch } = useRaiseDetail(param.id);
 
-  const { isRaiser, isServicer } = role;
   const { isInvestor } = useDepositInvestor(data);
-  const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = state;
+  const { isRaiser, isServicer } = useRaiseRole(data);
+  const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
   const actions = useRaiseActions(data);
 
@@ -67,32 +62,9 @@ function RaiseContent() {
 
   useUpdateEffect(updateScrollSpy, [data, isStarted]);
 
-  const { onRaiseStateChange } = useContractEvent(data?.raise_address);
-
-  // useEmittHandler<any>({
-  //   [EventType.onStaking]: refresh,
-  //   [EventType.onUnstaking]: refresh,
-  //   [EventType.onStartPreSeal]: refresh,
-  //   [EventType.onDepositOpsFund]: refresh,
-  //   [EventType.onServicerSigned]: refresh,
-  //   [EventType.onStartRaisePlan]: refresh,
-  //   [EventType.onCreateRaisePlan]: refresh,
-  //   [EventType.onDepositRaiseFund]: refresh,
-  //   [EventType.onNodeStateChange]: refresh,
-  //   [EventType.onRaiseStateChange]: refresh,
-  //   [EventType.onWithdrawOpsFund]: refresh,
-  //   [EventType.onWithdrawRaiseFund]: refresh,
-  // });
-
-  useUpdateEffect(() => {
-    if (data) {
-      const unwatch = onRaiseStateChange(data.raising_id, (args) => {
-        console.log(args);
-      });
-
-      return unwatch;
-    }
-  }, [data]);
+  const handleEdit = () => {
+    actions.edit();
+  };
 
   const handleDelete = () => {
     const hide = Dialog.confirm({
@@ -145,7 +117,7 @@ function RaiseContent() {
       <>
         {isPending && isRaiser && (
           <>
-            <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={actions.edit}>
+            <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
               修改节点计划
             </SpinBtn>
 
@@ -190,7 +162,7 @@ function RaiseContent() {
   return (
     <>
       <div className="container">
-        <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
+        <LoadingView data={data} error={!!error} loading={isLoading} retry={refetch}>
           <PageHeader
             className={classNames({ 'border-bottom': !showAsset, 'mb-3 pb-0': showAsset })}
             title={title}
@@ -239,7 +211,7 @@ function RaiseContent() {
                 </li>
                 <li className="nav-item">
                   <a className="nav-link" href="#pledge">
-                    质押FIL的归属
+                    质押的归属
                   </a>
                 </li>
                 <li className="nav-item">
@@ -279,20 +251,21 @@ function RaiseContent() {
               data-bs-spy="scroll"
               data-bs-target="#nav-pills"
               data-bs-smooth-scroll="true"
+              data-bs-root-margin="0px 0px -80%"
             >
               <section id="raising" className="section">
                 <div className="d-flex flex-column gap-3">
-                  <SectionRaise />
+                  <SectionRaise data={data} />
 
                   {responsive.lg ? null : (
                     <>
-                      <CardRaise />
+                      <CardRaise data={data} />
 
-                      <CardStaking />
+                      <CardStaking data={data} />
 
-                      <CardBack />
+                      <CardBack data={data} />
 
-                      <CardAssets />
+                      <CardAssets data={data} />
 
                       {/* <CardCalc /> */}
                     </>
@@ -305,7 +278,7 @@ function RaiseContent() {
                   <p className="mb-0">开创链上协作新模式，专业化服务，负责任承诺。</p>
                 </div>
 
-                <SectionProvider />
+                <SectionProvider data={data} />
               </section>
               <section id="deposit" className={classNames('section', { 'order-1': data && isSuccess })}>
                 <div className="section-header">
@@ -313,31 +286,31 @@ function RaiseContent() {
                   <p className="mb-0">保障节点计划执行，违约自动触发惩罚机制，保护建设者权益。</p>
                 </div>
 
-                <SectionDeposit />
+                <SectionDeposit data={data} />
               </section>
               <section id="reward" className="section">
                 <div className="section-header">
                   <h4 className="section-title">分配方案</h4>
-                  <p className="mb-0">节点计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
+                  <p className="mb-0">智能合约严格执行分配方案，坚定履约，透明可信，省时省心。</p>
                 </div>
 
-                <SectionReward />
+                <SectionReward data={data} />
               </section>
               <section id="pledge" className="section">
                 <div className="section-header">
-                  <h4 className="section-title">质押FIL的归属</h4>
-                  <p className="mb-0">质押FIL的所有权永恒不变，投入多少返回多少。</p>
+                  <h4 className="section-title">质押的归属</h4>
+                  <p className="mb-0">质押的所有权永恒不变，投入多少返回多少。</p>
                 </div>
 
-                <SectionCoin />
+                <SectionPledge data={data} />
               </section>
               <section id="sector" className="section">
                 <div className="section-header">
                   <h4 className="section-title">建设方案</h4>
-                  <p className="mb-0">集合质押FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
+                  <p className="mb-0">质押的FIL定向使用，用途不可更改，智能合约保障每个FIL去向可查。</p>
                 </div>
 
-                <SectionNode />
+                <SectionNode data={data} />
               </section>
               {isSuccess && (
                 <section id="seals" className="section">
@@ -346,7 +319,7 @@ function RaiseContent() {
                     <p className="mb-0">封装进展一览无余</p>
                   </div>
 
-                  <SectionSector />
+                  <SectionSeals data={data} />
                 </section>
               )}
               <section id="timeline" className="section order-2">
@@ -355,15 +328,15 @@ function RaiseContent() {
                   <p className="mb-0">建设者对每一步进展尽在掌握。</p>
                 </div>
 
-                <SectionTimeline />
+                <SectionTimeline data={data} />
               </section>
               <section id="contract" className="section order-2">
                 <div className="section-header">
                   <h4 className="section-title">智能合约</h4>
-                  <p className="mb-0">节点计划是部署在Filecoin上的智能合约，存储节点的质押和节点激励分配完全由智能合约管理。</p>
+                  <p className="mb-0">节点计划是部署在Filecoin上的智能合约，存储节点的建设和激励分配完全由智能合约管理。</p>
                 </div>
 
-                <SectionContract />
+                <SectionContract data={data} />
               </section>
               {isStarted && (
                 <section id="events" className="section order-2">
@@ -372,20 +345,20 @@ function RaiseContent() {
                     <p className="mb-0">节点计划发生的重要事件以及链上相关消息</p>
                   </div>
 
-                  <SectionEvents />
+                  <SectionEvents data={data} />
                 </section>
               )}
             </div>
             <div className={classNames('flex-shrink-0', styles.sidebar)}>
               {responsive.lg ? (
                 <>
-                  <CardRaise />
+                  <CardRaise data={data} />
 
-                  <CardStaking />
+                  <CardStaking data={data} />
 
-                  <CardBack />
+                  <CardBack data={data} />
 
-                  <CardAssets />
+                  <CardAssets data={data} />
 
                   {/* <CardCalc /> */}
                 </>
@@ -400,19 +373,6 @@ function RaiseContent() {
       <p>
         <br />
       </p>
-      <p>
-        <br />
-      </p>
     </>
-  );
-}
-
-export default function Overview() {
-  const param = useParams();
-
-  return (
-    <RaiseProvider id={param.id}>
-      <RaiseContent />
-    </RaiseProvider>
   );
 }

@@ -46,6 +46,7 @@ declare namespace API {
     factory_contract: Address;
     ffi_protocol_fee: string;
     ffi_protocol_fee_pay_meth: number;
+    fil_per_tera_day: string;
     his_blance: string;
     his_initial_pledge: string;
     his_power: string;
@@ -60,6 +61,7 @@ declare namespace API {
     ops_security_fund_addr: string;
     ops_security_fund_rate: number;
     plan_open: number;
+    pledge_per_tera_day: string;
     power_progress: number;
     progress: number;
     raise_address: Address;
@@ -135,7 +137,7 @@ declare namespace API {
     max_expiration_epoch: number;
     min_expiration_epoch: number;
     miner_id: string;
-    raising_id: number;
+    raising_id: string;
     sector_size: number;
     stat_height: number;
     sync_sector_statue: number;

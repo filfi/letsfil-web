@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import classNames from 'classnames';
-import { useRequest } from 'ahooks';
+import { useDebounceEffect } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 import { Link, history, useModel } from '@umijs/max';
 
 import * as A from '@/apis/raise';
@@ -8,10 +9,10 @@ import styles from './styles.less';
 import Item from './components/Item';
 import useUser from '@/hooks/useUser';
 import Result from '@/components/Result';
+import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
 import { isEqual, sleep } from '@/utils/utils';
-import useProviders from '@/hooks/useProviders';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
 import useRaiseActions from '@/hooks/useRaiseActions';
@@ -23,7 +24,8 @@ const isArrs = function <V>(v: V | undefined): v is V {
 
 export default function AccountPlans() {
   const { user } = useUser();
-  const { getProvider } = useProviders();
+  const contract = useContract();
+  const actions = useRaiseActions();
   const [, setModel] = useModel('stepform');
   const { address, withAccount, withConnect } = useAccount();
 
@@ -31,13 +33,21 @@ export default function AccountPlans() {
     return A.investList({ address, page_size: 100 });
   });
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [address] });
-  const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data, loading]);
+  const { data, error, isLoading, refetch } = useQuery(['investList', address], withNull(service));
+  const isEmpty = useMemo(() => !isLoading && (!data || data.total === 0), [data, isLoading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
   const investors = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
   const raises = useMemo(() => lists?.filter((item) => isEqual(item.raiser, address)), [lists, address]);
   const services = useMemo(() => lists?.filter((item) => isEqual(item.service_provider_address, address)), [lists, address]);
   const invests = useMemo(() => lists?.filter((item) => investors?.some((id) => isEqual(id, item.raising_id))), [lists, investors]);
+
+  useDebounceEffect(
+    () => {
+      address && refetch();
+    },
+    [address],
+    { wait: 200 },
+  );
 
   const handleCreate = withConnect(async () => {
     setModel(undefined);
@@ -46,29 +56,26 @@ export default function AccountPlans() {
   });
 
   const handleEdit = async (data: API.Plan) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useRaiseActions(data).edit();
+    actions.edit(data);
   };
 
   const handleDelete = async (data: API.Plan) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    await useRaiseActions(data).remove();
+    await actions.remove(data.raising_id);
 
-    refresh();
+    refetch();
   };
 
   const [, handleStart] = useProcessify(async (data: API.Plan) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    await useContract(data.raise_address).startRaisePlan(data.raising_id);
+    await contract.startRaisePlan(data.raising_id, { address: data.raise_address });
 
     await sleep(2_000);
 
-    refresh();
+    refetch();
   });
 
   return (
     <>
-      <LoadingView className="vh-50" data={data} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView className="vh-50" data={data} error={!!error} loading={isLoading} retry={refetch}>
         {isEmpty ? (
           <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参加投资的节点计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
@@ -83,10 +90,13 @@ export default function AccountPlans() {
           </Result>
         ) : (
           <>
-            <button className="btn btn-primary float-md-end mt-lg-3" type="button" onClick={handleCreate}>
-              <span className="bi bi-plus-lg"></span>
-              <span className="ms-2">发起节点计划</span>
-            </button>
+            <p className="float-lg-end mt-lg-3 text-end">
+              <button className="btn btn-primary" type="button" onClick={handleCreate}>
+                <span className="bi bi-plus-lg"></span>
+                <span className="ms-2">发起节点计划</span>
+              </button>
+            </p>
+
             {isArrs(raises) && (
               <>
                 <h3 className={classNames('my-4 my-lg-5', styles.title)}>我发起的节点计划</h3>
@@ -95,7 +105,6 @@ export default function AccountPlans() {
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
-                        getProvider={getProvider}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}
@@ -116,7 +125,6 @@ export default function AccountPlans() {
                       <Item
                         invest
                         data={item}
-                        getProvider={getProvider}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}
@@ -136,7 +144,6 @@ export default function AccountPlans() {
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
-                        getProvider={getProvider}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}

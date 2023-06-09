@@ -1,23 +1,28 @@
-import { useContext } from 'react';
+// import { useDebounceEffect } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 
-import { RaiseContext } from '@/components/RaiseProvider/context';
+import { getInfo } from '@/apis/raise';
+import { withNull } from '@/utils/hackify';
 
-export default function useRaiseDetail() {
-  const { data, asset, error, loading, income, info, rate, role, seals, state, provider, refresh, getProvider } = useContext(RaiseContext);
+export default function useRaiseDetail(id?: string) {
+  const service = async () => {
+    if (id) {
+      return await getInfo(id);
+    }
+  };
+
+  const { data, error, isLoading, refetch } = useQuery(['raiseInfo', id], withNull(service), {
+    staleTime: 10_000,
+  });
+
+  // useDebounceEffect(() => {
+  //   id && refetch();
+  // }, [id], { wait: 200 });
 
   return {
     data,
-    asset,
     error,
-    loading,
-    income,
-    info,
-    rate,
-    role,
-    seals,
-    state,
-    provider,
-    refresh,
-    getProvider,
+    isLoading,
+    refetch,
   };
 }

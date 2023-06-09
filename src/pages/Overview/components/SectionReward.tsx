@@ -4,7 +4,9 @@ import { Pie, PieConfig } from '@ant-design/plots';
 import { formatNum } from '@/utils/format';
 import { accDiv, accMul } from '@/utils/utils';
 import useChainInfo from '@/hooks/useChainInfo';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseRate from '@/hooks/useRaiseRate';
+import useRaiseRole from '@/hooks/useRaiseRole';
 
 const config: PieConfig = {
   data: [],
@@ -28,13 +30,11 @@ const config: PieConfig = {
   },
 };
 
-const SectionReward: React.FC = () => {
+const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { perFil, perPledge } = useChainInfo();
-  const { info, rate, role } = useRaiseDetail();
-
-  const { period, target } = info;
-  const { isRaiser, isServicer } = role;
-  const { priorityRate, raiserRate, opsRatio, ffiRate } = rate;
+  const { period, target } = useRaiseInfo(data);
+  const { isRaiser, isServicer } = useRaiseRole(data);
+  const { priorityRate, raiserRate, opsRatio, ffiRate } = useRaiseRate(data);
 
   // 预估节点激励 = 24小时产出效率 * 封装天数 * 总算力(质押目标 / 当前扇区质押量)
   const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);

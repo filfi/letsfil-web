@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import { useCountDown } from 'ahooks';
 import { useEffect, useMemo, useState } from 'react';
+import { useCountDown, useInterval, useMemoizedFn, useUnmount } from 'ahooks';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
@@ -8,15 +8,16 @@ import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useContract from '@/hooks/useContract';
+import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseRole from '@/hooks/useRaiseRole';
+import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
 import { day2sec, toF4Address } from '@/utils/utils';
 import { formatAmount, formatPower } from '@/utils/format';
-import useFactoryContract from '@/hooks/useFactoryContract';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
-const calcTime = (mill: number) => {
+const formatTime = (mill: number) => {
   return {
     days: Math.floor(mill / 86400000),
     hours: Math.floor(mill / 3600000) % 24,
@@ -26,19 +27,29 @@ const calcTime = (mill: number) => {
   };
 };
 
-const CardRaise: React.FC = () => {
+const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
-  const { createRaisePlan } = useFactoryContract();
-  const { data, asset, role, state } = useRaiseDetail();
-
-  const { power, pledge } = asset;
-
-  const { startRaisePlan, startPreSeal, servicerSign } = useContract(data?.raise_address);
-
-  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = role;
-  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = state;
+  const { power, pledge } = useAssetPack(data);
+  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
+  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
+  const [delayed, setDelayed] = useState(formatTime(0));
+  const [, formatted] = useCountDown({ targetDate });
+  const { createRaisePlan, servicerSign, startRaisePlan, startPreSeal } = useContract(data?.raise_address);
+
+  const clear = useInterval(
+    useMemoizedFn(() => {
+      let sec = 0;
+
+      if (data) {
+        sec = Math.max(Date.now() / 1000 - data.end_seal_time, 0);
+      }
+
+      setDelayed(formatTime(sec * 1000));
+    }),
+    isDelayed ? 1_000 : undefined,
+  );
 
   const seconds = useMemo(() => {
     if (!data) return 0;
@@ -53,7 +64,7 @@ const CardRaise: React.FC = () => {
       return data.closing_time;
     }
 
-    if (isDelayed || isSealing) {
+    if (isSealing) {
       return data.end_seal_time;
     }
 
@@ -62,23 +73,23 @@ const CardRaise: React.FC = () => {
     }
 
     return day2sec(data.raise_days);
-  }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed, isSuccess]);
-
-  const [, formatted] = useCountDown({ targetDate });
-  const raiseTime = useMemo(() => calcTime(seconds * 1000), [seconds]);
+  }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isSuccess]);
+  const raiseTime = useMemo(() => formatTime(seconds * 1000), [seconds]);
   const displayTime = useMemo(
-    () => (isRaising || isWaitSeal || isPreSeal || isSealing || isDelayed ? formatted : raiseTime),
-    [formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
+    () => (isRaising || isWaitSeal || isPreSeal || isSealing ? formatted : isDelayed ? delayed : raiseTime),
+    [delayed, formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
   );
 
   useEffect(() => {
-    if (isRaising || isWaitSeal || isPreSeal || isDelayed || isSealing) {
+    if (isRaising || isWaitSeal || isPreSeal || isSealing) {
       setTargetDate(seconds * 1000);
       return;
     }
 
     setTargetDate(0);
   }, [seconds, isRaising, isDelayed, isSealing]);
+
+  useUnmount(clear);
 
   const [creating, handleCreate] = useProcessify(async () => {
     if (!data) return;
@@ -226,20 +237,20 @@ const CardRaise: React.FC = () => {
       <>
         <div className="card section-card">
           <div className="card-header d-flex align-items-center border-0">
-            <h4 className="card-title mb-0 me-2">节点计划 · 已完成</h4>
+            <h4 className="card-title fw-bold mb-0 me-2">建设完成</h4>
             <span className="badge badge-success ms-auto">集合质押成功</span>
             <span className="badge badge-success ms-2">封装完成</span>
           </div>
           <div className="card-body py-2 fs-16 text-main">
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>新增算力</span>
+              <span>新增算力(QAP)</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{formatPower(power)?.[0]}</span>
                 <span className="ms-1 text-neutral">{formatPower(power)?.[1]}</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>封装消耗</span>
+              <span>封装质押</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{formatAmount(pledge)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
@@ -264,13 +275,13 @@ const CardRaise: React.FC = () => {
         <div id="card-action" className="card section-card">
           <div className="card-body d-flex flex-column gap-3">
             <div className="d-flex align-items-center flex-wrap gap-2">
-              <h4 className="card-title mb-0">
+              <h4 className="card-title fw-normal mb-0">
                 {isFailed
                   ? '节点计划已结束'
                   : isClosed
                   ? '节点计划已关闭'
                   : isRaising
-                  ? '正在集合质押中！距离截止时间'
+                  ? '正在集合质押中！距离截止还有'
                   : isWaitSeal || isPreSeal
                   ? '集合质押成功'
                   : isSealing
@@ -302,19 +313,19 @@ const CardRaise: React.FC = () => {
               })}
             >
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.days}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.days}</p>
                 <p className="mb-0 text-gray">天</p>
               </div>
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.hours}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.hours}</p>
                 <p className="mb-0 text-gray">小时</p>
               </div>
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.minutes}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.minutes}</p>
                 <p className="mb-0 text-gray">分</p>
               </div>
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.seconds}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.seconds}</p>
                 <p className="mb-0 text-gray">秒</p>
               </div>
             </div>

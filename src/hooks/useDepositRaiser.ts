@@ -1,40 +1,58 @@
+import { useMemo } from 'react';
 import { parseEther } from 'viem';
-import { useMemo, useState } from 'react';
-import { useDebounceEffect } from 'ahooks';
+import { useQueries } from '@tanstack/react-query';
 
+import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
-import { EventType } from '@/utils/mitt';
 import { toNumber } from '@/utils/format';
-import useRaiseRole from './useRaiseRole';
-import useLoadingify from './useLoadingify';
+import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import useEmittHandler from './useEmitHandler';
-import { isDef, sleep } from '@/utils/utils';
+import { isRaiserPaied } from '@/helpers/raise';
 
 /**
  * 主办人的投资信息
  * @param data
  * @returns
  */
-export default function useDepositRaiser(data?: API.Plan) {
+export default function useDepositRaiser(data?: API.Plan | null) {
   const { withConnect } = useAccount();
-  const { isRaiser } = useRaiseRole(data);
   const contract = useContract(data?.raise_address);
 
-  const [fines, setFines] = useState(0); // 罚息
-  const [amount, setAmount] = useState(toNumber(data?.raise_security_fund)); // 当前保证金
+  const getFundRaiser = async () => {
+    if (data && isRaiserPaied(data)) {
+      return await contract.getFundRaiser(data.raising_id);
+    }
+  };
+  const getTotalInterest = async () => {
+    if (data && isRaiserPaied(data)) {
+      return await contract.getTotalInterest(data.raising_id);
+    }
+  };
 
-  const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
-
-  const [loading, fetchData] = useLoadingify(async () => {
-    if (!data?.raising_id || !isRaiser) return;
-
-    const [amount, fines] = await Promise.all([contract.getFundRaiser(data.raising_id), contract.getTotalInterest(data.raising_id)]);
-
-    isDef(fines) && setFines(fines);
-    isDef(amount) && setAmount(amount);
+  const [fund, interest] = useQueries({
+    queries: [
+      {
+        queryKey: ['fundRaiser', data?.raising_id],
+        queryFn: withNull(getFundRaiser),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['totalInterest', data?.raising_id],
+        queryFn: withNull(getTotalInterest),
+        staleTime: 60_000,
+      },
+    ],
   });
+
+  const fines = useMemo(() => interest.data ?? 0, [interest.data]); // 罚息
+  const amount = useMemo(() => fund.data ?? toNumber(data?.raise_security_fund), [fund.data, data?.raise_security_fund]); // 当前保证金
+  const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]); // 总保证金
+  const isLoading = useMemo(() => fund.isLoading || interest.isLoading, [fund.isLoading, interest.isLoading]);
+
+  const refetch = async () => {
+    return Promise.all([fund.refetch(), interest.refetch()]);
+  };
 
   const [paying, payAction] = useProcessify(
     withConnect(async () => {
@@ -45,7 +63,8 @@ export default function useDepositRaiser(data?: API.Plan) {
       });
 
       await sleep(1_000);
-      fetchData();
+
+      fund.refetch();
 
       return res;
     }),
@@ -58,33 +77,22 @@ export default function useDepositRaiser(data?: API.Plan) {
       const res = await contract.withdrawRaiserFund(data.raising_id);
 
       await sleep(200);
-      fetchData();
+
+      fund.refetch();
 
       return res;
     }),
   );
 
-  useDebounceEffect(
-    () => {
-      fetchData();
-    },
-    [data?.raising_id, isRaiser],
-    { wait: 300, leading: true },
-  );
-
-  useEmittHandler({
-    [EventType.onWithdrawRaiseFund]: fetchData,
-  });
-
   return {
     fines,
     total,
     amount,
-    loading,
     paying,
+    isLoading,
     withdrawing,
+    refetch,
     payAction,
     withdrawAction,
-    refresh: fetchData,
   };
 }
