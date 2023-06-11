@@ -8,6 +8,7 @@ import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useContract from '@/hooks/useContract';
+import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -29,7 +30,8 @@ const formatTime = (mill: number) => {
 
 const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
-  const { power, pledge } = useAssetPack(data);
+  const { data: pack } = usePackInfo(data);
+  const { power, pledge } = useAssetPack(data, pack);
   const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
@@ -281,7 +283,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   : isClosed
                   ? '节点计划已关闭'
                   : isRaising
-                  ? '正在集合质押中！距离截止还有'
+                  ? '正在质押中！距离截止还有'
                   : isWaitSeal || isPreSeal
                   ? '集合质押成功'
                   : isSealing

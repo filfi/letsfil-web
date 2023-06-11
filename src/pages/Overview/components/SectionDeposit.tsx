@@ -132,7 +132,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
       </Modal.Alert>
 
-      <Modal.Alert id="sp-deposit" title="技术运维保证金">
+      <Modal.Alert id="sp-deposit" title="运维保证金">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">与建设者等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
@@ -235,7 +235,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="flex-shrink-0">{isOpsPaid ? <IconSuccess /> : <IconDander />}</div>
             <div className="flex-grow-1 ms-2">
               <h4 className="card-title fw-600 mb-0">
-                <span>技术运维保证金</span>
+                <span>运维保证金</span>
                 {data && !isSuccess && <span>(预存)</span>}
               </h4>
             </div>
@@ -286,17 +286,10 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
       </div>
 
-      <Modal.Confirm
-        id="deposit-confirm"
-        footerClassName="border-0"
-        title="预存技术运维保证金"
-        confirmText="存入"
-        confirmLoading={paying}
-        onConfirm={payAction}
-      >
+      <Modal.Confirm id="deposit-confirm" footerClassName="border-0" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">
-            <span>技术运维保证金做为劣后质押，与建设者的优先质押一同封装到存储节点中，分享网络激励。节点计划规定了如下质押比例。</span>
+            <span>运维保证金做为劣后质押，与建设者的优先质押一同封装到存储节点中，分享网络激励。节点计划规定了如下质押比例。</span>
             {/* <a className="text-underline" href="#">
               了解更多
             </a> */}

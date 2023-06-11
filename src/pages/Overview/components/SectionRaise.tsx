@@ -24,7 +24,7 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <div className="card h-100">
             <div className="card-body">
               <p className="mb-1 text-gray-dark">质押目标</p>
-              <p className="mb-0 d-flex align-items-center">
+              <p className="mb-0 d-flex flex-wrap align-items-center">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3 text-uppercase">{F.formatAmount(target)}</span>
                   <span className="ms-1 text-neutral">FIL</span>
@@ -37,7 +37,7 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">建设者获得激励</p>
+              <p className="mb-1 text-gray-dark">建设者获得</p>
               <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3">{priorityRate}</span>
@@ -72,8 +72,8 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         )}
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">最低目标</div>
-            <div className="col-8 table-cell">{F.formatAmount(minAmount, 2)} FIL</div>
+            <div className="col-4 col-xl-5 table-cell th">最低目标</div>
+            <div className="col-8 col-xl-7 table-cell">{F.formatAmount(minAmount, 2)} FIL</div>
           </div>
         </div>
         <div className="col table-row">
@@ -87,8 +87,8 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">保证金配比</div>
-            <div className="col-8 table-cell">{F.formatAmount(opsAmount, 2, 2)} FIL</div>
+            <div className="col-4 col-xl-5 table-cell th">保证金配比</div>
+            <div className="col-8 col-xl-7 table-cell">{F.formatAmount(opsAmount, 2, 2)} FIL</div>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
 import { accMul } from '@/utils/utils';
+import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
@@ -14,10 +15,11 @@ import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 
 const CardAssets: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { actual } = useRaiseInfo(data);
+  const { data: pack } = usePackInfo(data);
   const { progress } = useRaiseSeals(data);
   const { isWorking } = useRaiseState(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
-  const { pack, investPower, raiserPower } = useAssetPack(data);
+  const { investPower, raiserPower } = useAssetPack(data, pack);
   const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
 
   const { amount } = useDepositServicer(data);

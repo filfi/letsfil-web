@@ -6,6 +6,7 @@ import { Chain, configureChains, createConfig } from 'wagmi';
 import { RUN_ENV } from '@/constants';
 
 const isMainnet = RUN_ENV === 'main';
+// const _chains: Chain[] = [filecoin];
 const _chains: Chain[] = isMainnet ? [filecoin] : [filecoinCalibration];
 
 export const queryClient = new QueryClient();

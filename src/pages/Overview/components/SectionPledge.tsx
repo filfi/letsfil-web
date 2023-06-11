@@ -42,7 +42,7 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const pieData = useMemo(
     () => [
       { name: '优先建设者', value: investRate },
-      { name: '技术运维保证金', value: opsRatio },
+      { name: '运维保证金', value: opsRatio },
     ],
     [investRate, opsRatio],
   );
@@ -50,14 +50,14 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   return (
     <>
       <div className="row g-3 g-lg-4 mb-3 g-0">
-        <div className="col-12 col-md-4 col-xl-3">
-          <div style={{ width: 120, height: 120 }}>
+        <div className="col-12 col-md-4 col-xxl-3">
+          <div className="mb-3" style={{ height: 120 }}>
             <Pie {...config} data={pieData} />
           </div>
         </div>
-        <div className="col-12 col-md-8 col-xl-9">
+        <div className="col-12 col-md-8 col-xxl-9">
           <div className="row g-2">
-            <div className="col-6">
+            <div className="col-6 col-lg-5 col-xxl-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>
                 <p className="reward-label">优先质押</p>
@@ -67,10 +67,10 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 </p>
               </div>
             </div>
-            <div className="col-6">
+            <div className="col-6 col-lg-7 col-xxl-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#7FC4FD' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">劣后质押(技术运维保证金)</p>
+                <p className="reward-label">劣后质押(运维保证金)</p>
                 <p className="reward-text">
                   <span className="text-decimal">{opsRatio}</span>
                   <span className="ms-2 text-neutral">%</span>

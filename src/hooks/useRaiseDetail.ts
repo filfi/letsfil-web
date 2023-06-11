@@ -1,4 +1,3 @@
-// import { useDebounceEffect } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
 
 import { getInfo } from '@/apis/raise';
@@ -12,12 +11,8 @@ export default function useRaiseDetail(id?: string) {
   };
 
   const { data, error, isLoading, refetch } = useQuery(['raiseInfo', id], withNull(service), {
-    staleTime: 10_000,
+    staleTime: 30_000,
   });
-
-  // useDebounceEffect(() => {
-  //   id && refetch();
-  // }, [id], { wait: 200 });
 
   return {
     data,

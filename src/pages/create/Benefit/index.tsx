@@ -223,7 +223,7 @@ export default function CreateBenefit() {
       >
         <div className="ffi-form">
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">技术运维保证金</h4>
+            <h4 className="ffi-label">运维保证金</h4>
             <p className="text-gray">
               主办人要求技术服务商存入保证金，保证金将做为劣后质押，与建设者的质押一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押的比例不低于5%，提高占比要求，可提高对建设者的吸引力。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
@@ -240,7 +240,7 @@ export default function CreateBenefit() {
 
             <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4 mb-4">
               <div className="col">
-                <div className="mb-1 fw-500">劣后质押(技术运维保证金)</div>
+                <div className="mb-1 fw-500">劣后质押(运维保证金)</div>
                 <Form.Item
                   name="opsSecurityFundRate"
                   rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, 100], '最小5%， 最大100%') }]}
@@ -455,11 +455,11 @@ export default function CreateBenefit() {
         </div>
       </Modal.Alert>
 
-      <Modal.Alert id="deposit-modal" title="技术运维保证金" confirmText="我知道了">
+      <Modal.Alert id="deposit-modal" title="运维保证金" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">
-              根据质押目标和分配方案可计算技术运维保证金。技术运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加节点计划的吸引力，以及未来算力交易中的流动性。
+              根据质押目标和分配方案可计算运维保证金。运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加节点计划的吸引力，以及未来算力交易中的流动性。
             </p>
           </div>
         </div>

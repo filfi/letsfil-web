@@ -3,6 +3,7 @@ import classNames from 'classnames';
 
 import * as F from '@/utils/format';
 // import Modal from '@/components/Modal';
+import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -10,8 +11,9 @@ import useDepositRaiser from '@/hooks/useDepositRaiser';
 import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
 const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { data: pack } = usePackInfo(data);
   const { fines } = useDepositRaiser(data);
-  const { pledge, sector } = useAssetPack(data);
+  const { pledge, sector } = useAssetPack(data, pack);
   const { period, sealdays, running, progress } = useRaiseSeals(data);
   const { isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
 

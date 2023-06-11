@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { listPacks } from '@/apis/packs';
 import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
-import PackCard from './components/PackCard';
+import AssetItem from './components/AssetItem';
 import LoadingView from '@/components/LoadingView';
 
 export default function AccountAssets() {
@@ -32,9 +32,7 @@ export default function AccountAssets() {
       <LoadingView className="vh-50" data={list} error={!!error} loading={isLoading} retry={refetch}>
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-3">
           {list?.map((item) => (
-            <div key={item.asset_pack_id} className="col">
-              <PackCard data={item} />
-            </div>
+            <AssetItem key={item.asset_pack_id} data={item} />
           ))}
         </div>
       </LoadingView>

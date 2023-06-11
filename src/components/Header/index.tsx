@@ -55,7 +55,7 @@ const Header: React.FC = () => {
   const [processing] = useProcessing();
   const { connect, disconnect } = useAccount();
   const { address, isConnecting } = useWagmi();
-  const { data: balance } = useBalance({ address });
+  const { data: balance } = useBalance({ address, watch: true, staleTime: 180_000 });
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
 

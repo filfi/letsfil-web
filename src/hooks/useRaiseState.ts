@@ -19,7 +19,7 @@ export default function useRaiseState(data?: API.Plan | null) {
   // 已开始
   const isStarted = useMemo(() => data && H.isStarted(data), [data]);
   // 集合质押中
-  const isRaising = useMemo(() => data && H.isRaising(data), [raiseState]);
+  const isRaising = useMemo(() => data && H.isRaising(data), [data]);
   // 已关闭
   const isClosed = useMemo(() => data && H.isClosed(data), [data]);
   // 已失败

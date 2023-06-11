@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-// import { useDebounceEffect } from 'ahooks';
 import { useQueries } from '@tanstack/react-query';
 
 import { sleep } from '@/utils/utils';
@@ -56,10 +55,6 @@ export default function useRewardInvestor(data?: API.Plan | null) {
   const refetch = () => {
     return Promise.all([aRes.refetch(), tRes.refetch()]);
   };
-
-  // useDebounceEffect(() => {
-  //   data && refetch();
-  // }, [data], { wait: 200 });
 
   const [withdrawing, withdrawAction] = useProcessify(
     withConnect(async () => {

@@ -39,26 +39,26 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
           </p>
         </div>
         <div className="card-body">
-          <p className="my-3 d-flex gap-3">
+          <p className="mt-2 mb-4 d-flex gap-3">
             <Link className="text-underline" to={`/overview/${data.raising_id}`}>
               {formatSponsor(data.sponsor_company)}发起的节点计划
             </Link>
             <span className="ms-auto fw-500">已运行{running}天</span>
           </p>
-        </div>
-        <div className="card-footer d-flex gap-2 border-0">
-          <div className="flex-shrink-0">
-            <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={32} />
-          </div>
-          <div className="flex-grow-1 my-auto">
-            <span className="align-middle me-auto">
-              <span className="">{provider?.short_name}</span>
-              <span className="mx-1">·</span>
-              <span className="">保证金</span>
-              <span>{data.ops_security_fund_rate}%</span>
-              <span className="mx-1">·</span>
-              <span className="">提供技术服务</span>
-            </span>
+          <div className="d-flex gap-2 mb-2">
+            <div className="flex-shrink-0">
+              <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={32} />
+            </div>
+            <div className="flex-grow-1 my-auto">
+              <span className="align-middle me-auto">
+                <span className="">{provider?.short_name}</span>
+                <span className="mx-1">·</span>
+                <span className="">保证金</span>
+                <span>{data.ops_security_fund_rate}%</span>
+                <span className="mx-1">·</span>
+                <span className="">提供技术服务</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>

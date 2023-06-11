@@ -13,6 +13,12 @@ export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumbe
   return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
 }
 
+export function formatID(id?: number | string) {
+  if (id) {
+    return (+id).toString(36);
+  }
+}
+
 export function formatFix(val?: number | string) {
   return `${val ?? ''}`.replace(/(?:\.0*|(\.\d+?)0+)$/, '$1');
 }
@@ -36,7 +42,7 @@ export function formatBytes(bytes: number | string, decimals = 2, mode: BigNumbe
 
   const i = Math.floor(Math.log(val) / Math.log(k));
 
-  return `${toFixed(val / Math.pow(k, i), dm, mode)} ${sizes[i]}`;
+  return `${formatFix(toFixed(val / Math.pow(k, i), dm, mode))} ${sizes[i]}`;
 }
 
 export function formatRate(rate: number | string, fmt = '0%') {

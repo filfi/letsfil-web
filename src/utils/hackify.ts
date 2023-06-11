@@ -28,7 +28,11 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
       let msg = e.reason ?? e.data?.errorMessage ?? e.message;
 
       if (e instanceof BaseError) {
+        msg = e.details || e.shortMessage;
         console.log('BaseError', e.cause);
+        console.log('[details]: ', e.details);
+        console.log('[metaMessages]: ', e.metaMessages);
+        console.log('[shortMessage]: ', e.shortMessage);
 
         if (e.cause instanceof UserRejectedRequestError) {
           console.log('User rejected request!');
@@ -37,7 +41,9 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
 
         const revertedError = e.walk((e) => e instanceof ContractFunctionRevertedError) as ContractFunctionRevertedError;
 
-        msg = revertedError?.data?.errorName ?? msg;
+        if (revertedError) {
+          msg = revertedError?.data?.errorName ?? msg;
+        }
       }
 
       Modal.alert({

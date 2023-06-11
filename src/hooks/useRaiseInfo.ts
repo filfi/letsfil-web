@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-// import { useDebounceEffect } from 'ahooks';
 import { useQueries } from '@tanstack/react-query';
 
 import { accDiv } from '@/utils/utils';
@@ -32,7 +31,7 @@ export default function useRaiseInfo(data?: API.Plan | null) {
     }
   };
 
-  const [ownerInfo, pledgeInfo, sealedInfo] = useQueries({
+  const [ownerRes, pledgeRes, sealedRes] = useQueries({
     queries: [
       {
         queryKey: ['raiseOwner', data?.raising_id],
@@ -52,24 +51,20 @@ export default function useRaiseInfo(data?: API.Plan | null) {
     ],
   });
 
-  const sealed = useMemo(() => sealedInfo.data ?? 0, [sealedInfo.data]); // 已封装金额
-  const hasOwner = useMemo(() => ownerInfo.data ?? false, [ownerInfo.data]); // owner权限
-  const actual = useMemo(() => pledgeInfo.data ?? toNumber(data?.actual_amount), [pledgeInfo.data, data?.actual_amount]); // 质押总额
+  const sealed = useMemo(() => sealedRes.data ?? 0, [sealedRes.data]); // 已封装金额
+  const hasOwner = useMemo(() => ownerRes.data ?? false, [ownerRes.data]); // owner权限
+  const actual = useMemo(() => pledgeRes.data ?? toNumber(data?.actual_amount), [pledgeRes.data, data?.actual_amount]); // 质押总额
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
   const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小集合质押比例
   const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 质押目标
 
   const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 集合质押进度
-  const isLoading = useMemo(() => pledgeInfo.isLoading || sealedInfo.isLoading, [pledgeInfo.isLoading, sealedInfo.isLoading]);
+  const isLoading = useMemo(() => pledgeRes.isLoading || sealedRes.isLoading, [pledgeRes.isLoading, sealedRes.isLoading]);
 
   const refetch = async () => {
-    return await Promise.all([ownerInfo.refetch(), pledgeInfo.refetch(), sealedInfo.refetch()]);
+    return await Promise.all([ownerRes.refetch(), pledgeRes.refetch(), sealedRes.refetch()]);
   };
-
-  // useDebounceEffect(() => {
-  //   data && refetch();
-  // }, [data], { wait: 200 });
 
   return {
     actual,

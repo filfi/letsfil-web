@@ -38,7 +38,7 @@ const EVENTS_MAP: Record<string, string> = {
   ERaiseSecurityFund: '存入主办人保证金',
   EStackFromInvestor: '建设者质押',
   EUnstackFromInverstor: '建设者赎回',
-  EDepositOPSSecurityFund: '存入技术运维保证金',
+  EDepositOPSSecurityFund: '存入运维保证金',
   EInverstorWithdrawProfit: '建设者提取节点激励',
   EWithdrawOPSSecurityFund: '技术服务商取回保证金',
   EWithdrawRaiseSecurityFund: '主办人取回保证金',

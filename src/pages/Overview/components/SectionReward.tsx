@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
-import { formatNum } from '@/utils/format';
-import { accDiv, accMul } from '@/utils/utils';
-import useChainInfo from '@/hooks/useChainInfo';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+// import { formatNum } from '@/utils/format';
+// import { accDiv, accMul } from '@/utils/utils';
+// import useChainInfo from '@/hooks/useChainInfo';
+// import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 
@@ -20,7 +20,15 @@ const config: PieConfig = {
   label: false,
   color: ['#2699FB', '#7FC4FD', '#9FD3FD', '#BCE0FD'],
   statistic: {
-    title: false,
+    title: {
+      content: '算力',
+      style: {
+        color: '#475467',
+        fontFamily: 'Inter',
+        fontSize: '14px',
+        fontWeight: '400',
+      },
+    },
     content: false,
   },
   tooltip: {
@@ -31,13 +39,13 @@ const config: PieConfig = {
 };
 
 const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { perFil, perPledge } = useChainInfo();
-  const { period, target } = useRaiseInfo(data);
+  // const { perFil, perPledge } = useChainInfo();
+  // const { period, target } = useRaiseInfo(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
   const { priorityRate, raiserRate, opsRatio, ffiRate } = useRaiseRate(data);
 
   // 预估节点激励 = 24小时产出效率 * 封装天数 * 总算力(质押目标 / 当前扇区质押量)
-  const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
+  // const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
   const pieData = useMemo(
     () => [
       { name: '建设者权益', value: priorityRate },
@@ -51,14 +59,14 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   return (
     <>
       <div className="row g-3 g-lg-4 mb-3 g-0">
-        <div className="col-12 col-md-4 col-xl-3">
-          <div style={{ width: 120, height: 120 }}>
+        <div className="col-12 col-md-4 col-xxl-3">
+          <div className="mb-3" style={{ height: 120 }}>
             <Pie {...config} data={pieData} />
           </div>
         </div>
-        <div className="col-12 col-md-8 col-xl-9">
+        <div className="col-12 col-md-8 col-xxl-9">
           <div className="row g-2">
-            <div className="col-6 col-md-4">
+            {/* <div className="col-6 col-md-4">
               <div className="reward-item mb-3">
                 <span className="reward-dot reward-dot-circle"></span>
                 <p className="reward-label">{period}天总激励(估)</p>
@@ -67,8 +75,8 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   <span className="ms-2 text-neutral">FIL</span>
                 </p>
               </div>
-            </div>
-            <div className="col-6 col-md-8">
+            </div> */}
+            <div className="col-6 col-md-12 col-lg-6 col-xxl-12">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>
                 <p className="reward-label">建设者</p>
@@ -78,7 +86,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 </p>
               </div>
             </div>
-            <div className="col-6 col-md-4">
+            <div className="col-6 col-md-4 col-lg-6 col-xxl-4">
               <div className="reward-item mb-3" style={{ '--dot-color': '#7FC4FD' } as any}>
                 <span className="reward-dot"></span>
                 <p className="reward-label">主办人</p>
@@ -88,7 +96,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 </p>
               </div>
             </div>
-            <div className="col-6 col-md-4">
+            <div className="col-6 col-md-4 col-lg-6 col-xxl-4">
               <div className="reward-item mb-3" style={{ '--dot-color': '#9FD3FD' } as any}>
                 <span className="reward-dot"></span>
                 <p className="reward-label">技术运维服务费</p>
@@ -98,7 +106,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 </p>
               </div>
             </div>
-            <div className="col-12 col-md-4">
+            <div className="col-6 col-md-4 col-lg-6 col-xxl-4">
               <div className="reward-item mb-3" style={{ '--dot-color': '#BCE0FD' } as any}>
                 <span className="reward-dot"></span>
                 <p className="reward-label">FilFi协议费用</p>
@@ -116,7 +124,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">建设者</div>
-            <div className="col-8 table-cell">获得节点激励的{priorityRate}%</div>
+            <div className="col-8 table-cell">获得算力的{priorityRate}%</div>
           </div>
         </div>
         <div className="col table-row">

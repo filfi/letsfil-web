@@ -25,7 +25,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
     <>
       <div className={classNames('card', className)}>
         <div className="card-body">
-          <div className="float-end mt-lg-5 pt-lg-3">
+          <div className="float-end mt-lg-5 pt-lg-4">
             <p className="mb-0 fs-30 fw-600">{priorityRate}%</p>
             <p className="mb-0 fs-16 fw-500">建设者获得</p>
           </div>

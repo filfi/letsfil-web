@@ -325,7 +325,7 @@ export default function Overview() {
               <section id="timeline" className="section order-2">
                 <div className="section-header">
                   <h4 className="section-title">时间进度</h4>
-                  <p className="mb-0">建设者对每一步进展尽在掌握。</p>
+                  <p className="mb-0">建设者进展尽在掌握。</p>
                 </div>
 
                 <SectionTimeline data={data} />

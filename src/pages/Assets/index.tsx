@@ -15,8 +15,9 @@ import FormRadio from '@/components/FormRadio';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
-import useRaiseRole from '@/hooks/useRaiseRole';
+import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
@@ -41,11 +42,12 @@ export default function Assets() {
   const { data, error, isLoading, refetch } = useQuery(['raiseInfo', param.id], withNull(service));
 
   const { remains } = useRaiseSeals(data);
+  const { data: pack } = usePackInfo(data);
   const provider = useSProvider(data?.service_id);
   const { isInvestor } = useDepositInvestor(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
-  const { pack, investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data);
+  const { investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data, pack);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
   const raiser = useRewardRaiser(data); // 主办人的节点激励
@@ -279,7 +281,7 @@ export default function Assets() {
 
               <div className="card">
                 <div className="card-body">
-                  <p className="mb-1 text-gray fw-500">持有算力(QAP)</p>
+                  <p className="mb-1 text-gray fw-500">权益算力(QAP)</p>
                   <p className="mb-0 fw-600">
                     <span className="fs-24">{F.formatPower(power)?.[0]}</span>
                     <span className="ms-1 fs-sm fw-bold text-neutral">{F.formatPower(power)?.[1]}</span>
