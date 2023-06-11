@@ -24,16 +24,15 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
     try {
       return await service(...args);
     } catch (e: any) {
-      console.log(e.name);
+      if (e.code === 'ACTION_REJECTED' || e.cause instanceof UserRejectedRequestError) {
+        console.log('User rejected request!');
+        throw e;
+      }
+
       let msg = e.reason ?? e.data?.errorMessage ?? e.message;
 
       if (e instanceof BaseError) {
         console.log('BaseError', e.cause);
-
-        if (e.cause instanceof UserRejectedRequestError) {
-          console.log('User rejected request!');
-          throw e;
-        }
 
         msg = e.details || e.shortMessage;
 
