@@ -1,4 +1,4 @@
-import { usePublicClient, useWalletClient } from 'wagmi';
+import { usePublicClient /* useWalletClient */ } from 'wagmi';
 import type { Account } from 'viem';
 
 import { isDef } from '@/utils/utils';
@@ -8,7 +8,8 @@ import { RAISE_ADDRESS } from '@/constants';
 import raiseAbi from '@/abis/raise.abi.json';
 import factoryAbi from '@/abis/factory.abi.json';
 import { NodeState, RaiseState } from '@/constants/state';
-import { RevertedError } from '@/core/errors/RevertedError';
+// import { RevertedError } from '@/core/errors/RevertedError';
+import { writeContract as _writeContract } from '@/core/actions';
 
 export type WriteOptions = TxOptions & {
   account?: Account;
@@ -23,25 +24,25 @@ function toEther(v: unknown) {
 
 export default function useContract(address?: API.Address) {
   const publicClient = usePublicClient();
-  const { data: walletClient } = useWalletClient();
+  // const { data: walletClient } = useWalletClient();
 
-  const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | undefined>) {
-    return async (...args: P) => {
-      const hash = await service(...args);
+  // const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | undefined>) {
+  //   return async (...args: P) => {
+  //     const hash = await service(...args);
 
-      if (hash) {
-        const res = await publicClient.waitForTransactionReceipt({ hash });
+  //     if (hash) {
+  //       const res = await publicClient.waitForTransactionReceipt({ hash });
 
-        console.log(res);
+  //       console.log(res);
 
-        if (res.status === 'reverted') {
-          throw new RevertedError('交易失败', res);
-        }
+  //       if (res.status === 'reverted') {
+  //         throw new RevertedError('交易失败', res);
+  //       }
 
-        return res;
-      }
-    };
-  };
+  //       return res;
+  //     }
+  //   };
+  // };
 
   const readContract = async function <R = any, P extends unknown[] = any>(functionName: string, args: P, _address?: API.Address) {
     const addr = _address ?? address;
@@ -61,30 +62,53 @@ export default function useContract(address?: API.Address) {
   const writeContract = async function <P extends unknown[] = any>(
     functionName: string,
     args: P,
-    { account: _account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
+    { abi: _abi, address: _address, ...opts }: Omit<WriteOptions, 'account'> & { abi?: any } = {},
   ) {
     const abi = _abi ?? raiseAbi;
     const addr = _address ?? address;
 
-    if (!addr || !walletClient) return;
-
-    const account = _account ?? walletClient?.account;
+    if (!addr) return;
 
     const params = {
       abi,
       args,
-      account,
       functionName,
       address: addr,
       ...opts,
     };
 
-    const gas = await publicClient.estimateContractGas(params);
+    console.log({ ...params });
 
-    console.log({ ...params, gas });
-
-    return await waitTransaction(walletClient.writeContract)({ ...params, gas });
+    return await _writeContract(params);
   };
+
+  // const writeContract = async function <P extends unknown[] = any>(
+  //   functionName: string,
+  //   args: P,
+  //   { account: _account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
+  // ) {
+  //   const abi = _abi ?? raiseAbi;
+  //   const addr = _address ?? address;
+
+  //   if (!addr || !walletClient) return;
+
+  //   const account = _account ?? walletClient?.account;
+
+  //   const params = {
+  //     abi,
+  //     args,
+  //     account,
+  //     functionName,
+  //     address: addr,
+  //     ...opts,
+  //   };
+
+  //   const gas = await publicClient.estimateContractGas(params);
+
+  //   console.log({ ...params, gas });
+
+  //   return await waitTransaction(walletClient.writeContract)({ ...params, gas });
+  // };
 
   /**
    * 获取Owner权限
