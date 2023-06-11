@@ -1,4 +1,4 @@
-import { useFeeData, usePublicClient, useWalletClient } from 'wagmi';
+import { usePublicClient, useWalletClient } from 'wagmi';
 import type { Account } from 'viem';
 
 import { isDef } from '@/utils/utils';
@@ -24,7 +24,6 @@ function toEther(v: unknown) {
 export default function useContract(address?: API.Address) {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
-  const { refetch: fetchFee } = useFeeData({ enabled: false });
 
   const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | undefined>) {
     return async (...args: P) => {
@@ -62,14 +61,14 @@ export default function useContract(address?: API.Address) {
   const writeContract = async function <P extends unknown[] = any>(
     functionName: string,
     args: P,
-    { account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
+    { account: _account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
   ) {
     const abi = _abi ?? raiseAbi;
     const addr = _address ?? address;
 
     if (!addr || !walletClient) return;
 
-    const { data: fee } = await fetchFee();
+    const account = _account ?? walletClient?.account;
 
     const params = {
       abi,
@@ -77,14 +76,14 @@ export default function useContract(address?: API.Address) {
       account,
       functionName,
       address: addr,
-      maxFeePerGas: fee?.maxFeePerGas,
-      maxPriorityFeePerGas: fee?.maxPriorityFeePerGas,
-      ...(opts as any),
+      ...opts,
     };
 
-    console.log(params);
+    const gas = await publicClient.estimateContractGas(params);
 
-    return await waitTransaction(walletClient.writeContract)(params);
+    console.log({ ...params, gas });
+
+    return await waitTransaction(walletClient.writeContract)({ ...params, gas });
   };
 
   /**

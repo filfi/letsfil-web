@@ -35,6 +35,8 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
           throw e;
         }
 
+        msg = e.details || e.shortMessage;
+
         const revertedError = e.walk((e) => e instanceof ContractFunctionRevertedError) as ContractFunctionRevertedError;
 
         msg = revertedError?.data?.errorName ?? msg;

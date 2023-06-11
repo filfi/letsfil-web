@@ -6,10 +6,11 @@ import FormRadio from '../FormRadio';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 
 // import { defaultWallet } from '@/constants/config';
+import IconTokenPocket from './icons/tokenpocket.png';
 import { ReactComponent as Logo } from '@/assets/logo.svg';
 import { ReactComponent as IconMetaMask } from './icons/metamask.svg';
 import { ReactComponent as IconFoxWallet } from './icons/foxwallet.svg';
-import { ReactComponent as IconTokenPocket } from './icons/tokenpocket.svg';
+// import { ReactComponent as IconTokenPocket } from './icons/tokenpocket.svg';
 
 export type ClientModalProps = {
   loading?: boolean;
@@ -26,7 +27,8 @@ export type ClientModalStatic = React.ForwardRefExoticComponent<ClientModalProps
 
 const items = [
   { icon: <IconMetaMask />, label: 'MetaMask', value: 'MetaMask' },
-  { icon: <IconTokenPocket />, label: 'TokenPocket', value: 'TokenPocket' },
+  // { icon: <IconTokenPocket />, label: 'TokenPocket', value: 'TokenPocket' },
+  { icon: <img className="rounded-3" src={IconTokenPocket} />, label: 'TokenPocket', value: 'TokenPocket' },
   { icon: <IconFoxWallet />, label: 'FoxWallet', value: 'FoxWallet' },
 ];
 
@@ -65,7 +67,7 @@ const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalP
       icon={<Logo />}
       title="连接钱包"
       confirmText="连接"
-      bodyClassName="px-4 py-5"
+      bodyClassName="p-4"
       className={styles.modal}
       confirmLoading={loading}
       showFooter={showFooter}
