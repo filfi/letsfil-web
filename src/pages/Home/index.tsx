@@ -27,7 +27,7 @@ export default function Home() {
           <div className="row g-4 align-items-lg-center">
             <div className="col-12 col-lg-6">
               <p className="mb-4">
-                <span className="badge badge-primary ps-1">
+                <span className="badge badge-primary ps-1 text-wrap">
                   <span className="badge badge-primary bg-white lh-sm">FilFi联合节点</span>
                   <span className="ms-2">创新的“节点计划”让建设者和SP重建信任</span>
                 </span>

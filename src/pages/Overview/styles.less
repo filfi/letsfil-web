@@ -3,13 +3,14 @@
   --content-item-gap: 24px;
   --section-header-padding-y: 12px;
   --section-header-spacer-y: 16px;
+  --section-decimal-font-size: 20px;
 
   :global {
     .section {
       margin-bottom: var(--content-item-gap);
 
       .min-cell {
-        min-width: 110px;
+        min-width: var(--section-table-min-cell);
       }
     }
 
@@ -240,7 +241,7 @@
     }
 
     .text-decimal {
-      font-size: 24px;
+      font-size: var(--section-decimal-font-size);
       font-weight: 600;
       line-height: 1.333;
     }
@@ -285,10 +286,17 @@
   }
 }
 
+@media screen and (min-width: 576px) {
+  .content {
+    --section-table-min-cell: 80px;
+  }
+}
 @media screen and (min-width: 992px) {
   .content {
     --section-header-padding-y: 20px;
     --section-header-spacer-y: 24px;
+    --section-decimal-font-size: 24px;
+    --section-table-min-cell: 110px;
 
     > :not(:first-child) {
       padding-left: var(--content-item-gap);

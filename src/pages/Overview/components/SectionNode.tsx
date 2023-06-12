@@ -4,7 +4,7 @@ import { SCAN_URL } from '@/constants';
 import { formatPower } from '@/utils/format';
 import usePackInfo from '@/hooks/usePackInfo';
 import useChainInfo from '@/hooks/useChainInfo';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseState from '@/hooks/useRaiseState';
 import { accMul, byte2gb } from '@/utils/utils';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
@@ -18,7 +18,7 @@ function calcPerPledge(perTera?: number | string) {
 const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { perPledge } = useChainInfo();
   const { data: pack } = usePackInfo(data);
-  const { actual, target } = useRaiseInfo(data);
+  const { actual, target } = useRaiseBase(data);
   const { isSuccess, isWorking } = useRaiseState(data);
 
   const price = useMemo(() => calcPerPledge(data?.pledge_per_tera_day) ?? perPledge, [perPledge, data?.pledge_per_tera_day]);

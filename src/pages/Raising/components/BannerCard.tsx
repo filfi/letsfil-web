@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 
 import Avatar from '@/components/Avatar';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useSProvider from '@/hooks/useSProvider';
 import useIncomeRate from '@/hooks/useIncomeRate';
@@ -16,7 +16,7 @@ export type BannerCardProps = {
 
 const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
   const { rate } = useIncomeRate(data);
-  const { progress } = useRaiseInfo(data);
+  const { progress } = useRaiseBase(data);
   const provider = useSProvider(data.service_id);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });

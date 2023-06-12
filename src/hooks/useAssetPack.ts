@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 
 import { toNumber } from '@/utils/format';
-import useRaiseInfo from './useRaiseInfo';
+import useRaiseBase from './useRaiseBase';
 import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
 import useDepositInvestor from './useDepositInvestor';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
 export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | null) {
-  const { actual } = useRaiseInfo(plan);
+  const { actual } = useRaiseBase(plan);
   const { ratio, record } = useDepositInvestor(plan);
   const { isRaiser, isServicer } = useRaiseRole(plan);
   const { investRate, raiserRate, opsRate, servicerRate } = useRaiseRate(plan);
@@ -42,16 +42,9 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   const holdPledge = useMemo(() => accAdd(investPledge, raiserPledge, servicerPledge), [investPledge, raiserPledge, servicerPledge]);
 
   return {
-    ratio,
     power,
     pledge,
     sector,
-    isRaiser,
-    isServicer,
-    opsRate,
-    investRate,
-    raiserRate,
-    servicerRate,
     sealsPower,
     investPower,
     raiserPower,

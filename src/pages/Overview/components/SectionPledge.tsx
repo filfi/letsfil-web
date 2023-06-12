@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
 import { formatAmount } from '@/utils/format';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
@@ -30,7 +30,7 @@ const config: PieConfig = {
 };
 
 const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { actual } = useRaiseInfo(data);
+  const { actual } = useRaiseBase(data);
   const { opsRatio } = useRaiseRate(data);
   const { isSuccess } = useRaiseState(data);
 

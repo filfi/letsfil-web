@@ -1,14 +1,11 @@
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Link, NavLink, useParams } from '@umijs/max';
 import { useDebounceEffect, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
-import { getInfo } from '@/apis/raise';
 import { SCAN_URL } from '@/constants';
-import { withNull } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import Activity from './components/Activity';
 import FormRadio from '@/components/FormRadio';
@@ -20,6 +17,7 @@ import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
@@ -33,29 +31,22 @@ import { ReactComponent as IconFil } from '@/assets/icons/filecoin.svg';
 
 export default function Assets() {
   const param = useParams();
-  const service = async () => {
-    if (param.id) {
-      return await getInfo(param.id);
-    }
-  };
 
-  const { data, error, isLoading, refetch } = useQuery(['raiseInfo', param.id], withNull(service));
+  const { data: plan, error, isLoading, refetch } = useRaiseInfo(param.id);
+  const { data: pack } = usePackInfo(plan);
 
-  const { remains } = useRaiseSeals(data);
-  const { data: pack } = usePackInfo(data);
-  const provider = useSProvider(data?.service_id);
-  const { isInvestor } = useDepositInvestor(data);
-  const { isRaiser, isServicer } = useRaiseRole(data);
-  const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
-  const { investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data, pack);
+  const { remains } = useRaiseSeals(plan);
+  const provider = useSProvider(plan?.service_id);
+  const { isInvestor } = useDepositInvestor(plan);
+  const { isRaiser, isServicer } = useRaiseRole(plan);
+  const { isClosed, isFailed, isStarted, isDestroyed } = useRaiseState(plan);
+  const { investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(plan, pack);
 
-  const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
-  const raiser = useRewardRaiser(data); // 主办人的节点激励
-  const investor = useRewardInvestor(data); // 建设者的节点激励
-  const servicer = useRewardServicer(data); // 服务商的节点激励
+  const roles = useMemo(() => [isInvestor, isRaiser, isServicer, isServicer], [isInvestor, isRaiser, isServicer]);
+  const raiser = useRewardRaiser(plan); // 主办人的节点激励
+  const investor = useRewardInvestor(plan); // 建设者的节点激励
+  const servicer = useRewardServicer(plan); // 服务商的节点激励
   const [role, setRole] = useState(roles.findIndex(Boolean));
-
-  const title = useMemo(() => (data ? `${F.formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
 
   const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
@@ -105,8 +96,20 @@ export default function Assets() {
   return (
     <>
       <div className="container">
-        <LoadingView data={data} error={!!error} loading={isLoading} retry={refetch}>
-          <PageHeader className="mb-3 pb-0" title={title} desc={`算力包 ${param.id}`} />
+        <LoadingView data={plan} error={!!error} loading={isLoading} retry={refetch}>
+          <PageHeader
+            className="mb-3 pb-0"
+            title={
+              plan ? (
+                <span>
+                  {F.formatSponsor(plan.sponsor_company)}发起的节点计划@${plan.miner_id}
+                </span>
+              ) : (
+                '-'
+              )
+            }
+            desc={<span className="text-uppercase">算力包 {F.formatID(param.id)}</span>}
+          />
 
           <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
             <li className="nav-item">
@@ -148,15 +151,15 @@ export default function Assets() {
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-1 fw-500">{F.formatSponsor(data?.sponsor_company)}发起的节点计划</p>
+                    <p className="mb-1 fw-500">{F.formatSponsor(plan?.sponsor_company)}发起的节点计划</p>
                     <p className="mb-0 text-gray-dark">
                       {isClosed ? (
                         <span className="badge">已关闭</span>
                       ) : isFailed ? (
                         <span className="badge badge-danger">集合质押失败</span>
-                      ) : (
-                        <span>{F.formatUnixDate(data?.begin_time)}启动</span>
-                      )}
+                      ) : isStarted ? (
+                        <span>{F.formatUnixDate(plan?.begin_time)}启动</span>
+                      ) : null}
                     </p>
                   </div>
 
@@ -271,7 +274,7 @@ export default function Assets() {
                     </div>
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">累计激励</p>
+                        <p className="mb-1 fw-500">累计已提取</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
                       </div>
                     </div>

@@ -10,7 +10,7 @@ import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import usePackInfo from '@/hooks/usePackInfo';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
@@ -86,7 +86,7 @@ const Item: React.FC<{
   const provider = useSProvider(data.service_id);
   const { progress: sealPercent } = useRaiseSeals(data);
   const { priorityRate, opsRatio } = useRaiseRate(data);
-  const { actual, progress, target } = useRaiseInfo(data);
+  const { actual, progress, target } = useRaiseBase(data);
   const { isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
 
   const sealDays = useMemo(() => calcSealDays(data), [data]);

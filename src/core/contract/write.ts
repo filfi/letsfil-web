@@ -23,7 +23,7 @@ export type WriteContractOptions<A extends string = string, P extends unknown[] 
 export async function writeContract<A extends string = string, P extends unknown[] = any>({
   address,
   functionName,
-  abi = raiseAbi as any,
+  abi = raiseAbi,
   args = [] as unknown as P,
   ...opts
 }: WriteContractOptions<A, P>) {
@@ -33,8 +33,7 @@ export async function writeContract<A extends string = string, P extends unknown
     const client = await connector.getProvider();
     const chainId = config.getPublicClient().chain.id;
     const provider = new providers.Web3Provider(client, chainId);
-
-    const contract = new Contract(address, abi as any, provider.getSigner());
+    const contract = new Contract(address, abi, provider.getSigner());
 
     // const gas = await contract.estimateGas[functionName](...args, {
     //   ...opts,

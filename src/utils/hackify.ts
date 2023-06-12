@@ -24,26 +24,20 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
     try {
       return await service(...args);
     } catch (e: any) {
-      console.log(e.name);
+      console.log(e);
+
+      if (e.code === '' || e.cause instanceof UserRejectedRequestError) {
+        throw e;
+      }
+
       let msg = e.reason ?? e.data?.errorMessage ?? e.message;
 
       if (e instanceof BaseError) {
         msg = e.details || e.shortMessage;
-        console.log('BaseError', e.cause);
-        console.log('[details]: ', e.details);
-        console.log('[metaMessages]: ', e.metaMessages);
-        console.log('[shortMessage]: ', e.shortMessage);
-
-        if (e.cause instanceof UserRejectedRequestError) {
-          console.log('User rejected request!');
-          throw e;
-        }
 
         const revertedError = e.walk((e) => e instanceof ContractFunctionRevertedError) as ContractFunctionRevertedError;
 
-        if (revertedError) {
-          msg = revertedError?.data?.errorName ?? msg;
-        }
+        msg = revertedError?.data?.errorName ?? msg;
       }
 
       Modal.alert({

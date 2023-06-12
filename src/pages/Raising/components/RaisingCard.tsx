@@ -2,7 +2,7 @@ import { Link } from '@umijs/max';
 import { useCountDown } from 'ahooks';
 
 import Avatar from '@/components/Avatar';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useSProvider from '@/hooks/useSProvider';
 import useIncomeRate from '@/hooks/useIncomeRate';
@@ -15,7 +15,7 @@ export type RaisingCardProps = {
 const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
   const { rate } = useIncomeRate(data);
   const provider = useSProvider(data.service_id);
-  const { progress, target } = useRaiseInfo(data);
+  const { progress, target } = useRaiseBase(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 

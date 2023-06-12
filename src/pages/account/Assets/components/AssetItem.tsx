@@ -1,36 +1,113 @@
 import { useMemo } from 'react';
+import { Skeleton } from 'antd';
+import { history } from '@umijs/max';
 
 import RaiserCard from './RaiserCard';
+import OpsFundCard from './OpsFundCard';
 import InvestorCard from './InvestorCard';
 import ServicerCard from './ServicerCard';
+import { formatID } from '@/utils/format';
+import SpinBtn from '@/components/SpinBtn';
+import ShareBtn from '@/components/ShareBtn';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseRole from '@/hooks/useRaiseRole';
-import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
+import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
+import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
 
-const AssetItem: React.FC<{ data: API.Pack }> = ({ data }) => {
-  const { data: info } = useRaiseDetail(data.raising_id);
+const AssetCard: React.FC<{ loading?: boolean; pack: API.Pack; plan?: API.Plan | null; type: number }> = ({ loading, pack, plan, type }) => {
+  const handleWithdraw = () => {
+    history.push(`/assets/${pack.raising_id}`);
+  };
 
-  const { isInvestor } = useDepositInvestor(info);
-  const { isRaiser, isServicer } = useRaiseRole(info);
-
-  const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
-
-  const renderItem = (role: boolean, type: number) => {
-    if (role) {
-      switch (type) {
-        case 1:
-          return <RaiserCard key={type} pack={data} />;
-        case 2:
-          return <ServicerCard key={type} pack={data} />;
-        default:
-          return <InvestorCard key={type} pack={data} />;
-      }
+  const renderBadge = () => {
+    switch (type) {
+      case 1:
+        return <span className="badge badge-success my-auto me-3">主办人</span>;
+      case 2:
+        return <span className="badge badge-primary my-auto me-3">技术服务商</span>;
+      case 3:
+        return <span className="badge badge-primary my-auto me-3">运维保证金</span>;
     }
 
     return null;
   };
 
-  return <>{roles.map(renderItem)}</>;
+  const renderContent = () => {
+    switch (type) {
+      case 1:
+        return <RaiserCard key={type} pack={pack} plan={plan} />;
+      case 2:
+        return <ServicerCard key={type} pack={pack} plan={plan} />;
+      case 3:
+        return <OpsFundCard key={type} pack={pack} plan={plan} />;
+      default:
+        return <InvestorCard key={type} pack={pack} plan={plan} />;
+    }
+  };
+
+  return (
+    <div className="col">
+      <div className="card h-100">
+        <div className="card-header d-flex align-items-center">
+          <div className="flex-shrink-0">
+            <IconHD />
+          </div>
+
+          <div className="flex-grow-1">
+            <h4 className="card-title mb-0 mx-2 text-break text-uppercase">
+              {formatID(pack.asset_pack_id)}@{pack.miner_id}
+            </h4>
+          </div>
+
+          <div className="flex-shrink-0">
+            <ShareBtn className="btn border-0 p-0 ms-auto" text={`${location.origin}/assets/${pack.raising_id}`} toast="链接已复制">
+              <IconShare />
+            </ShareBtn>
+          </div>
+        </div>
+        <div className="card-body py-1">
+          <Skeleton active loading={loading}>
+            {renderContent()}
+          </Skeleton>
+        </div>
+        <div className="card-footer d-flex">
+          {renderBadge()}
+          <SpinBtn className="btn btn-primary ms-auto" disabled={loading} onClick={handleWithdraw}>
+            提取余额
+          </SpinBtn>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AssetItem: React.FC<{ data: API.Pack }> = ({ data }) => {
+  const { data: plan, isLoading } = useRaiseInfo(data.raising_id);
+
+  const { isInvestor } = useDepositInvestor(plan);
+  const { isRaiser, isServicer } = useRaiseRole(plan);
+
+  const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
+
+  const renderCard = (role: boolean, type: number) => {
+    if (role) {
+      if (type === 2) {
+        return (
+          <>
+            <AssetCard key={`${data.raising_id}-2`} loading={isLoading} pack={data} plan={plan} type={2} />
+            <AssetCard key={`${data.raising_id}-3`} loading={isLoading} pack={data} plan={plan} type={3} />
+          </>
+        );
+      }
+
+      return <AssetCard key={`${data.raising_id}-${type}`} loading={isLoading} pack={data} plan={plan} type={type} />;
+    }
+
+    return null;
+  };
+
+  return <>{roles.map(renderCard)}</>;
 };
 
 export default AssetItem;

@@ -4,7 +4,7 @@ import { Pie, PieConfig } from '@ant-design/plots';
 // import { formatNum } from '@/utils/format';
 // import { accDiv, accMul } from '@/utils/utils';
 // import useChainInfo from '@/hooks/useChainInfo';
-// import useRaiseInfo from '@/hooks/useRaiseInfo';
+// import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 
@@ -40,7 +40,7 @@ const config: PieConfig = {
 
 const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   // const { perFil, perPledge } = useChainInfo();
-  // const { period, target } = useRaiseInfo(data);
+  // const { period, target } = useRaiseBase(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
   const { priorityRate, raiserRate, opsRatio, ffiRate } = useRaiseRate(data);
 

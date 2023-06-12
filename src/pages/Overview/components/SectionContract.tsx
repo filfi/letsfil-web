@@ -6,14 +6,14 @@ import { SCAN_URL } from '@/constants';
 import Modal from '@/components/Modal';
 import { toF4Address } from '@/utils/utils';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg';
 
 const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { hasOwner } = useRaiseInfo(data);
+  const { hasOwner } = useRaiseBase(data);
   const { isRaiser, isSigned, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed, isPending } = useRaiseState(data);
 

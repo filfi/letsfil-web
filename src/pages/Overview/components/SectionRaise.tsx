@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import * as F from '@/utils/format';
 import * as U from '@/utils/utils';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useIncomeRate from '@/hooks/useIncomeRate';
@@ -11,7 +11,7 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { rate } = useIncomeRate(data);
   const { isStarted } = useRaiseState(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
-  const { actual, minRate, target, progress } = useRaiseInfo(data);
+  const { actual, minRate, target, progress } = useRaiseBase(data);
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)

@@ -6,7 +6,7 @@ import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import Avatar from '@/components/Avatar';
 import SpinBtn from '@/components/SpinBtn';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
@@ -22,7 +22,7 @@ import useRaiseSeals from '@/hooks/useRaiseSeals';
 
 const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
-  const { actual } = useRaiseInfo(data);
+  const { actual } = useRaiseBase(data);
   const { raiser, isRaiser, isRaisePaid } = useRaiseRole(data);
   const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = useRaiseState(data);
   const { amount, total, fines, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
@@ -145,7 +145,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
 const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
-  const { actual } = useRaiseInfo(data);
+  const { actual } = useRaiseBase(data);
   const { progress } = useRaiseSeals(data);
   const provider = useSProvider(data?.service_id);
   const { investRate, opsRatio } = useRaiseRate(data);
