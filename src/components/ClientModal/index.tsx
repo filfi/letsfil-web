@@ -5,12 +5,11 @@ import styles from './styles.less';
 import FormRadio from '../FormRadio';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 
-// import { defaultWallet } from '@/constants/config';
-import IconTokenPocket from './icons/tokenpocket.png';
+import IconImToken from './icons/imToken.svg';
+import IconMetamask from './icons/metamask.svg';
+import IconFoxwallet from './icons/foxwallet.svg';
+import IconTokenpocket from './icons/tokenpocket.svg';
 import { ReactComponent as Logo } from '@/assets/logo.svg';
-import { ReactComponent as IconMetaMask } from './icons/metamask.svg';
-import { ReactComponent as IconFoxWallet } from './icons/foxwallet.svg';
-// import { ReactComponent as IconTokenPocket } from './icons/tokenpocket.svg';
 
 export type ClientModalProps = {
   loading?: boolean;
@@ -25,11 +24,15 @@ export type ClientModalStatic = React.ForwardRefExoticComponent<ClientModalProps
   show: (options?: ClientModalProps) => ModalAttrs['hide'];
 };
 
+function renderIcon(src: string) {
+  return <img className="d-block w-100 h-100 rounded-2" src={src} />;
+}
+
 const items = [
-  { icon: <IconMetaMask />, label: 'MetaMask', value: 'MetaMask' },
-  // { icon: <IconTokenPocket />, label: 'TokenPocket', value: 'TokenPocket' },
-  { icon: <img className="rounded-3" src={IconTokenPocket} />, label: 'TokenPocket', value: 'TokenPocket' },
-  { icon: <IconFoxWallet />, label: 'FoxWallet', value: 'FoxWallet' },
+  { icon: renderIcon(IconMetamask), label: 'MetaMask', value: 'MetaMask' },
+  { icon: renderIcon(IconTokenpocket), label: 'TokenPocket', value: 'TokenPocket' },
+  { icon: renderIcon(IconImToken), label: 'imToken', value: 'imToken' },
+  { icon: renderIcon(IconFoxwallet), label: 'FoxWallet', value: 'FoxWallet' },
 ];
 
 const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalProps> = (
