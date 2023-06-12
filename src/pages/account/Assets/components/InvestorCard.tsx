@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+
+import { accMul } from '@/utils/utils';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
@@ -12,8 +15,10 @@ export type ItemProps = {
 export default function CardInvestor({ pack, plan }: React.PropsWithChildren<ItemProps>) {
   const { priorityRate } = useRaiseRate(plan);
   const { reward } = useRewardInvestor(plan);
-  const { amount } = useDepositInvestor(plan);
-  const { investPower, sealsPower } = useAssetPack(plan, pack);
+  const { amount, ratio } = useDepositInvestor(plan);
+  const { investorPower, power } = useAssetPack(plan, pack);
+
+  const sealsPower = useMemo(() => accMul(power, ratio), [power, ratio]);
 
   return (
     <>
@@ -34,8 +39,8 @@ export default function CardInvestor({ pack, plan }: React.PropsWithChildren<Ite
       <p className="d-flex my-3 gap-3">
         <span className="text-gray-dark">权益算力(封装算力 * {priorityRate}%)</span>
         <span className="ms-auto">
-          <span className="fs-16 fw-600">{formatPower(investPower)?.[0]}</span>
-          <span className="text-gray-dark ms-1">{formatPower(investPower)?.[1]}</span>
+          <span className="fs-16 fw-600">{formatPower(investorPower)?.[0]}</span>
+          <span className="text-gray-dark ms-1">{formatPower(investorPower)?.[1]}</span>
         </span>
       </p>
       <p className="d-flex my-3 gap-3">

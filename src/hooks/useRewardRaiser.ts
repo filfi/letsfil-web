@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
+import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import { accAdd, sleep } from '@/utils/utils';
 import { isRaiseOperating } from '@/helpers/raise';
 
 /**
@@ -35,7 +35,7 @@ export default function useRewardRaiser(data?: API.Plan | null) {
     }
   };
 
-  const [usableRes, pendingRes, recordRes] = useQueries({
+  const [aRes, pRes, wRes] = useQueries({
     queries: [
       {
         queryKey: ['raiserAvailableReward', data?.raising_id],
@@ -55,18 +55,14 @@ export default function useRewardRaiser(data?: API.Plan | null) {
     ],
   });
 
-  const reward = useMemo(() => usableRes.data ?? 0, [usableRes.data]); // 可提取
-  const record = useMemo(() => recordRes.data ?? 0, [recordRes.data]); // 已提取
-  const pending = useMemo(() => pendingRes.data ?? 0, [pendingRes.data]); // 待释放
-  const total = useMemo(() => accAdd(record, reward, pending), [record, reward, pending]);
+  const reward = useMemo(() => aRes.data ?? 0, [aRes.data]); // 可提取
+  const record = useMemo(() => wRes.data ?? 0, [wRes.data]); // 已提取
+  const pending = useMemo(() => pRes.data ?? 0, [pRes.data]); // 待释放
 
-  const isLoading = useMemo(
-    () => usableRes.isLoading || recordRes.isLoading || pendingRes.isLoading,
-    [usableRes.isLoading, recordRes.isLoading, pendingRes.isLoading],
-  );
+  const isLoading = useMemo(() => aRes.isLoading || pRes.isLoading || wRes.isLoading, [aRes.isLoading, pRes.isLoading, wRes.isLoading]);
 
   const refetch = () => {
-    return Promise.all([usableRes.refetch(), recordRes.refetch(), pendingRes.refetch()]);
+    return Promise.all([aRes.refetch(), pRes.refetch(), wRes.refetch()]);
   };
 
   const [withdrawing, withdrawAction] = useProcessify(
@@ -84,7 +80,6 @@ export default function useRewardRaiser(data?: API.Plan | null) {
   );
 
   return {
-    total,
     record,
     reward,
     pending,

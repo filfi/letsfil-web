@@ -277,6 +277,20 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取运维保证金罚金
+   */
+  const getServicerOpsFines = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spFundFine', [id], _address));
+  };
+
+  /**
+   * 获取服务商收益罚金
+   */
+  const getServicerFinesReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spRewardFine', [id], _address));
+  };
+
+  /**
    * 获取服务商锁定节点激励
    */
   const getServicerLockedReward = async (id: string, _address = address) => {
@@ -429,6 +443,8 @@ export default function useContract(address?: API.Address) {
     getInvestorAvailableReward,
     getInvestorWithdrawnRecord,
     getServicerFines,
+    getServicerOpsFines,
+    getServicerFinesReward,
     getServicerLockedReward,
     getServicerPendingReward,
     getServicerAvailableReward,

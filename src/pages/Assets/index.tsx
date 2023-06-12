@@ -20,6 +20,7 @@ import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
+import useRewardOps from '@/hooks/useRewardOps';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
@@ -39,21 +40,33 @@ export default function Assets() {
   const provider = useSProvider(plan?.service_id);
   const { isInvestor } = useDepositInvestor(plan);
   const { isRaiser, isServicer } = useRaiseRole(plan);
-  const { isClosed, isFailed, isStarted, isDestroyed } = useRaiseState(plan);
-  const { investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(plan, pack);
+  const { isClosed, isFailed, isStarted } = useRaiseState(plan);
+  const { investorPower, raiserPower, opsPower, servicerPower, investorPledge, raiserPledge, servicerPledge, opsPledge } = useAssetPack(plan, pack);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer, isServicer], [isInvestor, isRaiser, isServicer]);
   const raiser = useRewardRaiser(plan); // 主办人的节点激励
   const investor = useRewardInvestor(plan); // 建设者的节点激励
   const servicer = useRewardServicer(plan); // 服务商的节点激励
+  const ops = useRewardOps(plan); // 运维保证金的节点激励
   const [role, setRole] = useState(roles.findIndex(Boolean));
 
-  const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
-  const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
-  const pledge = useMemo(() => [investPledge, raiserPledge, servicerPledge][role] ?? 0, [role, investPledge, raiserPledge, servicerPledge]);
-  const total = useMemo(() => [investor.total, raiser.total, servicer.total][role] ?? 0, [role, investor.total, raiser.total, servicer.total]);
-  const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role] ?? 0, [role, investor.reward, raiser.reward, servicer.reward]);
-  // const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
+  const power = useMemo(() => [investorPower, raiserPower, servicerPower, opsPower][role] ?? 0, [role, investorPower, raiserPower, servicerPower, opsPower]);
+  const pledge = useMemo(
+    () => [investorPledge, raiserPledge, servicerPledge, opsPledge][role] ?? 0,
+    [role, investorPledge, raiserPledge, servicerPledge, opsPledge],
+  );
+  const reward = useMemo(
+    () => [investor.reward, raiser.reward, servicer.reward, ops.record][role] ?? 0,
+    [role, investor.reward, raiser.reward, servicer.reward, ops.reward],
+  );
+  const record = useMemo(
+    () => [investor.record, raiser.record, servicer.record, ops.record][role],
+    [role, investor.record, raiser.record, servicer.record, ops.record],
+  );
+  const pending = useMemo(
+    () => [investor.pending, raiser.pending, servicer.pending, ops.pending][role],
+    [role, investor.pending, raiser.pending, servicer.pending, ops.pending],
+  );
 
   const options = useMemo(() => {
     if (roles.filter(Boolean).length > 1) {
@@ -61,6 +74,7 @@ export default function Assets() {
         { icon: <IconUser />, label: '我是建设者', value: 0 },
         { icon: <IconStar />, label: '我是主办人', value: 1 },
         { icon: <IconTool />, label: '我是技术服务商', value: 2 },
+        { icon: <IconTool />, label: '运维保证金', value: 3 },
       ];
 
       return items.filter((n, i) => roles[i]);
@@ -86,6 +100,8 @@ export default function Assets() {
       await raiser.withdrawAction();
     } else if (role === 2) {
       await servicer.withdrawAction();
+    } else if (role === 3) {
+      // TODO: ops withdrawal reward
     } else {
       await investor.withdrawAction();
     }
@@ -102,7 +118,7 @@ export default function Assets() {
             title={
               plan ? (
                 <span>
-                  {F.formatSponsor(plan.sponsor_company)}发起的节点计划@${plan.miner_id}
+                  {F.formatSponsor(plan.sponsor_company)}发起的节点计划@{plan.miner_id}
                 </span>
               ) : (
                 '-'
@@ -269,13 +285,13 @@ export default function Assets() {
                     <div className="col">
                       <div className="ffi-form">
                         <p className="mb-1 fw-500">锁定激励</p>
-                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
+                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(pending, 2)} />
                       </div>
                     </div>
                     <div className="col">
                       <div className="ffi-form">
                         <p className="mb-1 fw-500">累计已提取</p>
-                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
+                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(record, 2, 2)} />
                       </div>
                     </div>
                   </div>

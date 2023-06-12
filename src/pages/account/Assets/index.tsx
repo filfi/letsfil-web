@@ -32,7 +32,7 @@ export default function AccountAssets() {
       <LoadingView className="vh-50" data={list} error={!!error} loading={isLoading} retry={refetch}>
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-3">
           {list?.map((item) => (
-            <AssetItem key={item.asset_pack_id} data={item} />
+            <AssetItem key={item.raising_id} data={item} />
           ))}
         </div>
       </LoadingView>

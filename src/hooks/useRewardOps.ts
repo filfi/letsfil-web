@@ -7,9 +7,8 @@ import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import useRaiseReward from './useRaiseReward';
 import { isRaiseOperating } from '@/helpers/raise';
-import { accAdd, accDiv, accMul, accSub, sleep } from '@/utils/utils';
+import { accDiv, accMul, accSub, sleep } from '@/utils/utils';
 
 /**
  * 服务商节点激励
@@ -18,73 +17,46 @@ import { accAdd, accDiv, accMul, accSub, sleep } from '@/utils/utils';
  */
 export default function useRewardOps(data?: API.Plan | null) {
   const { withConnect } = useAccount();
+  const { opsRate } = useRaiseRate(data);
   const { isServicer } = useRaiseRole(data);
-  const { opsRate, servicerRate } = useRaiseRate(data);
-  const { fines, reward: _reward } = useRaiseReward(data);
   const contract = useContract(data?.raise_address);
 
-  const getServicerAvailableReward = async () => {
+  const getTotalReward = async () => {
     if (data && isRaiseOperating(data) && isServicer) {
-      return await contract.getServicerAvailableReward(data.raising_id);
+      return await contract.getTotalReward(data.raising_id);
     }
   };
-  const getServicerLockedReward = async () => {
+  const getServicerOpsFines = async () => {
     if (data && isRaiseOperating(data) && isServicer) {
-      return await contract.getServicerLockedReward(data.raising_id);
-    }
-  };
-  const getServicerPendingReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
-      return await contract.getServicerPendingReward(data.raising_id);
-    }
-  };
-  const getServicerWithdrawnReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
-      return await contract.getServicerWithdrawnReward(data.raising_id);
+      return await contract.getServicerOpsFines(data.raising_id);
     }
   };
 
-  const [aRes, lRes, pRes, wRes] = useQueries({
+  const [tRes, fRes] = useQueries({
     queries: [
       {
-        queryKey: ['servicerAvailableReward', data?.raising_id],
-        queryFn: withNull(getServicerAvailableReward),
+        queryKey: ['totalReward', data?.raising_id],
+        queryFn: withNull(getTotalReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerLockedReward', data?.raising_id],
-        queryFn: withNull(getServicerLockedReward),
-        staleTime: 60_000,
-      },
-      {
-        queryKey: ['servicerPendingReward', data?.raising_id],
-        queryFn: withNull(getServicerPendingReward),
-        staleTime: 60_000,
-      },
-      {
-        queryKey: ['servicerWithdrawnReward', data?.raising_id],
-        queryFn: withNull(getServicerWithdrawnReward),
+        queryKey: ['servicerOpsFines', data?.raising_id],
+        queryFn: withNull(getServicerOpsFines),
         staleTime: 60_000,
       },
     ],
   });
 
-  const reward = useMemo(() => aRes.data ?? 0, [aRes.data]); // 可提取
-  const _locked = useMemo(() => lRes.data ?? 0, [lRes.data]); // 锁定节点激励
-  const record = useMemo(() => wRes.data ?? 0, [wRes.data]); // 已提取
-  const pending = useMemo(() => pRes.data ?? 0, [pRes.data]); // 待释放
+  const reward = useMemo(() => 0, []); // 可提取
+  const record = useMemo(() => 0, []); // 已提取
+  const _fines = useMemo(() => fRes.data ?? 0, [fRes.data]); // 保证金罚金
+  const _total = useMemo(() => tRes.data ?? 0, [tRes.data]); // 总收益
+  const pending = useMemo(() => Math.max(accSub(accMul(_total, accDiv(opsRate, 100)), _fines), 0), [fRes.data]); // 待释放
 
-  // 总锁定部分
-  const locked = useMemo(() => Math.max(accSub(accAdd(accMul(_reward, accDiv(opsRate, 100)), _locked), fines), 0), [fines, opsRate, _locked, _reward]);
-  // 总收益
-  const total = useMemo(() => Math.max(accSub(accMul(_reward, accDiv(accAdd(servicerRate, opsRate), 100)), fines), 0), [fines, opsRate, servicerRate, _reward]);
-  const isLoading = useMemo(
-    () => aRes.isLoading || lRes.isLoading || pRes.isLoading || wRes.isLoading,
-    [aRes.isLoading, lRes.isLoading, pRes.isLoading, wRes.isLoading],
-  );
+  const isLoading = useMemo(() => tRes.isLoading || fRes.isLoading, [tRes.isLoading, fRes.isLoading]);
 
   const refetch = () => {
-    return Promise.all([aRes.refetch(), lRes.refetch(), pRes.refetch(), wRes.refetch()]);
+    return Promise.all([tRes.refetch(), fRes.refetch()]);
   };
 
   const [withdarwing, withdrawAction] = useProcessify(
@@ -102,9 +74,6 @@ export default function useRewardOps(data?: API.Plan | null) {
   );
 
   return {
-    fines,
-    total,
-    locked,
     record,
     reward,
     pending,
