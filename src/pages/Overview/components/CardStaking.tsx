@@ -9,24 +9,26 @@ import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
+const limit = 5_000_000;
+
 const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
   const { actual, target } = useRaiseInfo(data);
   const { isRaising, isSealing } = useRaiseState(data);
   const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
 
-  const max = useMemo(() => Math.max(accSub(target, actual), 0), [actual, target]);
+  const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await number(rule, value);
 
     if (value) {
-      if (max && +value > max) {
-        return Promise.reject(`不能大于 ${formatAmount(max)} FIL`);
+      if (+value <= 0) {
+        return Promise.reject(`必须大于 0`);
       }
 
-      if (+value > 5000000) {
-        return Promise.reject('不能大于 5,000,000 FIL');
+      if (max && +value > max) {
+        return Promise.reject(`不能大于 ${formatAmount(max)} FIL`);
       }
     }
   };
@@ -65,6 +67,7 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                     className="decimal lh-1 fw-500"
                     min={0}
                     max={max}
+                    step={0.01}
                     placeholder="输入数量"
                     suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
                   />
