@@ -52,6 +52,7 @@ export class MetaMaskConnector extends InjectedConnector {
           if (ethereum.isPortal) return;
           if (ethereum.isRabby) return;
           if (ethereum.isDefiant) return;
+          if (ethereum.isImToken) return;
           if (ethereum.isTokenPocket) return;
           if (ethereum.isTokenary) return;
           if (ethereum.isZerion) return;
