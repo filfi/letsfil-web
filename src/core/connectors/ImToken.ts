@@ -18,7 +18,7 @@ export type ImTokenConnectorOptions = {
 };
 
 export class ImTokenConnector extends InjectedConnector {
-  readonly id = 'ImToken';
+  readonly id = 'imToken';
 
   protected shimDisconnectKey = `${this.id}.shimDisconnect`;
 
@@ -32,7 +32,7 @@ export class ImTokenConnector extends InjectedConnector {
     options?: ImTokenConnectorOptions;
   } = {}) {
     const options = {
-      name: 'ImToken',
+      name: 'imToken',
       shimDisconnect: true,
       getProvider() {
         function getReady(ethereum?: WindowProvider) {
