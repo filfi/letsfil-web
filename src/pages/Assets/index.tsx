@@ -259,15 +259,17 @@ export default function Assets() {
               {(isRaiser || isServicer) && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
 
               <div className="card border-0 bg-warning-tertiary">
-                <div className="card-body d-flex gap-3">
-                  <IconFil width={48} height={48} />
+                <div className="card-body d-flex flex-wrap gap-3">
+                  <div className="d-flex gap-3 me-auto">
+                    <IconFil width={48} height={48} />
 
-                  <h4 className="my-auto">
-                    <span className="fs-36 fw-600">{F.formatAmount(reward)}</span>
-                    <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
-                  </h4>
+                    <h4 className="my-auto">
+                      <span className="fs-36 fw-600">{F.formatAmount(reward)}</span>
+                      <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
+                    </h4>
+                  </div>
 
-                  <SpinBtn className="btn btn-primary btn-lg ms-auto my-auto px-5" loading={withdrawing} disabled={reward <= 0} onClick={handleWithdraw}>
+                  <SpinBtn className="btn btn-primary btn-lg my-auto px-5" loading={withdrawing} disabled={reward <= 0} onClick={handleWithdraw}>
                     提取余额
                   </SpinBtn>
                 </div>

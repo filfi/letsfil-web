@@ -124,7 +124,7 @@ export default function CreateStorage() {
         layout="vertical"
         initialValues={{
           minerType: 1,
-          // raiser: address,
+          raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
