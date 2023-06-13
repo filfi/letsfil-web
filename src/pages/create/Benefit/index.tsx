@@ -41,13 +41,13 @@ const defaultTreeData = {
       //   {
       //     label: '优先建设者分成',
       //     rate: 0,
-      //     desc: '优先质押币的权益',
+      //     desc: '优先质押的权益',
       //   },
       //   {
       //     label: '运维保证金分成',
       //     rate: 0,
       //     locked: true,
-      //     desc: '劣后质押币的权益',
+      //     desc: '劣后质押的权益',
       //   },
       // ],
     },
@@ -338,7 +338,7 @@ export default function CreateBenefit() {
                 <h4 className="ffi-label">{model.minerId}历史资产的归属</h4>
                 <p className="text-gray">
                   检测到 {model.minerId}{' '}
-                  是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属主办人。
+                  是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押100%归属主办人。
                   {/* <a className="text-underline" href="#assets-modal" data-bs-toggle="modal">
                     了解更多
                   </a> */}
@@ -352,7 +352,7 @@ export default function CreateBenefit() {
                     </div>
                     <div className="col">
                       <p className="mb-0 fw-500">{formatEther(model.hisInitialPledge)} FIL</p>
-                      <p className="mb-0 text-gray-dark">质押币</p>
+                      <p className="mb-0 text-gray-dark">质押</p>
                     </div>
                     <div className="col">
                       <p className="mb-0 fw-500">{formatEther(model.hisBlance)} FIL</p>
@@ -403,7 +403,7 @@ export default function CreateBenefit() {
                 <div className="d-flex flex-column flex-lg-row gap-3 gap-lg-4 ps-4 ps-lg-0 position-relative">
                   <div className="flex-full">
                     <Form.Item noStyle name="raiseHisInitialPledgeRate">
-                      <Input className="bg-light text-end" readOnly prefix={<span className="text-gray-dark">我的质押币</span>} suffix="%" />
+                      <Input className="bg-light text-end" readOnly prefix={<span className="text-gray-dark">我的质押</span>} suffix="%" />
                     </Form.Item>
                   </div>
                   <div className={classNames('flex-shrink-0 py-2', styles.line)}>
@@ -470,7 +470,7 @@ export default function CreateBenefit() {
           <div className="card-body">
             <p className="mb-0">
               检测到 f1234567
-              是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属主办人。
+              是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押100%归属主办人。
             </p>
           </div>
         </div>

@@ -1,7 +1,9 @@
 import { Link } from '@umijs/max';
 
 import Avatar from '@/components/Avatar';
+import usePackInfo from '@/hooks/usePackInfo';
 import useSProvider from '@/hooks/useSProvider';
+import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import { formatEther, formatRate, formatSeals, formatSponsor } from '@/utils/format';
 
@@ -11,7 +13,9 @@ export type SealingCardProps = {
 
 const SealingCard: React.FC<SealingCardProps> = ({ data }) => {
   const provider = useSProvider(data.service_id);
-  const { progress, running } = useRaiseSeals(data);
+  const { data: pack } = usePackInfo(data);
+  const { progress } = useAssetPack(data, pack);
+  const { runningDays } = useRaiseSeals(data, pack);
 
   return (
     <>
@@ -33,7 +37,7 @@ const SealingCard: React.FC<SealingCardProps> = ({ data }) => {
             <span className="text-gray-dark">封装进度</span>
             {data.begin_seal_time > 0 ? (
               <span className="ms-auto">
-                第{formatSeals(running)}天 · {formatRate(progress)}
+                第{formatSeals(runningDays)}天 · {formatRate(progress)}
               </span>
             ) : (
               <span className="ms-auto text-gray">准备封装</span>

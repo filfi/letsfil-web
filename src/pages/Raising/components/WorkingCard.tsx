@@ -14,7 +14,7 @@ export type WorkingCardProps = {
 
 const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
   const { reward } = useRaiseReward(data);
-  const { running } = useRaiseSeals(data);
+  const { runningDays } = useRaiseSeals(data);
 
   const provider = useSProvider(data.service_id);
   const { data: counter } = useRequest(() => count(data.raising_id), { refreshDeps: [data.raising_id] });
@@ -43,7 +43,7 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
             <Link className="text-underline" to={`/overview/${data.raising_id}`}>
               {formatSponsor(data.sponsor_company)}发起的节点计划
             </Link>
-            <span className="ms-auto fw-500">已运行{running}天</span>
+            <span className="ms-auto fw-500">已运行{runningDays}天</span>
           </p>
           <div className="d-flex gap-2 mb-2">
             <div className="flex-shrink-0">

@@ -8,25 +8,18 @@ import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
-import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
+import { accAdd, accDiv, sec2day } from '@/utils/utils';
 
 const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { data: pack } = usePackInfo(data);
   const { fines } = useDepositRaiser(data);
-  const { pledge, sector } = useAssetPack(data, pack);
-  const { period, sealdays, running, progress } = useRaiseSeals(data);
+  const { pledge, sector, progress } = useAssetPack(data, pack);
   const { isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
+  const { sealsDays, delayedDays, sealedDays, runningDays } = useRaiseSeals(data, pack);
 
-  const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
-  const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
-  const percent = useMemo(() => (total > 0 ? Math.min(accDiv(running, total), 1) : 0), [running, total]);
-  const delay = useMemo(() => {
-    if (data?.delay_seal_time) {
-      return accSub(Date.now() / 1000, data.begin_seal_time, day2sec(data.seal_days));
-    }
-
-    return 0;
-  }, [data]);
+  const hibit = useMemo(() => (isDelayed ? accDiv(sealsDays, 2) : 0), [sealsDays, isDelayed]);
+  const total = useMemo(() => accAdd(sealsDays, hibit), [hibit, sealsDays]);
+  const percent = useMemo(() => (total > 0 ? Math.min(accDiv(runningDays, total), 1) : 0), [runningDays, total]);
 
   if (isSealing || isDelayed || isWorking) {
     return (
@@ -37,7 +30,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               className={classNames('indicator', { warning: isDelayed, success: isFinished })}
               style={{ left: isFinished ? 'calc(100% - 23px)' : `calc((100% - 46px) * ${percent})` }}
             >
-              <span className="indicator-label">{isFinished ? sealdays : F.formatSeals(running)} 天</span>
+              <span className="indicator-label">{isFinished ? sealedDays : F.formatSeals(runningDays)} 天</span>
               <span className="indicator-caret"></span>
             </div>
             <div className="progress-stacked flex-fill">
@@ -51,7 +44,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 style={{ width: data?.delay_seal_time ? '66.6666%' : '100%' }}
               >
                 <div className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isSealing })}>
-                  <span className="fw-bold">承诺封装时间·{period}天</span>
+                  <span className="fw-bold">承诺封装时间·{sealsDays}天</span>
                 </div>
               </div>
               {!!(data && data?.delay_seal_time) && (
@@ -113,10 +106,10 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <th>封装进度</th>
                 <td>{F.formatRate(progress)}</td>
               </tr>
-              {delay ? (
+              {delayedDays ? (
                 <tr>
                   <th>超期时间</th>
-                  <td>{sec2day(delay)} 天</td>
+                  <td>{sec2day(delayedDays)} 天</td>
                   <th>累计罚金</th>
                   <td>
                     <span className="me-auto">{F.formatAmount(fines, 2, 2)} FIL</span>
@@ -160,7 +153,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </div>
           <div className="progress-stacked flex-fill">
             <div className="progress w-100" role="progressbar" aria-label="Processing" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
-              <div className="progress-bar fw-bold">封装时间 · {period}天</div>
+              <div className="progress-bar fw-bold">封装时间 · {sealsDays}天</div>
             </div>
           </div>
           <div

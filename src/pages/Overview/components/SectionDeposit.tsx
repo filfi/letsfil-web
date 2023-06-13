@@ -6,6 +6,8 @@ import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import Avatar from '@/components/Avatar';
 import SpinBtn from '@/components/SpinBtn';
+import usePackInfo from '@/hooks/usePackInfo';
+import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
@@ -18,7 +20,6 @@ import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/safe-success.svg';
 import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.svg';
-import useRaiseSeals from '@/hooks/useRaiseSeals';
 
 const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
@@ -135,7 +136,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       <Modal.Alert id="sp-deposit" title="运维保证金">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">与建设者等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押币封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
+            <p className="mb-0">与建设者等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
           </div>
         </div>
       </Modal.Alert> */}
@@ -146,9 +147,10 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
   const { actual } = useRaiseBase(data);
-  const { progress } = useRaiseSeals(data);
+  const { data: pack } = usePackInfo(data);
   const provider = useSProvider(data?.service_id);
   const { investRate, opsRatio } = useRaiseRate(data);
+  const { opsAmount, progress } = useAssetPack(data, pack);
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
   const { isPending, isWaiting, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
   const { amount, fines, total, interest, paying, withdrawing, payAction, withdrawAction } = useDepositServicer(data);
@@ -157,12 +159,10 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const payable = useMemo(() => isServicer && isWaiting, [isServicer, isWaiting]);
   // 可取回
   const withdrawable = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isServicer, isClosed, isFailed, isDestroyed]);
-  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
-  const opsActual = useMemo(() => accDiv(accMul(actual, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [actual, opsRatio]);
   // 超配部分
-  const opsOver = useMemo(() => Math.max(+F.toFixed(accSub(total, opsActual), 2), 0), [total, opsActual]);
+  const opsOver = useMemo(() => Math.max(+F.toFixed(accSub(total, opsAmount), 2), 0), [total, opsAmount]);
   // 剩余部分
-  const opsRemain = useMemo(() => Math.max(accSub(opsActual, accMul(opsActual, progress)), 0), [opsActual, progress]);
+  const opsRemain = useMemo(() => Math.max(accSub(opsAmount, accMul(opsAmount, progress)), 0), [opsAmount, progress]);
   // 利息补偿
   const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]);
 

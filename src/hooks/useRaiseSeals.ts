@@ -1,26 +1,17 @@
 import { useMemo } from 'react';
 
-import usePackInfo from './usePackInfo';
-import { toNumber } from '@/utils/format';
-import { accDiv, accSub, sec2day } from '@/utils/utils';
+import { accSub, day2sec, sec2day } from '@/utils/utils';
 
 /**
  * 节点计划封装信息
  * @param data
  * @returns
  */
-export default function useRaiseSeals(data?: API.Plan | null) {
-  const { data: pack } = usePackInfo(data);
-
-  const period = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]);
-  const power = useMemo(() => +`${pack?.total_power ?? 0}`, [pack?.total_power]);
-  const sector = useMemo(() => +`${pack?.total_sector ?? 0}`, [pack?.total_sector]);
-  const actual = useMemo(() => toNumber(data?.actual_amount), [data?.actual_amount]);
-  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]);
-  const pledge = useMemo(() => toNumber(pack?.total_pledge_amount), [pack?.total_pledge_amount]);
-  const progress = useMemo(() => (actual > 0 ? accDiv(pledge, actual) : 0), [actual, pledge]);
+export default function useRaiseSeals(data?: API.Plan | null, pack?: API.Pack | null) {
+  // 承诺封装天数
+  const sealsDays = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]);
   // 运行天数
-  const running = useMemo(() => {
+  const runningDays = useMemo(() => {
     let sec = 0;
     if (data?.begin_seal_time) {
       sec = accSub(Date.now() / 1000, data.begin_seal_time);
@@ -28,8 +19,8 @@ export default function useRaiseSeals(data?: API.Plan | null) {
 
     return sec2day(Math.max(sec, 0));
   }, [data?.begin_seal_time]);
-  // 封装天数
-  const sealdays = useMemo(() => {
+  // 实际封装天数
+  const sealedDays = useMemo(() => {
     let sec = 0;
     if (data?.begin_seal_time) {
       sec = accSub(Date.now() / 1000, data.begin_seal_time);
@@ -40,8 +31,16 @@ export default function useRaiseSeals(data?: API.Plan | null) {
     }
     return sec2day(Math.max(sec, 0));
   }, [data?.end_seal_time, data?.begin_seal_time]);
+  // 延期天数
+  const delayedDays = useMemo(() => {
+    if (data?.delay_seal_time) {
+      return accSub(Date.now() / 1000, data.begin_seal_time, day2sec(data.seal_days));
+    }
+
+    return 0;
+  }, [data]);
   // 有效期剩余天数
-  const remains = useMemo(() => {
+  const remainsDays = useMemo(() => {
     let sec = 0;
     if (pack?.max_expiration_epoch) {
       sec = accSub(pack.max_expiration_epoch, Date.now() / 1000);
@@ -51,15 +50,10 @@ export default function useRaiseSeals(data?: API.Plan | null) {
   }, [pack?.max_expiration_epoch]);
 
   return {
-    power,
-    actual,
-    sector,
-    target,
-    period,
-    pledge,
-    remains,
-    running,
-    progress,
-    sealdays,
+    sealsDays,
+    sealedDays,
+    delayedDays,
+    remainsDays,
+    runningDays,
   };
 }

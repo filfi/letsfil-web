@@ -39,7 +39,7 @@ const Activity: React.FC = () => {
       render: (type, row) => (
         <span>
           {['', '存入', '取回', '分配'][type]}
-          {['', '主办人保证金', '运维保证金', '质押币', '节点激励'][row.fund_type]}
+          {['', '主办人保证金', '运维保证金', '质押', '节点激励'][row.fund_type]}
         </span>
       ),
     },

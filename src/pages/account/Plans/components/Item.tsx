@@ -14,9 +14,9 @@ import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
+import useAssetPack from '@/hooks/useAssetPack';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
-import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { isDelayed, isSealing, isWorking } from '@/helpers/raise';
@@ -84,9 +84,9 @@ const Item: React.FC<{
   const { data: pack } = usePackInfo(data);
   const { amount } = useDepositInvestor(data);
   const provider = useSProvider(data.service_id);
-  const { progress: sealPercent } = useRaiseSeals(data);
   const { priorityRate, opsRatio } = useRaiseRate(data);
   const { actual, progress, target } = useRaiseBase(data);
+  const { progress: sealPercent } = useAssetPack(data, pack);
   const { isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
 
   const sealDays = useMemo(() => calcSealDays(data), [data]);

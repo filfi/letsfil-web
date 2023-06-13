@@ -78,7 +78,7 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">已参与</div>
+            <div className="col-4 table-cell th">已质押</div>
             <div className="col-8 table-cell">
               <span>{F.formatAmount(actual, 2)} FIL</span>
               {isStarted && <span> · 达成{F.formatProgress(progress)}</span>}

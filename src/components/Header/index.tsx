@@ -119,7 +119,7 @@ const Header: React.FC = () => {
                   </Link>
 
                   <ul
-                    className={classNames('dropdown-menu dropdown-menu-end border-0 py-3 shadow rounded-3', { show: isHover })}
+                    className={classNames('dropdown-menu dropdown-menu-end border-0 py-2 shadow rounded-3', { show: isHover })}
                     data-bs-popper={isHover ? 'static' : undefined}
                   >
                     <li>

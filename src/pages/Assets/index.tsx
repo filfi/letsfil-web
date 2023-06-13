@@ -35,10 +35,10 @@ export default function Assets() {
 
   const { data: plan, error, isLoading, refetch } = useRaiseInfo(param.id);
   const { data: pack } = usePackInfo(plan);
-
-  const { remains } = useRaiseSeals(plan);
   const provider = useSProvider(plan?.service_id);
+
   const { isInvestor } = useDepositInvestor(plan);
+  const { remainsDays } = useRaiseSeals(plan, pack);
   const { isRaiser, isServicer } = useRaiseRole(plan);
   const { isClosed, isFailed, isStarted } = useRaiseState(plan);
   const { investorPower, raiserPower, opsPower, servicerPower, investorPledge, raiserPledge, servicerPledge, opsPledge } = useAssetPack(plan, pack);
@@ -212,7 +212,7 @@ export default function Assets() {
                       </p>
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">剩余时间</span>
-                        <span className="ms-auto fw-500">{pack ? <span>{remains} 天</span> : '-'}</span>
+                        <span className="ms-auto fw-500">{pack ? <span>{remainsDays} 天</span> : '-'}</span>
                       </p>
                     </div>
                   </div>
@@ -311,7 +311,7 @@ export default function Assets() {
               <div className="card">
                 <div className="card-body d-flex gap-3">
                   <div>
-                    <p className="mb-1 text-gray fw-500">持有质押币</p>
+                    <p className="mb-1 text-gray fw-500">持有质押</p>
                     <p className="mb-0 fw-600">
                       <span className="fs-24">{F.formatAmount(pledge)}</span>
                       <span className="ms-1 fs-sm fw-bold text-neutral">FIL</span>

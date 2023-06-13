@@ -53,6 +53,7 @@ export default function useRaiseBase(data?: API.Plan | null) {
 
   const sealed = useMemo(() => sealedRes.data ?? 0, [sealedRes.data]); // 已封装金额
   const hasOwner = useMemo(() => ownerRes.data ?? false, [ownerRes.data]); // owner权限
+  const sealsDays = useMemo(() => data?.seal_days ?? 0, [data?.seal_days]); // 承诺封装天数
   const actual = useMemo(() => pledgeRes.data ?? toNumber(data?.actual_amount), [pledgeRes.data, data?.actual_amount]); // 质押总额
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
@@ -74,6 +75,7 @@ export default function useRaiseBase(data?: API.Plan | null) {
     minRate,
     progress,
     hasOwner,
+    sealsDays,
     isLoading,
     refetch: refetch,
   };
