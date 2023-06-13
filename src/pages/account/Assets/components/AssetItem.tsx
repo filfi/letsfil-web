@@ -36,13 +36,13 @@ const AssetCard: React.FC<{ loading?: boolean; pack: API.Pack; plan?: API.Plan |
   const renderContent = () => {
     switch (type) {
       case 1:
-        return <RaiserCard key={type} pack={pack} plan={plan} />;
+        return <RaiserCard pack={pack} plan={plan} />;
       case 2:
-        return <ServicerCard key={type} pack={pack} plan={plan} />;
+        return <ServicerCard pack={pack} plan={plan} />;
       case 3:
-        return <OpsFundCard key={type} pack={pack} plan={plan} />;
+        return <OpsFundCard pack={pack} plan={plan} />;
       default:
-        return <InvestorCard key={type} pack={pack} plan={plan} />;
+        return <InvestorCard pack={pack} plan={plan} />;
     }
   };
 
