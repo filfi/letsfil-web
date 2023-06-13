@@ -259,7 +259,7 @@ export default function Assets() {
               {(isRaiser || isServicer) && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
 
               <div className="card border-0 bg-warning-tertiary">
-                <div className="card-body d-flex flex-wrap gap-3">
+                <div className="card-body d-flex flex-column flex-md-row gap-3">
                   <div className="d-flex gap-3 me-auto">
                     <IconFil width={48} height={48} />
 

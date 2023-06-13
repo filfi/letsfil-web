@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
-import { toNumber } from '@/utils/format';
 import useRaiseBase from './useRaiseBase';
 import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
+import { toFixed, toNumber } from '@/utils/format';
 import useDepositInvestor from './useDepositInvestor';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
@@ -20,15 +20,15 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   // 总封装质押
   const pledge = useMemo(() => toNumber(pack?.total_pledge_amount), [pack?.total_pledge_amount]);
   // 运维保证金
-  const opsAmount = useMemo(() => accDiv(accMul(actual, accDiv(ratio, 100)), accSub(1, accDiv(ratio, 100))), [actual, ratio]);
+  const opsAmount = useMemo(() => +toFixed(accDiv(accMul(actual, accDiv(ratio, 100)), accSub(1, accDiv(ratio, 100))), 2, 2), [actual, ratio]);
   // 总质押
   const total = useMemo(() => accAdd(actual, opsAmount), [actual, opsAmount]);
   // 运维保证金占比
-  const opsRatio = useMemo(() => (opsAmount > 0 ? accDiv(opsAmount, total) : 0), [opsAmount, total]);
+  const opsRatio = useMemo(() => (total > 0 ? accDiv(opsAmount, total) : 0), [opsAmount, total]);
   // 建设者投资占比
-  const investorRatio = useMemo(() => (record > 0 ? Math.min(accDiv(record, total), 1) : 0), [record, total]);
+  const investorRatio = useMemo(() => (total > 0 ? Math.min(accDiv(record, total), 1) : 0), [record, total]);
   // 封装进度
-  const progress = useMemo(() => (total > 0 ? accDiv(pledge, total) : 0), [pledge, total]);
+  const progress = useMemo(() => (total > 0 ? Math.min(accDiv(pledge, total), 1) : 0), [pledge, total]);
 
   // 建设者封装算力 = 总算力 * 投资占比
   const investorSealsPower = useMemo(() => (isInvestor ? accMul(power, investorRatio) : 0), [power, investorRatio, isInvestor]);
@@ -45,12 +45,12 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
 
   // 主办人持有质押
   const raiserPledge = useMemo(() => 0, []);
-  // 建设者持有质押 = 总封装质押 * 投资占比
-  const investorPledge = useMemo(() => (isInvestor ? Math.min(accMul(pledge, investorRatio), record) : 0), [pledge, investorRatio, record, isInvestor]);
-  // 服务商持有质押 = 总封装质押 - 实际集合质押 - 运维保证金
-  const servicerPledge = useMemo(() => (isServicer ? Math.max(accSub(pledge, actual, opsAmount), 0) : 0), [pledge, actual, opsAmount, isServicer]);
-  // 运维保证金持有质押 = 运维保证金 * 封装进度
-  const opsPledge = useMemo(() => (isServicer ? accMul(opsAmount, progress) : 0), [opsAmount, progress, isServicer]);
+  // 服务商持有质押
+  const servicerPledge = useMemo(() => 0, []);
+  // 运维保证金持有质押
+  const opsPledge = useMemo(() => (isServicer ? Math.max(accSub(pledge, actual), 0) : 0), [actual, pledge, isServicer]);
+  // 建设者持有质押
+  const investorPledge = useMemo(() => (isInvestor ? Math.min(accMul(pledge, accDiv(record, actual)), record) : 0), [actual, pledge, record, isInvestor]);
 
   // 总持有算力
   const holdPower = useMemo(() => accAdd(investorPower, raiserPower, servicerPower, opsPower), [investorPower, raiserPower, servicerPower, opsPower]);

@@ -16,7 +16,7 @@ export default function OpsFundCard({ pack, plan }: React.PropsWithChildren<Item
       <p className="d-flex my-3 gap-3">
         <span className="text-gray-dark">质押</span>
         <span className="ms-auto">
-          <span className="fs-16 fw-600">{formatAmount(opsAmount, 2)}</span>
+          <span className="fs-16 fw-600">{formatAmount(opsAmount, 2, 2)}</span>
           <span className="text-gray-dark ms-1">FIL</span>
         </span>
       </p>

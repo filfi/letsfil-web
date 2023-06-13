@@ -26,7 +26,7 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
     } catch (e: any) {
       console.log(e);
 
-      if (e.code === '' || e.cause instanceof UserRejectedRequestError) {
+      if (e.code === 'ACTION_REJECTED' || e.cause instanceof UserRejectedRequestError) {
         throw e;
       }
 
