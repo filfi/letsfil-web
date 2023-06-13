@@ -1,40 +1,32 @@
 import { useMemo } from 'react';
-import { camelCase } from 'lodash';
 import classNames from 'classnames';
 import { ScrollSpy } from 'bootstrap';
-import { NavLink, history, useModel, useParams } from '@umijs/max';
-import { useRequest, useResponsive, useUpdateEffect } from 'ahooks';
+import { NavLink, useParams } from '@umijs/max';
+import { useResponsive, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
-import * as H from '@/helpers/app';
-import { getInfo } from '@/apis/raise';
-import { sleep } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
-import { packInfo } from '@/apis/packs';
-import { EventType } from '@/utils/mitt';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useProviders from '@/hooks/useProviders';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import { formatSponsor } from '@/utils/format';
 import PageHeader from '@/components/PageHeader';
-import useRaiseState from '@/hooks/useRaiseState';
 import LoadingView from '@/components/LoadingView';
-import useEmittHandler from '@/hooks/useEmitHandler';
+import useRaiseRole from '@/hooks/useRaiseRole';
+import useRaiseState from '@/hooks/useRaiseState';
+import useRaiseDetail from '@/hooks/useRaiseDetail';
 import useRaiseActions from '@/hooks/useRaiseActions';
-// import CardFAQ from './components/CardFAQ';
-// import CardCalc from './components/CardCalc';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 import CardBack from './components/CardBack';
 import CardRaise from './components/CardRaise';
 import CardAssets from './components/CardAssets';
-// import Calculator from './components/Calculator';
 import CardStaking from './components/CardStaking';
-import SectionCoin from './components/SectionCoin';
 import SectionNode from './components/SectionNode';
 import SectionRaise from './components/SectionRaise';
+import SectionSeals from './components/SectionSeals';
 import SectionEvents from './components/SectionEvents';
+import SectionPledge from './components/SectionPledge';
 import SectionReward from './components/SectionReward';
-import SectionSector from './components/SectionSector';
 import SectionDeposit from './components/SectionDeposit';
 import SectionContract from './components/SectionContract';
 import SectionProvider from './components/SectionProvider';
@@ -57,83 +49,29 @@ function updateScrollSpy() {
 export default function Overview() {
   const param = useParams();
   const responsive = useResponsive();
-  const [, setModel] = useModel('stepform');
+  const { data, error, isLoading, refetch } = useRaiseDetail(param.id);
 
-  const {
-    data,
-    error,
-    loading,
-    refresh: refreshData,
-  } = useRequest(
-    async () => {
-      if (param.id) {
-        return await getInfo(param.id);
-      }
-    },
-    { refreshDeps: [param.id] },
-  );
-  const { data: pack, refresh: refreshPack } = useRequest(
-    async () => {
-      if (param.id) {
-        return await packInfo(param.id);
-      }
-    },
-    { refreshDeps: [param.id] },
-  );
-
-  const { getProvider } = useProviders();
-
-  const actions = useRaiseActions(data);
-  const { isRaiser } = useRaiseInfo(data);
+  const { isInvestor } = useDepositInvestor(data);
+  const { isRaiser, isServicer } = useRaiseRole(data);
   const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
 
-  const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
+  const actions = useRaiseActions(data);
 
-  const refresh = async () => {
-    await sleep(3e3);
-
-    refreshData();
-    refreshPack();
-  };
+  const title = useMemo(() => (data ? `${formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
+  const showAsset = useMemo(() => isWorking && (isInvestor || isRaiser || isServicer), [isInvestor, isRaiser, isServicer, isWorking]);
 
   useUpdateEffect(updateScrollSpy, [data, isStarted]);
 
-  useEmittHandler<any>({
-    [EventType.onStaking]: refresh,
-    [EventType.onUnstaking]: refresh,
-    [EventType.onStartPreSeal]: refresh,
-    [EventType.onDepositOpsFund]: refresh,
-    [EventType.onServicerSigned]: refresh,
-    [EventType.onStartRaisePlan]: refresh,
-    [EventType.onCreateRaisePlan]: refresh,
-    [EventType.onDepositRaiseFund]: refresh,
-    [EventType.onNodeStateChange]: refresh,
-    [EventType.onRaiseStateChange]: refresh,
-    [EventType.onWithdrawOpsFund]: refresh,
-    [EventType.onWithdrawRaiseFund]: refresh,
-  });
-
   const handleEdit = () => {
-    if (!data) return;
-
-    const model = Object.keys(data).reduce(
-      (d, key) => ({
-        ...d,
-        [camelCase(key)]: data[key as keyof typeof data],
-      }),
-      {},
-    );
-
-    setModel(H.transformModel(model));
-
-    history.replace('/create');
+    actions.edit();
   };
 
   const handleDelete = () => {
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: '删除募集计划',
-      summary: '未签名的募集计划可以永久删除。',
+      title: '删除节点计划',
+      summary: '未签名的节点计划可以永久删除。',
+      confirmLoading: actions.removing,
       onConfirm: () => {
         hide();
 
@@ -147,16 +85,16 @@ export default function Overview() {
 
     const hide = Dialog.confirm({
       icon: 'error',
-      title: '关闭募集计划',
-      summary: '募集计划已经部署在链上，关闭已经启动的募集计划被视为违约。',
+      title: '关闭节点计划',
+      summary: '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
       content: (
         <div className="text-gray">
           <ul>
-            <li>需要向投资人支付投资额的利息</li>
+            <li>需要向建设者支付投资额的利息</li>
             <li>需要向技术服务商支付保证金利息</li>
           </ul>
           <p>
-            <span>智能合约按照规则会产生罚金，罚金从发起人保证金中扣除。 </span>
+            <span>智能合约按照规则会产生罚金，罚金从主办人保证金中扣除。 </span>
             <a href="#">如何计算罚金？</a>
           </p>
         </div>
@@ -180,7 +118,7 @@ export default function Overview() {
         {isPending && isRaiser && (
           <>
             <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
-              修改募集计划
+              修改节点计划
             </SpinBtn>
 
             <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={actions.removing} onClick={handleDelete}>
@@ -197,7 +135,7 @@ export default function Overview() {
         {!isPending && (
           <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
             <IconShare4 />
-            <span className="align-middle ms-1">查看智能合约</span>
+            <span className="align-middle ms-1">智能合约</span>
           </a>
         )}
 
@@ -221,57 +159,19 @@ export default function Overview() {
     );
   };
 
-  const renderMain = () => {
-    if (responsive.lg) return null;
-
-    return (
-      <>
-        <CardRaise data={data} pack={pack} />
-
-        <CardStaking data={data} pack={pack} />
-
-        <CardBack data={data} pack={pack} />
-
-        <CardAssets data={data} pack={pack} />
-
-        {/* <CardCalc data={data} /> */}
-      </>
-    );
-  };
-
-  const renderCard = () => {
-    if (responsive.lg) {
-      return (
-        <>
-          <CardRaise data={data} pack={pack} />
-
-          <CardStaking data={data} pack={pack} />
-
-          <CardBack data={data} pack={pack} />
-
-          <CardAssets data={data} pack={pack} />
-
-          {/* <CardCalc data={data} /> */}
-        </>
-      );
-    }
-
-    return null;
-  };
-
   return (
     <>
       <div className="container">
-        <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
+        <LoadingView data={data} error={!!error} loading={isLoading} retry={refetch}>
           <PageHeader
-            className={classNames({ 'border-bottom': !isWorking, 'mb-3 pb-0': isWorking })}
+            className={classNames({ 'border-bottom': !showAsset, 'mb-3 pb-0': showAsset })}
             title={title}
-            desc={isWorking ? `算力包：${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储'}
+            desc={isWorking ? `算力包 ${param.id}` : '依靠强大的FVM智能合约，合作共建Filecoin存储节点'}
           >
             <div className="d-flex align-items-center gap-3 text-nowrap">{renderActions()}</div>
           </PageHeader>
 
-          {isWorking && (
+          {showAsset && (
             <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
               <li className="nav-item">
                 <NavLink className="nav-link" to={`/assets/${param.id}`}>
@@ -280,7 +180,7 @@ export default function Overview() {
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" to={`/overview/${param.id}`}>
-                  募集计划
+                  节点计划
                 </NavLink>
               </li>
             </ul>
@@ -288,15 +188,20 @@ export default function Overview() {
 
           <div className={classNames('d-flex flex-column flex-lg-row', styles.content)}>
             <div id="nav-pills" className={classNames('d-none d-lg-block flex-shrink-0', styles.tabs)}>
-              <ul className="nav nav-pills flex-lg-column mb-2">
+              <ul className="nav nav-pills d-flex flex-lg-column mb-2">
                 <li className="nav-item">
                   <a className="nav-link" href="#raising">
-                    募集目标
+                    质押目标
                   </a>
                 </li>
                 <li className="nav-item">
                   <a className="nav-link" href="#provider">
                     服务商
+                  </a>
+                </li>
+                <li className={classNames('nav-item', { 'order-1': data && isSuccess })}>
+                  <a className="nav-link" href="#deposit">
+                    保证金
                   </a>
                 </li>
                 <li className="nav-item">
@@ -305,40 +210,66 @@ export default function Overview() {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="#node">
+                  <a className="nav-link" href="#pledge">
+                    质押的归属
+                  </a>
+                </li>
+                <li className="nav-item">
+                  <a className="nav-link" href="#sector">
                     建设方案
                   </a>
                 </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#deposit">
-                    保证金
-                  </a>
-                </li>
-                <li className="nav-item">
+                {isSuccess && (
+                  <li className="nav-item">
+                    <a className="nav-link" href="#seals">
+                      封装进度
+                    </a>
+                  </li>
+                )}
+                <li className="nav-item order-2">
                   <a className="nav-link" href="#timeline">
                     时间进度
                   </a>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item order-2">
                   <a className="nav-link" href="#contract">
                     智能合约
                   </a>
                 </li>
                 {isStarted && (
-                  <li className="nav-item">
+                  <li className="nav-item order-2">
                     <a className="nav-link" href="#events">
-                      活动
+                      事件
                     </a>
                   </li>
                 )}
               </ul>
             </div>
-            <div className={classNames('flex-grow-1')} tabIndex={0} data-bs-spy="scroll" data-bs-target="#nav-pills" data-bs-smooth-scroll="true">
+            <div
+              className={classNames('d-flex flex-column flex-grow-1', styles.main)}
+              tabIndex={0}
+              data-bs-spy="scroll"
+              data-bs-target="#nav-pills"
+              data-bs-smooth-scroll="true"
+              data-bs-root-margin="0px 0px -80%"
+            >
               <section id="raising" className="section">
                 <div className="d-flex flex-column gap-3">
                   <SectionRaise data={data} />
 
-                  {renderMain()}
+                  {responsive.lg ? null : (
+                    <>
+                      <CardRaise data={data} />
+
+                      <CardStaking data={data} />
+
+                      <CardBack data={data} />
+
+                      <CardAssets data={data} />
+
+                      {/* <CardCalc /> */}
+                    </>
+                  )}
                 </div>
               </section>
               <section id="provider" className="section">
@@ -347,90 +278,98 @@ export default function Overview() {
                   <p className="mb-0">开创链上协作新模式，专业化服务，负责任承诺。</p>
                 </div>
 
-                <SectionProvider data={data} getProvider={getProvider} />
+                <SectionProvider data={data} />
               </section>
-              <section id="reward">
-                <div className="section">
-                  <div className="section-header">
-                    <h4 className="section-title">收益分配方案</h4>
-                    <p className="mb-0">募集计划严格执行分配方案，坚定履约，透明可信，省时省心。</p>
-                  </div>
-
-                  <SectionReward data={data} />
+              <section id="deposit" className={classNames('section', { 'order-1': data && isSuccess })}>
+                <div className="section-header">
+                  <h4 className="section-title">保证金</h4>
+                  <p className="mb-0">保障节点计划执行，违约自动触发惩罚机制，保护建设者权益。</p>
                 </div>
 
-                <div className="section">
-                  <div className="section-header">
-                    <h4 className="section-title">质押币所有权</h4>
-                    <p className="mb-0">质押币所有权永恒不变，投入多少返回多少。</p>
-                  </div>
-
-                  <SectionCoin data={data} />
-                </div>
+                <SectionDeposit data={data} />
               </section>
-              <section id="node" className="section">
+              <section id="reward" className="section">
+                <div className="section-header">
+                  <h4 className="section-title">分配方案</h4>
+                  <p className="mb-0">智能合约严格执行分配方案，坚定履约，透明可信，省时省心。</p>
+                </div>
+
+                <SectionReward data={data} />
+              </section>
+              <section id="pledge" className="section">
+                <div className="section-header">
+                  <h4 className="section-title">质押的归属</h4>
+                  <p className="mb-0">质押的所有权永恒不变，投入多少返回多少。</p>
+                </div>
+
+                <SectionPledge data={data} />
+              </section>
+              <section id="sector" className="section">
                 <div className="section-header">
                   <h4 className="section-title">建设方案</h4>
-                  <p className="mb-0">募集FIL用途明确，不可更改，智能合约保障每个FIL的去向透明可查。</p>
+                  <p className="mb-0">质押的FIL定向使用，用途不可更改，智能合约保障每个FIL去向可查。</p>
                 </div>
 
                 <SectionNode data={data} />
               </section>
               {isSuccess && (
-                <section id="sector" className="section">
+                <section id="seals" className="section">
                   <div className="section-header">
-                    <h4 className="section-title">封装扇区</h4>
+                    <h4 className="section-title">封装进度</h4>
                     <p className="mb-0">封装进展一览无余</p>
                   </div>
 
-                  <SectionSector data={data} />
+                  <SectionSeals data={data} />
                 </section>
               )}
-              <section id="deposit" className="section">
-                <div className="section-header">
-                  <h4 className="section-title">保证金</h4>
-                  <p className="mb-0">保障募集计划执行，异常自动触发惩罚机制，保护投资人权益。</p>
-                </div>
-
-                <SectionDeposit data={data} getProvider={getProvider} />
-              </section>
-              <section id="timeline" className="section">
+              <section id="timeline" className="section order-2">
                 <div className="section-header">
                   <h4 className="section-title">时间进度</h4>
-                  <p className="mb-0">投资人对每一步进展尽在掌握。</p>
+                  <p className="mb-0">建设者进展尽在掌握。</p>
                 </div>
 
                 <SectionTimeline data={data} />
               </section>
-              <section id="contract" className="section">
+              <section id="contract" className="section order-2">
                 <div className="section-header">
                   <h4 className="section-title">智能合约</h4>
-                  <p className="mb-0">募集计划完全由Filecoin上的智能合约管理</p>
+                  <p className="mb-0">节点计划是部署在Filecoin上的智能合约，存储节点的建设和激励分配完全由智能合约管理。</p>
                 </div>
 
                 <SectionContract data={data} />
               </section>
               {isStarted && (
-                <section id="events" className="section">
+                <section id="events" className="section order-2">
                   <div className="section-header">
-                    <h4 className="section-title">活动</h4>
-                    <p className="mb-0">募集计划发生的重要活动以及链上相关消息</p>
+                    <h4 className="section-title">事件</h4>
+                    <p className="mb-0">节点计划发生的重要事件以及链上相关消息</p>
                   </div>
 
                   <SectionEvents data={data} />
                 </section>
               )}
             </div>
-            <div className={classNames('flex-shrink-0', styles.sidebar)}>{renderCard()}</div>
+            <div className={classNames('flex-shrink-0', styles.sidebar)}>
+              {responsive.lg ? (
+                <>
+                  <CardRaise data={data} />
+
+                  <CardStaking data={data} />
+
+                  <CardBack data={data} />
+
+                  <CardAssets data={data} />
+
+                  {/* <CardCalc /> */}
+                </>
+              ) : null}
+            </div>
           </div>
         </LoadingView>
       </div>
 
-      {/* <Calculator data={data} pack={pack} /> */}
+      {/* <Calculator /> */}
 
-      <p>
-        <br />
-      </p>
       <p>
         <br />
       </p>

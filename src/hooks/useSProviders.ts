@@ -1,5 +1,4 @@
-import { useMemo } from 'react';
-import { useRequest } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 
 import { providers } from '@/apis/raise';
 
@@ -8,12 +7,13 @@ import { providers } from '@/apis/raise';
  * @returns
  */
 export default function useProviders() {
-  const { data, loading, refresh } = useRequest(providers, { retryCount: 3 });
-
-  const list = useMemo(() => data?.list, [data]);
+  const { data, isLoading, refetch } = useQuery(['base', 'providers'], providers, {
+    staleTime: Infinity,
+    select: (d) => d.list,
+  });
 
   const getProvider = (id?: number | string) => {
-    return list?.find((item) => `${item.id}` === `${id}`);
+    return data?.find((item) => `${item.id}` === `${id}`);
   };
 
   const renderLabel = (id?: number | string) => {
@@ -21,10 +21,10 @@ export default function useProviders() {
   };
 
   return {
-    list,
-    loading,
+    data,
+    isLoading,
     getProvider,
     renderLabel,
-    refresh,
+    refetch,
   };
 }

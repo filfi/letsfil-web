@@ -1,30 +1,38 @@
 import { useMemo } from 'react';
-import { useRequest } from 'ahooks';
+import { useDebounceEffect } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 
 import { listPacks } from '@/apis/packs';
-import PackCard from './components/PackCard';
-import useAccounts from '@/hooks/useAccounts';
+import { withNull } from '@/utils/hackify';
+import useAccount from '@/hooks/useAccount';
+import AssetItem from './components/AssetItem';
 import LoadingView from '@/components/LoadingView';
 
 export default function AccountAssets() {
-  const { account, withAccount } = useAccounts();
+  const { address, withAccount } = useAccount();
 
   const service = withAccount((address) => {
     return listPacks({ address, page: 1, page_size: 100 });
   });
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
+  const { data, error, isLoading, refetch } = useQuery(['listPacks', address], withNull(service));
 
   const list = useMemo(() => data?.list, [data?.list]);
 
+  useDebounceEffect(
+    () => {
+      address && refetch();
+    },
+    [address],
+    { wait: 200 },
+  );
+
   return (
     <>
-      <LoadingView className="vh-50" data={list} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView className="vh-50" data={list} error={!!error} loading={isLoading} retry={refetch}>
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 my-3">
           {list?.map((item) => (
-            <div key={item.asset_pack_id} className="col">
-              <PackCard data={item} />
-            </div>
+            <AssetItem key={item.asset_pack_id} data={item} />
           ))}
         </div>
       </LoadingView>

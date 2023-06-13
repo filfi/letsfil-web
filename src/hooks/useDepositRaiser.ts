@@ -1,68 +1,98 @@
-import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
+import { useMemo } from 'react';
+import { parseEther } from 'viem';
+import { useQueries } from '@tanstack/react-query';
 
-import { isDef } from '@/utils/utils';
-import { EventType } from '@/utils/mitt';
+import { sleep } from '@/utils/utils';
+import useAccount from './useAccount';
+import useContract from './useContract';
 import { toNumber } from '@/utils/format';
-import useLoadingify from './useLoadingify';
+import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
+import { isRaiserPaied } from '@/helpers/raise';
 
 /**
- * 发起人的投资信息
+ * 主办人的投资信息
  * @param data
  * @returns
  */
-export default function useDepositRaiser(data?: API.Plan) {
-  const contract = useRaiseContract(data?.raise_address);
+export default function useDepositRaiser(data?: API.Plan | null) {
+  const { withConnect } = useAccount();
+  const contract = useContract(data?.raise_address);
 
-  const [fines, setFines] = useState(0); // 罚息
-  const [amount, setAmount] = useState(toNumber(data?.raise_security_fund)); // 当前保证金
+  const getFundRaiser = async () => {
+    if (data && isRaiserPaied(data)) {
+      return await contract.getFundRaiser(data.raising_id);
+    }
+  };
+  const getTotalInterest = async () => {
+    if (data && isRaiserPaied(data)) {
+      return await contract.getTotalInterest(data.raising_id);
+    }
+  };
 
-  const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]);
+  const [fund, interest] = useQueries({
+    queries: [
+      {
+        queryKey: ['fundRaiser', data?.raising_id],
+        queryFn: withNull(getFundRaiser),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['totalInterest', data?.raising_id],
+        queryFn: withNull(getTotalInterest),
+        staleTime: 60_000,
+      },
+    ],
+  });
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
+  const fines = useMemo(() => interest.data ?? 0, [interest.data]); // 罚息
+  const amount = useMemo(() => fund.data ?? toNumber(data?.raise_security_fund), [fund.data, data?.raise_security_fund]); // 当前保证金
+  const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]); // 总保证金
+  const isLoading = useMemo(() => fund.isLoading || interest.isLoading, [fund.isLoading, interest.isLoading]);
+
+  const refetch = async () => {
+    return Promise.all([fund.refetch(), interest.refetch()]);
+  };
+
+  const [paying, payAction] = useProcessify(
+    withConnect(async () => {
       if (!data) return;
 
-      const amount = await contract.getRaiseFund(data.raising_id);
-      const fines = await contract.getTotalInterest(data.raising_id);
+      const res = await contract.depositRaiserFund(data.raising_id, {
+        value: parseEther(`${toNumber(data.raise_security_fund)}`),
+      });
 
-      isDef(fines) && setFines(toNumber(fines));
-      isDef(amount) && setAmount(toNumber(amount));
+      await sleep(1_000);
+
+      fund.refetch();
+
+      return res;
     }),
   );
 
-  const [paying, pay] = useProcessify(async () => {
-    if (!data) return;
+  const [withdrawing, withdrawAction] = useProcessify(
+    withConnect(async () => {
+      if (!data) return;
 
-    return await contract.depositRaiseFund(data.raising_id, {
-      value: data.raise_security_fund,
-    });
-  });
+      const res = await contract.withdrawRaiserFund(data.raising_id);
 
-  const [processing, withdraw] = useProcessify(async () => {
-    if (!data) return;
+      await sleep(200);
 
-    return await contract.withdrawRaiseFund(data.raising_id);
-  });
+      fund.refetch();
 
-  useAsyncEffect(fetchData, [data]);
-
-  useEmittHandler({
-    [EventType.onWithdrawRaiseFund]: fetchData,
-  });
+      return res;
+    }),
+  );
 
   return {
     fines,
     total,
     amount,
-    loading,
     paying,
-    processing,
-    pay,
-    withdraw,
-    refresh: fetchData,
+    isLoading,
+    withdrawing,
+    refetch,
+    payAction,
+    withdrawAction,
   };
 }

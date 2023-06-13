@@ -2,7 +2,14 @@
  * 运行时配置
  */
 
-import { getInitState, getLocale, setLocale } from '@/utils/storage';
+import { WagmiConfig } from 'wagmi';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+import { getLocale, setLocale } from '@/utils/storage';
+import { config, queryClient } from '@/constants/config';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 /**
  * @see https://v3.umijs.org/zh-CN/plugins/plugin-locale#%E8%BF%90%E8%A1%8C%E6%97%B6%E9%85%8D%E7%BD%AE
@@ -22,16 +29,16 @@ export const locale = {
 
 // 全局初始化数据配置，用于 Layout 用户信息和权限初始化
 // 更多信息见文档：https://next.umijs.org/docs/api/runtime-config#getinitialstate
-export async function getInitialState(): Promise<InitState> {
-  let state = getInitState();
-  const chainId = window.ethereum?.chainId;
+export async function getInitialState() {
+  return {};
+}
 
-  return {
-    chainId,
-    accounts: [],
-    connected: false,
-    ...state,
-    connecting: false,
-    processing: false,
-  };
+export function rootContainer(root?: React.ReactNode) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <WagmiConfig config={config}>{root}</WagmiConfig>
+
+      {isDev && <ReactQueryDevtools panelPosition="right" position="bottom-right" />}
+    </QueryClientProvider>
+  );
 }

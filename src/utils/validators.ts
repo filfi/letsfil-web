@@ -3,7 +3,7 @@ import { isFn } from './utils';
 
 export function createValidator(pattern: RegExp | ((value: string) => boolean), message: string) {
   return async function validator(rule: unknown, value: string) {
-    if (`${value}`) {
+    if (`${value ?? ''}`) {
       const valid = isFn(pattern) ? pattern(value) : pattern.test(value);
       if (!valid) {
         return Promise.reject(message);
@@ -24,7 +24,7 @@ export function createIntRangeValidator(range: [number, number], message: string
   return async function validator(rule: unknown, value: string) {
     await integer(rule, value);
 
-    if (`${value}` && (+value < range[0] || +value > range[1])) {
+    if (`${value ?? ''}` && (+value < range[0] || +value > range[1])) {
       return Promise.reject(message);
     }
   };
@@ -34,7 +34,7 @@ export function createNumRangeValidator(range: [number, number], message: string
   return async function validator(rule: unknown, value: string) {
     await number(rule, value);
 
-    if (`${value}` && (+value < range[0] || +value > range[1])) {
+    if (`${value ?? ''}` && (+value < range[0] || +value > range[1])) {
       return Promise.reject(message);
     }
   };

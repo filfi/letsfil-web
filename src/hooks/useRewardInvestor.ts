@@ -1,66 +1,83 @@
-import { useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
+import { useMemo } from 'react';
+import { useQueries } from '@tanstack/react-query';
 
-import { isDef } from '@/utils/utils';
-import useAccounts from './useAccounts';
-import { EventType } from '@/utils/mitt';
-import { toNumber } from '@/utils/format';
-import useLoadingify from './useLoadingify';
+import { sleep } from '@/utils/utils';
+import useAccount from './useAccount';
+import useContract from './useContract';
+import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
+import { isRaiseOperating } from '@/helpers/raise';
+import useDepositInvestor from './useDepositInvestor';
 
 /**
- * 投资人收益
+ * 建设者节点激励
  * @param data
  * @returns
  */
-export default function useRewardInvestor(data?: API.Plan) {
-  const { account } = useAccounts();
-  const contract = useRaiseContract(data?.raise_address);
+export default function useRewardInvestor(data?: API.Plan | null) {
+  const { address, withConnect } = useAccount();
+  const { isInvestor } = useDepositInvestor(data);
+  const contract = useContract(data?.raise_address);
 
-  const [total, setTotal] = useState(0); // 总收益
-  const [reward, setReward] = useState(0); // 可提取
-  const [record, setRecord] = useState(0); // 已提取
-  const [pending, setPending] = useState(0); // 待释放
+  const getInvestorTotalReward = async () => {
+    if (address && data && isRaiseOperating(data) && isInvestor) {
+      return await contract.getInvestorTotalReward(data.raising_id, address);
+    }
+  };
+  const getInvestorAvailableReward = async () => {
+    if (address && data && isRaiseOperating(data) && isInvestor) {
+      return await contract.getInvestorAvailableReward(data.raising_id, address);
+    }
+  };
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!account || !data?.raising_id) return;
+  const [aRes, tRes] = useQueries({
+    queries: [
+      {
+        queryKey: ['investorAvailableReward', address, data?.raising_id],
+        queryFn: withNull(getInvestorAvailableReward),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['investorTotalReward', address, data?.raising_id],
+        queryFn: withNull(getInvestorTotalReward),
+        staleTime: 60_000,
+      },
+    ],
+  });
 
-      const info = await contract.getInvestorInfo(data.raising_id, account);
-      const total = await contract.getInvestorTotalReward(data.raising_id, account);
-      const reward = await contract.getInvestorAvailableReward(data.raising_id, account);
-      const pending = await contract.getInvestorPendingReward(data.raising_id, account);
-      const record = info?.withdrawAmount;
+  const total = useMemo(() => tRes.data ?? 0, [tRes.data]); // 总节点激励
+  const reward = useMemo(() => aRes.data ?? 0, [aRes.data]); // 可提取
+  const record = useMemo(() => 0, []); // 已提取
+  const pending = useMemo(() => 0, []); // 待释放
 
-      isDef(total) && setTotal(toNumber(total));
-      isDef(reward) && setReward(toNumber(reward));
-      isDef(record) && setRecord(toNumber(record));
-      isDef(pending) && setPending(toNumber(pending));
+  const isLoading = useMemo(() => aRes.isLoading || tRes.isLoading, [aRes.isLoading, tRes.isLoading]);
+
+  const refetch = () => {
+    return Promise.all([aRes.refetch(), tRes.refetch()]);
+  };
+
+  const [withdrawing, withdrawAction] = useProcessify(
+    withConnect(async () => {
+      if (!data) return;
+
+      const res = await contract.investorWithdraw(data.raising_id);
+
+      await sleep(200);
+
+      refetch();
+
+      return res;
     }),
   );
-
-  const [processing, withdraw] = useProcessify(async () => {
-    if (!data) return;
-
-    await contract.investorWithdraw(data.raising_id);
-  });
-
-  useAsyncEffect(fetchData, [account, data?.raising_id]);
-
-  useEmittHandler({
-    [EventType.onInvestorWithdraw]: fetchData,
-  });
 
   return {
     total,
     record,
     reward,
     pending,
-    loading,
-    processing,
-    withdraw,
-    refresh: fetchData,
+    isLoading,
+    withdrawing,
+    withdrawAction,
+    refetch,
   };
 }

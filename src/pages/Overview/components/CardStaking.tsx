@@ -1,24 +1,19 @@
-import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
-import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { number } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
+import { accSub, sleep } from '@/utils/utils';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
-import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
-import useRaiseContract from '@/hooks/useRaiseContract';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-import type { ItemProps } from './types';
 
-const CardStaking: React.FC<ItemProps> = ({ data }) => {
+const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
-  const { staking } = useRaiseContract(data?.raise_address);
-  const { amount } = useDepositInvestor(data);
   const { actual, target } = useRaiseInfo(data);
   const { isRaising, isSealing } = useRaiseState(data);
+  const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
 
   const max = useMemo(() => Math.max(accSub(target, actual), 0), [actual, target]);
 
@@ -36,22 +31,22 @@ const CardStaking: React.FC<ItemProps> = ({ data }) => {
     }
   };
 
-  const [loading, handleStaking] = useProcessify(async ({ amount }: { amount: string }) => {
-    if (!data) return;
+  const handleStake = async ({ amount }: { amount: string }) => {
+    await stakeAction(amount);
 
-    await staking(data.raising_id, {
-      value: ethers.utils.parseEther(`${amount}`),
-    });
+    await sleep(1_000);
+
+    refetch();
 
     form.resetFields();
-  });
+  };
 
   if (isRaising || isSealing) {
     return (
       <>
         <div className="card section-card">
           <div className="card-header d-flex flex-wrap align-items-center">
-            <h4 className="card-title mb-0 me-auto pe-2">我的资产</h4>
+            <h4 className="card-title mb-0 me-auto pe-2">我的质押</h4>
             <p className="mb-0">
               <span className="fs-5 fw-600">{formatAmount(amount)}</span>
               <span className="text-neutral ms-1">FIL</span>
@@ -63,7 +58,7 @@ const CardStaking: React.FC<ItemProps> = ({ data }) => {
                 {isSealing ? '正在封装' : '等待封装'}
               </SpinBtn>
             ) : (
-              <Form className="ffi-form" form={form} onFinish={handleStaking}>
+              <Form className="ffi-form" form={form} onFinish={handleStake}>
                 <Form.Item name="amount" rules={[{ required: true, message: '请输入数量' }, { validator: amountValidator }]}>
                   <Input
                     type="number"
@@ -76,8 +71,8 @@ const CardStaking: React.FC<ItemProps> = ({ data }) => {
                 </Form.Item>
 
                 <p className="mb-0">
-                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
-                    认购
+                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={staking}>
+                    质押
                   </SpinBtn>
                 </p>
               </Form>

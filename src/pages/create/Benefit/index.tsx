@@ -1,7 +1,7 @@
 import { snakeCase } from 'lodash';
+import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { useUpdateEffect } from 'ahooks';
-import { Avatar, Form, Input } from 'antd';
 import { history, useModel } from '@umijs/max';
 import { useEffect, useMemo, useRef } from 'react';
 
@@ -9,11 +9,12 @@ import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
 import styles from './styles.less';
 // import Modal from '@/components/Modal';
+import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
-import useProviders from '@/hooks/useProviders';
+import useSProvider from '@/hooks/useSProvider';
 import BenefitPie from './components/BenefitPie';
 import StepsModal from './components/StepsModal';
 import AssetsModal from './components/AssetsModal';
@@ -27,18 +28,18 @@ import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 type Values = ReturnType<typeof H.calcEachEarn>;
 
 const defaultTreeData = {
-  label: '总收益',
+  label: '总激励/算力',
   rate: 100,
-  desc: '全部算力的全部产出',
+  desc: '全部产出',
   children: [
     {
-      label: '投资人分成',
+      label: '建设者分成',
       active: true,
       rate: 0,
-      desc: '投资人的权益',
+      desc: '建设者的权益',
       // children: [
       //   {
-      //     label: '优先投资人分成',
+      //     label: '优先建设者分成',
       //     rate: 0,
       //     desc: '优先质押币的权益',
       //   },
@@ -51,9 +52,9 @@ const defaultTreeData = {
       // ],
     },
     {
-      label: '建设方分成',
+      label: '服务方分成',
       rate: 0,
-      desc: '建设方的权益',
+      desc: '服务方的权益',
       children: [
         {
           label: '技术运维服务费',
@@ -63,15 +64,15 @@ const defaultTreeData = {
           desc: '技术服务商的权益',
         },
         {
-          label: '发起人分成',
+          label: '主办人分成',
           rate: 0,
-          desc: '募集计划的管理人',
+          desc: '节点计划的管理人',
         },
         {
           label: 'FilFi协议分成',
           rate: 0,
           locked: true,
-          desc: '固定为建设方权益的8%',
+          desc: '固定为服务方权益的8%',
         },
       ],
     },
@@ -96,9 +97,10 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
 export default function CreateBenefit() {
   const modal = useRef<ModalAttrs>(null);
 
-  const [form] = Form.useForm();
-  const { getProvider } = useProviders();
   const [model, setModel] = useModel('stepform');
+  const provider = useSProvider(model?.serviceId);
+
+  const [form] = Form.useForm();
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
   const ratio = Form.useWatch('opsSecurityFundRate', form);
@@ -107,14 +109,13 @@ export default function CreateBenefit() {
 
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
-  const provider = useMemo(() => getProvider(model?.serviceId), [model, getProvider]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0), [powerRate]);
   const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);
 
   useEffect(() => {
     const target = model?.targetAmount ?? 0;
-    // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已募集金额)
+    // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
     const amount = accDiv(accMul(target, accDiv(pieVal, 100)), accSub(1, accDiv(pieVal, 100)));
 
     form.setFieldValue('opsSecurityFund', Number.isNaN(amount) ? 0 : toFixed(amount, 2, 2));
@@ -222,9 +223,9 @@ export default function CreateBenefit() {
       >
         <div className="ffi-form">
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">技术运维保证金</h4>
+            <h4 className="ffi-label">运维保证金</h4>
             <p className="text-gray">
-              发起人要求技术服务商存入保证金，保证金将做为劣后质押币，与投资人的质押币一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押币的比例不低于5%，提高占比要求，可提高对投资人的吸引力。
+              主办人要求技术服务商存入保证金，保证金将做为劣后质押，与建设者的质押一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押的比例不低于5%，提高占比要求，可提高对建设者的吸引力。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -239,7 +240,7 @@ export default function CreateBenefit() {
 
             <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4 mb-4">
               <div className="col">
-                <div className="mb-1 fw-500">劣后质押币(技术运维保证金)</div>
+                <div className="mb-1 fw-500">劣后质押(运维保证金)</div>
                 <Form.Item
                   name="opsSecurityFundRate"
                   rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, 100], '最小5%， 最大100%') }]}
@@ -251,8 +252,8 @@ export default function CreateBenefit() {
                     max={100}
                     prefix={
                       <div className="d-flex">
-                        <Avatar size={24} src={provider?.logo_url} />
-                        <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
+                        <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
+                        <span className="ms-1 text-gray-dark">{provider?.full_name}</span>
                       </div>
                     }
                     suffix="%"
@@ -260,7 +261,7 @@ export default function CreateBenefit() {
                   />
                 </Form.Item>
 
-                <div className="mb-1 fw-500">优先质押币</div>
+                <div className="mb-1 fw-500">优先质押</div>
                 <Form.Item noStyle>
                   <Input
                     className="bg-light text-end"
@@ -269,7 +270,7 @@ export default function CreateBenefit() {
                     prefix={
                       <div>
                         <span className="bi bi-people align-middle"></span>
-                        <span className="ms-2 text-gray-dark">投资人</span>
+                        <span className="ms-2 text-gray-dark">建设者</span>
                       </div>
                     }
                     value={priorityRate}
@@ -277,15 +278,15 @@ export default function CreateBenefit() {
                 </Form.Item>
               </div>
               <div className="col pt-3">
-                <BenefitPie name={provider?.short_name} value={pieVal} />
+                <BenefitPie name={provider?.full_name} value={pieVal} />
               </div>
             </div>
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">算力/收益分配方案</h4>
+            <h4 className="ffi-label">节点激励/算力分配方案</h4>
             <p className="text-gray">
-              新增存储算力获得的收益，智能合约严格执行分配方案。点击修改按钮调整分配方案。
+              新增存储算力获得的节点激励，智能合约严格执行分配方案。算力产生节点激励，在分配方案中两者是等价概念。点击修改按钮调整分配方案
               {/* <a className="text-underline" href="#build-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -311,7 +312,7 @@ export default function CreateBenefit() {
                     </p>
                     <p className="text-gray mb-1">
                       <IconBorder />
-                      <span className="align-middle ms-2">需要发起人填写的比例，其他比例自动计算</span>
+                      <span className="align-middle ms-2">需要主办人填写的比例，其他比例自动计算</span>
                     </p>
                   </div>
                   <div className="col">
@@ -337,7 +338,7 @@ export default function CreateBenefit() {
                 <h4 className="ffi-label">{model.minerId}历史资产的归属</h4>
                 <p className="text-gray">
                   检测到 {model.minerId}{' '}
-                  是已经存在的节点，历史资产收益不计入此募集计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的收益分成比例不低于10%）。历史资产的质押币100%归属发起人。
+                  是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属主办人。
                   {/* <a className="text-underline" href="#assets-modal" data-bs-toggle="modal">
                     了解更多
                   </a> */}
@@ -390,8 +391,8 @@ export default function CreateBenefit() {
                       className="bg-light text-end"
                       prefix={
                         <div className="d-flex">
-                          <Avatar size={24} src={provider?.logo_url} />
-                          <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
+                          <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
+                          <span className="ms-1 text-gray-dark">{provider?.full_name}</span>
                         </div>
                       }
                       suffix="%"
@@ -414,8 +415,8 @@ export default function CreateBenefit() {
                       className="bg-light text-end"
                       prefix={
                         <div className="d-flex">
-                          <Avatar size={24} src={provider?.logo_url} />
-                          <span className="ms-1 text-gray-dark">{provider?.short_name}</span>
+                          <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
+                          <span className="ms-1 text-gray-dark">{provider?.full_name}</span>
                         </div>
                       }
                       suffix="%"
@@ -446,7 +447,7 @@ export default function CreateBenefit() {
 
       <AssetsModal ref={modal} data={model} onConfirm={handleSubmit} />
 
-      {/* <Modal.Alert id="build-modal" title="算力/收益分配方案" confirmText="我知道了">
+      {/* <Modal.Alert id="build-modal" title="算力/节点激励分配方案" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">新增的存储空间获得的Filecoin奖励，智能合约严格执行分配方案。点击修改按钮调整分配方案。</p>
@@ -454,11 +455,11 @@ export default function CreateBenefit() {
         </div>
       </Modal.Alert>
 
-      <Modal.Alert id="deposit-modal" title="技术运维保证金" confirmText="我知道了">
+      <Modal.Alert id="deposit-modal" title="运维保证金" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">
-              根据募集目标和分配方案可计算技术运维保证金。技术运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加募集计划的吸引力，以及未来算力交易中的流动性。
+              根据质押目标和分配方案可计算运维保证金。运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加节点计划的吸引力，以及未来算力交易中的流动性。
             </p>
           </div>
         </div>
@@ -469,7 +470,7 @@ export default function CreateBenefit() {
           <div className="card-body">
             <p className="mb-0">
               检测到 f1234567
-              是已经存在的节点，历史资产收益不计入此募集计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的收益分成比例不低于10%）。历史资产的质押币100%归属发起人。
+              是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押币100%归属主办人。
             </p>
           </div>
         </div>

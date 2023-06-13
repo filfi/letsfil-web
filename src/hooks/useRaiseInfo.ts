@@ -1,63 +1,70 @@
-import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
+import { useMemo } from 'react';
+import { useQueries } from '@tanstack/react-query';
 
-import useAccounts from './useAccounts';
-import { EventType } from '@/utils/mitt';
+import { accDiv } from '@/utils/utils';
+import useContract from './useContract';
 import { toNumber } from '@/utils/format';
-import useLoadingify from './useLoadingify';
-import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
-import { accDiv, isDef, isEqual } from '@/utils/utils';
+import { withNull } from '@/utils/hackify';
+import { isPending, isRaiseOperating, isStarted } from '@/helpers/raise';
 
 /**
- * 募集计划信息
+ * 节点计划信息
  * @param data
  * @returns
  */
-export default function useRaiseInfo(data?: API.Plan) {
-  const { account } = useAccounts();
-  const contract = useRaiseContract(data?.raise_address);
+export default function useRaiseInfo(data?: API.Plan | null) {
+  const contract = useContract(data?.raise_address);
 
-  const [sealed, setSealed] = useState(0); // 已封装金额
-  const [hasOwner, setHasOwner] = useState(false); // owner权限
-  const [actual, setActual] = useState(toNumber(data?.actual_amount)); // 质押总额
+  const getOwner = async () => {
+    if (data && !isPending(data)) {
+      return await contract.getOwner();
+    }
+  };
+  const getTotalPledge = async () => {
+    if (data && isStarted(data)) {
+      return await contract.getTotalPledge(data.raising_id);
+    }
+  };
+  const getTotalSealed = async () => {
+    if (data && isRaiseOperating(data)) {
+      return await contract.getTotalSealed(data.raising_id);
+    }
+  };
+
+  const [ownerRes, pledgeRes, sealedRes] = useQueries({
+    queries: [
+      {
+        queryKey: ['raiseOwner', data?.raising_id],
+        queryFn: withNull(getOwner),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['raiseTotalPledge', data?.raising_id],
+        queryFn: withNull(getTotalPledge),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['raiseTotalSealed', data?.raising_id],
+        queryFn: withNull(getTotalSealed),
+        staleTime: 60_000,
+      },
+    ],
+  });
+
+  const sealed = useMemo(() => sealedRes.data ?? 0, [sealedRes.data]); // 已封装金额
+  const hasOwner = useMemo(() => ownerRes.data ?? false, [ownerRes.data]); // owner权限
+  const actual = useMemo(() => pledgeRes.data ?? toNumber(data?.actual_amount), [pledgeRes.data, data?.actual_amount]); // 质押总额
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
-  const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小募集比例
-  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 募集目标
-  const raiser = useMemo(() => data?.raiser ?? '', [data?.raiser]); // 发起人
-  const servicer = useMemo(() => data?.service_provider_address ?? '', [data?.service_provider_address]); // 服务商
-  const isRaiser = useMemo(() => isEqual(account, raiser), [account, raiser]);
-  const isServicer = useMemo(() => isEqual(account, servicer), [account, servicer]);
-  const isSigned = useMemo(() => data?.sp_sign_status === 1, [data?.sp_sign_status]);
-  const isOpsPaid = useMemo(() => data?.sp_margin_status === 1, [data?.sp_margin_status]);
-  const isRaisePaid = useMemo(() => data?.raise_margin_status === 1, [data?.raise_margin_status]);
+  const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小集合质押比例
+  const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 质押目标
 
-  const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 募集进度
-  const sealProgress = useMemo(() => (actual > 0 ? Math.min(accDiv(sealed, actual), 1) : 0), [actual, sealed]); // 封装进度
+  const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 集合质押进度
+  const isLoading = useMemo(() => pledgeRes.isLoading || sealedRes.isLoading, [pledgeRes.isLoading, sealedRes.isLoading]);
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      const hasOwner = await contract.getOwner();
-      setHasOwner(hasOwner ?? false);
-
-      if (!data?.raising_id) return;
-
-      const sealed = await contract.getSealedAmount(data.raising_id);
-      const actual = await contract.getTotalPledgeAmount(data.raising_id);
-
-      isDef(actual) && setActual(toNumber(actual));
-      isDef(sealed) && setSealed(toNumber(sealed));
-    }),
-  );
-
-  useAsyncEffect(fetchData, [data?.raising_id]);
-
-  useEmittHandler({
-    [EventType.onStaking]: fetchData,
-    [EventType.onNodeStateChange]: fetchData,
-    [EventType.onRaiseStateChange]: fetchData,
-  });
+  const refetch = async () => {
+    return await Promise.all([ownerRes.refetch(), pledgeRes.refetch(), sealedRes.refetch()]);
+  };
 
   return {
     actual,
@@ -66,16 +73,8 @@ export default function useRaiseInfo(data?: API.Plan) {
     period,
     minRate,
     progress,
-    raiser,
-    servicer,
     hasOwner,
-    isRaiser,
-    isServicer,
-    isSigned,
-    isOpsPaid,
-    isRaisePaid,
-    loading,
-    sealProgress,
-    refresh: fetchData,
+    isLoading,
+    refetch: refetch,
   };
 }

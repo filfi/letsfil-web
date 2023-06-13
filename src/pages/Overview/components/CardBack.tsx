@@ -3,11 +3,10 @@ import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-import type { ItemProps } from './types';
 
-const CardBack: React.FC<ItemProps> = ({ data }) => {
+const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isClosed, isFailed, isWorking } = useRaiseState(data);
-  const { amount, backAmount, backInterest, processing, isInvestor, unStaking } = useDepositInvestor(data);
+  const { amount, backAmount, backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
 
   if (isInvestor && (isClosed || isFailed || isWorking)) {
     return (
@@ -41,7 +40,7 @@ const CardBack: React.FC<ItemProps> = ({ data }) => {
             </p>
           </div>
           <div className="card-footer">
-            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={processing} onClick={unStaking}>
+            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={unstaking} onClick={unStakeAction}>
               取回
             </SpinBtn>
           </div>

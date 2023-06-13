@@ -1,46 +1,48 @@
 import { useMemo } from 'react';
 
-import { NodeState, RaiseState } from '@/constants/state';
+import * as H from '@/helpers/raise';
+import { RaiseState } from '@/constants/state';
 
 /**
- * 募集计划状态及节点状态
+ * 节点计划状态及节点状态
  * @param data
  * @returns
  */
-export default function useRaiseState(data?: API.Plan) {
-  const raiseState = useMemo(() => data?.status ?? -1, [data?.status]); // 募集状态
+export default function useRaiseState(data?: API.Plan | null) {
+  const raiseState = useMemo(() => data?.status ?? -1, [data?.status]); // 集合质押状态
   const nodeState = useMemo(() => data?.sealed_status ?? -1, [data?.sealed_status]); // 节点状态
 
   // 等待上链
-  const isPending = useMemo(() => raiseState === 10, [raiseState]);
+  const isPending = useMemo(() => data && H.isPending(data), [data]);
   // 等待开始
-  const isWaiting = useMemo(() => raiseState === RaiseState.WaitingStart, [raiseState]);
+  const isWaiting = useMemo(() => data && H.isWaiting(data), [data]);
   // 已开始
-  const isStarted = useMemo(() => raiseState > RaiseState.WaitingStart && !isPending, [raiseState, isPending]);
-  // 募集中
-  const isRaising = useMemo(() => raiseState === RaiseState.Raising, [raiseState]);
+  const isStarted = useMemo(() => data && H.isStarted(data), [data]);
+  // 集合质押中
+  const isRaising = useMemo(() => data && H.isRaising(data), [data]);
   // 已关闭
-  const isClosed = useMemo(() => raiseState === RaiseState.Closed, [raiseState]);
-  // 成功
-  const isSuccess = useMemo(() => raiseState === RaiseState.Success, [raiseState]);
+  const isClosed = useMemo(() => data && H.isClosed(data), [data]);
   // 已失败
-  const isFailed = useMemo(() => raiseState === RaiseState.Failure, [raiseState]);
+  const isFailed = useMemo(() => data && H.isFailed(data), [data]);
+  // 成功
+  const isSuccess = useMemo(() => data && H.isSuccess(data), [data]);
   // 处理中（封装和运行）
   const isProcess = useMemo(() => raiseState >= RaiseState.Success && !isPending, [raiseState, isPending]);
+  const isRunning = useMemo(() => data && H.isRunning(data), [data]);
   // 等待封装
-  const isWaitSeal = useMemo(() => isSuccess && nodeState === NodeState.WaitingStart, [isSuccess, nodeState]);
+  const isWaitSeal = useMemo(() => data && H.isWaitSeal(data), [data]);
   // 预封装
-  const isPreSeal = useMemo(() => isSuccess && nodeState === NodeState.PreSeal, [isSuccess, nodeState]);
+  const isPreSeal = useMemo(() => data && H.isPreSeal(data), [data]);
   // 封装中
-  const isSealing = useMemo(() => isSuccess && nodeState === NodeState.Started, [isSuccess, nodeState]);
+  const isSealing = useMemo(() => data && H.isSealing(data), [data]);
   // 已延期
-  const isDelayed = useMemo(() => isSuccess && nodeState === NodeState.Delayed, [isSuccess, nodeState]);
+  const isDelayed = useMemo(() => data && H.isDelayed(data), [data]);
   // 封装完成
-  const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
-  // 工作中（产生收益）
-  const isWorking = useMemo(() => isSuccess && nodeState >= NodeState.End && !isPreSeal, [isSuccess, nodeState, isPreSeal]);
+  const isFinished = useMemo(() => data && H.isFinished(data), [data]);
+  // 工作中（产生节点激励）
+  const isWorking = useMemo(() => data && H.isWorking(data), [data]);
   // 已销毁（节点运行结束）
-  const isDestroyed = useMemo(() => isSuccess && nodeState === NodeState.Destroy, [isSuccess, nodeState]);
+  const isDestroyed = useMemo(() => data && H.isDestroyed(data), [data]);
 
   return {
     nodeState,
@@ -51,6 +53,7 @@ export default function useRaiseState(data?: API.Plan) {
     isStarted,
     isSuccess,
     isProcess,
+    isRunning,
     isPending,
     isRaising,
     isWaitSeal,

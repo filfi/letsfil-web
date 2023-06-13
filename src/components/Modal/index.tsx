@@ -52,7 +52,7 @@ export type ModalProps = Omit<DivProps, 'title'> & {
   onCancel?: () => void;
   onConfirm?: () => any;
 };
-export type ConfirmProps = Omit<ModalProps, 'showCancel' | 'showConfirm'>;
+export type ConfirmProps = ModalProps; // Omit<ModalProps, 'showCancel' | 'showConfirm'>;
 export type AlertProps = Omit<ConfirmProps, 'cancelText' | 'onCancel'>;
 export type ModalOptions = Omit<ModalProps, 'children'> & { content?: React.ReactNode };
 export type AlertOptions = Omit<AlertProps, 'children'> & { content?: React.ReactNode };

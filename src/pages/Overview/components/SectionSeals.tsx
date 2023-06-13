@@ -3,15 +3,19 @@ import classNames from 'classnames';
 
 import * as F from '@/utils/format';
 // import Modal from '@/components/Modal';
+import usePackInfo from '@/hooks/usePackInfo';
+import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 import { accAdd, accDiv, accSub, day2sec, sec2day } from '@/utils/utils';
 
-const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
+const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { data: pack } = usePackInfo(data);
   const { fines } = useDepositRaiser(data);
-  const { pack, period, sealdays, running, percent: rate } = useRaiseSeals(data);
-  const { isPreSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
+  const { pledge, sector } = useAssetPack(data, pack);
+  const { period, sealdays, running, progress } = useRaiseSeals(data);
+  const { isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
 
   const hibit = useMemo(() => (isDelayed ? accDiv(period, 2) : 0), [period, isDelayed]);
   const total = useMemo(() => accAdd(period, hibit), [hibit, period]);
@@ -24,7 +28,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
     return 0;
   }, [data]);
 
-  if (isPreSeal || isSealing || isDelayed || isWorking) {
+  if (isSealing || isDelayed || isWorking) {
     return (
       <>
         <div className="pt-3 mb-3">
@@ -33,7 +37,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
               className={classNames('indicator', { warning: isDelayed, success: isFinished })}
               style={{ left: isFinished ? 'calc(100% - 23px)' : `calc((100% - 46px) * ${percent})` }}
             >
-              <span className="indicator-label">{isFinished ? sealdays : running} 天</span>
+              <span className="indicator-label">{isFinished ? sealdays : F.formatSeals(running)} 天</span>
               <span className="indicator-caret"></span>
             </div>
             <div className="progress-stacked flex-fill">
@@ -44,11 +48,13 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={isDelayed ? 66.67 : 100}
-                style={{ width: isDelayed ? '66.6666%' : '100%' }}
+                style={{ width: data?.delay_seal_time ? '66.6666%' : '100%' }}
               >
-                <div className="progress-bar fw-bold">承诺封装时间·{period}天</div>
+                <div className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isSealing })}>
+                  <span className="fw-bold">承诺封装时间·{period}天</span>
+                </div>
               </div>
-              {isDelayed && (
+              {!!(data && data?.delay_seal_time) && (
                 <div
                   className="progress progress-warning"
                   role="progressbar"
@@ -58,7 +64,9 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
                   aria-valuenow={33.33}
                   style={{ width: '33.3333%' }}
                 >
-                  <div className="progress-bar fw-bold">展期·{hibit}天</div>
+                  <div className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isDelayed })}>
+                    <span className="fw-bold">展期·{hibit}天</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -83,41 +91,50 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
                 {isDelayed ? (
                   <>
                     <th>展期截止</th>
-                    <td>{F.formatUnixDate(data?.delay_seal_time)}</td>
+                    <td>{F.formatUnixDate(data?.delay_seal_time, 'll')}</td>
                   </>
                 ) : isFinished ? (
                   <>
                     <th>完成时间</th>
-                    <td>{F.formatUnixDate(data?.end_seal_time)}</td>
+                    <td>{F.formatUnixDate(data?.end_seal_time, 'll')}</td>
                   </>
                 ) : (
                   <>
                     <th>截止时间</th>
-                    <td>{F.formatUnixDate(data?.end_seal_time)}</td>
+                    <td>{F.formatUnixDate(data?.end_seal_time, 'll')}</td>
                   </>
                 )}
                 <th>已封装扇区</th>
-                <td>{pack?.sector_count} 个</td>
+                <td>{sector} 个</td>
               </tr>
               <tr>
-                <th>消耗质押币</th>
-                <td>{F.formatEther(pack?.pack_initial_pledge)} FIL</td>
-                <th>完成比例</th>
-                <td>{F.formatRate(rate)}</td>
+                <th>消耗质押</th>
+                <td>{F.formatAmount(pledge)} FIL</td>
+                <th>封装进度</th>
+                <td>{F.formatRate(progress)}</td>
               </tr>
-              <tr>
-                <th>超期时间</th>
-                <td>{sec2day(delay)} 天</td>
-                <th>累计罚金</th>
-                <td>
-                  <span className="me-auto">{F.formatAmount(fines, 2, 2)} FIL</span>
-                  {/* {isDelayed && fines > 0 && (
-                    <a className="text-underline" href="#fines-modal" data-bs-toggle="modal">
-                      这是什么？
-                    </a>
-                  )} */}
-                </td>
-              </tr>
+              {delay ? (
+                <tr>
+                  <th>超期时间</th>
+                  <td>{sec2day(delay)} 天</td>
+                  <th>累计罚金</th>
+                  <td>
+                    <span className="me-auto">{F.formatAmount(fines, 2, 2)} FIL</span>
+                    {/* {isDelayed && fines > 0 && (
+                      <a className="text-underline" href="#fines-modal" data-bs-toggle="modal">
+                        这是什么？
+                      </a>
+                    )} */}
+                  </td>
+                </tr>
+              ) : (
+                <tr>
+                  <th>超期时间</th>
+                  <td>-</td>
+                  <th>累计罚金</th>
+                  <td>-</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -143,7 +160,7 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
           </div>
           <div className="progress-stacked flex-fill">
             <div className="progress w-100" role="progressbar" aria-label="Processing" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
-              <div className="progress-bar fw-bold">承诺封装时间·{period}天</div>
+              <div className="progress-bar fw-bold">封装时间 · {period}天</div>
             </div>
           </div>
           <div
@@ -165,14 +182,14 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
           <tbody>
             <tr>
               <th>截止时间</th>
-              <td>尚未开始</td>
+              <td>准备封装</td>
               <th>已封装扇区</th>
               <td>-</td>
             </tr>
             <tr>
-              <th>消耗质押币</th>
+              <th>消耗质押</th>
               <td>-</td>
-              <th>完成比例</th>
+              <th>封装进度</th>
               <td>-</td>
             </tr>
             <tr>
@@ -188,4 +205,4 @@ const SectionSector: React.FC<{ data?: API.Plan }> = ({ data }) => {
   );
 };
 
-export default SectionSector;
+export default SectionSeals;

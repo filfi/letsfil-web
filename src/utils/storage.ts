@@ -12,12 +12,10 @@ export function sessionAdapter() {
 
 export const defaultAdapter: Adapter = sessionAdapter;
 
-export const namespace = 'sxx.ff';
+export const namespace = 'ffi';
 
 export enum Keys {
   Locale = 'locale',
-  Wallet = 'wallet',
-  InitState = 'initState',
 }
 
 export function normalizeKey(key: string) {
@@ -70,12 +68,4 @@ export function getLocale() {
 
 export function setLocale(locale: string) {
   setItem(Keys.Locale, locale, localeAdapter);
-}
-
-export function getInitState() {
-  return getItem<InitState>(Keys.InitState, sessionAdapter);
-}
-
-export function setInitState(state: InitState) {
-  return setItem(Keys.InitState, state, sessionAdapter);
 }

@@ -1,4 +1,5 @@
 declare namespace API {
+  type Address = `0x${string}`;
   type Base = Record<string, any>;
 
   type PagingParams = {
@@ -42,9 +43,10 @@ declare namespace API {
     closing_time: number;
     delay_seal_time: number;
     end_seal_time: number;
-    factory_contract: string;
+    factory_contract: Address;
     ffi_protocol_fee: string;
     ffi_protocol_fee_pay_meth: number;
+    fil_per_tera_day: string;
     his_blance: string;
     his_initial_pledge: string;
     his_power: string;
@@ -59,9 +61,10 @@ declare namespace API {
     ops_security_fund_addr: string;
     ops_security_fund_rate: number;
     plan_open: number;
+    pledge_per_tera_day: string;
     power_progress: number;
     progress: number;
-    raise_address: string;
+    raise_address: Address;
     raise_create_time: number;
     raise_days: 2592000;
     raise_his_asset_rate: number;
@@ -78,7 +81,7 @@ declare namespace API {
     sector_period: number;
     sector_size: number;
     service_id: number;
-    service_provider_address: string;
+    service_provider_address: Address;
     sp_margin_status: number;
     sp_sign_status: number;
     sponsor_company: string;
@@ -119,19 +122,6 @@ declare namespace API {
     total_balance: string;
   };
 
-  type AssetPack = {
-    asset_pack_id: string;
-    miner_id: string;
-    pack_initial_pledge: string;
-    pack_power: string;
-    raising_id: number;
-    region: string;
-    sector_begin_expira: number;
-    sector_count: number;
-    sector_end_expira: number;
-    sector_size: number;
-  };
-
   type Pack = {
     CreatedAt: string;
     DeletedAt: string;
@@ -147,12 +137,16 @@ declare namespace API {
     max_expiration_epoch: number;
     min_expiration_epoch: number;
     miner_id: string;
-    raising_id: number;
+    raising_id: string;
     sector_size: number;
     stat_height: number;
     sync_sector_statue: number;
     total_pledge_amount: string;
     total_power: string;
     total_sector: number;
+  };
+
+  type ContractData = {
+    pledge_total_calc_amount: string;
   };
 }

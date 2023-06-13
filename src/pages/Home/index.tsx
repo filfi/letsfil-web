@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { Link, history } from '@umijs/max';
 
 import styles from './styles.less';
-import useAuthHandler from '@/hooks/useAuthHandler';
+import useAccount from '@/hooks/useAccount';
 import { ReactComponent as IconThumbs } from './imgs/icon-thumbs.svg';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 import { ReactComponent as IconClock } from './imgs/icon-clock.svg';
@@ -12,9 +12,11 @@ import { ReactComponent as IconDots } from './imgs/icon-dots.svg';
 import { ReactComponent as IconShield } from './imgs/icon-shield.svg';
 
 export default function Home() {
+  const { withConnect } = useAccount();
+
   useTitle('首页 - FilFi', { restoreOnUnmount: true });
 
-  const handleCreate = useAuthHandler(async () => {
+  const handleCreate = withConnect(async () => {
     history.push('/account');
   });
 
@@ -22,29 +24,29 @@ export default function Home() {
     <>
       <section className={classNames(styles.section, styles.banner)}>
         <div className="container">
-          <div className="row row-cols-1 row-cols-lg-2 g-4 align-items-lg-center">
-            <div className="col">
+          <div className="row g-4 align-items-lg-center">
+            <div className="col-12 col-lg-6">
               <p className="mb-4">
                 <span className="badge badge-primary ps-1">
                   <span className="badge badge-primary bg-white lh-sm">FilFi联合节点</span>
-                  <span className="ms-2">创新的“募集计划”让投资者和SP重建信任</span>
+                  <span className="ms-2">创新的“节点计划”让建设者和SP重建信任</span>
                 </span>
               </p>
               <h1 className={classNames('mb-4 fw-600', styles.title)}>
                 Filecoin首个100%<span className="text-danger">智能合约</span>管理的存储节点<span className="text-danger">联合建设</span>方案
               </h1>
-              <p className={classNames('mb-4 mb-lg-5', styles.summary)}>履约交给智能合约，安心领取收益</p>
+              <p className={classNames('mb-4 mb-lg-5', styles.summary)}>履约交给智能合约，安心领取节点激励</p>
               <div className="d-flex flex-column flex-sm-row px-3 px-lg-0 gap-3 mb-3">
                 <Link className="btn btn-primary btn-lg" to="/raising">
-                  选择募集计划
+                  选择节点计划
                 </Link>
                 <button className="btn btn-light btn-lg" type="button" onClick={handleCreate}>
                   <span className="bi bi-plus-lg"></span>
-                  <span className="ms-2">发起募集计划</span>
+                  <span className="ms-2">发起节点计划</span>
                 </button>
               </div>
             </div>
-            <div className="col text-center">
+            <div className="col-12 col-lg-6 text-center">
               <img className="img-fluid" src={require('./imgs/snapshot.png')} />
             </div>
           </div>
@@ -54,8 +56,8 @@ export default function Home() {
       <section className={classNames(styles.section, styles.grid)}>
         <div className="container text-center">
           <div className="mb-5">
-            <h3 className={classNames('mb-3 fw-600', styles.title)}>为投资者而生</h3>
-            <p className={classNames('text-gray-dark', styles.summary)}>守望投资者，重构存储节点联合建设规则，安全是一切收益之源</p>
+            <h3 className={classNames('mb-3 fw-600', styles.title)}>为建设者而生</h3>
+            <p className={classNames('text-gray-dark', styles.summary)}>守望建设者，重构存储节点联合建设规则，安全是一切节点激励之源</p>
           </div>
 
           <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
@@ -64,7 +66,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconThumbs className="card-icon" />
                   <h4 className="card-title">智能合约接管一切</h4>
-                  <p>募集质押币、封装进度、分配收益，智能合约接管一切，坚定履约，不可变更，没有任何人为因素。</p>
+                  <p>集合质押、封装进度、分配激励，智能合约接管一切，坚定履约，不可变更，没有人为因素。</p>
                 </div>
               </div>
             </div>
@@ -73,7 +75,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconSearch className="card-icon" />
                   <h4 className="card-title">全流程极致透明</h4>
-                  <p>投资100%流入智能合约，看得见每个FIL的投资去向，查得到每笔激励的分配记录，杜绝一切黑箱操作。</p>
+                  <p>质押100%进入智能合约，看得见每个FIL的建设明细，查得到每笔激励的分配记录，杜绝一切黑箱操作。</p>
                 </div>
               </div>
             </div>
@@ -82,7 +84,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconClock className="card-icon" />
                   <h4 className="card-title">尊重时间价值</h4>
-                  <p>投资第一秒就开始计息，消灭资金等待的空窗期，不论募集计划成功与否，没有一秒是闲置的。</p>
+                  <p>如果集合质押不成功，质押全额返还，并补偿滞留时间的价值。</p>
                 </div>
               </div>
             </div>
@@ -90,8 +92,8 @@ export default function Home() {
               <div className="card h-100">
                 <div className="card-body">
                   <IconSmile className="card-icon" />
-                  <h4 className="card-title">对投资者完全免费</h4>
-                  <p>投资者100%获得募集计划承诺的分成比例，FilFi不会向投资者收取任何费用，也不会分享投资者的收益。</p>
+                  <h4 className="card-title">对建设者完全免费</h4>
+                  <p>建设者100%获得节点计划约定的分配比例，FilFi不会向建设者收取费用，也不会分享建设者的激励。</p>
                 </div>
               </div>
             </div>
@@ -109,7 +111,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconShield className="card-icon" />
                   <h4 className="card-title">严格KYC和保证金制度</h4>
-                  <p>可选技术服务商经过社区严格的KYC，创新的“技术运维保证金”制度，确保技术服务商相关利益不低于10%，与投资者利益全周期绑定。</p>
+                  <p>可选技术服务商经过社区严格的KYC，创新的“运维保证金”制度，确保技术服务商相关利益不低于10%，与建设者利益全周期绑定。</p>
                 </div>
               </div>
             </div>

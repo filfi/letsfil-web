@@ -21,6 +21,12 @@
 
   color: var(--banner-color);
   background-color: var(--banner-bg);
+
+  :global {
+    .badge-primary {
+      --bs-badge-color: var(--banner-color);
+    }
+  }
 }
 
 .grid {

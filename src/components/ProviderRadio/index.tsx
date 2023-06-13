@@ -24,7 +24,7 @@ const ProviderSelect: React.FC<ProviderRadioProps> = ({ options, loading, value,
         {options?.map((item) => (
           <FormRadio.Item
             key={item.id}
-            icon={<img src={item.logo_url} alt={item.short_name} />}
+            icon={<img src={item.logo_url} alt={item.full_name} />}
             label={item.full_name}
             desc={item.introduction}
             checked={isEqual(value, item.id)}

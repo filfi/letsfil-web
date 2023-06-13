@@ -1,33 +1,34 @@
-import { useRequest } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 
 import * as A from '@/apis/user';
-import useAccounts from './useAccounts';
+import useAccount from './useAccount';
+import { withNull } from '@/utils/hackify';
 
 export default function useUser() {
-  const { account } = useAccounts();
+  const { address, withAccount } = useAccount();
 
-  const service = async () => {
-    if (account) {
-      return await A.query(account);
-    }
-  };
-
-  const { data: user, loading, refresh } = useRequest(service, { refreshDeps: [account] });
+  const {
+    data: user,
+    isLoading,
+    refetch,
+  } = useQuery(['user', address], withNull(withAccount(A.query)), {
+    staleTime: 60_000,
+  });
 
   const create = async (data: Partial<Omit<API.User, 'address'>>) => {
-    if (!account) return;
+    if (!address) return;
 
-    await A.create({ ...data, address: account });
+    await A.create({ ...data, address: address });
 
-    refresh();
+    refetch();
   };
 
   const update = async (data: Partial<Omit<API.User, 'address'>>) => {
-    if (!account) return;
+    if (!address) return;
 
-    await A.update(account, data);
+    await A.update(address, data);
 
-    refresh();
+    refetch();
   };
 
   const createOrUpdate = async (data: Partial<Omit<API.User, 'address'>>) => {
@@ -40,10 +41,10 @@ export default function useUser() {
 
   return {
     user,
-    loading,
+    isLoading,
     create,
     update,
-    refresh,
+    refetch,
     createOrUpdate,
   };
 }

@@ -8,6 +8,7 @@ body {
 #root {
   height: 100%;
   display: flex;
+  min-height: 70vh;
   flex-direction: column;
 }
 
@@ -32,6 +33,10 @@ a {
 
 .ffi-layout-main {
   flex: 1 1 auto;
+}
+
+.ffi-layout-content {
+  min-height: 300px;
 }
 
 .container {
@@ -366,6 +371,10 @@ svg[fill='currentColor'] path {
     max-width: calc(var(--ffi-form-check-item-max-width) - var(--ffi-form-check-item-gap) / 2);
     box-shadow: 0 1px 2px rgb(16 24 40 / 5%);
 
+    &:not(.disabled) {
+      cursor: pointer;
+    }
+
     &.active {
       --bs-list-group-border-width: 2px;
       --bs-list-group-item-padding-x: 15px;
@@ -671,5 +680,11 @@ svg[fill='currentColor'] path {
 @media screen and (min-width: 768px) {
   .calculator {
     --bs-modal-width: 800px;
+  }
+}
+
+@keyframes custom-strip {
+  to {
+    background-position-x: var(--bs-progress-height);
   }
 }

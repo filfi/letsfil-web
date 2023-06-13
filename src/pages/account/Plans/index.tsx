@@ -1,22 +1,21 @@
 import { useMemo } from 'react';
 import classNames from 'classnames';
-import { useRequest } from 'ahooks';
-import { camelCase, filter } from 'lodash';
+import { useDebounceEffect } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 import { Link, history, useModel } from '@umijs/max';
 
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Item from './components/Item';
 import useUser from '@/hooks/useUser';
-import Dialog from '@/components/Dialog';
 import Result from '@/components/Result';
-import { catchify } from '@/utils/hackify';
+import { withNull } from '@/utils/hackify';
+import useAccount from '@/hooks/useAccount';
+import useContract from '@/hooks/useContract';
 import { isEqual, sleep } from '@/utils/utils';
-import useAccounts from '@/hooks/useAccounts';
-import useProviders from '@/hooks/useProviders';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
-import { createContract, transformModel } from '@/helpers/app';
+import useRaiseActions from '@/hooks/useRaiseActions';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
 
 const isArrs = function <V>(v: V | undefined): v is V {
@@ -25,98 +24,87 @@ const isArrs = function <V>(v: V | undefined): v is V {
 
 export default function AccountPlans() {
   const { user } = useUser();
-  const { getProvider } = useProviders();
+  const contract = useContract();
+  const actions = useRaiseActions();
   const [, setModel] = useModel('stepform');
-  const { account, withAccount } = useAccounts();
+  const { address, withAccount, withConnect } = useAccount();
 
   const service = withAccount((address) => {
     return A.investList({ address, page_size: 100 });
   });
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [account] });
-  const isEmpty = useMemo(() => !loading && (!data || data.total === 0), [data?.total, loading]);
+  const { data, error, isLoading, refetch } = useQuery(['investList', address], withNull(service));
+  const isEmpty = useMemo(() => !isLoading && (!data || data.total === 0), [data, isLoading]);
   const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
-  const investIds = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
-  const raises = useMemo(() => filter(lists, { raiser: account }), [lists, account]);
-  const services = useMemo(() => filter(lists, { service_provider_address: account }), [lists, account]);
-  const invests = useMemo(() => lists?.filter((item) => investIds?.some((id) => isEqual(id, item.raising_id))), [lists, investIds]);
+  const investors = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
+  const raises = useMemo(() => lists?.filter((item) => isEqual(item.raiser, address)), [lists, address]);
+  const services = useMemo(() => lists?.filter((item) => isEqual(item.service_provider_address, address)), [lists, address]);
+  const invests = useMemo(() => lists?.filter((item) => investors?.some((id) => isEqual(id, item.raising_id))), [lists, investors]);
 
-  const handleCreate = withAccount(async () => {
+  useDebounceEffect(
+    () => {
+      address && refetch();
+    },
+    [address],
+    { wait: 200 },
+  );
+
+  const handleCreate = withConnect(async () => {
     setModel(undefined);
 
     history.push('/create');
   });
 
-  const handleEdit = (data: API.Plan) => {
-    const model = Object.keys(data).reduce(
-      (d, key) => ({
-        ...d,
-        [camelCase(key)]: data[key as keyof typeof data],
-      }),
-      {},
-    );
-
-    setModel(transformModel(model));
-
-    history.push('/create');
+  const handleEdit = async (data: API.Plan) => {
+    actions.edit(data);
   };
 
   const handleDelete = async (data: API.Plan) => {
-    const [e] = await catchify(A.del)(data.raising_id);
+    await actions.remove(data.raising_id);
 
-    if (e) {
-      await sleep(500);
-      Dialog.alert({
-        icon: 'error',
-        title: '操作失败',
-        content: e.message,
-      });
-      return;
-    }
-
-    refresh();
+    refetch();
   };
 
   const [, handleStart] = useProcessify(async (data: API.Plan) => {
-    const contract = createContract(data.raise_address);
+    await contract.startRaisePlan(data.raising_id, { address: data.raise_address });
 
-    await contract?.startRaisePlan(data.raising_id);
+    await sleep(2_000);
 
-    await sleep(1e3);
-
-    refresh();
+    refetch();
   });
 
   return (
     <>
-      <LoadingView className="vh-50" data={data} error={!!error} loading={loading} retry={refresh}>
+      <LoadingView className="vh-50" data={data} error={!!error} loading={isLoading} retry={refetch}>
         {isEmpty ? (
-          <Result icon={<IconSearch />} title="您还没有募集计划" desc="这里显示您的募集计划，包括您发起的募集计划和参加投资的募集计划。">
+          <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参加投资的节点计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
               <Link className="btn btn-light" to="/raising">
-                查看开放的募集计划
+                查看开放的节点计划
               </Link>
               <button className="btn btn-primary" type="button" onClick={handleCreate}>
                 <span className="bi bi-plus-lg"></span>
-                <span className="ms-2">发起募集计划</span>
+                <span className="ms-2">发起节点计划</span>
               </button>
             </div>
           </Result>
         ) : (
           <>
-            <button className="btn btn-primary float-md-end mt-lg-3" type="button" onClick={handleCreate}>
-              <span className="bi bi-plus-lg"></span>
-              <span className="ms-2">发起募集计划</span>
-            </button>
+            <p className="float-lg-end mt-lg-3 text-end">
+              <button className="btn btn-primary" type="button" onClick={handleCreate}>
+                <span className="bi bi-plus-lg"></span>
+                <span className="ms-2">发起节点计划</span>
+              </button>
+            </p>
+
             {isArrs(raises) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我发起的募集计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我发起的节点计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {raises.map((item) => (
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
-                        getProvider={getProvider}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}
@@ -130,14 +118,13 @@ export default function AccountPlans() {
 
             {isArrs(invests) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我投资的募集计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我投资的节点计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {invests.map((item) => (
                     <div className="col" key={item.raising_id}>
                       <Item
                         invest
                         data={item}
-                        getProvider={getProvider}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}
@@ -151,13 +138,12 @@ export default function AccountPlans() {
 
             {isArrs(services) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>{user?.name}提供技术服务的募集计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>{user?.name}提供技术服务的节点计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {services.map((item) => (
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
-                        getProvider={getProvider}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}

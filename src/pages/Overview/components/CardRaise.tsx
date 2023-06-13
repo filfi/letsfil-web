@@ -1,23 +1,24 @@
 import classNames from 'classnames';
-import { useCountDown } from 'ahooks';
-import { useModel } from '@umijs/max';
 import { useEffect, useMemo, useState } from 'react';
+import { useCountDown, useInterval, useMemoizedFn, useUnmount } from 'ahooks';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
-import useProcessify from '@/hooks/useProcessify';
+import useContract from '@/hooks/useContract';
+import usePackInfo from '@/hooks/usePackInfo';
+import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
+import useProcessify from '@/hooks/useProcessify';
+import useProcessing from '@/hooks/useProcessing';
 import { day2sec, toF4Address } from '@/utils/utils';
-import useRaiseContract from '@/hooks/useRaiseContract';
-import { formatEther, formatPower } from '@/utils/format';
-import useFactoryContract from '@/hooks/useFactoryContract';
+import { formatAmount, formatPower } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
-const calcTime = (mill: number) => {
+const formatTime = (mill: number) => {
   return {
     days: Math.floor(mill / 86400000),
     hours: Math.floor(mill / 3600000) % 24,
@@ -27,14 +28,30 @@ const calcTime = (mill: number) => {
   };
 };
 
-const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, pack }) => {
-  const { initialState } = useModel('@@initialState');
-  const { createRaisePlan } = useFactoryContract();
-  const { startRaisePlan, startPreSeal, servicerSign } = useRaiseContract(data?.raise_address);
-  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseInfo(data);
+const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const [processing] = useProcessing();
+  const { data: pack } = usePackInfo(data);
+  const { power, pledge } = useAssetPack(data, pack);
+  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
+  const [delayed, setDelayed] = useState(formatTime(0));
+  const [, formatted] = useCountDown({ targetDate });
+  const { createRaisePlan, servicerSign, startRaisePlan, startPreSeal } = useContract(data?.raise_address);
+
+  const clear = useInterval(
+    useMemoizedFn(() => {
+      let sec = 0;
+
+      if (data) {
+        sec = Math.max(Date.now() / 1000 - data.end_seal_time, 0);
+      }
+
+      setDelayed(formatTime(sec * 1000));
+    }),
+    isDelayed ? 1_000 : undefined,
+  );
 
   const seconds = useMemo(() => {
     if (!data) return 0;
@@ -49,7 +66,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
       return data.closing_time;
     }
 
-    if (isDelayed || isSealing) {
+    if (isSealing) {
       return data.end_seal_time;
     }
 
@@ -58,23 +75,23 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
     }
 
     return day2sec(data.raise_days);
-  }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed, isSuccess]);
-
-  const [, formatted] = useCountDown({ targetDate });
-  const raiseTime = useMemo(() => calcTime(seconds * 1000), [seconds]);
+  }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isSuccess]);
+  const raiseTime = useMemo(() => formatTime(seconds * 1000), [seconds]);
   const displayTime = useMemo(
-    () => (isRaising || isWaitSeal || isPreSeal || isSealing || isDelayed ? formatted : raiseTime),
-    [formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
+    () => (isRaising || isWaitSeal || isPreSeal || isSealing ? formatted : isDelayed ? delayed : raiseTime),
+    [delayed, formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
   );
 
   useEffect(() => {
-    if (isRaising || isWaitSeal || isPreSeal || isDelayed || isSealing) {
+    if (isRaising || isWaitSeal || isPreSeal || isSealing) {
       setTargetDate(seconds * 1000);
       return;
     }
 
     setTargetDate(0);
   }, [seconds, isRaising, isDelayed, isSealing]);
+
+  useUnmount(clear);
 
   const [creating, handleCreate] = useProcessify(async () => {
     if (!data) return;
@@ -107,7 +124,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
         <div className="text-gray">
           <ul>
             <li>提前沟通技术服务商，与封装排期计划保持同步</li>
-            <li>检查募集计划承诺的封装时间，封装延期将产生罚金</li>
+            <li>检查节点计划承诺的封装时间，封装延期将产生罚金</li>
           </ul>
         </div>
       ),
@@ -135,11 +152,11 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
           <>
             <div>
               <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} onClick={handleCreate}>
-                发起人签名
+                主办人签名
               </SpinBtn>
             </div>
 
-            <p className="mb-0">与相关方共识后签名，链上部署后不可修改，但您依然可以创建新的募集计划。</p>
+            <p className="mb-0">与相关方共识后签名，链上部署后不可修改，但您依然可以创建新的节点计划。</p>
           </>
         );
       }
@@ -153,29 +170,29 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
               </SpinBtn>
             </div>
 
-            <p className="mb-0">等待发起人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
+            <p className="mb-0">等待主办人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
           </>
         );
       }
 
-      return null;
+      return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
     }
 
     // 待开始
     if (isWaiting) {
-      // 发起人
+      // 主办人
       if (isRaiser) {
-        // 可启动（募集保证金已缴 且 运维保证金已缴纳 且 已签名）
+        // 可启动（主办人保证金已缴 且 运维保证金已缴纳 且 已签名）
         const disabled = !(isRaisePaid && isOpsPaid && isSigned);
         return (
           <>
             <div>
               <SpinBtn className="btn btn-primary btn-lg w-100" disabled={disabled} loading={starting} onClick={handleStart}>
-                启动募集
+                启动集合质押
               </SpinBtn>
             </div>
 
-            <p className="mb-0">查看页面上的红色提示，满足启动条件后启动按钮生效。启动后投资人即可存入FIL。</p>
+            <p className="mb-0">查看页面上的红色提示，满足启动条件后启动按钮生效。启动后建设者即可存入FIL。</p>
           </>
         );
       }
@@ -185,23 +202,17 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
         return (
           <>
             <div>
-              <SpinBtn
-                className="btn btn-primary btn-lg w-100"
-                loading={signing}
-                disabled={initialState?.processing}
-                data-bs-toggle="modal"
-                data-bs-target="#signer-confirm"
-              >
+              <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={processing} data-bs-toggle="modal" data-bs-target="#signer-confirm">
                 技术服务商签名
               </SpinBtn>
             </div>
 
-            <p className="mb-0">签名即同意募集计划中的约定，您签名后募集计划方可启动。</p>
+            <p className="mb-0">签名即同意节点计划中的约定，您签名后节点计划方可启动。</p>
           </>
         );
       }
 
-      return null;
+      return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
     }
 
     // 待封装
@@ -214,7 +225,7 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
             </SpinBtn>
           </div>
 
-          <p className="mb-0">募集已成功，可提前开始封装。募集金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
+          <p className="mb-0">集合质押已成功，可提前开始封装。集合质押金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
         </>
       );
     }
@@ -228,22 +239,22 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
       <>
         <div className="card section-card">
           <div className="card-header d-flex align-items-center border-0">
-            <h4 className="card-title mb-0 me-2">募集计划·已完成</h4>
-            <span className="badge badge-success ms-auto">募集成功</span>
+            <h4 className="card-title fw-bold mb-0 me-2">建设完成</h4>
+            <span className="badge badge-success ms-auto">集合质押成功</span>
             <span className="badge badge-success ms-2">封装完成</span>
           </div>
           <div className="card-body py-2 fs-16 text-main">
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>封装容量</span>
+              <span>新增算力(QAP)</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatPower(pack?.pack_power)?.[0]}</span>
-                <span className="ms-1 text-neutral">{formatPower(pack?.pack_power)?.[1]}</span>
+                <span className="fs-20 fw-600">{formatPower(power)?.[0]}</span>
+                <span className="ms-1 text-neutral">{formatPower(power)?.[1]}</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>封装质押币</span>
+              <span>封装质押</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatEther(pack?.pack_initial_pledge)}</span>
+                <span className="fs-20 fw-600">{formatAmount(pledge)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
               </span>
             </p>
@@ -265,24 +276,28 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
       <>
         <div id="card-action" className="card section-card">
           <div className="card-body d-flex flex-column gap-3">
-            <div className="d-flex align-items-center">
-              <h4 className="card-title mb-0 me-2">
+            <div className="d-flex align-items-center flex-wrap gap-2">
+              <h4 className="card-title fw-normal mb-0">
                 {isFailed
-                  ? '募集计划已结束'
+                  ? '节点计划已结束'
                   : isClosed
-                  ? '募集计划已关闭'
+                  ? '节点计划已关闭'
                   : isRaising
-                  ? '正在募集中！距离截止时间'
+                  ? '正在质押中！距离截止还有'
                   : isWaitSeal || isPreSeal
-                  ? '募集成功，等待封装'
+                  ? '集合质押成功'
                   : isSealing
                   ? '封装倒计时'
                   : isDelayed
                   ? '封装延期'
-                  : '募集时间'}
+                  : '集合质押时间'}
               </h4>
               <div className="ms-auto">
-                {isFailed ? <span className="badge badge-danger">募集未成功</span> : isSuccess ? <span className="badge badge-success">募集成功</span> : null}
+                {isFailed ? (
+                  <span className="badge badge-danger">集合质押未成功</span>
+                ) : isSuccess ? (
+                  <span className="badge badge-success">集合质押成功</span>
+                ) : null}
                 {isPreSeal ? (
                   <span className="badge ms-2">准备封装</span>
                 ) : isDelayed ? (
@@ -300,19 +315,19 @@ const CardRaise: React.FC<{ data?: API.Plan; pack?: API.AssetPack }> = ({ data, 
               })}
             >
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.days}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.days}</p>
                 <p className="mb-0 text-gray">天</p>
               </div>
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.hours}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.hours}</p>
                 <p className="mb-0 text-gray">小时</p>
               </div>
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.minutes}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.minutes}</p>
                 <p className="mb-0 text-gray">分</p>
               </div>
               <div className="countdown-item">
-                <p className="h2 fw-bold mb-1">{displayTime.seconds}</p>
+                <p className="fs-36 fw-bold mb-1">{displayTime.seconds}</p>
                 <p className="mb-0 text-gray">秒</p>
               </div>
             </div>

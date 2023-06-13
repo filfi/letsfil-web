@@ -1,10 +1,11 @@
-import { Avatar, Checkbox, Form, Input } from 'antd';
+import { Checkbox, Form, Input } from 'antd';
 import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 
 import Modal from '@/components/Modal';
 import { accSub } from '@/utils/utils';
+import Avatar from '@/components/Avatar';
 import { catchify } from '@/utils/hackify';
-import useProviders from '@/hooks/useProviders';
+import useSProvider from '@/hooks/useSProvider';
 import { formatEther, formatNum } from '@/utils/format';
 
 export type AssetsModalProps = {
@@ -16,10 +17,9 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
   const modal = useRef<ModalAttrs>(null);
 
   const [form] = Form.useForm();
-  const { getProvider } = useProviders();
   const powerRate = useMemo(() => data?.raiseHisPowerRate ?? 0, [data?.raiseHisPowerRate]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, powerRate), 0), [powerRate]);
-  const provider = useMemo(() => getProvider?.(data?.serviceId), [data?.serviceId, getProvider]);
+  const provider = useSProvider(data?.serviceId);
 
   useImperativeHandle(
     ref,
@@ -58,7 +58,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
         onConfirm={handleConfirm}
       >
         <p className="mb-4 fs-16">
-          检测到 {data?.minerId} 是已存在的节点，先确认历史资产的归属。历史资产不属于当前募集计划，移交Owner之后，FilFi智能合约将按约定比例独立分配。
+          检测到 {data?.minerId} 是已存在的节点，先确认历史资产的归属。历史资产不属于当前节点计划，移交Owner之后，FilFi智能合约将按约定比例独立分配。
         </p>
 
         <div className="ffi-form mb-4">
@@ -87,8 +87,8 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
                 size="large"
                 prefix={
                   <div className="d-flex algin-items-center">
-                    <Avatar src={provider?.logo_url} size={24} />
-                    <span className="ms-2">{provider?.short_name}</span>
+                    <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={24} />
+                    <span className="ms-2">{provider?.full_name}</span>
                   </div>
                 }
                 suffix="%"

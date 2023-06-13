@@ -1,12 +1,16 @@
 .content {
+  --header-margin-y: 32px;
   --content-item-gap: 24px;
-  --section-spacer-y: 24px;
   --section-header-padding-y: 12px;
   --section-header-spacer-y: 16px;
 
   :global {
     .section {
-      margin-bottom: var(--section-spacer-y);
+      margin-bottom: var(--content-item-gap);
+
+      .min-cell {
+        min-width: 110px;
+      }
     }
 
     .section-header {
@@ -43,7 +47,7 @@
       }
 
       .countdown-item {
-        min-width: 44px;
+        min-width: 50px;
         text-align: center;
       }
     }
@@ -106,6 +110,23 @@
     .progress-stacked > .progress-stacked ~ .progress:last-child > .progress-bar {
       border-top-right-radius: var(--bs-progress-border-radius);
       border-bottom-right-radius: var(--bs-progress-border-radius);
+    }
+
+    .progress-bar-striped {
+      background-image: linear-gradient(
+        -45deg,
+        rgb(0 0 0 / 5%) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgb(0 0 0 / 5%) 50%,
+        rgb(0 0 0 / 5%) 75%,
+        transparent 75%,
+        transparent
+      );
+    }
+
+    .progress-bar-animated {
+      animation: custom-strip 2s linear infinite;
     }
 
     // .progress-stacked > .progress-stacked:not(:first-child) {
@@ -227,11 +248,6 @@
 }
 
 .tabs {
-  position: sticky;
-  top: calc(var(--header-margin-y) * 2 + 5rem);
-  z-index: 50;
-  background-color: #fff;
-
   :global {
     .nav {
       --bs-nav-link-padding-x: 12px;
@@ -250,6 +266,10 @@
   }
 }
 
+.content > * {
+  margin-bottom: var(--content-item-gap);
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -265,17 +285,8 @@
   }
 }
 
-@media screen and (max-width: 991px) {
-  .content {
-    > * {
-      margin-bottom: var(--content-item-gap);
-    }
-  }
-}
-
 @media screen and (min-width: 992px) {
   .content {
-    --section-spacer-y: var(--content-item-gap);
     --section-header-padding-y: 20px;
     --section-header-spacer-y: 24px;
 
@@ -294,30 +305,30 @@
         z-index: 100;
         background-color: #fff;
       }
+
+      .section-card {
+        position: sticky;
+        top: calc(var(--header-height) + var(--header-margin-y));
+        z-index: 50;
+      }
     }
   }
 
   .tabs {
     width: 15%;
-    // padding-right: var(--content-item-gap);
 
     :global {
       .nav {
         position: sticky;
-        top: calc(var(--header-height, 0) + 20px);
+        top: calc(var(--header-height) + var(--header-margin-y));
         z-index: 100;
         display: inline-block;
       }
     }
   }
 
-  // .main {
-  //   padding: 0 var(--content-item-gap);
-  // }
-
   .sidebar {
     width: 33.125%;
-    // padding-left: var(--content-item-gap);
   }
 }
 

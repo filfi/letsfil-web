@@ -5,10 +5,13 @@ import axios, { AxiosError, AxiosHeaders } from 'axios';
 import type { UploadProps } from 'antd';
 import type { AxiosProgressEvent, AxiosRequestConfig } from 'axios';
 
+import Avatar from '../Avatar';
 import { presign } from '@/apis/raise';
 import { catchify } from '@/utils/hackify';
+import useAccount from '@/hooks/useAccount';
 
 export type AvatarInputProps = {
+  size?: number;
   value?: string;
   onChange?: (value: string) => void;
 };
@@ -67,7 +70,8 @@ function getFileList(val?: string) {
   }
 }
 
-const AvatarInput: React.FC<AvatarInputProps> = ({ value, onChange }) => {
+const AvatarInput: React.FC<AvatarInputProps> = ({ size, value, onChange }) => {
+  const { address } = useAccount();
   const [url, setUrl] = useState(value);
 
   useUpdateEffect(() => {
@@ -120,7 +124,7 @@ const AvatarInput: React.FC<AvatarInputProps> = ({ value, onChange }) => {
       customRequest={customUpload}
       onChange={handleChange}
     >
-      {url ? <img className="w-100 h-100 d-block rounded-circle object-fit-cover" src={url} /> : null}
+      {url ? <img className="w-100 h-100 d-block rounded-circle object-fit-cover" src={url} /> : <Avatar address={address} size={size} />}
     </Upload>
   );
 };

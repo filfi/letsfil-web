@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { useMount } from 'ahooks';
+import { Outlet } from '@umijs/max';
 import { createPortal } from 'react-dom';
-import { useMemo, useState } from 'react';
-import { Outlet, useModel } from '@umijs/max';
+import { useNetwork, useSwitchNetwork } from 'wagmi';
 
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
-import { SUPPORTED_CHAINS } from '@/constants';
-import useAccountEvents from '@/hooks/useAccountEvents';
+import useAccount from '@/hooks/useAccount';
+import { chains } from '@/constants/config';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 import useInputScrollAction from '@/hooks/useInputScrollAction';
 
@@ -30,13 +31,49 @@ function removeDom() {
   }
 }
 
-const BasicLayout: React.FC = () => {
-  const { initialState } = useModel('@@initialState');
-  const [node, setNode] = useState<React.ReactNode>();
-  const showAlert = useMemo(() => initialState?.connected && initialState?.chainId && !SUPPORTED_CHAINS.includes(initialState.chainId), [initialState]);
+function getStorage<V = any>(key: string) {
+  const data = localStorage.getItem(key);
 
-  useAccountEvents();
+  if (data) {
+    try {
+      return JSON.parse(data) as V;
+    } catch (e) {}
+
+    return data as V;
+  }
+
+  return null;
+}
+
+const BasicLayout: React.FC = () => {
+  const { chain } = useNetwork();
+  const { connect } = useAccount();
+  const { switchNetwork } = useSwitchNetwork({
+    chainId: chains[0].id,
+    onError: (e) => {
+      console.log(e);
+      console.log(e.cause);
+    },
+  });
+
+  const [node, setNode] = useState<React.ReactNode>();
+
   useInputScrollAction();
+
+  const autoConnect = () => {
+    const id = getStorage<string>('wagmi.wallet');
+    const connected = getStorage<boolean>('wagmi.connected');
+
+    if (id && connected) {
+      connect({ id, slient: true });
+    }
+  };
+
+  const handleSwitch = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    e.preventDefault();
+
+    switchNetwork?.(chains[0].id);
+  };
 
   useMount(() => {
     // @ts-ignore
@@ -50,20 +87,32 @@ const BasicLayout: React.FC = () => {
 
       setTimeout(removeDom, 1000 / 60);
     };
+
+    autoConnect();
   });
 
   return (
     <>
-      {showAlert && (
+      {chain?.unsupported && (
         <div className="alert alert-danger fixed-top rounded-0">
-          <div className="container text-center">不支持当前网络，请切换到支持的网络</div>
+          <div className="container">
+            <p className="mb-0 text-center">
+              <span>不支持当前网络，请</span>
+              <a className="fw-500 text-underline" href="#" onClick={handleSwitch}>
+                切换
+              </a>
+              <span>到支持的网络</span>
+            </p>
+          </div>
         </div>
       )}
 
       <Header />
 
       <main className="ffi-layout-main">
-        <Outlet />
+        <div className="ffi-layout-content">
+          <Outlet />
+        </div>
       </main>
 
       <Footer />

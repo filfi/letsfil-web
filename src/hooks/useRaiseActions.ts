@@ -1,28 +1,27 @@
 import { camelCase } from 'lodash';
-import { useCallback } from 'react';
 import { history, useModel } from '@umijs/max';
 
 import { del } from '@/apis/raise';
-import { sleep } from '@/utils/utils';
+import useContract from './useContract';
 import Dialog from '@/components/Dialog';
 import { catchify } from '@/utils/hackify';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
 import { transformModel } from '@/helpers/app';
-import useRaiseContract from './useRaiseContract';
+import type { WriteOptions } from './useContract';
 
-export default function useRaiseActions(data?: API.Plan) {
+export default function useRaiseActions(data?: API.Plan | null) {
   const [, setModel] = useModel('stepform');
 
-  const contract = useRaiseContract(data?.raise_address);
+  const contract = useContract(data?.raise_address);
 
-  const edit = useCallback(() => {
-    if (!data) return;
+  const edit = async (_data = data) => {
+    if (!_data) return;
 
-    const model = Object.keys(data).reduce(
+    const model = Object.keys(_data).reduce(
       (d, key) => ({
         ...d,
-        [camelCase(key)]: data[key as keyof typeof data],
+        [camelCase(key)]: _data[key as keyof typeof data],
       }),
       {},
     );
@@ -30,35 +29,29 @@ export default function useRaiseActions(data?: API.Plan) {
     setModel(transformModel(model));
 
     history.replace('/create');
-  }, []);
+  };
 
-  const [closing, close] = useProcessify(
-    useCallback(async () => {
-      if (!data) return;
+  const [closing, close] = useProcessify(async (id = data?.raising_id, opts?: WriteOptions) => {
+    if (!id) return;
 
-      await contract.closeRaisePlan(data.raising_id);
+    return await contract.closeRaisePlan(id, opts);
+  });
 
-      await sleep(3e3);
-    }, [data]),
-  );
+  const [removing, remove] = useLoadingify(async (id = data?.raising_id) => {
+    if (!id) return;
 
-  const [removing, remove] = useLoadingify(
-    useCallback(async () => {
-      if (!data) return;
+    const [e] = await catchify(del)(id);
 
-      const [e] = await catchify(del)(data.raising_id);
+    if (e) {
+      Dialog.alert({
+        icon: 'error',
+        title: '删除失败',
+        content: e.message,
+      });
+    }
 
-      if (e) {
-        Dialog.alert({
-          icon: 'error',
-          title: '删除失败',
-          content: e.message,
-        });
-      }
-
-      history.replace('/');
-    }, [data]),
-  );
+    history.replace('/');
+  });
 
   return {
     edit,

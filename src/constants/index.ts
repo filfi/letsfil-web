@@ -16,17 +16,18 @@ export const SUPPORTED_CHAINS =
         '0x13a', // 314, // Filecoin - Mainnet
       ]
     : [
-        '0xc45', // 3141, // Hypersapce testnet
+        // '0x13a', // 314, // Filecoin Mainnet
+        // '0xc45', // 3141, // Hypersapce testnet
         '0x4cb2f', // 314159, // Calibration testnet
       ];
 
 // Calibration testnet
 // const RAISE_ADDR = '0x30d10A82a29A367bD403bB2139d8994333550F80'; // 5200
-const RAISE_ADDR = '0x390CB629D5057AB6F990471a725179FdfB64dEFD'; // 5000
+const RAISE_ADDR = '0x9ca619b2E4729c1E659E20A78D026192b29C85ee'; // 5000
 /**
  * Raise Facory Contract Address
  */
-export const RAISE_ADDRESS = RUN_ENV === 'main' ? ADDRESS : RAISE_ADDR;
+export const RAISE_ADDRESS = (RUN_ENV === 'main' ? ADDRESS : RAISE_ADDR) as API.Address;
 
 const SCAN_URL_MAIN = 'https://filfox.info/en'; // mainnet
 const SCAN_URL_CB = 'https://calibration.filscan.io'; // calibration testnet

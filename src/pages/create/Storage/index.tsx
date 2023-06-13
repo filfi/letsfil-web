@@ -1,9 +1,9 @@
-import { useRef } from 'react';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
 import { useDebounceFn, useLockFn, useUpdateEffect } from 'ahooks';
 
+import { isDef } from '@/utils/utils';
 import useUser from '@/hooks/useUser';
 import { minerInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
@@ -11,26 +11,25 @@ import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
-import useAccounts from '@/hooks/useAccounts';
-import useProviders from '@/hooks/useProviders';
+import useAccount from '@/hooks/useAccount';
+import useProviders from '@/hooks/useSProviders';
 import FormRadio from '@/components/FormRadio';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
 import AvatarInput from '@/components/AvatarInput';
-import { isDef, randomAvatar } from '@/utils/utils';
 import ProviderSelect from '@/components/ProviderRadio';
 
 export default function CreateStorage() {
   const [form] = Form.useForm();
-  const { account } = useAccounts();
   const [model, setModel] = useModel('stepform');
-  const defaultAvatar = useRef(randomAvatar()).current;
-  const { list, loading: pFetching } = useProviders();
-  const { user, loading: fetching, createOrUpdate } = useUser();
 
-  useUpdateEffect(() => {
-    form.setFieldValue('raiser', account);
-  }, [account]);
+  const { address } = useAccount();
+  const { user, createOrUpdate } = useUser();
+  const { data: list, isLoading: pFetching } = useProviders();
+
+  // useUpdateEffect(() => {
+  //   form.setFieldValue('raiser', address);
+  // }, [address]);
   useUpdateEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -38,13 +37,7 @@ export default function CreateStorage() {
         sponsorCompany: user.name,
       });
     }
-
-    if (!fetching && !user) {
-      form.setFieldsValue({
-        sponsorLogo: defaultAvatar,
-      });
-    }
-  }, [fetching, user]);
+  }, [user]);
   useUpdateEffect(() => {
     const item = list?.find((i) => i.is_default);
 
@@ -103,9 +96,10 @@ export default function CreateStorage() {
   };
 
   const [loading, handleSubmit] = useLoadingify(async (vals: API.Base) => {
+    const name = user?.name ?? address;
     const { sponsorCompany, sponsorLogo } = vals;
 
-    if (!user || user?.name !== sponsorCompany || user?.url !== sponsorLogo) {
+    if (!user || name !== sponsorCompany || user?.url !== sponsorLogo) {
       const [e] = await catchify(createOrUpdate)({ name: sponsorCompany, url: sponsorLogo });
 
       if (e) {
@@ -130,11 +124,11 @@ export default function CreateStorage() {
         layout="vertical"
         initialValues={{
           minerType: 1,
-          raiser: account,
+          // raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
-          sponsorCompany: user?.name,
+          sponsorCompany: address,
           hisBlance: '0',
           hisPower: '0',
           hisInitialPledge: '0',
@@ -169,26 +163,22 @@ export default function CreateStorage() {
 
         <div className="ffi-form">
           <div className={classNames('ffi-item border-bottom')}>
-            <h4 className="ffi-label">完善发起人资料</h4>
+            <h4 className="ffi-label">完善主办人资料</h4>
             <p className="text-gray">
-              发起人的名称和Logo都会显示在募集计划中，使用有助于投资人识别的名称，也可以使用机构名称。名称允许修改，会产生Gas费，修改历史会在链上记录。
+              主办人的名称和Logo都会显示在节点计划中，使用有助于建设者识别的名称，也可以使用机构名称。名称允许修改，会产生Gas费，修改历史会在链上记录。
             </p>
 
             <div className="d-flex gap-3">
               <div className="flex-shrink-0">
                 <Form.Item noStyle name="sponsorLogo">
-                  <AvatarInput />
+                  <AvatarInput size={60} />
                 </Form.Item>
               </div>
               <div className="flex-grow-1">
                 <div className="row">
                   <div className="col-12 col-md-8 col-lg-6">
-                    <Form.Item
-                      name="sponsorCompany"
-                      help={<span>钱包地址：{formatAddr(account)}</span>}
-                      rules={[{ required: true, message: '请输入您的名称' }]}
-                    >
-                      <Input maxLength={30} placeholder="输入您的名称" />
+                    <Form.Item name="sponsorCompany" help={<span>钱包地址：{formatAddr(address)}</span>}>
+                      <Input maxLength={30} placeholder={address} />
                     </Form.Item>
                   </div>
                 </div>
@@ -197,7 +187,7 @@ export default function CreateStorage() {
           </div>
 
           {/* <div className="ffi-item border-bottom">
-            <h4 className="ffi-label mb-3">募集计划名称</h4>
+            <h4 className="ffi-label mb-3">节点计划名称</h4>
 
             <Form.Item
               name="raisingName"
@@ -210,7 +200,7 @@ export default function CreateStorage() {
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">Filecoin存储节点</h4>
             <p className="text-gray">
-              募集资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
+              集合质押资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
               {/* <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
                 什么是存储节点号？
               </a> */}
@@ -242,8 +232,8 @@ export default function CreateStorage() {
                 grid
                 disabled
                 items={[
-                  { label: '新建DC节点', value: 1 },
-                  { label: '已有节点扩展算力', value: 2 },
+                  { label: '新建节点', value: 1 },
+                  { label: '扩建节点', value: 2 },
                 ]}
               />
             </Form.Item>
@@ -273,7 +263,7 @@ export default function CreateStorage() {
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">技术服务商（SP Foundry）</h4>
+            <h4 className="ffi-label">技术服务商</h4>
             <p className="text-gray">
               技术服务商提供扇区封装、技术运维、IDC数据中心整体解决方案，是存储节点长期健康运行的最终保障。
               {/* <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">

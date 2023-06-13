@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMount, useUpdateEffect } from 'ahooks';
 
 export type IService<R = any, P extends any[] = any> = (...args: P) => Promise<API.PagingRes<R>>;
@@ -22,9 +22,12 @@ export default function usePagination<R = any, P extends any[] = any>(service: I
   const [total, setTotal] = useState(0);
   const [params, setParams] = useState<P>();
   const [error, setError] = useState<Error>();
+  const [noData, setNoData] = useState(false);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(opts.defaultPage);
   const [pageSize, setPageSize] = useState(opts.pageSize);
+
+  const noMore = useMemo(() => noData || (data && data.length < pageSize), [data, noData, pageSize]);
 
   const request = async (...args: P) => {
     setParams(args);
@@ -44,6 +47,7 @@ export default function usePagination<R = any, P extends any[] = any>(service: I
       setData(data.list);
       setTotal(data.total ?? 0);
       setPage(args[0].page);
+      setNoData(data.total === 0);
       setPageSize(args[0].pageSize);
     } catch (e: any) {
       setError(e);
@@ -58,6 +62,7 @@ export default function usePagination<R = any, P extends any[] = any>(service: I
   };
 
   const refresh = () => {
+    setNoData(false);
     const p = params ?? ([] as unknown as P);
     return run(...p);
   };
@@ -93,6 +98,8 @@ export default function usePagination<R = any, P extends any[] = any>(service: I
     total,
     error,
     params,
+    noData,
+    noMore,
     loading,
     run,
     refresh,

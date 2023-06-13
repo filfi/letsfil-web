@@ -1,70 +1,96 @@
-import { useMemo, useState } from 'react';
-import { useAsyncEffect, useLockFn } from 'ahooks';
+import { useMemo } from 'react';
+import { parseEther } from 'viem';
+import { useQueries } from '@tanstack/react-query';
 
-import useAccounts from './useAccounts';
-import { EventType } from '@/utils/mitt';
-import { toNumber } from '@/utils/format';
+import useAccount from './useAccount';
+import useContract from './useContract';
 import useRaiseInfo from './useRaiseInfo';
-import useLoadingify from './useLoadingify';
+import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import useEmittHandler from './useEmitHandler';
-import useRaiseContract from './useRaiseContract';
-import { accDiv, isDef } from '@/utils/utils';
+import { accDiv, sleep } from '@/utils/utils';
+import { isClosed, isFailed, isPending, isWorking } from '@/helpers/raise';
 
 /**
- * 投资人的投资信息
+ * 建设者的投资信息
  * @param data
  * @returns
  */
-export default function useDepositInvestor(data?: API.Plan) {
-  const { account } = useAccounts();
-  const { actual } = useRaiseInfo();
-  const contract = useRaiseContract(data?.raise_address);
+export default function useDepositInvestor(data?: API.Plan | null) {
+  const { address, withConnect } = useAccount();
+  const contract = useContract(data?.raise_address);
 
-  const [amount, setAmount] = useState(0); // 用户质押金额
-  const [record, setRecord] = useState(0); // 用户累计质押金额
-  const [withdraw, setWithdraw] = useState(0); // 用户已提取
-  const [backAmount, setBackAmount] = useState(0); // 退回金额
-  const [backInterest, setBackInterest] = useState(0); // 退回利息
+  const { actual } = useRaiseInfo(data);
+
+  const getBackAssets = async () => {
+    if (address && data && (isClosed(data) || isFailed(data) || isWorking(data))) {
+      return await contract.getBackAssets(data.raising_id, address);
+    }
+  };
+  const getInvestInfo = async () => {
+    if (address && data && !isPending(data)) {
+      return await contract.getInvestorInfo(data.raising_id, address);
+    }
+  };
+
+  const [backAsset, investorInfo] = useQueries({
+    queries: [
+      {
+        queryKey: ['backAsset', address, data?.raising_id],
+        queryFn: withNull(getBackAssets),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['investorInfo', address, data?.raising_id],
+        queryFn: withNull(getInvestInfo),
+        staleTime: 60_000,
+      },
+    ],
+  });
+
+  const amount = useMemo(() => investorInfo.data?.[0] ?? 0, [investorInfo.data]); // 用户质押金额
+  const record = useMemo(() => investorInfo.data?.[1] ?? 0, [investorInfo.data]); // 用户累计质押金额
+  const withdraw = useMemo(() => investorInfo.data?.[3] ?? 0, [investorInfo.data]); // 用户已提取
+  const backAmount = useMemo(() => backAsset.data?.[0] ?? 0, [backAsset.data]); // 退回金额
+  const backInterest = useMemo(() => backAsset.data?.[1] ?? 0, [backAsset.data]); // 退回利息
 
   const isInvestor = useMemo(() => record > 0, [record]);
   const ratio = useMemo(() => (actual > 0 ? accDiv(record, actual) : 0), [record, actual]); // 投资占比
 
-  const [loading, fetchData] = useLoadingify(
-    useLockFn(async () => {
-      if (!data?.raising_id) return;
+  const isLoading = useMemo(() => investorInfo.isLoading || backAsset.isLoading, [investorInfo.isLoading, backAsset.isLoading]);
 
-      if (account) {
-        const info = await contract.getInvestorInfo(data.raising_id, account);
-        const back = await contract.getBackAssets(data.raising_id, account);
+  const refetch = async () => {
+    return await investorInfo.refetch();
+  };
 
-        const amount = info?.pledgeAmount; // 账户余额
-        const record = info?.pledgeCalcAmount; // 账户总质押
-        const withdraw = info?.withdrawAmount; // 已提取
-        const backAmount = back?.[0]; // 退回金额
-        const backInterest = back?.[1]; // 利息补偿
+  const [staking, stakeAction] = useProcessify(
+    withConnect(async (amount: number | string) => {
+      if (!data) return;
 
-        isDef(account) && setAmount(toNumber(amount));
-        isDef(record) && setRecord(toNumber(record));
-        isDef(withdraw) && setWithdraw(toNumber(withdraw));
-        isDef(backAmount) && setBackAmount(toNumber(backAmount));
-        isDef(backInterest) && setBackInterest(toNumber(backInterest));
-      }
+      const res = await contract.staking(data.raising_id, {
+        value: parseEther(`${+amount}`),
+      });
+
+      await sleep(200);
+
+      refetch();
+
+      return res;
     }),
   );
 
-  const [processing, unStaking] = useProcessify(async () => {
-    if (!data) return;
+  const [unstaking, unStakeAction] = useProcessify(
+    withConnect(async () => {
+      if (!data) return;
 
-    await contract.unStaking(data.raising_id);
-  });
+      const res = await contract.unStaking(data.raising_id);
 
-  useAsyncEffect(fetchData, [account, data?.raising_id]);
+      await sleep(200);
 
-  useEmittHandler({
-    [EventType.onStaking]: fetchData,
-    [EventType.onUnstaking]: fetchData,
-  });
+      refetch();
+
+      return res;
+    }),
+  );
 
   return {
     ratio,
@@ -74,9 +100,11 @@ export default function useDepositInvestor(data?: API.Plan) {
     backAmount,
     backInterest,
     isInvestor,
-    loading,
-    processing,
-    unStaking,
-    refresh: fetchData,
+    staking,
+    unstaking,
+    isLoading,
+    stakeAction,
+    unStakeAction,
+    refetch,
   };
 }

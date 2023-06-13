@@ -3,6 +3,7 @@ import numeral from 'numeral';
 import { ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
 import { accAdd, sec2day } from './utils';
+import { isAddress } from 'ethers/lib/utils';
 
 export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode: BigNumber.RoundingMode = 3) {
   return BigNumber(amount ?? 0).toFixed(decimalPlaces, mode);
@@ -10,6 +11,12 @@ export function toFixed(amount?: BigNumber.Value, decimalPlaces = 3, mode: BigNu
 
 export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumberish = 18) {
   return BigNumber(ethers.utils.formatUnits(`${amount || 0}`, unitName)).toNumber();
+}
+
+export function formatID(id?: number | string) {
+  if (id) {
+    return (+id).toString(36);
+  }
 }
 
 export function formatFix(val?: number | string) {
@@ -35,11 +42,17 @@ export function formatBytes(bytes: number | string, decimals = 2, mode: BigNumbe
 
   const i = Math.floor(Math.log(val) / Math.log(k));
 
-  return `${toFixed(val / Math.pow(k, i), dm, mode)} ${sizes[i]}`;
+  return `${formatFix(toFixed(val / Math.pow(k, i), dm, mode))} ${sizes[i]}`;
 }
 
 export function formatRate(rate: number | string, fmt = '0%') {
   return formatNum(rate, fmt);
+}
+
+export function formatProgress(value: number | string, fmt = '0%') {
+  const v = (+value * 100 - 0.5) / 100;
+
+  return formatRate(Number.isNaN(v) ? 0 : v, fmt);
 }
 
 export function formatUnix(date: number, fmt = 'YYYY-MM-DD HH:mm') {
@@ -48,7 +61,7 @@ export function formatUnix(date: number, fmt = 'YYYY-MM-DD HH:mm') {
 
 export function formatAddr(addr?: unknown) {
   if (typeof addr === 'string') {
-    return addr.slice(0, 6) + '......' + addr.slice(-4);
+    return addr.slice(0, 6) + '...' + addr.slice(-4);
   }
 
   return '';
@@ -76,6 +89,10 @@ export function formatPower(power?: number | string, decimals = 2, mode: BigNumb
   }
 }
 
+export function formatSeals(days: number) {
+  return Math.round(days + 0.5);
+}
+
 export function formatRemain(...args: (number | string)[]) {
   if (args.every(Boolean)) {
     const sum = args.reduce<number>((sum, cur) => accAdd(sum, cur), 0);
@@ -92,6 +109,14 @@ export function formatUnixDate(sec?: number | string, fmt = 'lll') {
   }
 
   return '-';
+}
+
+export function formatSponsor(sponsor?: string) {
+  if (sponsor && isAddress(sponsor)) {
+    return formatAddr(sponsor);
+  }
+
+  return sponsor;
 }
 
 export function formatSecDays(sec?: number | string) {

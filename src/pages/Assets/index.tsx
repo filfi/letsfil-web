@@ -1,21 +1,24 @@
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
-import { useRequest, useUpdateEffect } from 'ahooks';
+import { useQuery } from '@tanstack/react-query';
 import { Link, NavLink, useParams } from '@umijs/max';
+import { useDebounceEffect, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
 import { getInfo } from '@/apis/raise';
 import { SCAN_URL } from '@/constants';
+import { withNull } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import Activity from './components/Activity';
 import FormRadio from '@/components/FormRadio';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
-import useProviders from '@/hooks/useProviders';
+import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseRole from '@/hooks/useRaiseRole';
+import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -36,30 +39,27 @@ export default function Assets() {
     }
   };
 
-  const { data, error, loading, refresh } = useRequest(service, { refreshDeps: [param.id] });
+  const { data, error, isLoading, refetch } = useQuery(['raiseInfo', param.id], withNull(service));
 
-  const { getProvider } = useProviders();
-  const { pack, remains } = useRaiseSeals(data);
+  const { remains } = useRaiseSeals(data);
+  const { data: pack } = usePackInfo(data);
+  const provider = useSProvider(data?.service_id);
   const { isInvestor } = useDepositInvestor(data);
-  const { isRaiser, isServicer } = useRaiseInfo(data);
+  const { isRaiser, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
-  const { investPower, raiserPower, servicerPower, investPledge, servicerPledge } = useAssetPack(
-    data,
-    pack ? { power: pack.pack_power, pledge: pack.pack_initial_pledge } : undefined,
-  );
+  const { investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data, pack);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
+  const raiser = useRewardRaiser(data); // 主办人的节点激励
+  const investor = useRewardInvestor(data); // 建设者的节点激励
+  const servicer = useRewardServicer(data); // 服务商的节点激励
   const [role, setRole] = useState(roles.findIndex(Boolean));
-  const raiser = useRewardRaiser(data); // 发起人的收益
-  const investor = useRewardInvestor(data); // 投资人的收益
-  const servicer = useRewardServicer(data); // 服务商的收益
 
-  const title = useMemo(() => (data ? `${data.sponsor_company}发起的募集计划@${data.miner_id}` : '-'), [data]);
-  const provider = useMemo(() => getProvider?.(data?.service_id), [data?.service_id, getProvider]);
+  const title = useMemo(() => (data ? `${F.formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
 
   const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
-  const pledge = useMemo(() => [investPledge, 0, servicerPledge][role] ?? 0, [role, investPledge, servicerPledge]);
   const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
+  const pledge = useMemo(() => [investPledge, raiserPledge, servicerPledge][role] ?? 0, [role, investPledge, raiserPledge, servicerPledge]);
   const total = useMemo(() => [investor.total, raiser.total, servicer.total][role] ?? 0, [role, investor.total, raiser.total, servicer.total]);
   const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role] ?? 0, [role, investor.reward, raiser.reward, servicer.reward]);
   // const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
@@ -67,8 +67,8 @@ export default function Assets() {
   const options = useMemo(() => {
     if (roles.filter(Boolean).length > 1) {
       const items = [
-        { icon: <IconUser />, label: '我是投资人', value: 0 },
-        { icon: <IconStar />, label: '我是发起人', value: 1 },
+        { icon: <IconUser />, label: '我是建设者', value: 0 },
+        { icon: <IconStar />, label: '我是主办人', value: 1 },
         { icon: <IconTool />, label: '我是技术服务商', value: 2 },
       ];
 
@@ -82,23 +82,31 @@ export default function Assets() {
     setRole(roles.findIndex(Boolean));
   }, [roles]);
 
+  useDebounceEffect(
+    () => {
+      param.id && refetch();
+    },
+    [param.id],
+    { wait: 200 },
+  );
+
   const [withdrawing, handleWithdraw] = useLoadingify(async () => {
     if (role === 1) {
-      await raiser.withdraw();
+      await raiser.withdrawAction();
     } else if (role === 2) {
-      await servicer.withdraw();
+      await servicer.withdrawAction();
     } else {
-      await investor.withdraw();
+      await investor.withdrawAction();
     }
 
-    refresh();
+    refetch();
   });
 
   return (
     <>
       <div className="container">
-        <LoadingView data={data} error={!!error} loading={loading} retry={refresh}>
-          <PageHeader className="mb-3 pb-0" title={title} desc={`算力包：${param.id}`} />
+        <LoadingView data={data} error={!!error} loading={isLoading} retry={refetch}>
+          <PageHeader className="mb-3 pb-0" title={title} desc={`算力包 ${param.id}`} />
 
           <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
             <li className="nav-item">
@@ -108,7 +116,7 @@ export default function Assets() {
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to={`/overview/${param.id}`}>
-                募集计划
+                节点计划
               </NavLink>
             </li>
           </ul>
@@ -140,12 +148,12 @@ export default function Assets() {
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-1 fw-500">{data?.sponsor_company}发起的募集计划</p>
+                    <p className="mb-1 fw-500">{F.formatSponsor(data?.sponsor_company)}发起的节点计划</p>
                     <p className="mb-0 text-gray-dark">
                       {isClosed ? (
                         <span className="badge">已关闭</span>
                       ) : isFailed ? (
-                        <span className="badge badge-danger">募集失败</span>
+                        <span className="badge badge-danger">集合质押失败</span>
                       ) : (
                         <span>{F.formatUnixDate(data?.begin_time)}启动</span>
                       )}
@@ -177,11 +185,11 @@ export default function Assets() {
                     <div className="accordion-body py-2">
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">最早到期</span>
-                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.sector_begin_expira, 'll')}</span>
+                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.min_expiration_epoch, 'll')}</span>
                       </p>
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">最晚到期</span>
-                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.sector_end_expira, 'll')}</span>
+                        <span className="ms-auto fw-500">{F.formatUnixDate(pack?.max_expiration_epoch, 'll')}</span>
                       </p>
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">剩余时间</span>
@@ -257,13 +265,13 @@ export default function Assets() {
                     </div> */}
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">锁定收益</p>
+                        <p className="mb-1 fw-500">锁定激励</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
                       </div>
                     </div>
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">累计收益</p>
+                        <p className="mb-1 fw-500">累计激励</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
                       </div>
                     </div>
@@ -273,7 +281,7 @@ export default function Assets() {
 
               <div className="card">
                 <div className="card-body">
-                  <p className="mb-1 text-gray fw-500">持有算力(QAP)</p>
+                  <p className="mb-1 text-gray fw-500">权益算力(QAP)</p>
                   <p className="mb-0 fw-600">
                     <span className="fs-24">{F.formatPower(power)?.[0]}</span>
                     <span className="ms-1 fs-sm fw-bold text-neutral">{F.formatPower(power)?.[1]}</span>
@@ -313,7 +321,7 @@ export default function Assets() {
                       aria-controls="activity"
                     >
                       <span className="bi bi-activity"></span>
-                      <span className="ms-2 fs-16 fw-600">活动</span>
+                      <span className="ms-2 fs-16 fw-600">事件</span>
                     </button>
                   </h4>
                   <div id="activity" className="accordion-collapse collapse show" aria-labelledby="Activity">

@@ -1,54 +1,110 @@
 import { useMemo } from 'react';
-import { SCAN_URL } from '@/constants';
-import { byte2gb } from '@/utils/utils';
-import { formatPower } from '@/utils/format';
-import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
-import type { ItemProps } from './types';
 
-const SectionNode: React.FC<ItemProps> = ({ data }) => {
-  const size = useMemo(() => formatPower(data?.target_power ?? 0), [data]);
+import { SCAN_URL } from '@/constants';
+import { formatPower } from '@/utils/format';
+import usePackInfo from '@/hooks/usePackInfo';
+import useChainInfo from '@/hooks/useChainInfo';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseState from '@/hooks/useRaiseState';
+import { accMul, byte2gb } from '@/utils/utils';
+import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
+
+function calcPerPledge(perTera?: number | string) {
+  if (perTera && +perTera > 0) {
+    return accMul(perTera, 1024);
+  }
+}
+
+const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { perPledge } = useChainInfo();
+  const { data: pack } = usePackInfo(data);
+  const { actual, target } = useRaiseInfo(data);
+  const { isSuccess, isWorking } = useRaiseState(data);
+
+  const price = useMemo(() => calcPerPledge(data?.pledge_per_tera_day) ?? perPledge, [perPledge, data?.pledge_per_tera_day]);
+  const actualPower = useMemo(() => accMul(actual, price), [price, actual]);
+  const targetPower = useMemo(() => accMul(target, price), [price, target]);
+  const sealsPower = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);
 
   return (
     <>
-      <div className="table-responsive">
-        <div className="card">
-          <div className="card-header d-flex align-items-center px-3 px-lg-4">
-            <div className="d-flex align-items-center">
-              <NodeIcon fill="#1D2939" />
-              <span className="card-title ms-3 mb-0 fw-600">{data?.miner_id}</span>
-            </div>
-            <a className="ms-auto" href={`${SCAN_URL}/address/${data?.miner_id}`} target="_blank" rel="noreferrer">
-              链上查看
-            </a>
+      <div className="card">
+        <div className="card-header d-flex align-items-center px-3 px-lg-4">
+          <div className="d-flex align-items-center">
+            <NodeIcon fill="#1D2939" />
+            <span className="card-title ms-3 mb-0 fw-600">{data?.miner_id}</span>
           </div>
-          <table className="table mb-0">
-            <tbody>
-              <tr>
-                <th className="ps-3 ps-lg-4">新增容量</th>
-                <td>
-                  <span className="text-decimal me-1">{size?.[0]}</span>
-                  <span className="text-neutral small fw-bold">{size?.[1]}</span>
-                </td>
-                <th>扇区时间</th>
-                <td className="pe-3 pe-lg-4">
-                  <span className="text-decimal me-1">{data?.sector_period}</span>
+          <a className="ms-auto" href={`${SCAN_URL}/address/${data?.miner_id}`} target="_blank" rel="noreferrer">
+            链上查看
+          </a>
+        </div>
+        <div className="row row-cols-2 gx-0">
+          <div className="col table-row">
+            {isWorking ? (
+              <div className="row g-0 px-2">
+                <div className="col-4 col-lg-5 col-xl-4 table-cell th">新增算力</div>
+                <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
+                  <div className="min-cell mx-auto text-end">
+                    <span className="text-decimal me-1">{formatPower(sealsPower)?.[0]}</span>
+                    <span className="text-neutral small fw-bold">{formatPower(sealsPower)?.[1]}</span>
+                  </div>
+                </div>
+              </div>
+            ) : isSuccess ? (
+              <div className="row g-0 px-2">
+                <div className="col-4 col-lg-5 col-xl-4 table-cell th">建设目标</div>
+                <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
+                  <div className="min-cell mx-auto text-end">
+                    <span className="text-decimal me-1">{formatPower(actualPower)?.[0]}</span>
+                    <span className="text-neutral small fw-bold">{formatPower(actualPower)?.[1]}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="row g-0 px-2">
+                <div className="col-4 col-lg-5 col-xl-4 table-cell th">计划目标</div>
+                <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
+                  <div className="min-cell mx-auto text-end">
+                    <span className="text-decimal me-1">{formatPower(targetPower)?.[0]}</span>
+                    <span className="text-neutral small fw-bold">{formatPower(targetPower)?.[1]}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="col table-row">
+            <div className="row g-0 px-2">
+              <div className="col-4 col-lg-5 col-xl-4 table-cell th">封装时间</div>
+              <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
+                <div className="min-cell mx-auto text-end">
+                  <span className="text-decimal me-1">&lt; {data?.seal_days}</span>
                   <span className="text-neutral small fw-bold">天</span>
-                </td>
-              </tr>
-              <tr>
-                <td className="ps-3 ps-lg-4">扇区大小</td>
-                <td>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col table-row">
+            <div className="row g-0 px-2">
+              <div className="col-4 col-lg-5 col-xl-4 table-cell th">扇区大小</div>
+              <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
+                <div className="min-cell mx-auto text-end">
                   <span className="text-decimal me-1">{byte2gb(data?.sector_size)}</span>
                   <span className="text-neutral small fw-bold">GB</span>
-                </td>
-                <th>封装时间</th>
-                <td className="pe-3 pe-lg-4">
-                  <span className="text-decimal me-1">{data?.seal_days}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col table-row">
+            <div className="row g-0 px-2">
+              <div className="col-4 col-lg-5 col-xl-4 table-cell th">扇区时间</div>
+              <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
+                <div className="min-cell mx-auto text-end">
+                  <span className="text-decimal me-1">{data?.sector_period}</span>
                   <span className="text-neutral small fw-bold">天</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

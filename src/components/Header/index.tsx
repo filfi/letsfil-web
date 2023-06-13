@@ -1,46 +1,63 @@
 import classNames from 'classnames';
 import { Tooltip } from 'bootstrap';
-import { useMemo, useRef, useState } from 'react';
-import { useAsyncEffect, useBoolean, useMount, useScroll, useUpdateEffect } from 'ahooks';
-import { FormattedMessage, history, Link, NavLink, useLocation, useModel } from '@umijs/max';
+import { useMemo, useRef } from 'react';
+import { useAccount as useWagmi, useBalance } from 'wagmi';
+import { FormattedMessage, history, Link, useLocation } from '@umijs/max';
+import { useBoolean, useMount, useResponsive, useScroll, useUpdateEffect } from 'ahooks';
 
 import './styles.less';
 import SpinBtn from '../SpinBtn';
-import useAccounts from '@/hooks/useAccounts';
+import useAccount from '@/hooks/useAccount';
 import { formatAmount } from '@/utils/format';
+import useProcessing from '@/hooks/useProcessing';
+import { ReactComponent as Logo } from '@/assets/logo.svg';
 import { ReactComponent as Brand } from '@/assets/brand.svg';
 import { ReactComponent as IconUser } from '@/assets/icons/user-02.svg';
 import { ReactComponent as IconWallet } from '@/assets/icons/wallet-03.svg';
+import { ReactComponent as IconDiscord } from '@/assets/socials/discord.svg';
+import { ReactComponent as IconTwitter } from '@/assets/socials/twitter.svg';
+import { ReactComponent as IconTelegram } from '@/assets/socials/telegram.svg';
 
 const headerHeight = 80;
+
+const socials = [
+  {
+    icon: IconDiscord,
+    title: 'Discord',
+    desc: 'Ask us question',
+    url: 'https://discord.gg/tht348jhuy',
+  },
+  {
+    icon: IconTwitter,
+    title: 'Twitter',
+    desc: 'Follow us on @FilFi',
+    url: 'https://twitter.com/filfi_io',
+  },
+  {
+    icon: IconTelegram,
+    title: 'Telegram',
+    desc: 'Join disscution',
+    url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+  },
+];
 
 const Header: React.FC = () => {
   // refs
   const header = useRef<HTMLDivElement>(null);
 
-  // models
-  const { initialState } = useModel('@@initialState');
-
   // states
-  const [balance, setBalance] = useState<any>();
   const [isHover, { setTrue, setFalse }] = useBoolean(false);
 
   // hooks
   const position = useScroll();
   const location = useLocation();
-  const { account, getBalance, handleConnect, handleDisconnect } = useAccounts();
+  const responsive = useResponsive();
+  const [processing] = useProcessing();
+  const { connect, disconnect } = useAccount();
+  const { address, isConnecting } = useWagmi();
+  const { data: balance } = useBalance({ address, watch: true, staleTime: 180_000 });
 
   const percent = useMemo(() => Math.min(position?.top ?? 0, headerHeight) / headerHeight, [position?.top]);
-
-  const fetchBalance = async () => {
-    if (!account) return;
-
-    const balance = await getBalance(account);
-
-    setBalance(balance);
-  };
-
-  useAsyncEffect(fetchBalance, [account]);
 
   useUpdateEffect(setFalse, [location]);
 
@@ -48,12 +65,18 @@ const Header: React.FC = () => {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
   });
 
-  const disconnect = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  const handleConnect = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    e.preventDefault();
+
+    connect();
+  };
+
+  const handleDisconnect = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     e.preventDefault();
 
     setFalse();
 
-    handleDisconnect();
+    disconnect();
 
     history.replace('/');
   };
@@ -63,13 +86,13 @@ const Header: React.FC = () => {
       <nav className="navbar navbar-expand-lg">
         <div className="container position-relative">
           <Link className="navbar-brand" to="/">
-            <Brand />
+            {responsive.md ? <Brand /> : <Logo />}
           </Link>
 
           <div className="btn-group assets-bar" role="group" aria-label="Assets Bar">
-            {initialState?.connected ? (
+            {!!address ? (
               <>
-                {initialState?.processing ? (
+                {processing ? (
                   <SpinBtn className="btn btn-outline-light" loading>
                     <FormattedMessage id="notify.transaction.processing" />
                   </SpinBtn>
@@ -79,7 +102,9 @@ const Header: React.FC = () => {
                       <IconWallet />
                     </span>
 
-                    <span className="ms-1">{formatAmount(balance)} FIL</span>
+                    <span className="ms-1">
+                      {formatAmount(balance?.formatted, 2)} {balance?.symbol}
+                    </span>
 
                     {/* <span className="vr mx-2 d-none d-md-inline"></span>
 
@@ -94,7 +119,7 @@ const Header: React.FC = () => {
                   </Link>
 
                   <ul
-                    className={classNames('dropdown-menu dropdown-menu-end border-0 shadow rounded-4', { show: isHover })}
+                    className={classNames('dropdown-menu dropdown-menu-end border-0 py-3 shadow rounded-3', { show: isHover })}
                     data-bs-popper={isHover ? 'static' : undefined}
                   >
                     <li>
@@ -105,7 +130,7 @@ const Header: React.FC = () => {
                     </li>
                     <li className="dropdown-divider"></li>
                     <li>
-                      <a className="dropdown-item" href="#" onClick={disconnect}>
+                      <a className="dropdown-item" href="#" onClick={handleDisconnect}>
                         <span className="bi bi-box-arrow-right"></span>
                         <span className="ms-2">退出</span>
                       </a>
@@ -114,7 +139,7 @@ const Header: React.FC = () => {
                 </div>
               </>
             ) : (
-              <SpinBtn className="btn btn-outline-light btn-lg" loading={initialState?.connecting} onClick={handleConnect}>
+              <SpinBtn className="btn btn-outline-light btn-lg" loading={isConnecting} onClick={handleConnect}>
                 <FormattedMessage id="actions.button.connect" />
               </SpinBtn>
             )}
@@ -135,9 +160,9 @@ const Header: React.FC = () => {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/">
+                  <Link className="nav-link" to="/">
                     <FormattedMessage id="menu.miner" />
-                  </NavLink>
+                  </Link>
                 </li>
                 <li className="nav-item dropdown">
                   <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
@@ -176,18 +201,15 @@ const Header: React.FC = () => {
 
                   <div className="dropdown-menu border-0 shadow rounded-4">
                     <div className="d-flex flex-column gap-2">
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">FilFi DAO Guide</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Ambassador</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Governance process</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
+                      {socials.map((item, key) => (
+                        <a key={key} className="dropdown-item d-flex px-4 py-3" href={item.url} target="_blank" rel="noreferrer">
+                          <span className="flex-shrink-0 me-3">{<item.icon />}</span>
+                          <span className="flex-grow-1">
+                            <span className="d-block fw-600 mb-1">{item.title}</span>
+                            <span className="d-block text-gray">{item.desc}</span>
+                          </span>
+                        </a>
+                      ))}
                     </div>
                   </div>
                 </li>

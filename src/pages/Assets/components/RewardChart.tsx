@@ -32,7 +32,7 @@ const config: ColumnConfig = {
   tooltip: {
     formatter(data) {
       return {
-        name: '收益',
+        name: '节点激励',
         value: `${formatAmount(data.value)} FIL`,
       };
     },
@@ -75,7 +75,7 @@ const RewardChart: React.FC = () => {
   return (
     <div>
       <div className="d-flex gap-3 mb-3">
-        <h4 className="my-auto fs-18 fw-600">每日收益</h4>
+        <h4 className="my-auto fs-18 fw-600">每日节点激励</h4>
 
         <FormRadio
           className="btn-group ms-auto"
