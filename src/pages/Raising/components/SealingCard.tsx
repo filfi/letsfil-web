@@ -22,10 +22,12 @@ const SealingCard: React.FC<SealingCardProps> = ({ data }) => {
       <div className="card h-100">
         <Link className="card-header d-flex gap-3 align-items-center stretched-link" to={`/overview/${data.raising_id}`}>
           <div className="flex-shrink-0">
-            <Avatar address={data.raiser} src={data.sponsor_logo} size={{ xs: 48, xl: 56 }} />
+            <Avatar address={data.raiser} src={data.sponsor_logo} size={{ xs: 32, lg: 48 }} />
           </div>
           <div className="flex-grow-1">
-            <h4 className="card-title text-reset mb-0">{formatSponsor(data.sponsor_company)}发起的节点计划</h4>
+            <h4 className="card-title text-reset mb-0 text-break">
+              {formatSponsor(data.sponsor_company)}发起的节点计划@{data.miner_id}
+            </h4>
           </div>
         </Link>
         <div className="card-body py-2">

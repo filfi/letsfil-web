@@ -96,7 +96,7 @@ export default function Raising() {
                   <h3 className="mb-1 fs-18 fw-600">正在运行</h3>
                   <p className="text-gray-dark">FilFi智能合约持续分配节点激励。</p>
                 </div>
-                <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4">
+                <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4">
                   {workes.map((item) => (
                     <div key={item.raising_id} className={classNames('col', styles.item)}>
                       <WorkingCard data={item} />
