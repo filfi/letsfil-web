@@ -95,13 +95,13 @@ const AssetItem: React.FC<{ data: API.Pack }> = ({ data }) => {
       if (type === 2) {
         return (
           <>
-            <AssetCard key={`${data.raising_id}-2`} loading={isLoading} pack={data} plan={plan} type={2} />
-            <AssetCard key={`${data.raising_id}-3`} loading={isLoading} pack={data} plan={plan} type={3} />
+            <AssetCard key={`${data.miner_id}-${data.raising_id}-2`} loading={isLoading} pack={data} plan={plan} type={2} />
+            <AssetCard key={`${data.miner_id}-${data.raising_id}-3`} loading={isLoading} pack={data} plan={plan} type={3} />
           </>
         );
       }
 
-      return <AssetCard key={`${data.raising_id}-${type}`} loading={isLoading} pack={data} plan={plan} type={type} />;
+      return <AssetCard key={`${data.miner_id}-${data.raising_id}-${type}`} loading={isLoading} pack={data} plan={plan} type={type} />;
     }
 
     return null;

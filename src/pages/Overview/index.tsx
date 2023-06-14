@@ -51,11 +51,10 @@ export default function Overview() {
   const responsive = useResponsive();
   const { data, error, isLoading, refetch } = useRaiseInfo(param.id);
 
+  const actions = useRaiseActions(data);
   const { isInvestor } = useDepositInvestor(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
   const { isPending, isWaiting, isWorking, isRaising, isStarted, isSuccess } = useRaiseState(data);
-
-  const actions = useRaiseActions(data);
 
   const title = useMemo(() => (data ? `${formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
   const showAsset = useMemo(() => isWorking && (isInvestor || isRaiser || isServicer), [isInvestor, isRaiser, isServicer, isWorking]);

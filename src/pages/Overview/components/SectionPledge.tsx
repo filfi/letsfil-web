@@ -83,7 +83,7 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   <span className="reward-dot reward-dot-circle"></span>
                   <p className="reward-label">质押总额(优先质押+劣后质押)</p>
                   <p className="reward-text">
-                    <span className="text-decimal">{formatAmount(totalAmount)}</span>
+                    <span className="text-decimal">{formatAmount(totalAmount, 2, 2)}</span>
                     <span className="ms-2 text-neutral">FIL</span>
                   </p>
                 </div>

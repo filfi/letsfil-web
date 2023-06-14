@@ -124,22 +124,6 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </p>
         </div>
       </div>
-
-      {/* <Modal.Alert id="raiser-deposit" title="主办人保证金">
-        <div className="card border-0">
-          <div className="card-body">
-            <p className="mb-0">保障集合质押期和封装期。质押目标未达成或封装延期，此保证金支付罚金。</p>
-          </div>
-        </div>
-      </Modal.Alert>
-
-      <Modal.Alert id="sp-deposit" title="运维保证金">
-        <div className="card border-0">
-          <div className="card-body">
-            <p className="mb-0">与建设者等比投入，维持占比{data?.ops_security_fund_rate}%。做为劣后质押封装到扇区，当发生网络罚金时，优先扣除该保证金。</p>
-          </div>
-        </div>
-      </Modal.Alert> */}
     </>
   );
 };
@@ -184,47 +168,50 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       );
     }
 
-    if (isSuccess && opsOver) {
-      return (
-        <div className="bg-light my-2 px-3 py-2 rounded-3">
-          <p className="d-flex gap-3 my-2">
-            <span className="text-gray-dark">
-              <span>超配部分</span>
-              <span className="ms-2 fw-bold">{F.formatAmount(opsOver)}</span>
-              <span className="ms-1">FIL</span>
-            </span>
-            <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>
-          </p>
-        </div>
-      );
+    if (isSuccess) {
+      const hasFines = fines > 0;
+      const hasOver = opsOver > 0;
+      const hasRemain = isWorking && opsRemain > 0;
+
+      if (hasOver || hasFines || hasRemain) {
+        return (
+          <div className="bg-light my-2 px-3 py-2 rounded-3">
+            {hasOver && (
+              <p className="d-flex gap-3 my-2">
+                <span className="text-gray-dark">
+                  <span>超配部分</span>
+                  <span className="ms-2 fw-bold">{F.formatAmount(opsOver)}</span>
+                  <span className="ms-1">FIL</span>
+                </span>
+                <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>
+              </p>
+            )}
+            {hasRemain && (
+              <p className="d-flex gap-3 my-2">
+                <span className="text-gray-dark">
+                  <span>封装剩余部分</span>
+                  <span className="ms-2 fw-bold">{F.formatAmount(opsRemain, 2)}</span>
+                  <span className="ms-1">FIL</span>
+                </span>
+                {opsRemain > 0 && <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>}
+              </p>
+            )}
+            {hasFines && (
+              <p className="d-flex gap-3 my-2">
+                <span className="text-gray-dark">
+                  <span>累计罚金</span>
+                  <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fines, 2, 2)}</span>
+                  <span className="ms-1">FIL</span>
+                </span>
+                {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
+              </p>
+            )}
+          </div>
+        );
+      }
     }
 
-    if (isWorking && (opsRemain || fines)) {
-      return (
-        <div className="bg-light my-2 px-3 py-2 rounded-3">
-          {opsRemain > 0 && (
-            <p className="d-flex gap-3 my-2">
-              <span className="text-gray-dark">
-                <span>封装剩余部分</span>
-                <span className="ms-2 fw-bold">{F.formatAmount(opsRemain, 2)}</span>
-                <span className="ms-1">FIL</span>
-              </span>
-              {opsRemain > 0 && <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>}
-            </p>
-          )}
-          {fines > 0 && (
-            <p className="d-flex gap-3 my-2">
-              <span className="text-gray-dark">
-                <span>累计罚金</span>
-                <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fines, 2, 2)}</span>
-                <span className="ms-1">FIL</span>
-              </span>
-              {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
-            </p>
-          )}
-        </div>
-      );
-    }
+    return null;
   };
 
   return (

@@ -28,15 +28,15 @@ import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 type Values = ReturnType<typeof H.calcEachEarn>;
 
 const defaultTreeData = {
-  label: '总激励/算力',
+  label: '封装算力',
   rate: 100,
-  desc: '全部产出',
+  desc: 'Filecoin激励',
   children: [
     {
       label: '建设者分成',
       active: true,
       rate: 0,
-      desc: '建设者的权益',
+      desc: '质押方的权益',
       // children: [
       //   {
       //     label: '优先建设者分成',

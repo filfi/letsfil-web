@@ -33,16 +33,18 @@ import { ReactComponent as IconFil } from '@/assets/icons/filecoin.svg';
 export default function Assets() {
   const param = useParams();
 
-  const { data: plan, error, isLoading, refetch } = useRaiseInfo(param.id);
-  const { data: pack } = usePackInfo(plan);
-  const provider = useSProvider(plan?.service_id);
+  const { data: pack, error: packErr, isLoading: packLoading, refetch: packRefetch } = usePackInfo(param.id);
+  const { data: plan, error: planErr, isLoading: planLoading, refetch: planRefetch } = useRaiseInfo(param.id);
 
+  const provider = useSProvider(plan?.service_id);
   const { isInvestor } = useDepositInvestor(plan);
   const { remainsDays } = useRaiseSeals(plan, pack);
   const { isRaiser, isServicer } = useRaiseRole(plan);
   const { isClosed, isFailed, isStarted } = useRaiseState(plan);
   const { investorPower, raiserPower, opsPower, servicerPower, investorPledge, raiserPledge, servicerPledge, opsPledge } = useAssetPack(plan, pack);
 
+  const hasErr = useMemo(() => !!(packErr || planErr), [planErr, packErr]);
+  const isLoading = useMemo(() => planLoading || packLoading, [planLoading, packLoading]);
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer, isServicer], [isInvestor, isRaiser, isServicer]);
   const raiser = useRewardRaiser(plan); // 主办人的节点激励
   const investor = useRewardInvestor(plan); // 建设者的节点激励
@@ -83,6 +85,10 @@ export default function Assets() {
     return [];
   }, [roles]);
 
+  const refetch = async () => {
+    return await Promise.all([packRefetch(), planRefetch()]);
+  };
+
   useUpdateEffect(() => {
     setRole(roles.findIndex(Boolean));
   }, [roles]);
@@ -112,7 +118,7 @@ export default function Assets() {
   return (
     <>
       <div className="container">
-        <LoadingView data={plan} error={!!error} loading={isLoading} retry={refetch}>
+        <LoadingView data={plan} error={hasErr} loading={isLoading} retry={refetch}>
           <PageHeader
             className="mb-3 pb-0"
             title={
