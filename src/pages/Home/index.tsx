@@ -66,7 +66,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconThumbs className="card-icon" />
                   <h4 className="card-title">智能合约接管一切</h4>
-                  <p>集合质押、封装进度、分配激励，智能合约接管一切，坚定履约，不可变更，没有人为因素。</p>
+                  <p>质押、封装进度、分配激励，智能合约接管一切，坚定履约，不可变更，没有人为因素。</p>
                 </div>
               </div>
             </div>
@@ -84,7 +84,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconClock className="card-icon" />
                   <h4 className="card-title">尊重时间价值</h4>
-                  <p>如果集合质押不成功，质押全额返还，并补偿滞留时间的价值。</p>
+                  <p>如果质押不成功，质押全额返还，并补偿滞留时间的价值。</p>
                 </div>
               </div>
             </div>

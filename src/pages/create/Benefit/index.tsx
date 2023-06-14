@@ -115,7 +115,7 @@ export default function CreateBenefit() {
 
   useEffect(() => {
     const target = model?.targetAmount ?? 0;
-    // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
+    // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已质押金额)
     const amount = accDiv(accMul(target, accDiv(pieVal, 100)), accSub(1, accDiv(pieVal, 100)));
 
     form.setFieldValue('opsSecurityFund', Number.isNaN(amount) ? 0 : toFixed(amount, 2, 2));

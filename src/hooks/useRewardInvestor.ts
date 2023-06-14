@@ -6,7 +6,6 @@ import useAccount from './useAccount';
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import useDepositInvestor from './useDepositInvestor';
 import { isPending, isRaiseOperating } from '@/helpers/raise';
 
 /**
@@ -16,7 +15,6 @@ import { isPending, isRaiseOperating } from '@/helpers/raise';
  */
 export default function useRewardInvestor(data?: API.Plan | null) {
   const { address, withConnect } = useAccount();
-  const { isInvestor } = useDepositInvestor(data);
   const contract = useContract(data?.raise_address);
 
   const getInvestInfo = async () => {
@@ -25,12 +23,12 @@ export default function useRewardInvestor(data?: API.Plan | null) {
     }
   };
   const getInvestorAvailableReward = async () => {
-    if (address && data && isRaiseOperating(data) && isInvestor) {
+    if (address && data && isRaiseOperating(data)) {
       return await contract.getInvestorAvailableReward(data.raising_id, address);
     }
   };
   const getInvestorPendingReward = async () => {
-    if (address && data && isRaiseOperating(data) && isInvestor) {
+    if (address && data && isRaiseOperating(data)) {
       return await contract.getInvestorPendingReward(data.raising_id, address);
     }
   };

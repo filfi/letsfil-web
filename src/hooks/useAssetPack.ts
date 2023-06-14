@@ -28,7 +28,7 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   // 建设者投资占比
   const investorRatio = useMemo(() => (total > 0 ? Math.min(accDiv(record, total), 1) : 0), [record, total]);
   // 封装进度
-  const progress = useMemo(() => (total > 0 ? Math.min(accDiv(pledge, total), 1) : 0), [pledge, total]);
+  const progress = useMemo(() => (actual > 0 ? Math.min(accDiv(pledge, actual), 1) : 0), [actual, pledge]);
 
   // 建设者封装算力 = 总算力 * 投资占比
   const investorSealsPower = useMemo(() => (isInvestor ? accMul(power, investorRatio) : 0), [power, investorRatio, isInvestor]);

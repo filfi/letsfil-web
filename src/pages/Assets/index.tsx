@@ -1,7 +1,7 @@
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
+import { useDebounceEffect } from 'ahooks';
 import { Link, NavLink, useParams } from '@umijs/max';
-import { useDebounceEffect, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
@@ -36,6 +36,12 @@ export default function Assets() {
   const { data: pack, error: packErr, isLoading: packLoading, refetch: packRefetch } = usePackInfo(param.id);
   const { data: plan, error: planErr, isLoading: planLoading, refetch: planRefetch } = useRaiseInfo(param.id);
 
+  const [role, setRole] = useState(-1);
+  const ops = useRewardOps(plan); // 运维保证金的节点激励
+  const raiser = useRewardRaiser(plan); // 主办人的节点激励
+  const investor = useRewardInvestor(plan); // 建设者的节点激励
+  const servicer = useRewardServicer(plan); // 服务商的节点激励
+
   const provider = useSProvider(plan?.service_id);
   const { isInvestor } = useDepositInvestor(plan);
   const { remainsDays } = useRaiseSeals(plan, pack);
@@ -46,11 +52,6 @@ export default function Assets() {
   const hasErr = useMemo(() => !!(packErr || planErr), [planErr, packErr]);
   const isLoading = useMemo(() => planLoading || packLoading, [planLoading, packLoading]);
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer, isServicer], [isInvestor, isRaiser, isServicer]);
-  const raiser = useRewardRaiser(plan); // 主办人的节点激励
-  const investor = useRewardInvestor(plan); // 建设者的节点激励
-  const servicer = useRewardServicer(plan); // 服务商的节点激励
-  const ops = useRewardOps(plan); // 运维保证金的节点激励
-  const [role, setRole] = useState(roles.findIndex(Boolean));
 
   const power = useMemo(() => [investorPower, raiserPower, servicerPower, opsPower][role] ?? 0, [role, investorPower, raiserPower, servicerPower, opsPower]);
   const pledge = useMemo(
@@ -62,36 +63,38 @@ export default function Assets() {
     [role, investor.reward, raiser.reward, servicer.reward, ops.reward],
   );
   const record = useMemo(
-    () => [investor.record, raiser.record, servicer.record, ops.record][role],
+    () => [investor.record, raiser.record, servicer.record, ops.record][role] ?? 0,
     [role, investor.record, raiser.record, servicer.record, ops.record],
   );
   const pending = useMemo(
-    () => [investor.pending, raiser.pending, servicer.pending, ops.pending][role],
+    () => [investor.pending, raiser.pending, servicer.pending, ops.pending][role] ?? 0,
     [role, investor.pending, raiser.pending, servicer.pending, ops.pending],
   );
 
   const options = useMemo(() => {
-    if (roles.filter(Boolean).length > 1) {
-      const items = [
-        { icon: <IconUser />, label: '我是建设者', value: 0 },
-        { icon: <IconStar />, label: '我是主办人', value: 1 },
-        { icon: <IconTool />, label: '我是技术服务商', value: 2 },
-        { icon: <IconTool />, label: '运维保证金', value: 3 },
-      ];
+    const items = [
+      { icon: <IconUser />, label: '我是建设者', value: 0 },
+      { icon: <IconStar />, label: '我是主办人', value: 1 },
+      { icon: <IconTool />, label: '我是技术服务商', value: 2 },
+      { icon: <IconTool />, label: '运维保证金', value: 3 },
+    ];
 
-      return items.filter((n, i) => roles[i]);
-    }
-
-    return [];
+    return items.filter((n, i) => roles[i]);
   }, [roles]);
 
   const refetch = async () => {
     return await Promise.all([packRefetch(), planRefetch()]);
   };
 
-  useUpdateEffect(() => {
-    setRole(roles.findIndex(Boolean));
-  }, [roles]);
+  useDebounceEffect(
+    () => {
+      const role = options[0]?.value ?? -1;
+
+      setRole(role);
+    },
+    [options],
+    { wait: 200 },
+  );
 
   useDebounceEffect(
     () => {
@@ -102,14 +105,14 @@ export default function Assets() {
   );
 
   const [withdrawing, handleWithdraw] = useLoadingify(async () => {
-    if (role === 1) {
+    if (role === 0) {
+      await investor.withdrawAction();
+    } else if (role === 1) {
       await raiser.withdrawAction();
     } else if (role === 2) {
       await servicer.withdrawAction();
-    } else if (role === 3) {
-      // TODO: ops withdrawal reward
     } else {
-      await investor.withdrawAction();
+      // ops withdraw;
     }
 
     refetch();
@@ -178,7 +181,7 @@ export default function Assets() {
                       {isClosed ? (
                         <span className="badge">已关闭</span>
                       ) : isFailed ? (
-                        <span className="badge badge-danger">集合质押失败</span>
+                        <span className="badge badge-danger">质押失败</span>
                       ) : isStarted ? (
                         <span>{F.formatUnixDate(plan?.begin_time)}启动</span>
                       ) : null}
@@ -262,7 +265,7 @@ export default function Assets() {
               </div>
             </div>
             <div className="col-12 col-lg-8 d-flex flex-column gap-3">
-              {(isRaiser || isServicer) && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
+              {options.length > 1 && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
 
               <div className="card border-0 bg-warning-tertiary">
                 <div className="card-body d-flex flex-column flex-md-row gap-3">

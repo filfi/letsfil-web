@@ -14,7 +14,7 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { actual, minRate, target, progress } = useRaiseBase(data);
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
-  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
+  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已质押金额)
   const opsAmount = useMemo(() => U.accDiv(U.accMul(actual, U.accDiv(opsRatio, 100)), U.accSub(1, U.accDiv(opsRatio, 100))), [actual, opsRatio]);
 
   return (

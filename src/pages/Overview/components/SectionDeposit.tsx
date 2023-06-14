@@ -51,7 +51,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="bg-light my-2 px-3 py-2 rounded-3">
           <p className="d-flex gap-3 my-2">
             <span className="text-gray-dark">
-              <span>集合质押手续费</span>
+              <span>质押手续费</span>
               <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fee, 2, 2)}</span>
               <span className="ms-1">FIL</span>
             </span>
@@ -116,7 +116,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             {isRaising ? (
               <span>当质押目标未达成，或主办人主动终止，此保证金赔偿建设者存入FIL的利息损失。</span>
             ) : (
-              <span>保障集合质押期和封装期。质押目标未达成或封装延期，此保证金支付罚金。</span>
+              <span>保障质押期和封装期。质押目标未达成或封装延期，此保证金支付罚金。</span>
             )}
             {/* <a className="text-underline" href="#raiser-deposit" data-bs-toggle="modal">
               更多信息
@@ -319,7 +319,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </div>
           </div>
 
-          <p className="mb-4 fs-16 fw-500">预存金额（基于质押目标计算配比金额，集合质押成功后返回超配部分）</p>
+          <p className="mb-4 fs-16 fw-500">预存金额（基于质押目标计算配比金额，质押成功后返回超配部分）</p>
 
           <p className="mb-0">
             <span className="fs-24 fw-600">{F.formatAmount(total)}</span>

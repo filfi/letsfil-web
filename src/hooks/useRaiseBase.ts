@@ -57,10 +57,10 @@ export default function useRaiseBase(data?: API.Plan | null) {
   const actual = useMemo(() => pledgeRes.data ?? toNumber(data?.actual_amount), [pledgeRes.data, data?.actual_amount]); // 质押总额
 
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
-  const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小集合质押比例
+  const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小质押比例
   const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 质押目标
 
-  const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 集合质押进度
+  const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 质押进度
   const isLoading = useMemo(() => pledgeRes.isLoading || sealedRes.isLoading, [pledgeRes.isLoading, sealedRes.isLoading]);
 
   const refetch = async () => {

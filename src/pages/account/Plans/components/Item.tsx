@@ -155,7 +155,7 @@ const Item: React.FC<{
     if (state.isRaising) {
       return (
         <>
-          <span className="badge badge-success">集合质押中</span>
+          <span className="badge badge-success">质押中</span>
           <span className="ms-2 fs-sm text-gray">
             <Countdown time={data.closing_time} />
           </span>
@@ -173,7 +173,7 @@ const Item: React.FC<{
     if (state.isFailed) {
       return (
         <>
-          <span className="badge badge-danger">集合质押失败</span>
+          <span className="badge badge-danger">质押失败</span>
           {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
         </>
       );
@@ -263,14 +263,14 @@ const Item: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isSuccess ? '实际集合质押' : '质押目标'}</span>
+            <span className="text-gray-dark">{state.isSuccess ? '实际质押' : '质押目标'}</span>
             <span className="fw-500">
               <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (
                 <>
                   <span> · </span>
                   <span>
-                    {state.isSuccess ? '达到目标的' : '已集合质押'}
+                    {state.isSuccess ? '达到目标的' : '已质押'}
                     {F.formatProgress(progress)}
                   </span>
                 </>

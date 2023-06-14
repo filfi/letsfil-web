@@ -63,7 +63,7 @@ export default function Raising() {
             {isArrs(raises) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">正在集合质押</h3>
+                  <h3 className="mb-1 fs-18 fw-600">正在质押</h3>
                 </div>
                 <div className="row row-cols-1 g-3 g-lg-4 mb-4 mb-lg-5">
                   {raises.map((item) => (
@@ -78,7 +78,7 @@ export default function Raising() {
             {isArrs(seals) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">正在封装扇区</h3>
+                  <h3 className="mb-1 fs-18 fw-600">正在封装</h3>
                 </div>
                 <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 mb-4 mb-lg-5">
                   {seals.map((item) => (
@@ -93,8 +93,8 @@ export default function Raising() {
             {isArrs(workes) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">存储运营中</h3>
-                  <p className="text-gray-dark">集合质押的FIL完全用于建设联合节点，智能合约按照计划约定持续分配节点激励。</p>
+                  <h3 className="mb-1 fs-18 fw-600">正在运行</h3>
+                  <p className="text-gray-dark">FilFi智能合约持续分配节点激励。</p>
                 </div>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4">
                   {workes.map((item) => (

@@ -34,7 +34,7 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { opsRatio } = useRaiseRate(data);
   const { isSuccess } = useRaiseState(data);
 
-  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已集合质押金额)
+  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已质押金额)
   const ops = useMemo(() => accDiv(accMul(actual, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [actual, opsRatio]);
   const totalAmount = useMemo(() => accAdd(actual, ops), [actual, ops]);
   const investRate = useMemo(() => Math.max(accSub(100, opsRatio), 0), [opsRatio]);

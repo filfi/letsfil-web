@@ -137,7 +137,7 @@ export default function CreateProgram() {
                 grid
                 items={[
                   { label: '公开计划', desc: '对所有人公开', value: 1 },
-                  { label: '定向计划', desc: '定向集合质押，即将上线。', disabled: true, value: 2 },
+                  { label: '定向计划', desc: '定向质押，即将上线。', disabled: true, value: 2 },
                 ]}
               />
             </Form.Item>
@@ -145,7 +145,7 @@ export default function CreateProgram() {
 
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">质押目标</h4>
-            <p className="text-gray">填写FIL的集合质押数量，过低目标不利于硬件设备的充分利用。存储算力是指QAP(Quality-Adjusted Power)</p>
+            <p className="text-gray">填写FIL的质押数量，过低目标不利于硬件设备的充分利用。存储算力是指QAP(Quality-Adjusted Power)</p>
 
             <Form.Item className="mb-2" name="amountType">
               <FormRadio
@@ -195,7 +195,7 @@ export default function CreateProgram() {
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">集合质押时间</h4>
+            <h4 className="ffi-label">质押时间</h4>
             <p className="text-gray">节点计划保持开放的持续时间。启动时间由主办人决定。</p>
 
             <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
@@ -252,14 +252,14 @@ export default function CreateProgram() {
                   <span className="fs-4 fw-600 mb-0">{formatAmount(deposit)}</span>
                   <span className="ms-1 text-gray">FIL</span>
                 </p>
-                <p className="mb-0 text-gray">计算包括集合质押期和封装期的可能罚金，以及FilFi协议手续费（参见下一项）</p>
+                <p className="mb-0 text-gray">计算包括质押期和封装期的可能罚金，以及FilFi协议手续费（参见下一项）</p>
               </div>
             </div>
           </div>
 
           <div className="ffi-item">
             <h4 className="ffi-label">协议手续费</h4>
-            <p className="text-gray">创建新的节点计划会产生“FilFi协议手续费”，费用为集合质押金额*0.3%，集合质押不成功不产生手续费。</p>
+            <p className="text-gray">创建新的节点计划会产生“FilFi协议手续费”，费用为质押金额*0.3%，质押不成功不产生手续费。</p>
 
             <Form.Item name="ffiProtocolFeePayMeth">
               <FormRadio
@@ -270,7 +270,7 @@ export default function CreateProgram() {
                     value: 1,
                     icon: <IconFIL />,
                     label: '使用 FIL 支付',
-                    desc: '集合质押成功后从“主办人保证金”中自动扣减',
+                    desc: '质押成功后从“主办人保证金”中自动扣减',
                   },
                   {
                     value: 2,
