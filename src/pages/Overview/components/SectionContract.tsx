@@ -1,5 +1,6 @@
 import { Input } from 'antd';
 import { useMemo } from 'react';
+import { getAddress } from 'viem';
 import classNames from 'classnames';
 
 import { SCAN_URL } from '@/constants';
@@ -17,6 +18,8 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isRaiser, isSigned, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed, isPending } = useRaiseState(data);
 
+  const address = useMemo(() => (data?.raise_address ? getAddress(data.raise_address) : ''), [data?.raise_address]);
+  const f4Address = useMemo(() => (data?.raise_address ? toF4Address(data.raise_address) : ''), [data?.raise_address]);
   const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
 
   const handleSign = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -87,18 +90,13 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       <div>
         <label className="form-label">此节点计划的智能合约地址</label>
         <div className="input-group">
-          <Input className="form-control" readOnly value={data.raise_address} />
+          <Input className="form-control" readOnly value={address} />
 
-          <ShareBtn className="btn btn-outline-light" text={data.raise_address}>
+          <ShareBtn className="btn btn-outline-light" text={address}>
             <IconCopy />
           </ShareBtn>
 
-          <a
-            className="btn btn-outline-light"
-            target="_blank"
-            rel="noreferrer"
-            href={data.raise_address ? `${SCAN_URL}/address/${data.raise_address}` : undefined}
-          >
+          <a className="btn btn-outline-light" target="_blank" rel="noreferrer" href={address ? `${SCAN_URL}/address/${address}` : undefined}>
             <IconShare />
           </a>
         </div>
@@ -113,10 +111,8 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <div className="p-2 border rounded-1 my-4">
             <div className="d-flex align-items-start bg-dark rounded-1 p-2">
               <span className="flex-shrink-0 text-white fw-600">$</span>
-              <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">
-                lotus-miner actor set-owner --really-do-it &lt;ownerAddress&gt; {toF4Address(data.raise_address)}
-              </div>
-              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it <ownerAddress> ${toF4Address(data.raise_address)}`}>
+              <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">lotus-miner actor set-owner --really-do-it &lt;ownerAddress&gt; {f4Address}</div>
+              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it <ownerAddress> ${f4Address}`}>
                 <IconCopy />
               </ShareBtn>
             </div>
