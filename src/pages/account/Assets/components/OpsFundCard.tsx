@@ -1,3 +1,5 @@
+import { Tooltip } from 'antd';
+
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import { formatAmount, formatPower } from '@/utils/format';
@@ -14,7 +16,7 @@ export default function OpsFundCard({ pack, plan }: React.PropsWithChildren<Item
   return (
     <>
       <p className="d-flex my-3 gap-3">
-        <span className="text-gray-dark">质押</span>
+        <span className="text-gray-dark">我的质押</span>
         <span className="ms-auto">
           <span className="fs-16 fw-600">{formatAmount(opsAmount, 2, 2)}</span>
           <span className="text-gray-dark ms-1">FIL</span>
@@ -28,7 +30,13 @@ export default function OpsFundCard({ pack, plan }: React.PropsWithChildren<Item
         </span>
       </p>
       <p className="d-flex my-3 gap-3">
-        <span className="text-gray-dark">权益算力(封装算力 * {priorityRate}%)</span>
+        <span className="text-gray-dark">
+          <span className="me-1">我的算力</span>
+
+          <Tooltip title={`我的算力 = 封装算力 * ${priorityRate}%`}>
+            <span className="bi bi-question-circle"></span>
+          </Tooltip>
+        </span>
         <span className="ms-auto">
           <span className="fs-16 fw-600">{formatPower(opsPower)?.[0]}</span>
           <span className="text-gray-dark ms-1">{formatPower(opsPower)?.[1]}</span>

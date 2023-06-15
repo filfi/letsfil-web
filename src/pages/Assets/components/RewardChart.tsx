@@ -73,7 +73,7 @@ const RewardChart: React.FC = () => {
   );
 
   return (
-    <div>
+    <div className="mb-3">
       <div className="d-flex gap-3 mb-3">
         <h4 className="my-auto fs-18 fw-600">每日节点激励</h4>
 

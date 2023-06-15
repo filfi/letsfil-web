@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
 import { useDebounceEffect } from 'ahooks';
@@ -47,17 +48,14 @@ export default function Assets() {
   const { remainsDays } = useRaiseSeals(plan, pack);
   const { isRaiser, isServicer } = useRaiseRole(plan);
   const { isClosed, isFailed, isStarted } = useRaiseState(plan);
-  const { investorPower, raiserPower, opsPower, servicerPower, investorPledge, raiserPledge, servicerPledge, opsPledge } = useAssetPack(plan, pack);
+  const { investorPower, raiserPower, opsPower, servicerPower, investorAmount, opsAmount } = useAssetPack(plan, pack);
 
   const hasErr = useMemo(() => !!(packErr || planErr), [planErr, packErr]);
   const isLoading = useMemo(() => planLoading || packLoading, [planLoading, packLoading]);
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer, isServicer], [isInvestor, isRaiser, isServicer]);
 
   const power = useMemo(() => [investorPower, raiserPower, servicerPower, opsPower][role] ?? 0, [role, investorPower, raiserPower, servicerPower, opsPower]);
-  const pledge = useMemo(
-    () => [investorPledge, raiserPledge, servicerPledge, opsPledge][role] ?? 0,
-    [role, investorPledge, raiserPledge, servicerPledge, opsPledge],
-  );
+  const pledge = useMemo(() => [investorAmount, 0, 0, opsAmount][role] ?? 0, [role, investorAmount, opsAmount]);
   const reward = useMemo(
     () => [investor.reward, raiser.reward, servicer.reward, ops.record][role] ?? 0,
     [role, investor.reward, raiser.reward, servicer.reward, ops.reward],
@@ -150,10 +148,10 @@ export default function Assets() {
           </ul>
 
           <div className="row g-3 g-lg-4">
-            <div className="col-12 col-lg-4 d-flex flex-column gap-3">
+            <div className="col-12 col-lg-4">
               <RewardChart />
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body d-flex align-items-center gap-3">
                   <div className="flex-shrink-0">
                     <Avatar src={provider?.logo_url} size={40} />
@@ -169,7 +167,7 @@ export default function Assets() {
                 </div>
               </div>
 
-              <Link className="card text-reset" to={`/overview/${param.id}`}>
+              <Link className="card mb-3 text-reset" to={`/overview/${param.id}`}>
                 <div className="card-body d-flex align-items-center gap-3">
                   <div className="flex-shrink-0">
                     <IconStar />
@@ -194,7 +192,7 @@ export default function Assets() {
                 </div>
               </Link>
 
-              <div className="accordion ffi-accordion">
+              <div className="accordion ffi-accordion mb-3">
                 <div className="accordion-item">
                   <h4 className="accordion-header">
                     <button
@@ -228,7 +226,7 @@ export default function Assets() {
                 </div>
               </div>
 
-              <div className="accordion ffi-accordion">
+              <div className="accordion ffi-accordion mb-3">
                 <div className="accordion-item">
                   <h4 className="accordion-header">
                     <button
@@ -264,10 +262,10 @@ export default function Assets() {
                 </div>
               </div>
             </div>
-            <div className="col-12 col-lg-8 d-flex flex-column gap-3">
-              {options.length > 1 && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
+            <div className="col-12 col-lg-8">
+              {options.length > 1 && <FormRadio className={classNames('mb-3', styles.radio)} type="button" items={options} value={role} onChange={setRole} />}
 
-              <div className="card border-0 bg-warning-tertiary">
+              <div className="card mb-3 border-0 bg-warning-tertiary">
                 <div className="card-body d-flex flex-column flex-md-row gap-3">
                   <div className="d-flex gap-3 me-auto">
                     <IconFil width={48} height={48} />
@@ -279,12 +277,12 @@ export default function Assets() {
                   </div>
 
                   <SpinBtn className="btn btn-primary btn-lg my-auto px-5" loading={withdrawing} disabled={reward <= 0} onClick={handleWithdraw}>
-                    提取余额
+                    提取
                   </SpinBtn>
                 </div>
               </div>
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body">
                   <div className="row row-cols-1 row-cols-lg-2 g-3">
                     {/* <div className="col">
@@ -309,9 +307,9 @@ export default function Assets() {
                 </div>
               </div>
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body">
-                  <p className="mb-1 text-gray fw-500">权益算力(QAP)</p>
+                  <p className="mb-1 text-gray fw-500">我的算力</p>
                   <p className="mb-0 fw-600">
                     <span className="fs-24">{F.formatPower(power)?.[0]}</span>
                     <span className="ms-1 fs-sm fw-bold text-neutral">{F.formatPower(power)?.[1]}</span>
@@ -319,10 +317,10 @@ export default function Assets() {
                 </div>
               </div>
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body d-flex gap-3">
                   <div>
-                    <p className="mb-1 text-gray fw-500">持有质押</p>
+                    <p className="mb-1 text-gray fw-500">我的质押</p>
                     <p className="mb-0 fw-600">
                       <span className="fs-24">{F.formatAmount(pledge)}</span>
                       <span className="ms-1 fs-sm fw-bold text-neutral">FIL</span>
@@ -339,7 +337,7 @@ export default function Assets() {
                 </div>
               </div>
 
-              <div className="accordion ffi-accordion">
+              <div className="accordion ffi-accordion mb-3">
                 <div className="accordion-item">
                   <h4 className="accordion-header">
                     <button

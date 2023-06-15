@@ -26,9 +26,9 @@ export default function useRewardOps(data?: API.Plan | null) {
       return await contract.getTotalReward(data.raising_id);
     }
   };
-  const getOpsFines = async () => {
+  const getOpsRewardFines = async () => {
     if (data && isRaiseOperating(data) && isServicer) {
-      return await contract.getOpsFines(data.raising_id);
+      return await contract.getOpsRewardFines(data.raising_id);
     }
   };
 
@@ -40,8 +40,8 @@ export default function useRewardOps(data?: API.Plan | null) {
         staleTime: 60_000,
       },
       {
-        queryKey: ['opsFines', data?.raising_id],
-        queryFn: withNull(getOpsFines),
+        queryKey: ['opsRewardFines', data?.raising_id],
+        queryFn: withNull(getOpsRewardFines),
         staleTime: 60_000,
       },
     ],
