@@ -23,15 +23,15 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
           <p className="py-1 mb-0 d-flex gap-3 align-items-center">
             <span className="text-gray-dark">累计激励</span>
             <span className="ms-auto">
-              <span className="fs-24 fw-600">{formatAmount(reward)}</span>
-              <span className="ms-1 text-gray-dark fw-bold">FIL</span>
+              <span className="fw-600">{formatAmount(reward)}</span>
+              <span className="ms-1 text-gray-dark">FIL</span>
             </span>
           </p>
           <p className="py-1 mb-0 d-flex gap-3 align-items-center">
             <span className="text-gray-dark">分配给</span>
             <span className="ms-auto">
-              <span className="fs-24 fw-600">{counter?.investor_count ?? '-'}</span>
-              <span className="ms-1 text-gray-dark fw-bold">地址</span>
+              <span className="fw-600">{counter?.investor_count ?? '-'}</span>
+              <span className="ms-1 text-gray-dark">地址</span>
             </span>
           </p>
         </div>

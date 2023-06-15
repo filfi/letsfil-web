@@ -1,7 +1,8 @@
 import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError } from 'viem';
 
-import Modal from '@/components/Modal';
-import type { AlertOptions } from '@/components/Modal';
+// import Modal from '@/components/Modal';
+import Dialog from '@/components/Dialog';
+import type { AlertOptions } from '@/components/Dialog';
 
 export type Service<R = any, P extends unknown[] = any> = (...args: P) => Promise<R>;
 
@@ -40,9 +41,10 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
         msg = revertedError?.data?.errorName ?? msg;
       }
 
-      Modal.alert({
+      Dialog.alert({
         icon: 'error',
         title: '操作失败',
+        summary: e.code,
         content: msg,
         ...options,
       });

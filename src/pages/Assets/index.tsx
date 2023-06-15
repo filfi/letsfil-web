@@ -299,7 +299,7 @@ export default function Assets() {
                     </div>
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">累计已提取</p>
+                        <p className="mb-1 fw-500">已提取(累计)</p>
                         <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(record, 2, 2)} />
                       </div>
                     </div>

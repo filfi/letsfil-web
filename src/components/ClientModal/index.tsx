@@ -5,10 +5,11 @@ import styles from './styles.less';
 import FormRadio from '../FormRadio';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 
-// import IconImToken from './icons/imToken.svg';
+// import IconLedger from './icons/ledger.svg';
 import IconMetamask from './icons/metamask.svg';
 import IconFoxwallet from './icons/foxwallet.svg';
 import IconTokenpocket from './icons/tokenpocket.svg';
+// import IconWalletConnect from './icons/walletconnect.svg';
 import { ReactComponent as Logo } from '@/assets/logo.svg';
 
 export type ClientModalProps = {
@@ -31,8 +32,9 @@ function renderIcon(src: string) {
 const items = [
   { icon: renderIcon(IconMetamask), label: 'MetaMask', value: 'MetaMask' },
   { icon: renderIcon(IconTokenpocket), label: 'TokenPocket', value: 'TokenPocket' },
-  // { icon: renderIcon(IconImToken), label: 'imToken', value: 'imToken' },
   { icon: renderIcon(IconFoxwallet), label: 'FoxWallet', value: 'FoxWallet' },
+  // { icon: renderIcon(IconLedger), label: 'Ledger(Filecoin)', value: 'Ledger' },
+  // { icon: renderIcon(IconWalletConnect), label: 'WalletConnect', value: 'WalletConnect' },
 ];
 
 const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalProps> = (

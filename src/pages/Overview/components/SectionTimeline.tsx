@@ -51,15 +51,7 @@ const StepSeal: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   return (
-    <Steps.Item
-      title={
-        <>
-          <span>封装阶段截止</span>
-          {isSealing && <span className="fw-normal opacity-75">（预计 {U.diffDays(data!.end_seal_time)}）</span>}
-        </>
-      }
-      status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}
-    >
+    <Steps.Item title="封装阶段截止" status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}>
       {data?.delay_seal_time ? F.formatUnixDate(data.delay_seal_time) : data?.end_seal_time ? F.formatUnixDate(data.end_seal_time) : `+ ${data!.seal_days} 天`}
     </Steps.Item>
   );

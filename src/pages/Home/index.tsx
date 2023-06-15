@@ -102,7 +102,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconDots className="card-icon" />
                   <h4 className="card-title">去中心化治理</h4>
-                  <p>FilFi由DAO社区治理，去中心化的方式共建共享，通过投票机制决定经济模型的关键参数</p>
+                  <p>FilFi由DAO社区治理，去中心化的方式共建共享，通过投票机制决定经济模型的关键参数。</p>
                 </div>
               </div>
             </div>
