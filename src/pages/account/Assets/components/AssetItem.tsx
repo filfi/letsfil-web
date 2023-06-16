@@ -15,7 +15,7 @@ import useDepositInvestor from '@/hooks/useDepositInvestor';
 import { ReactComponent as IconHD } from '@/assets/icons/hard-drive.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/share-04.svg';
 
-const AssetCard: React.FC<{ loading?: boolean; pack: API.Pack; plan?: API.Plan | null; type: number }> = ({ loading, pack, plan, type }) => {
+const AssetCard: React.FC<{ pack: API.Pack; plan?: API.Plan | null; type: number }> = ({ pack, plan, type }) => {
   const handleWithdraw = () => {
     history.push(`/assets/${pack.raising_id}`);
   };
@@ -66,14 +66,10 @@ const AssetCard: React.FC<{ loading?: boolean; pack: API.Pack; plan?: API.Plan |
             </ShareBtn>
           </div>
         </div>
-        <div className="card-body py-1">
-          <Skeleton active loading={loading}>
-            {renderContent()}
-          </Skeleton>
-        </div>
+        <div className="card-body py-1">{renderContent()}</div>
         <div className="card-footer d-flex">
           {renderBadge()}
-          <SpinBtn className="btn btn-primary ms-auto" disabled={loading} onClick={handleWithdraw}>
+          <SpinBtn className="btn btn-primary ms-auto" onClick={handleWithdraw}>
             提取余额
           </SpinBtn>
         </div>
@@ -85,7 +81,7 @@ const AssetCard: React.FC<{ loading?: boolean; pack: API.Pack; plan?: API.Plan |
 const AssetItem: React.FC<{ data: API.Pack }> = ({ data }) => {
   const { data: plan, isLoading } = useRaiseInfo(data.raising_id);
 
-  const { isInvestor } = useDepositInvestor(plan);
+  const { isInvestor, isLoading: isILoading } = useDepositInvestor(plan);
   const { isRaiser, isServicer } = useRaiseRole(plan);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
@@ -95,17 +91,36 @@ const AssetItem: React.FC<{ data: API.Pack }> = ({ data }) => {
       if (type === 2) {
         return (
           <>
-            <AssetCard key={`${data.miner_id}-${data.raising_id}-2`} loading={isLoading} pack={data} plan={plan} type={2} />
-            <AssetCard key={`${data.miner_id}-${data.raising_id}-3`} loading={isLoading} pack={data} plan={plan} type={3} />
+            <AssetCard key={`${data.miner_id}-${data.raising_id}-2`} pack={data} plan={plan} type={2} />
+            <AssetCard key={`${data.miner_id}-${data.raising_id}-3`} pack={data} plan={plan} type={3} />
           </>
         );
       }
 
-      return <AssetCard key={`${data.miner_id}-${data.raising_id}-${type}`} loading={isLoading} pack={data} plan={plan} type={type} />;
+      return <AssetCard key={`${data.miner_id}-${data.raising_id}-${type}`} pack={data} plan={plan} type={type} />;
     }
 
     return null;
   };
+
+  if (isLoading || isILoading) {
+    return (
+      <div className="col">
+        <div className="card h-100">
+          <div className="card-header d-flex">
+            <Skeleton.Avatar active size={24} />
+            <Skeleton className="ms-2 my-auto" active title={false} paragraph={{ className: 'mb-0', rows: 1 }} />
+          </div>
+          <div className="card-body">
+            <Skeleton active paragraph={{ rows: 3 }} />
+          </div>
+          <div className="card-footer d-flex">
+            <Skeleton.Button className="ms-auto" active />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return <>{roles.map(renderCard)}</>;
 };

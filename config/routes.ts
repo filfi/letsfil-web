@@ -44,21 +44,21 @@ const routes: IBestAFSRoute[] = [
     component: './account/layout',
     routes: [
       {
-        name: 'plans',
-        path: 'plans',
-        component: './account/Plans',
-      },
-      {
         name: 'assets',
         path: 'assets',
         component: './account/Assets',
+      },
+      {
+        name: 'plans',
+        path: 'plans',
+        component: './account/Plans',
       },
       {
         name: 'stats',
         path: 'stats',
         component: './account/Stats',
       },
-      { path: '/account', redirect: '/account/plans' },
+      { path: '/account', redirect: '/account/assets' },
     ],
   },
   {
