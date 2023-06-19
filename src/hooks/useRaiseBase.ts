@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
-import { accDiv } from '@/utils/utils';
+import { accDiv, accMul } from '@/utils/utils';
 import useContract from './useContract';
 import { toNumber } from '@/utils/format';
 import { withNull } from '@/utils/hackify';
@@ -59,6 +59,7 @@ export default function useRaiseBase(data?: API.Plan | null) {
   const period = useMemo(() => data?.sector_period ?? 0, [data?.sector_period]); // 扇区期限
   const minRate = useMemo(() => accDiv(data?.min_raise_rate ?? 0, 100), [data?.min_raise_rate]); // 最小质押比例
   const target = useMemo(() => toNumber(data?.target_amount), [data?.target_amount]); // 质押目标
+  const minTarget = useMemo(() => accMul(target, minRate), [minRate, target]); // 最低目标
 
   const progress = useMemo(() => (target > 0 ? Math.min(accDiv(actual, target), 1) : 0), [actual, target]); // 质押进度
   const isLoading = useMemo(() => pledgeRes.isLoading || sealedRes.isLoading, [pledgeRes.isLoading, sealedRes.isLoading]);
@@ -75,6 +76,7 @@ export default function useRaiseBase(data?: API.Plan | null) {
     minRate,
     progress,
     hasOwner,
+    minTarget,
     sealsDays,
     isLoading,
     refetch: refetch,

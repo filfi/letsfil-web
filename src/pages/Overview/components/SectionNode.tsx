@@ -42,7 +42,7 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <div className="col table-row">
             {isWorking ? (
               <div className="row g-0 px-2">
-                <div className="col-4 col-lg-5 col-xl-4 table-cell th">新增算力</div>
+                <div className="col-4 col-lg-5 col-xl-4 table-cell th">有效算力</div>
                 <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
                   <div className="min-cell mx-auto text-end">
                     <span className="text-decimal me-1">{formatPower(sealsPower)?.[0]}</span>

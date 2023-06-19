@@ -62,7 +62,7 @@ const StepWork: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <Steps.Item title="运维阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
-      {isWorking ? '产出和分配节点激励' : `+${data!.sector_period}天`}
+      {isWorking ? '产出和分配Filecoin激励' : `+${data!.sector_period}天`}
     </Steps.Item>
   );
 };

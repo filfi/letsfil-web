@@ -6,7 +6,7 @@ import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useSProvider from '@/hooks/useSProvider';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import { formatAmount, formatProgress, formatRate, formatSponsor } from '@/utils/format';
+import { formatAmount, formatRate, formatSponsor } from '@/utils/format';
 
 export type RaisingCardProps = {
   data: API.Plan;
@@ -15,7 +15,7 @@ export type RaisingCardProps = {
 const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
   const { rate } = useIncomeRate(data);
   const provider = useSProvider(data.service_id);
-  const { progress, target } = useRaiseBase(data);
+  const { minTarget, target } = useRaiseBase(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
@@ -75,8 +75,9 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                 <span className="mx-1 fw-bold">{formatAmount(target)}</span>
                 <span>FIL</span>
                 <span className="mx-2">·</span>
-                <span>达成</span>
-                <span className="ms-1 fw-bold">{formatProgress(progress)}</span>
+                <span>最低目标</span>
+                <span className="mx-1 fw-bold">{formatAmount(minTarget)}</span>
+                <span>FIL</span>
               </p>
 
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-3">
@@ -102,11 +103,13 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                   <span className="d-inline-block text-gray">
                     <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={20} />
                   </span>
-                  <span className="align-middle">
-                    <span className="mx-1">{provider?.full_name}</span>
+                  <span className="align-middle ms-1">
+                    <span className="">{provider?.full_name}</span>
                     <span className="mx-1">·</span>
-                    <span className="mx-1">保证金占比</span>
-                    <span className="fw-bold">{opsRatio}%</span>
+                    <span className="">保证金</span>
+                    <span className="">{opsRatio}%</span>
+                    <span className="mx-1">·</span>
+                    <span className="">提供技术服务</span>
                   </span>
                 </p>
               </div>

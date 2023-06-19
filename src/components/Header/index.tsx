@@ -160,7 +160,7 @@ const Header: React.FC = () => {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/">
+                  <Link className="nav-link" to="/raising">
                     <FormattedMessage id="menu.miner" />
                   </Link>
                 </li>

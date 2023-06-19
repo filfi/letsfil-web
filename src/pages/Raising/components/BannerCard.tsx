@@ -53,7 +53,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
                   <p className="mb-0">
                     <span>{provider?.full_name}</span>
                     <span className="mx-1">·</span>
-                    <span>保证金占比 {opsRatio}%</span>
+                    <span>保证金{opsRatio}%</span>
                   </p>
                   <span className="mx-1 d-none d-lg-inline my-auto">·</span>
                   <p className="mb-0">
