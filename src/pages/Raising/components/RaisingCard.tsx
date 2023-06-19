@@ -70,17 +70,25 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
               <Avatar address={data.raiser} src={data.sponsor_logo} size={{ md: 48, lg: 56, xl: 56, xxl: 56 }} />
             </div>
             <div className="flex-grow-1">
-              <p className="mb-3 mb-lg-4 fs-16 text-gray-dark">
-                <span>质押目标</span>
-                <span className="mx-1 fw-bold">{formatAmount(target)}</span>
-                <span>FIL</span>
-                <span className="mx-2">·</span>
-                <span>最低目标</span>
-                <span className="mx-1 fw-bold">{formatAmount(minTarget)}</span>
-                <span>FIL</span>
-              </p>
+              <div className="d-flex flex-column flex-md-row flex-md-wrap gap-2 mb-3 mb-lg-4">
+                <p className="mb-0 fs-16 text-gray-dark">
+                  <span>质押目标</span>
+                  <span className="mx-1 fw-bold">{formatAmount(target)}</span>
+                  <span>FIL</span>
+                </p>
 
-              <div className="d-flex flex-column flex-md-row flex-md-wrap gap-3">
+                <p className="mb-0 fs-16 text-gray-dark d-none d-lg-block">
+                  <span className="">·</span>
+                </p>
+
+                <p className="mb-0 fs-16 text-gray-dark">
+                  <span>最低目标</span>
+                  <span className="mx-1 fw-bold">{formatAmount(minTarget)}</span>
+                  <span>FIL</span>
+                </p>
+              </div>
+
+              <div className="d-flex flex-column flex-md-row flex-md-wrap gap-2 gap-xl-3 gap-xxl-4">
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-people text-gray"></span>
                   <span className="mx-1">建设者获得</span>
@@ -103,13 +111,14 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                   <span className="d-inline-block text-gray">
                     <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={20} />
                   </span>
-                  <span className="align-middle ms-1">
-                    <span className="">{provider?.full_name}</span>
-                    <span className="mx-1">·</span>
-                    <span className="">保证金</span>
-                    <span className="">{opsRatio}%</span>
-                    <span className="mx-1">·</span>
-                    <span className="">提供技术服务</span>
+                  <span className="d-inline-flex flex-column flex-sm-row ms-1 align-middle">
+                    <span>{provider?.full_name}</span>
+                    <span className="d-none d-sm-inline mx-1">·</span>
+                    <span>
+                      <span>保证金{opsRatio}%</span>
+                      <span className="mx-1">·</span>
+                      <span>提供技术服务</span>
+                    </span>
                   </span>
                 </p>
               </div>
