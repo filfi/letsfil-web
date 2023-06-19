@@ -10,7 +10,7 @@ import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 
 function calcPerPledge(perTera?: number | string) {
   if (perTera && +perTera > 0) {
-    return accSub(perTera, 0);
+    return +perTera;
   }
 }
 
@@ -21,8 +21,8 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSuccess, isWorking } = useRaiseState(data);
 
   const price = useMemo(() => calcPerPledge(data?.pledge_per_tera_day) ?? perPledge, [perPledge, data?.pledge_per_tera_day]);
-  const actualPower = useMemo(() => accMul(accDiv(actual, price), 1024, 1024, 1024), [price, actual]);
-  const targetPower = useMemo(() => accMul(accDiv(target, price), 1024, 1024, 1024), [price, target]);
+  const actualPower = useMemo(() => accMul(accDiv(actual, price), Math.pow(1024, 5)), [price, actual]);
+  const targetPower = useMemo(() => accMul(accDiv(target, price), Math.pow(1024, 5)), [price, target]);
   const sealsPower = useMemo(() => accSub(pack?.total_power || 0, 0), [pack?.total_power]);
 
   return (
