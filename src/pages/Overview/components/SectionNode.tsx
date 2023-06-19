@@ -5,13 +5,12 @@ import usePackInfo from '@/hooks/usePackInfo';
 import useChainInfo from '@/hooks/useChainInfo';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseState from '@/hooks/useRaiseState';
-import { formatAmount, formatPower } from '@/utils/format';
 import { accDiv, accMul, accSub, byte2gb } from '@/utils/utils';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 
 function calcPerPledge(perTera?: number | string) {
   if (perTera && +perTera > 0) {
-    return accMul(perTera, 1024);
+    return accSub(perTera, 0);
   }
 }
 
@@ -22,8 +21,8 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSuccess, isWorking } = useRaiseState(data);
 
   const price = useMemo(() => calcPerPledge(data?.pledge_per_tera_day) ?? perPledge, [perPledge, data?.pledge_per_tera_day]);
-  const actualPower = useMemo(() => (price > 0 ? accDiv(actual, price) : 0), [price, actual]);
-  const targetPower = useMemo(() => (price > 0 ? accDiv(target, price) : 0), [price, target]);
+  const actualPower = useMemo(() => accMul(accDiv(actual, price), 1024, 1024, 1024), [price, actual]);
+  const targetPower = useMemo(() => accMul(accDiv(target, price), 1024, 1024, 1024), [price, target]);
   const sealsPower = useMemo(() => accSub(pack?.total_power || 0, 0), [pack?.total_power]);
 
   return (

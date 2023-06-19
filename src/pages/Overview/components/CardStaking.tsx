@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
 import SpinBtn from '@/components/SpinBtn';
-import { number } from '@/utils/validators';
+import { integer } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
 import { accSub, sleep } from '@/utils/utils';
 import useRaiseBase from '@/hooks/useRaiseBase';
@@ -21,7 +21,7 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
 
   const amountValidator = async (rule: unknown, value: string) => {
-    await number(rule, value);
+    await integer(rule, value);
 
     if (value) {
       if (+value <= 0) {
@@ -68,7 +68,6 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                     className="decimal lh-1 fw-500"
                     min={0}
                     max={max}
-                    step={0.01}
                     placeholder="输入数量"
                     suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
                   />
