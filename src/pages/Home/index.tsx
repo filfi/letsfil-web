@@ -111,7 +111,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconShield className="card-icon" />
                   <h4 className="card-title">严格KYC和保证金制度</h4>
-                  <p>可选技术服务商经过社区严格的KYC，创新的“运维保证金”制度，确保技术服务商相关利益不低于10%，与建设者利益全周期绑定。</p>
+                  <p>可选技术服务商经过社区严格的KYC，创新的“运维保证金”制度，确保技术服务商与建设者的短期利益和长期利益绑定。</p>
                 </div>
               </div>
             </div>
