@@ -103,7 +103,7 @@ export default function CreateResult() {
               <div className="flex-grow-1">
                 <p className="mb-0">
                   <span className="fw-bold">技术服务商</span>
-                  <span>存入”技术运维保证金“</span>
+                  <span>存入”运维保证金“</span>
                 </p>
                 <p className="mb-0 text-gray-dark">扇区全部到期后，技术服务商可取回保证金，保证金原路退回存入时使用的钱包。</p>
               </div>
@@ -117,7 +117,7 @@ export default function CreateResult() {
                   <span className="fw-bold">主办人</span>
                   <span>启动</span>
                 </p>
-                <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后集合质押期开始计时。</p>
+                <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后质押期开始计时。</p>
               </div>
             </li>
           </ul>
@@ -182,7 +182,7 @@ export default function CreateResult() {
             <div className="flex-grow-1">
               <p className="mb-0">
                 <span className="fw-bold">技术服务商</span>
-                <span>存入”技术运维保证金“</span>
+                <span>存入”运维保证金“</span>
               </p>
               <p className="mb-0 text-gray-dark">扇区全部到期后，技术服务商可取回保证金，保证金原路退回存入时使用的钱包。</p>
             </div>
@@ -196,7 +196,7 @@ export default function CreateResult() {
                 <span className="fw-bold">主办人</span>
                 <span>启动</span>
               </p>
-              <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后集合质押期开始计时。</p>
+              <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后质押期开始计时。</p>
             </div>
           </li>
         </ul>

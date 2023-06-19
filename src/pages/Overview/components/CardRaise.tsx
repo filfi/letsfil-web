@@ -8,6 +8,7 @@ import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useContract from '@/hooks/useContract';
+import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -29,7 +30,8 @@ const formatTime = (mill: number) => {
 
 const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
-  const { power, pledge } = useAssetPack(data);
+  const { data: pack } = usePackInfo(data);
+  const { power, pledge } = useAssetPack(data, pack);
   const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
@@ -186,7 +188,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <>
             <div>
               <SpinBtn className="btn btn-primary btn-lg w-100" disabled={disabled} loading={starting} onClick={handleStart}>
-                启动集合质押
+                启动质押
               </SpinBtn>
             </div>
 
@@ -223,7 +225,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </SpinBtn>
           </div>
 
-          <p className="mb-0">集合质押已成功，可提前开始封装。集合质押金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
+          <p className="mb-0">质押已成功，可提前开始封装。质押金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
         </>
       );
     }
@@ -238,7 +240,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="card section-card">
           <div className="card-header d-flex align-items-center border-0">
             <h4 className="card-title fw-bold mb-0 me-2">建设完成</h4>
-            <span className="badge badge-success ms-auto">集合质押成功</span>
+            <span className="badge badge-success ms-auto">质押成功</span>
             <span className="badge badge-success ms-2">封装完成</span>
           </div>
           <div className="card-body py-2 fs-16 text-main">
@@ -281,21 +283,17 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   : isClosed
                   ? '节点计划已关闭'
                   : isRaising
-                  ? '正在集合质押中！距离截止还有'
+                  ? '正在质押中！距离截止还有'
                   : isWaitSeal || isPreSeal
-                  ? '集合质押成功'
+                  ? '质押成功'
                   : isSealing
                   ? '封装倒计时'
                   : isDelayed
                   ? '封装延期'
-                  : '集合质押时间'}
+                  : '质押时间'}
               </h4>
               <div className="ms-auto">
-                {isFailed ? (
-                  <span className="badge badge-danger">集合质押未成功</span>
-                ) : isSuccess ? (
-                  <span className="badge badge-success">集合质押成功</span>
-                ) : null}
+                {isFailed ? <span className="badge badge-danger">质押未成功</span> : isSuccess ? <span className="badge badge-success">质押成功</span> : null}
                 {isPreSeal ? (
                   <span className="badge ms-2">准备封装</span>
                 ) : isDelayed ? (

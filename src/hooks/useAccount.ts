@@ -1,28 +1,16 @@
 import { useMemo } from 'react';
 import { useAccount as useWagmi, useConnect, useDisconnect } from 'wagmi';
 
-import { useMount } from 'ahooks';
 import Dialog from '@/components/Dialog';
 import { catchify } from '@/utils/hackify';
 import { chains } from '@/constants/config';
 import ClientModal from '@/components/ClientModal';
 import { connectorAdapter } from '@/core/connectors';
 
-let _autoConnect = false;
-
-function getStorage<V = any>(key: string) {
-  const data = localStorage.getItem(key);
-
-  if (data) {
-    try {
-      return JSON.parse(data) as V;
-    } catch (e) {}
-
-    return data as V;
-  }
-
-  return null;
-}
+export type ConnectOptions = {
+  id: string;
+  slient?: boolean;
+};
 
 export default function useAccount() {
   const { address, status } = useWagmi();
@@ -33,48 +21,40 @@ export default function useAccount() {
   const connected = useMemo(() => status === 'connected', [status]);
   const connecting = useMemo(() => status === 'connecting' || status === 'reconnecting', [status]);
 
-  const _connect = async (wallet: string) => {
-    const connector = connectorAdapter(wallet);
+  const _connect = async ({ id }: ConnectOptions) => {
+    const connector = connectorAdapter(id);
 
     if (!connector) return;
 
     return await connectAsync({ connector });
   };
 
-  useMount(() => {
-    if (_autoConnect) return;
+  const handleConnect = async (opts: ConnectOptions) => {
+    const [e] = await catchify(_connect)(opts);
 
-    _autoConnect = true;
-
-    const wallet = getStorage<string>('wagmi.wallet');
-    const connected = getStorage<boolean>('wagmi.connected');
-
-    if (wallet && connected) {
-      _connect(wallet);
-    }
-  });
-
-  const handleConfirm = async (wallet: string) => {
-    const [e] = await catchify(_connect)(wallet);
-
-    if (e?.name === 'ConnectorNotFoundError') {
+    if (!opts.slient && e?.name === 'ConnectorNotFoundError') {
       Dialog.alert({
         icon: 'error',
         title: '连接失败',
-        content: '未检测到' + wallet + '客户端',
+        content: '未检测到' + opts.id + '客户端',
       });
     }
   };
 
-  const connect = () => {
-    const hide = ClientModal.show({
-      showFooter: false,
-      onChange: (id) => {
-        hide();
+  const connect = (opts?: ConnectOptions) => {
+    if (!opts?.slient) {
+      const hide = ClientModal.show({
+        showFooter: false,
+        onChange: (id) => {
+          hide();
 
-        handleConfirm(id);
-      },
-    });
+          handleConnect({ id });
+        },
+      });
+      return;
+    }
+
+    handleConnect(opts);
   };
 
   const disconnect = async () => {

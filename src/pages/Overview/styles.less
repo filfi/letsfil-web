@@ -3,10 +3,15 @@
   --content-item-gap: 24px;
   --section-header-padding-y: 12px;
   --section-header-spacer-y: 16px;
+  --section-decimal-font-size: 20px;
 
   :global {
     .section {
       margin-bottom: var(--content-item-gap);
+
+      .min-cell {
+        min-width: var(--section-table-min-cell);
+      }
     }
 
     .section-header {
@@ -90,108 +95,27 @@
       }
     }
 
-    .progress-stacked,
-    .progress-stacked > .progress {
-      --bs-progress-height: 54px;
-      --bs-progress-border-radius: 8px;
-      --bs-progress-bar-bg: #83bf6e;
-      --bs-progress-font-size: 15px;
-    }
-
-    .progress-stacked > .progress-stacked:not(:last-child) {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-
-    .progress-stacked > .progress-stacked ~ .progress:last-child > .progress-bar {
-      border-top-right-radius: var(--bs-progress-border-radius);
-      border-bottom-right-radius: var(--bs-progress-border-radius);
-    }
-
-    .progress-bar-striped {
-      background-image: linear-gradient(
-        -45deg,
-        rgb(0 0 0 / 5%) 25%,
-        transparent 25%,
-        transparent 50%,
-        rgb(0 0 0 / 5%) 50%,
-        rgb(0 0 0 / 5%) 75%,
-        transparent 75%,
-        transparent
-      );
-    }
-
-    .progress-bar-animated {
-      animation: custom-strip 2s linear infinite;
-    }
-
-    // .progress-stacked > .progress-stacked:not(:first-child) {
-    //   border-top-left-radius: 0;
-    //   border-bottom-left-radius: 0;
-    // }
-
     .progress-sector {
-      --bs-progress-height: 60px;
+      --bs-progress-bg: var(--bs-gray-400);
+      --bs-progress-height: 54px;
+      --bs-progress-font-size: 15px;
+      --bs-progress-bar-bg: var(--bs-primary);
 
-      position: relative;
-      overflow: visible;
-      border: 3px solid var(--bs-gray-100);
-      border-radius: var(--bs-progress-border-radius);
-
-      .indicator {
-        --indicator-bg: #83bf6e;
-        --indicator-color: var(--bs-gray-600);
-
-        position: absolute;
-        left: 0;
-        bottom: 100%;
-        z-index: 10;
-        will-change: transform;
-        transform: translate(-50%, -100%);
-
-        &.warning {
-          --indicator-bg: var(--bs-warning);
-          --indicator-color: var(--bs-warning);
-        }
-
-        &.success {
-          --indicator-bg: #8e59ff;
-        }
-
-        .indicator-label {
-          position: relative;
-          z-index: 10;
-          font-size: 14px;
-          font-weight: 600;
-          line-height: 1.4;
-          text-align: center;
-          white-space: nowrap;
-          color: var(--indicator-color);
-        }
-
-        .indicator-caret {
-          position: absolute;
-          z-index: 1;
-          top: 100%;
-          left: 50%;
-          width: 0;
-          height: 0;
-          margin-top: 4px;
-          will-change: transform;
-          border-style: solid;
-          border-width: 10px 15px 0;
-          transform: translateX(-50%);
-          border-color: var(--indicator-bg) transparent transparent;
-        }
+      .progress-bar-striped {
+        background-image: linear-gradient(
+          -45deg,
+          rgb(255 255 255 / 10%) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgb(255 255 255 / 10%) 50%,
+          rgb(255 255 255 / 10%) 75%,
+          transparent 75%,
+          transparent
+        );
       }
 
-      .progress-warning {
-        --bs-progress-bar-color: var(--bs-warning);
-        --bs-progress-bar-bg: #fffaeb;
-      }
-
-      .progress-success {
-        --bs-progress-bar-bg: #8e59ff;
+      .progress-bar-animated {
+        animation: custom-strip 2s linear infinite;
       }
     }
 
@@ -236,7 +160,7 @@
     }
 
     .text-decimal {
-      font-size: 24px;
+      font-size: var(--section-decimal-font-size);
       font-weight: 600;
       line-height: 1.333;
     }
@@ -281,10 +205,17 @@
   }
 }
 
+@media screen and (min-width: 576px) {
+  .content {
+    --section-table-min-cell: 80px;
+  }
+}
 @media screen and (min-width: 992px) {
   .content {
     --section-header-padding-y: 20px;
     --section-header-spacer-y: 24px;
+    --section-decimal-font-size: 24px;
+    --section-table-min-cell: 110px;
 
     > :not(:first-child) {
       padding-left: var(--content-item-gap);

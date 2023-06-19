@@ -107,7 +107,7 @@ export function calcEachEarn(priority: number | string = 70, spRate: number | st
 /**
  * 计算主办人保证金
  * @param target 质押目标
- * @param period 集合质押期限
+ * @param period 质押期限
  * @param seals 封装期限
  * @returns
  */
@@ -125,7 +125,7 @@ export function calcRaiseDepost(target: number, period: number, seals: number) {
   // 本金 = 质押目标 * (1 - 可以进入展期的最低比例)
   const cost = U.accMul(target, U.accSub(1, 0.5));
 
-  // 集合质押期罚息 = (质押目标 + 运维保证金(最大=质押目标)) * 年利率 * 集合质押天数 / 365 + 手续费
+  // 质押期罚息 = (质押目标 + 运维保证金(最大=质押目标)) * 年利率 * 质押天数 / 365 + 手续费
   const rInterest = U.accAdd(U.accMul(U.accAdd(target, target), yRate, U.accDiv(period, 365)), fee);
   // 封装期罚息 = 质押目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
   const sInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(seals, 365)), fee);

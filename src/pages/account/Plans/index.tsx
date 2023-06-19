@@ -77,7 +77,7 @@ export default function AccountPlans() {
     <>
       <LoadingView className="vh-50" data={data} error={!!error} loading={isLoading} retry={refetch}>
         {isEmpty ? (
-          <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参加投资的节点计划。">
+          <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参与的节点计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
               <Link className="btn btn-light" to="/raising">
                 查看开放的节点计划
@@ -118,7 +118,7 @@ export default function AccountPlans() {
 
             {isArrs(invests) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我投资的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我参与的节点计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {invests.map((item) => (
                     <div className="col" key={item.raising_id}>

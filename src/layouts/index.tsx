@@ -6,6 +6,7 @@ import { useNetwork, useSwitchNetwork } from 'wagmi';
 
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import useAccount from '@/hooks/useAccount';
 import { chains } from '@/constants/config';
 import { mountPortal, unmountPortal } from '@/helpers/app';
 import useInputScrollAction from '@/hooks/useInputScrollAction';
@@ -30,8 +31,23 @@ function removeDom() {
   }
 }
 
+function getStorage<V = any>(key: string) {
+  const data = localStorage.getItem(key);
+
+  if (data) {
+    try {
+      return JSON.parse(data) as V;
+    } catch (e) {}
+
+    return data as V;
+  }
+
+  return null;
+}
+
 const BasicLayout: React.FC = () => {
   const { chain } = useNetwork();
+  const { connect } = useAccount();
   const { switchNetwork } = useSwitchNetwork({
     chainId: chains[0].id,
     onError: (e) => {
@@ -43,6 +59,15 @@ const BasicLayout: React.FC = () => {
   const [node, setNode] = useState<React.ReactNode>();
 
   useInputScrollAction();
+
+  const autoConnect = () => {
+    const id = getStorage<string>('wagmi.wallet');
+    const connected = getStorage<boolean>('wagmi.connected');
+
+    if (id && connected) {
+      connect({ id, slient: true });
+    }
+  };
 
   const handleSwitch = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     e.preventDefault();
@@ -62,6 +87,8 @@ const BasicLayout: React.FC = () => {
 
       setTimeout(removeDom, 1000 / 60);
     };
+
+    autoConnect();
   });
 
   return (

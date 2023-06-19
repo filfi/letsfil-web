@@ -9,16 +9,17 @@ import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useAssetPack from '@/hooks/useAssetPack';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import usePackInfo from '@/hooks/usePackInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
+import useAssetPack from '@/hooks/useAssetPack';
 import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
-import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
+import { isDelayed, isSealing, isWorking } from '@/helpers/raise';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
@@ -48,6 +49,29 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
   };
 }
 
+function calcSealDays(data: API.Plan) {
+  const r: string[] = [];
+
+  // 运营中
+  if (isWorking(data)) {
+    const sec = Math.max(accSub(data.end_seal_time, data.begin_seal_time), 0);
+    r.push(`${F.formatSeals(sec2day(sec))}天`);
+    r.push(`承诺${data.seal_days}天`);
+
+    return r;
+  }
+
+  r.push(`< ${data.seal_days} 天`);
+
+  // 封装中
+  if (isSealing(data) || isDelayed(data)) {
+    const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time));
+    r.push(`已进行${sec2day(sec)}天`);
+  }
+
+  return r;
+}
+
 const Item: React.FC<{
   data: API.Plan;
   invest?: boolean;
@@ -57,39 +81,16 @@ const Item: React.FC<{
   onStart?: () => Promise<any>;
 }> = ({ data, invest, onEdit, onDelete, onStart }) => {
   const state = useRaiseState(data);
-  const { pack, power } = useAssetPack(data);
+  const { data: pack } = usePackInfo(data);
   const { amount } = useDepositInvestor(data);
-  const { progress: sealPercent } = useRaiseSeals(data);
+  const provider = useSProvider(data.service_id);
   const { priorityRate, opsRatio } = useRaiseRate(data);
-  const { actual, progress, target } = useRaiseInfo(data);
+  const { actual, progress, target } = useRaiseBase(data);
+  const { progress: sealPercent } = useAssetPack(data, pack);
   const { isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
 
-  const provider = useSProvider(data.service_id);
-
-  const calcSealDays = (data: API.Plan) => {
-    const r: string[] = [];
-
-    // 运营中
-    if (state.isWorking) {
-      const sec = Math.max(accSub(data.end_seal_time, data.begin_seal_time), 0);
-      r.push(`${F.formatSeals(sec2day(sec))}天`);
-      r.push(`承诺${data.seal_days}天`);
-
-      return r;
-    }
-
-    r.push(`< ${data.seal_days} 天`);
-
-    // 封装中
-    if (state.isSealing || state.isDelayed) {
-      const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time));
-      r.push(`已进行${sec2day(sec)}天`);
-    }
-
-    return r;
-  };
-
-  const sealDays = useMemo(() => calcSealDays(data), [data, state]);
+  const sealDays = useMemo(() => calcSealDays(data), [data]);
+  const power = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
 
   const [deleting, deleteAction] = useLoadingify(async () => {
@@ -154,7 +155,7 @@ const Item: React.FC<{
     if (state.isRaising) {
       return (
         <>
-          <span className="badge badge-success">集合质押中</span>
+          <span className="badge badge-success">质押中</span>
           <span className="ms-2 fs-sm text-gray">
             <Countdown time={data.closing_time} />
           </span>
@@ -172,7 +173,7 @@ const Item: React.FC<{
     if (state.isFailed) {
       return (
         <>
-          <span className="badge badge-danger">集合质押失败</span>
+          <span className="badge badge-danger">质押失败</span>
           {amount > 0 && <span className="ms-2 fs-sm text-danger">您有资产待取回</span>}
         </>
       );
@@ -262,14 +263,14 @@ const Item: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">{state.isSuccess ? '实际集合质押' : '质押目标'}</span>
+            <span className="text-gray-dark">{state.isSuccess ? '实际质押' : '质押目标'}</span>
             <span className="fw-500">
               <span>{state.isSuccess ? F.formatAmount(actual) : F.formatAmount(target)} FIL</span>
               {progress > 0 && (
                 <>
                   <span> · </span>
                   <span>
-                    {state.isSuccess ? '达到目标的' : '已集合质押'}
+                    {state.isSuccess ? '达到目标的' : '已质押'}
                     {F.formatProgress(progress)}
                   </span>
                 </>

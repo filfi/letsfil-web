@@ -20,7 +20,7 @@ const StepStart: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const isStart = useMemo(() => isStarted && data?.begin_time, [isStarted, data?.begin_time]);
 
   return (
-    <Steps.Item title="集合质押开放" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
+    <Steps.Item title="质押开放" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
       {data?.closing_time ? F.formatUnixDate(data.begin_time) : '主办人决定开放时间'}
     </Steps.Item>
   );
@@ -34,7 +34,7 @@ const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   if (isClosed || isFailed) {
     return (
-      <Steps.Item title={isClosed ? '集合质押关闭' : '集合质押失败'} status="active">
+      <Steps.Item title={isClosed ? '质押关闭' : '质押失败'} status="active">
         {F.formatUnixDate(data!.closing_time)}
       </Steps.Item>
     );
@@ -51,15 +51,7 @@ const StepSeal: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   return (
-    <Steps.Item
-      title={
-        <>
-          <span>封装阶段截止</span>
-          {isSealing && <span className="fw-normal opacity-75">（预计 {U.diffDays(data!.end_seal_time)}）</span>}
-        </>
-      }
-      status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}
-    >
+    <Steps.Item title="封装阶段截止" status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}>
       {data?.delay_seal_time ? F.formatUnixDate(data.delay_seal_time) : data?.end_seal_time ? F.formatUnixDate(data.end_seal_time) : `+ ${data!.seal_days} 天`}
     </Steps.Item>
   );
@@ -69,7 +61,7 @@ const StepWork: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isFinished, isDestroyed, isWorking } = useRaiseState(data);
 
   return (
-    <Steps.Item title="运营阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
+    <Steps.Item title="运维阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
       {isWorking ? '产出和分配节点激励' : `+${data!.sector_period}天`}
     </Steps.Item>
   );

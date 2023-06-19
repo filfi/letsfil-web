@@ -92,14 +92,14 @@ export default function useContractEvent(address?: API.Address) {
   };
 
   /**
-   * 集合质押失败
+   * 质押失败
    */
   const onRaiseFailed = (id: string, handler: OnLogsFn) => {
     return watchEvent('RaiseFailed', withProxyHandler(handler), [id]);
   };
 
   /**
-   * 集合质押成功
+   * 质押成功
    */
   const onRaiseSuccess = (id: string, handler: OnLogsFn) => {
     return watchEvent('RaiseSuccess', withProxyHandler(handler), [id]);

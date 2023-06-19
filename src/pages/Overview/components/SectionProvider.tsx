@@ -55,7 +55,7 @@ const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   {['待签名', '已签名'][data?.sp_sign_status ?? 0]}
                 </span>
                 <span className={classNames('badge', ['badge-danger', 'badge-success'][data?.sp_margin_status ?? 0])}>
-                  技术运维保证金·{['待缴', '已付'][data?.sp_margin_status ?? 0]}
+                  运维保证金·{['待缴', '已付'][data?.sp_margin_status ?? 0]}
                 </span>
               </p>
             </div>

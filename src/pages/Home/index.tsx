@@ -27,7 +27,7 @@ export default function Home() {
           <div className="row g-4 align-items-lg-center">
             <div className="col-12 col-lg-6">
               <p className="mb-4">
-                <span className="badge badge-primary ps-1">
+                <span className="badge badge-primary ps-1 text-wrap">
                   <span className="badge badge-primary bg-white lh-sm">FilFi联合节点</span>
                   <span className="ms-2">创新的“节点计划”让建设者和SP重建信任</span>
                 </span>
@@ -66,7 +66,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconThumbs className="card-icon" />
                   <h4 className="card-title">智能合约接管一切</h4>
-                  <p>集合质押、封装进度、分配激励，智能合约接管一切，坚定履约，不可变更，没有人为因素。</p>
+                  <p>质押、封装进度、分配激励，智能合约接管一切，坚定履约，不可变更，没有人为因素。</p>
                 </div>
               </div>
             </div>
@@ -84,7 +84,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconClock className="card-icon" />
                   <h4 className="card-title">尊重时间价值</h4>
-                  <p>如果集合质押不成功，质押全额返还，并补偿滞留时间的价值。</p>
+                  <p>如果质押不成功，质押全额返还，并补偿滞留时间的价值。</p>
                 </div>
               </div>
             </div>
@@ -102,7 +102,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconDots className="card-icon" />
                   <h4 className="card-title">去中心化治理</h4>
-                  <p>FilFi由DAO社区治理，去中心化的方式共建共享，通过投票机制决定经济模型的关键参数</p>
+                  <p>FilFi由DAO社区治理，去中心化的方式共建共享，通过投票机制决定经济模型的关键参数。</p>
                 </div>
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconShield className="card-icon" />
                   <h4 className="card-title">严格KYC和保证金制度</h4>
-                  <p>可选技术服务商经过社区严格的KYC，创新的“技术运维保证金”制度，确保技术服务商相关利益不低于10%，与建设者利益全周期绑定。</p>
+                  <p>可选技术服务商经过社区严格的KYC，创新的“运维保证金”制度，确保技术服务商相关利益不低于10%，与建设者利益全周期绑定。</p>
                 </div>
               </div>
             </div>

@@ -142,16 +142,3 @@ export function toF4Address(addr?: string) {
 
   return '';
 }
-
-export function randomRange(min: number, max: number) {
-  return ~~(Math.random() * (max - min) + min);
-}
-
-export function randomAvatar() {
-  const colors = ['9b8afb'];
-
-  const index = randomRange(0, colors.length);
-  const color = colors[index];
-
-  return `https://via.placeholder.com/120/${color}/ffffff.jpg?text=Logo`;
-}

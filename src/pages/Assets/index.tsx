@@ -1,26 +1,27 @@
+import classNames from 'classnames';
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useDebounceEffect } from 'ahooks';
 import { Link, NavLink, useParams } from '@umijs/max';
-import { useDebounceEffect, useUpdateEffect } from 'ahooks';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
-import { getInfo } from '@/apis/raise';
 import { SCAN_URL } from '@/constants';
-import { withNull } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
 import Activity from './components/Activity';
 import FormRadio from '@/components/FormRadio';
 import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
-import useRaiseRole from '@/hooks/useRaiseRole';
+import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
+import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
+import useRewardOps from '@/hooks/useRewardOps';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
@@ -32,53 +33,66 @@ import { ReactComponent as IconFil } from '@/assets/icons/filecoin.svg';
 
 export default function Assets() {
   const param = useParams();
-  const service = async () => {
-    if (param.id) {
-      return await getInfo(param.id);
-    }
-  };
 
-  const { data, error, isLoading, refetch } = useQuery(['raiseInfo', param.id], withNull(service));
+  const { data: pack, error: packErr, isLoading: packLoading, refetch: packRefetch } = usePackInfo(param.id);
+  const { data: plan, error: planErr, isLoading: planLoading, refetch: planRefetch } = useRaiseInfo(param.id);
 
-  const { remains } = useRaiseSeals(data);
-  const provider = useSProvider(data?.service_id);
-  const { isInvestor } = useDepositInvestor(data);
-  const { isRaiser, isServicer } = useRaiseRole(data);
-  const { isClosed, isFailed, isDestroyed } = useRaiseState(data);
-  const { pack, investPower, raiserPower, servicerPower, investPledge, raiserPledge, servicerPledge } = useAssetPack(data);
+  const [role, setRole] = useState(-1);
+  const ops = useRewardOps(plan); // 运维保证金的节点激励
+  const raiser = useRewardRaiser(plan); // 主办人的节点激励
+  const investor = useRewardInvestor(plan); // 建设者的节点激励
+  const servicer = useRewardServicer(plan); // 服务商的节点激励
 
-  const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
-  const raiser = useRewardRaiser(data); // 主办人的节点激励
-  const investor = useRewardInvestor(data); // 建设者的节点激励
-  const servicer = useRewardServicer(data); // 服务商的节点激励
-  const [role, setRole] = useState(roles.findIndex(Boolean));
+  const provider = useSProvider(plan?.service_id);
+  const { isInvestor } = useDepositInvestor(plan);
+  const { remainsDays } = useRaiseSeals(plan, pack);
+  const { isRaiser, isServicer } = useRaiseRole(plan);
+  const { isClosed, isFailed, isStarted } = useRaiseState(plan);
+  const { investorPower, raiserPower, opsPower, servicerPower, investorAmount, opsAmount } = useAssetPack(plan, pack);
 
-  const title = useMemo(() => (data ? `${F.formatSponsor(data.sponsor_company)}发起的节点计划@${data.miner_id}` : '-'), [data]);
+  const hasErr = useMemo(() => !!(packErr || planErr), [planErr, packErr]);
+  const isLoading = useMemo(() => planLoading || packLoading, [planLoading, packLoading]);
+  const roles = useMemo(() => [isInvestor, isRaiser, isServicer, isServicer], [isInvestor, isRaiser, isServicer]);
 
-  const locked = useMemo(() => (isServicer && !isDestroyed ? servicer.locked : 0), [servicer.locked, isServicer]);
-  const power = useMemo(() => [investPower, raiserPower, servicerPower][role] ?? 0, [role, investPower, raiserPower, servicerPower]);
-  const pledge = useMemo(() => [investPledge, raiserPledge, servicerPledge][role] ?? 0, [role, investPledge, raiserPledge, servicerPledge]);
-  const total = useMemo(() => [investor.total, raiser.total, servicer.total][role] ?? 0, [role, investor.total, raiser.total, servicer.total]);
-  const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward][role] ?? 0, [role, investor.reward, raiser.reward, servicer.reward]);
-  // const pending = useMemo(() => [investor.pending, raiser.pending, servicer.pending][role], [role, investor.pending, raiser.pending, servicer.pending]);
+  const power = useMemo(() => [investorPower, raiserPower, servicerPower, opsPower][role] ?? 0, [role, investorPower, raiserPower, servicerPower, opsPower]);
+  const pledge = useMemo(() => [investorAmount, 0, 0, opsAmount][role] ?? 0, [role, investorAmount, opsAmount]);
+  const reward = useMemo(
+    () => [investor.reward, raiser.reward, servicer.reward, ops.record][role] ?? 0,
+    [role, investor.reward, raiser.reward, servicer.reward, ops.reward],
+  );
+  const record = useMemo(
+    () => [investor.record, raiser.record, servicer.record, ops.record][role] ?? 0,
+    [role, investor.record, raiser.record, servicer.record, ops.record],
+  );
+  const pending = useMemo(
+    () => [investor.pending, raiser.pending, servicer.pending, ops.pending][role] ?? 0,
+    [role, investor.pending, raiser.pending, servicer.pending, ops.pending],
+  );
 
   const options = useMemo(() => {
-    if (roles.filter(Boolean).length > 1) {
-      const items = [
-        { icon: <IconUser />, label: '我是建设者', value: 0 },
-        { icon: <IconStar />, label: '我是主办人', value: 1 },
-        { icon: <IconTool />, label: '我是技术服务商', value: 2 },
-      ];
+    const items = [
+      { icon: <IconUser />, label: '我是建设者', value: 0 },
+      { icon: <IconStar />, label: '我是主办人', value: 1 },
+      { icon: <IconTool />, label: '我是技术服务商', value: 2 },
+      { icon: <IconTool />, label: '运维保证金', value: 3 },
+    ];
 
-      return items.filter((n, i) => roles[i]);
-    }
-
-    return [];
+    return items.filter((n, i) => roles[i]);
   }, [roles]);
 
-  useUpdateEffect(() => {
-    setRole(roles.findIndex(Boolean));
-  }, [roles]);
+  const refetch = async () => {
+    return await Promise.all([packRefetch(), planRefetch()]);
+  };
+
+  useDebounceEffect(
+    () => {
+      const role = options[0]?.value ?? -1;
+
+      setRole(role);
+    },
+    [options],
+    { wait: 200 },
+  );
 
   useDebounceEffect(
     () => {
@@ -89,12 +103,14 @@ export default function Assets() {
   );
 
   const [withdrawing, handleWithdraw] = useLoadingify(async () => {
-    if (role === 1) {
+    if (role === 0) {
+      await investor.withdrawAction();
+    } else if (role === 1) {
       await raiser.withdrawAction();
     } else if (role === 2) {
       await servicer.withdrawAction();
     } else {
-      await investor.withdrawAction();
+      // ops withdraw;
     }
 
     refetch();
@@ -103,8 +119,20 @@ export default function Assets() {
   return (
     <>
       <div className="container">
-        <LoadingView data={data} error={!!error} loading={isLoading} retry={refetch}>
-          <PageHeader className="mb-3 pb-0" title={title} desc={`算力包 ${param.id}`} />
+        <LoadingView data={plan} error={hasErr} loading={isLoading} retry={refetch}>
+          <PageHeader
+            className="mb-3 pb-0"
+            title={
+              plan ? (
+                <span>
+                  {F.formatSponsor(plan.sponsor_company)}发起的节点计划@{plan.miner_id}
+                </span>
+              ) : (
+                '-'
+              )
+            }
+            desc={<span className="text-uppercase">算力包 {F.formatID(param.id)}</span>}
+          />
 
           <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
             <li className="nav-item">
@@ -120,10 +148,10 @@ export default function Assets() {
           </ul>
 
           <div className="row g-3 g-lg-4">
-            <div className="col-12 col-lg-4 d-flex flex-column gap-3">
+            <div className="col-12 col-lg-4">
               <RewardChart />
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body d-flex align-items-center gap-3">
                   <div className="flex-shrink-0">
                     <Avatar src={provider?.logo_url} size={40} />
@@ -139,22 +167,22 @@ export default function Assets() {
                 </div>
               </div>
 
-              <Link className="card text-reset" to={`/overview/${param.id}`}>
+              <Link className="card mb-3 text-reset" to={`/overview/${param.id}`}>
                 <div className="card-body d-flex align-items-center gap-3">
                   <div className="flex-shrink-0">
                     <IconStar />
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-1 fw-500">{F.formatSponsor(data?.sponsor_company)}发起的节点计划</p>
+                    <p className="mb-1 fw-500">{F.formatSponsor(plan?.sponsor_company)}发起的节点计划</p>
                     <p className="mb-0 text-gray-dark">
                       {isClosed ? (
                         <span className="badge">已关闭</span>
                       ) : isFailed ? (
-                        <span className="badge badge-danger">集合质押失败</span>
-                      ) : (
-                        <span>{F.formatUnixDate(data?.begin_time)}启动</span>
-                      )}
+                        <span className="badge badge-danger">质押失败</span>
+                      ) : isStarted ? (
+                        <span>{F.formatUnixDate(plan?.begin_time)}启动</span>
+                      ) : null}
                     </p>
                   </div>
 
@@ -164,7 +192,7 @@ export default function Assets() {
                 </div>
               </Link>
 
-              <div className="accordion ffi-accordion">
+              <div className="accordion ffi-accordion mb-3">
                 <div className="accordion-item">
                   <h4 className="accordion-header">
                     <button
@@ -191,14 +219,14 @@ export default function Assets() {
                       </p>
                       <p className="d-flex gap-3 my-3">
                         <span className="text-gray-dark">剩余时间</span>
-                        <span className="ms-auto fw-500">{pack ? <span>{remains} 天</span> : '-'}</span>
+                        <span className="ms-auto fw-500">{pack ? <span>{remainsDays} 天</span> : '-'}</span>
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="accordion ffi-accordion">
+              <div className="accordion ffi-accordion mb-3">
                 <div className="accordion-item">
                   <h4 className="accordion-header">
                     <button
@@ -234,25 +262,27 @@ export default function Assets() {
                 </div>
               </div>
             </div>
-            <div className="col-12 col-lg-8 d-flex flex-column gap-3">
-              {(isRaiser || isServicer) && <FormRadio className={styles.radio} type="button" items={options} value={role} onChange={setRole} />}
+            <div className="col-12 col-lg-8">
+              {options.length > 1 && <FormRadio className={classNames('mb-3', styles.radio)} type="button" items={options} value={role} onChange={setRole} />}
 
-              <div className="card border-0 bg-warning-tertiary">
-                <div className="card-body d-flex gap-3">
-                  <IconFil width={48} height={48} />
+              <div className="card mb-3 border-0 bg-warning-tertiary">
+                <div className="card-body d-flex flex-column flex-md-row gap-3">
+                  <div className="d-flex gap-3 me-auto">
+                    <IconFil width={48} height={48} />
 
-                  <h4 className="my-auto">
-                    <span className="fs-36 fw-600">{F.formatAmount(reward)}</span>
-                    <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
-                  </h4>
+                    <h4 className="my-auto">
+                      <span className="fs-36 fw-600">{F.formatAmount(reward)}</span>
+                      <span className="ms-1 fs-18 fw-bold text-gray">FIL</span>
+                    </h4>
+                  </div>
 
-                  <SpinBtn className="btn btn-primary btn-lg ms-auto my-auto px-5" loading={withdrawing} disabled={reward <= 0} onClick={handleWithdraw}>
-                    提取余额
+                  <SpinBtn className="btn btn-primary btn-lg my-auto px-5" loading={withdrawing} disabled={reward <= 0} onClick={handleWithdraw}>
+                    提取
                   </SpinBtn>
                 </div>
               </div>
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body">
                   <div className="row row-cols-1 row-cols-lg-2 g-3">
                     {/* <div className="col">
@@ -264,22 +294,22 @@ export default function Assets() {
                     <div className="col">
                       <div className="ffi-form">
                         <p className="mb-1 fw-500">锁定激励</p>
-                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(locked)} />
+                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(pending, 2)} />
                       </div>
                     </div>
                     <div className="col">
                       <div className="ffi-form">
-                        <p className="mb-1 fw-500">累计激励</p>
-                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(total)} />
+                        <p className="mb-1 fw-500">已提取(累计)</p>
+                        <Input className="bg-light text-end" readOnly size="large" suffix="FIL" value={F.formatAmount(record, 2, 2)} />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body">
-                  <p className="mb-1 text-gray fw-500">持有算力(QAP)</p>
+                  <p className="mb-1 text-gray fw-500">我的算力</p>
                   <p className="mb-0 fw-600">
                     <span className="fs-24">{F.formatPower(power)?.[0]}</span>
                     <span className="ms-1 fs-sm fw-bold text-neutral">{F.formatPower(power)?.[1]}</span>
@@ -287,10 +317,10 @@ export default function Assets() {
                 </div>
               </div>
 
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body d-flex gap-3">
                   <div>
-                    <p className="mb-1 text-gray fw-500">持有质押币</p>
+                    <p className="mb-1 text-gray fw-500">我的质押</p>
                     <p className="mb-0 fw-600">
                       <span className="fs-24">{F.formatAmount(pledge)}</span>
                       <span className="ms-1 fs-sm fw-bold text-neutral">FIL</span>
@@ -307,7 +337,7 @@ export default function Assets() {
                 </div>
               </div>
 
-              <div className="accordion ffi-accordion">
+              <div className="accordion ffi-accordion mb-3">
                 <div className="accordion-item">
                   <h4 className="accordion-header">
                     <button

@@ -2,7 +2,7 @@ import { Link } from '@umijs/max';
 import { useCountDown } from 'ahooks';
 
 import Avatar from '@/components/Avatar';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useSProvider from '@/hooks/useSProvider';
 import useIncomeRate from '@/hooks/useIncomeRate';
@@ -15,7 +15,7 @@ export type RaisingCardProps = {
 const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
   const { rate } = useIncomeRate(data);
   const provider = useSProvider(data.service_id);
-  const { progress, target } = useRaiseInfo(data);
+  const { progress, target } = useRaiseBase(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
@@ -26,7 +26,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
           <div className="d-flex flex-column flex-lg-row gap-3 mb-3">
             <div className="d-flex flex-grow-1 gap-3 align-items-center">
               <div className="flex-shrink-0">
-                <Avatar address={data.raiser} src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
+                <Avatar address={data.raiser} src={data.sponsor_logo} size={{ md: 48, lg: 56 }} />
               </div>
               <div className="flex-grow-1">
                 <h4 className="card-title mb-0 fw-600">{formatSponsor(data.sponsor_company)}发起的节点计划</h4>
@@ -67,7 +67,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
 
           <div className="d-lg-flex gap-3">
             <div className="flex-shrink-0 d-none d-lg-block opacity-0">
-              <Avatar address={data.raiser} src={data.sponsor_logo} size={{ xs: 48, lg: 56 }} />
+              <Avatar address={data.raiser} src={data.sponsor_logo} size={{ md: 48, lg: 56, xl: 56, xxl: 56 }} />
             </div>
             <div className="flex-grow-1">
               <p className="mb-3 mb-lg-4 fs-16 text-gray-dark">
