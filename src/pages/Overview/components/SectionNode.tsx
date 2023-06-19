@@ -11,7 +11,7 @@ import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 
 function calcPerPledge(perTera?: number | string) {
   if (perTera && +perTera > 0) {
-    return accSub(perTera, 0);
+    return +perTera;
   }
 }
 
@@ -22,8 +22,8 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSuccess, isWorking } = useRaiseState(data);
 
   const price = useMemo(() => calcPerPledge(data?.pledge_per_tera_day) ?? perPledge, [perPledge, data?.pledge_per_tera_day]);
-  const actualPower = useMemo(() => accMul(accDiv(actual, price), 1024, 1024, 1024), [price, actual]);
-  const targetPower = useMemo(() => accMul(accDiv(target, price), 1024, 1024, 1024), [price, target]);
+  const actualPower = useMemo(() => accMul(accDiv(actual, price), Math.pow(1024, 5)), [price, actual]);
+  const targetPower = useMemo(() => accMul(accDiv(target, price), Math.pow(1024, 5)), [price, target]);
   const sealsPower = useMemo(() => accSub(pack?.total_power || 0, 0), [pack?.total_power]);
 
   return (
@@ -42,7 +42,7 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <div className="col table-row">
             {isWorking ? (
               <div className="row g-0 px-2">
-                <div className="col-4 col-lg-5 col-xl-4 table-cell th">新增算力</div>
+                <div className="col-4 col-lg-5 col-xl-4 table-cell th">有效算力</div>
                 <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
                   <div className="min-cell mx-auto text-end">
                     <span className="text-decimal me-1">{formatPower(sealsPower)?.[0]}</span>
