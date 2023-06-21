@@ -1,15 +1,18 @@
+import classNames from 'classnames';
+
 import { isStr } from '@/utils/utils';
-import { ReactComponent as Icon } from './imgs/emtpy.svg';
+import icon from './imgs/empty.png';
 
 const Empty: React.FC<{
   children?: React.ReactNode;
   title?: React.ReactNode;
-}> = ({ children, title = '暂无数据' }) => {
+  titleClassName?: string;
+}> = ({ children, title = '暂无数据', titleClassName }) => {
   return (
     <div className="text-center my-5">
-      <Icon />
+      <img src={icon} />
 
-      {isStr(title) ? <h4 className="my-4 text-gray fs-5">{title}</h4> : title}
+      {isStr(title) ? <h4 className={classNames('my-4 fs-5', titleClassName)}>{title}</h4> : title}
 
       {children}
     </div>
