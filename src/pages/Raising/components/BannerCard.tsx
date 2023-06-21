@@ -17,7 +17,7 @@ export type BannerCardProps = {
 const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
   const { rate } = useIncomeRate(data);
   const provider = useSProvider(data.service_id);
-  const { minTarget, progress } = useRaiseBase(data);
+  const { target, progress } = useRaiseBase(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
@@ -41,8 +41,8 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
               </h3>
 
               <div className="mb-3 fs-16 fw-500">
+                <p className="mb-0">质押目标 {formatAmount(target)} FIL</p>
                 <p className="mb-1">预估年化 {formatRate(rate)}</p>
-                <p className="mb-0">最低目标 {formatAmount(minTarget)} FIL</p>
               </div>
 
               <div className="mb-3 d-flex gap-3">

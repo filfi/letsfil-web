@@ -2,7 +2,7 @@ import 'dayjs/locale/zh-cn';
 import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
 import RelativeTime from 'dayjs/plugin/relativeTime';
-import { newDelegatedEthAddress } from '@glif/filecoin-address';
+import { newActorAddress, newDelegatedEthAddress, newIDAddress } from '@glif/filecoin-address';
 
 dayjs.extend(RelativeTime);
 dayjs.locale('zh-cn');
@@ -133,6 +133,14 @@ export function diffDays(seconds?: number | string) {
 
 export function parseMinerID(minerID: number | string) {
   return `${minerID}`.trim().replace(/^(f0|t0)/i, '');
+}
+
+export function toF2Address(minerId?: string) {
+  if (minerId) {
+    return newActorAddress(newIDAddress(parseMinerID(minerId)).bytes).toString();
+  }
+
+  return '';
 }
 
 export function toF4Address(addr?: string) {

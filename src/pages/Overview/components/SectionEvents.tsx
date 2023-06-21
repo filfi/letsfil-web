@@ -49,17 +49,18 @@ function renderName(event: string) {
   return EVENTS_MAP[event];
 }
 
-function sortEvents(a: API.Event, b: API.Event) {
-  if (
-    (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') ||
-    (a.event_sign === 'ERaiseSuccess' && b.event_sign === 'EStackFromInvestor') ||
-    (a.event_sign === 'ESealEnd' && b.event_sign === 'ESealProgress')
-  ) {
-    return -1;
-  }
+// function sortEvents(a: API.Event, b: API.Event) {
+//   if (
+//     (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') ||
+//     (a.event_sign === 'ERaiseSuccess' && b.event_sign === 'EStackFromInvestor') ||
+//     (a.event_sign === 'ESealEnd' && b.event_sign === 'ESealProgress') ||
+//     (a.event_sign === 'EStartPreSeal' && b.event_sign === 'EStartPreSealTransfer')
+//   ) {
+//     return -1;
+//   }
 
-  return 0;
-}
+//   return 0;
+// }
 
 const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
@@ -74,7 +75,7 @@ const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const { data: list, page, noMore, loading, changePage } = useInfiniteLoad(service, { pageSize: 20, refreshDeps: [data?.raising_id] });
 
-  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')).sort(sortEvents), [list]);
+  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')), [list]); //.sort(sortEvents), [list]);
 
   const handleMore = async () => {
     if (noMore) return;

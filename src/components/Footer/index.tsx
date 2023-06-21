@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
             <p>Keep FIL flowing, never sleeping</p>
           </div>
           <div className="col-12 col-lg-8">
-            <div className="row row-cols-2 row-cols-lg-4 g-3 g-xxl-4">
+            <div className="row row-cols-2 row-cols-lg-3 g-3 g-xxl-4">
               <div className="col">
                 <dl className="fw-semibold">
                   <dt className="mb-3">FIL Holder</dt>
@@ -82,7 +82,7 @@ const Footer: React.FC = () => {
                   </dd>
                 </dl>
               </div>
-              <div className="col">
+              {/* <div className="col">
                 <dl className="fw-semibold">
                   <dt className="mb-3">Document</dt>
                   <dd className="d-flex flex-column">
@@ -93,7 +93,7 @@ const Footer: React.FC = () => {
                     </p>
                   </dd>
                 </dl>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

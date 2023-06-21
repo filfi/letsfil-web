@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { SCAN_URL } from '@/constants';
+import { formatPower } from '@/utils/format';
 import usePackInfo from '@/hooks/usePackInfo';
 import useChainInfo from '@/hooks/useChainInfo';
 import useRaiseBase from '@/hooks/useRaiseBase';
@@ -54,8 +55,8 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <div className="col-4 col-lg-5 col-xl-4 table-cell th">建设目标</div>
                 <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
                   <div className="min-cell mx-auto text-end">
-                    <span className="text-decimal me-1">{formatAmount(actualPower, 2)}</span>
-                    <span className="text-neutral small fw-bold">PiB</span>
+                    <span className="text-decimal me-1">{formatPower(actualPower)?.[0]}</span>
+                    <span className="text-neutral small fw-bold">{formatPower(actualPower)?.[1]}</span>
                   </div>
                 </div>
               </div>
@@ -64,8 +65,8 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <div className="col-4 col-lg-5 col-xl-4 table-cell th">计划目标</div>
                 <div className="col-8 col-lg-7 col-xl-8 table-cell d-flex">
                   <div className="min-cell mx-auto text-end">
-                    <span className="text-decimal me-1">{formatAmount(targetPower, 2)}</span>
-                    <span className="text-neutral small fw-bold">PiB</span>
+                    <span className="text-decimal me-1">{formatPower(targetPower)?.[0]}</span>
+                    <span className="text-neutral small fw-bold">{formatPower(targetPower)?.[1]}</span>
                   </div>
                 </div>
               </div>

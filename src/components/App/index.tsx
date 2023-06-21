@@ -31,7 +31,7 @@ export default function App({ children }: React.PropsWithChildren) {
     }
 
     Object.defineProperty(window, 'toggleDevtools', {
-      value: toggle,
+      value: () => toggle(),
       writable: false,
       enumerable: false,
       configurable: false,
