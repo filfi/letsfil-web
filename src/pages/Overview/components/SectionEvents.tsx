@@ -23,13 +23,13 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 const EVENTS_MAP: Record<string, string> = {
   ESealEnd: '封装结束',
   EStartSeal: '开始封装',
-  ESPWithdraw: '服务商提取节点激励',
+  ESPWithdraw: '服务商提取激励',
   ENodeDestroy: '扇区到期',
   ERaiseFailed: '质押失败',
   ERaiseSuccess: '质押成功',
   EStartPreSeal: '准备封装',
   ESealProgress: '正在封装',
-  ERaiseWithdraw: '主办人提取节点激励',
+  ERaiseWithdraw: '主办人提取激励',
   CloseRaisePlan: '关闭质押',
   StartRaisePlan: '开始质押',
   SpSignWithMiner: '技术服务商签名',
@@ -37,9 +37,10 @@ const EVENTS_MAP: Record<string, string> = {
   ESpecifyOpsPayer: '指定运维付款人',
   ERaiseSecurityFund: '存入主办人保证金',
   EStackFromInvestor: '建设者质押',
+  EStartPreSealTransfer: '质押转入Miner地址',
   EUnstackFromInverstor: '建设者赎回',
   EDepositOPSSecurityFund: '存入运维保证金',
-  EInverstorWithdrawProfit: '建设者提取节点激励',
+  EInverstorWithdrawProfit: '建设者提取激励',
   EWithdrawOPSSecurityFund: '技术服务商取回保证金',
   EWithdrawRaiseSecurityFund: '主办人取回保证金',
 };
@@ -48,17 +49,18 @@ function renderName(event: string) {
   return EVENTS_MAP[event];
 }
 
-function sortEvents(a: API.Event, b: API.Event) {
-  if (
-    (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') ||
-    (a.event_sign === 'ERaiseSuccess' && b.event_sign === 'EStackFromInvestor') ||
-    (a.event_sign === 'ESealEnd' && b.event_sign === 'ESealProgress')
-  ) {
-    return -1;
-  }
+// function sortEvents(a: API.Event, b: API.Event) {
+//   if (
+//     (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') ||
+//     (a.event_sign === 'ERaiseSuccess' && b.event_sign === 'EStackFromInvestor') ||
+//     (a.event_sign === 'ESealEnd' && b.event_sign === 'ESealProgress') ||
+//     (a.event_sign === 'EStartPreSeal' && b.event_sign === 'EStartPreSealTransfer')
+//   ) {
+//     return -1;
+//   }
 
-  return 0;
-}
+//   return 0;
+// }
 
 const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
@@ -73,7 +75,7 @@ const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const { data: list, page, noMore, loading, changePage } = useInfiniteLoad(service, { pageSize: 20, refreshDeps: [data?.raising_id] });
 
-  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')).sort(sortEvents), [list]);
+  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')), [list]); //.sort(sortEvents), [list]);
 
   const handleMore = async () => {
     if (noMore) return;

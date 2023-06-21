@@ -4,7 +4,7 @@ import { useCountDown, useInterval, useMemoizedFn, useUnmount } from 'ahooks';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
-import Dialog from '@/components/Dialog';
+// import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useContract from '@/hooks/useContract';
@@ -38,7 +38,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [targetDate, setTargetDate] = useState(0);
   const [delayed, setDelayed] = useState(formatTime(0));
   const [, formatted] = useCountDown({ targetDate });
-  const { createRaisePlan, servicerSign, startRaisePlan, startPreSeal } = useContract(data?.raise_address);
+  const { createRaisePlan, servicerSign, startRaisePlan } = useContract(data?.raise_address);
 
   const clear = useInterval(
     useMemoizedFn(() => {
@@ -103,11 +103,11 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     await createRaisePlan(raise, node, extra);
   });
 
-  const [sealing, sealAction] = useProcessify(async () => {
-    if (!data) return;
+  // const [sealing, sealAction] = useProcessify(async () => {
+  //   if (!data) return;
 
-    await startPreSeal(data.raising_id);
-  });
+  //   await startPreSeal(data.raising_id);
+  // });
 
   const [starting, handleStart] = useProcessify(async () => {
     if (!data) return;
@@ -115,28 +115,28 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     await startRaisePlan(data.raising_id);
   });
 
-  const handleSeal = () => {
-    const hide = Dialog.confirm({
-      icon: 'error',
-      title: '提前启动封装',
-      summary: '扇区封装通常是一项需要排期的工作，提前启动注意以下提示',
-      content: (
-        <div className="text-gray">
-          <ul>
-            <li>提前沟通技术服务商，与封装排期计划保持同步</li>
-            <li>检查节点计划承诺的封装时间，封装延期将产生罚金</li>
-          </ul>
-        </div>
-      ),
-      confirmBtnVariant: 'danger',
-      confirmText: '提前启动封装',
-      onConfirm: () => {
-        hide();
+  // const handleSeal = () => {
+  //   const hide = Dialog.confirm({
+  //     icon: 'error',
+  //     title: '提前启动封装',
+  //     summary: '扇区封装通常是一项需要排期的工作，提前启动注意以下提示',
+  //     content: (
+  //       <div className="text-gray">
+  //         <ul>
+  //           <li>提前沟通技术服务商，与封装排期计划保持同步</li>
+  //           <li>检查节点计划承诺的封装时间，封装延期将产生罚金</li>
+  //         </ul>
+  //       </div>
+  //     ),
+  //     confirmBtnVariant: 'danger',
+  //     confirmText: '提前启动封装',
+  //     onConfirm: () => {
+  //       hide();
 
-        sealAction();
-      },
-    });
-  };
+  //       sealAction();
+  //     },
+  //   });
+  // };
 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
@@ -216,19 +216,19 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     }
 
     // 待封装
-    if (isWaitSeal && isRaiser) {
-      return (
-        <>
-          <div>
-            <SpinBtn className="btn btn-danger btn-lg w-100" loading={sealing} onClick={handleSeal}>
-              提前启动封装
-            </SpinBtn>
-          </div>
+    // if (isWaitSeal && isRaiser) {
+    //   return (
+    //     <>
+    //       <div>
+    //         <SpinBtn className="btn btn-danger btn-lg w-100" loading={sealing} onClick={handleSeal}>
+    //           提前启动封装
+    //         </SpinBtn>
+    //       </div>
 
-          <p className="mb-0">质押已成功，可提前开始封装。质押金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
-        </>
-      );
-    }
+    //       <p className="mb-0">质押已成功，可提前开始封装。质押金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
+    //     </>
+    //   );
+    // }
 
     return null;
   };

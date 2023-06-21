@@ -13,7 +13,7 @@ import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
 const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const actions = useRaiseActions(data);
   const { isRaiser } = useRaiseRole(data);
-  const { isPending, isWaiting, isRaising } = useRaiseState(data);
+  const { isPending, isWaiting } = useRaiseState(data);
 
   const handleEdit = () => {
     actions.edit();
@@ -91,7 +91,7 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </a>
       )}
 
-      {isRaiser && (isWaiting || isRaising) && (
+      {isWaiting && isRaiser && (
         <div className="dropdown">
           <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
             <span className="bi bi-three-dots-vertical fs-3"></span>

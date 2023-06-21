@@ -2,9 +2,9 @@ import dayjs from 'dayjs';
 import { useMemo } from 'react';
 
 import * as F from '@/utils/format';
-import * as U from '@/utils/utils';
 import Steps from '@/components/Steps';
 import { NodeState } from '@/constants/state';
+import usePackInfo from '@/hooks/usePackInfo';
 import useRaiseState from '@/hooks/useRaiseState';
 
 function isExpire(sec?: number) {
@@ -62,14 +62,14 @@ const StepWork: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <Steps.Item title="运维阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
-      {isWorking ? '产出和分配节点激励' : `+${data!.sector_period}天`}
+      {isWorking ? '产出和分配Filecoin激励' : `+${data!.sector_period}天`}
     </Steps.Item>
   );
 };
 
 const StepEnd: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { data: pack } = usePackInfo(data);
   const { isFinished, isDestroyed, isWorking } = useRaiseState(data);
-  const endSec = useMemo(() => (data?.end_seal_time ? data.end_seal_time + U.day2sec(data.sector_period) : 0), [data]);
 
   return (
     <Steps.Item
@@ -79,12 +79,12 @@ const StepEnd: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           {isFinished && <span className="fw-normal opacity-75">（{data?.sector_period}天）</span>}
         </>
       }
-      status={isDestroyed ? (isExpire(endSec) ? 'finish' : 'active') : undefined}
+      status={isDestroyed ? (isExpire(pack?.max_expiration_epoch) ? 'finish' : 'active') : undefined}
     >
       {isWorking ? (
         <>
-          <p className="mb-0">最早 {F.formatRemain(data!.end_seal_time, U.day2sec(data!.sector_period))}</p>
-          <p className="mb-0">最晚 {F.formatRemain(data!.end_seal_time, U.day2sec(data!.sector_period))}</p>
+          <p className="mb-0">最早 {F.formatUnixDate(pack?.min_expiration_epoch, 'll')}</p>
+          <p className="mb-0">最晚 {F.formatUnixDate(pack?.max_expiration_epoch, 'll')}</p>
         </>
       ) : (
         <>

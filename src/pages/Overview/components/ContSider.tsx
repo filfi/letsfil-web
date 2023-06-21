@@ -1,6 +1,7 @@
 import { useResponsive } from 'ahooks';
 
 import CardBack from './CardBack';
+import CardMiner from './CardMiner';
 import CardRaise from './CardRaise';
 import CardAssets from './CardAssets';
 import CardStaking from './CardStaking';
@@ -12,6 +13,8 @@ const ContSider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     return (
       <>
         <CardRaise data={data} />
+
+        <CardMiner data={data} />
 
         <CardStaking data={data} />
 

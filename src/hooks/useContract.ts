@@ -214,7 +214,21 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
-   * 获取已质押总额
+   * 获取质押金额
+   */
+  const getPledgeAmount = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('pledgeTotalAmount', [id], _address));
+  };
+
+  /**
+   * 获取封装金额
+   */
+  const getSealedAmount = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('toSealAmount', [id], _address));
+  };
+
+  /**
+   * 获取质押总额
    */
   const getTotalPledge = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('pledgeTotalCalcAmount', [id], _address));
@@ -465,6 +479,8 @@ export default function useContract(address?: API.Address) {
     getRaiseState,
     getBackAssets,
     getInvestorInfo,
+    getPledgeAmount,
+    getSealedAmount,
     getTotalPledge,
     getTotalSealed,
     getTotalReward,

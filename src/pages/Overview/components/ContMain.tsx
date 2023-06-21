@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { useResponsive } from 'ahooks';
 
 import CardBack from './CardBack';
+import CardMiner from './CardMiner';
 import CardRaise from './CardRaise';
 import CardAssets from './CardAssets';
 import CardStaking from './CardStaking';
@@ -30,6 +31,8 @@ const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           {responsive.lg ? null : (
             <>
               <CardRaise data={data} />
+
+              <CardMiner data={data} />
 
               <CardStaking data={data} />
 
@@ -95,7 +98,7 @@ const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       <section id="timeline" className="section order-4">
         <div className="section-header">
           <h4 className="section-title">时间进度</h4>
-          <p className="mb-0">建设者进展尽在掌握。</p>
+          <p className="mb-0">建设进展尽在掌握。</p>
         </div>
 
         <SectionTimeline data={data} />

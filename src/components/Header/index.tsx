@@ -160,7 +160,7 @@ const Header: React.FC = () => {
                   </a>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/">
+                  <Link className="nav-link" to="/raising">
                     <FormattedMessage id="menu.miner" />
                   </Link>
                 </li>
@@ -213,11 +213,11 @@ const Header: React.FC = () => {
                     </div>
                   </div>
                 </li>
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <a className="nav-link" href="https://docs.filfi.io/en/introduction.html" target="_blank" rel="noreferrer">
                     <FormattedMessage id="menu.docs" />
                   </a>
-                </li>
+                </li> */}
               </ul>
             </div>
           </div>
