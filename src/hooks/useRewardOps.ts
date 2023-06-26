@@ -7,7 +7,7 @@ import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import { isRaiseOperating } from '@/helpers/raise';
+import { isSuccess } from '@/helpers/raise';
 import { accDiv, accMul, accSub, sleep } from '@/utils/utils';
 
 /**
@@ -22,12 +22,12 @@ export default function useRewardOps(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getTotalReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getTotalReward(data.raising_id);
     }
   };
   const getOpsRewardFines = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getOpsRewardFines(data.raising_id);
     }
   };

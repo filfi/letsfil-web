@@ -5,7 +5,7 @@ import { accDiv, accMul } from '@/utils/utils';
 import useContract from './useContract';
 import { toNumber } from '@/utils/format';
 import { withNull } from '@/utils/hackify';
-import { isPending, isRaiseOperating, isStarted } from '@/helpers/raise';
+import { isPending, isStarted, isSuccess } from '@/helpers/raise';
 
 /**
  * 节点计划信息
@@ -26,7 +26,7 @@ export default function useRaiseBase(data?: API.Plan | null) {
     }
   };
   const getTotalSealed = async () => {
-    if (data && isRaiseOperating(data)) {
+    if (data && isSuccess(data)) {
       return await contract.getTotalSealed(data.raising_id);
     }
   };

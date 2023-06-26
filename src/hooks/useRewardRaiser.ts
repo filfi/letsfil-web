@@ -7,7 +7,7 @@ import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import { isRaiseOperating } from '@/helpers/raise';
+import { isSuccess } from '@/helpers/raise';
 
 /**
  * 主办人节点激励
@@ -20,17 +20,17 @@ export default function useRewardRaiser(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getRaiserAvailableReward = async () => {
-    if (data && isRaiseOperating(data) && isRaiser) {
+    if (data && isSuccess(data) && isRaiser) {
       return await contract.getRaiserAvailableReward(data.raising_id);
     }
   };
   const getRaiserPendingReward = async () => {
-    if (data && isRaiseOperating(data) && isRaiser) {
+    if (data && isSuccess(data) && isRaiser) {
       return await contract.getRaiserPendingReward(data.raising_id);
     }
   };
   const getRaiserWithdrawnReward = async () => {
-    if (data && isRaiseOperating(data) && isRaiser) {
+    if (data && isSuccess(data) && isRaiser) {
       return await contract.getRaiserWithdrawnReward(data.raising_id);
     }
   };
