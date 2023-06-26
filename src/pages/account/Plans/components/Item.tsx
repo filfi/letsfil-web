@@ -112,7 +112,7 @@ const Item: React.FC<{
         <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
           {showAssets && (
             <div className="d-flex justify-content-between gap-3 py-2">
-              <span className="text-gray-dark">我的投入</span>
+              <span className="text-gray-dark">我的质押</span>
               <span className="fw-500">{F.formatAmount(amount)} FIL</span>
             </div>
           )}

@@ -14,8 +14,8 @@ import { accAdd, accDiv, accMul, accSub, sleep } from '@/utils/utils';
 
 const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isRaiser } = useRaiseRole(data);
-  const { isRaising, isPreSeal } = useRaiseState(data);
   const { funds, pledge, sealed } = useRaiseMiner(data);
+  const { isRaising, isPreSeal, isWaitSeal } = useRaiseState(data);
   const { actual, minTarget, target, refetch } = useRaiseBase(data);
   const { startPreSeal } = useContract(data?.raise_address);
 
@@ -52,7 +52,7 @@ const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     });
   };
 
-  if ((isRaising || isPreSeal) && isRaiser && actual >= minTarget) {
+  if ((isRaising || isWaitSeal || isPreSeal) && isRaiser && actual >= minTarget) {
     return (
       <>
         <div className="card section-card">
