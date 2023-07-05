@@ -27,7 +27,7 @@ export default function Create() {
               </a> */}
             </>
           }
-        ></PageHeader>
+        />
 
         <Steps direction="horizontal" current={current} items={items} size="large" />
 
