@@ -361,6 +361,13 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 追加运维保证金
+   */
+  const addDepositOpsFund = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('addOpsSecurityFund', [id], opts);
+  });
+
+  /**
    * 缴纳主办人保证金
    */
   const depositRaiserFund = toastify(async (id: string, opts?: WriteOptions) => {
@@ -480,6 +487,7 @@ export default function useContract(address?: API.Address) {
     startRaisePlan,
     createRaisePlan,
     depositOpsFund,
+    addDepositOpsFund,
     depositRaiserFund,
     servicerSign,
     raiserWithdraw,

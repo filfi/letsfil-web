@@ -1,6 +1,6 @@
 import classNames from 'classnames';
+import { useCountDown } from 'ahooks';
 import { useEffect, useMemo, useState } from 'react';
-import { useCountDown, useInterval, useMemoizedFn, useUnmount } from 'ahooks';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
@@ -15,7 +15,7 @@ import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
 import { day2sec, toF4Address } from '@/utils/utils';
-import { formatAmount, formatPower } from '@/utils/format';
+import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
 const formatTime = (mill: number) => {
@@ -36,22 +36,8 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
-  const [delayed, setDelayed] = useState(formatTime(0));
   const [, formatted] = useCountDown({ targetDate });
   const { createRaisePlan, servicerSign, startRaisePlan } = useContract(data?.raise_address);
-
-  const clear = useInterval(
-    useMemoizedFn(() => {
-      let sec = 0;
-
-      if (data) {
-        sec = Math.max(Date.now() / 1000 - data.end_seal_time, 0);
-      }
-
-      setDelayed(formatTime(sec * 1000));
-    }),
-    isDelayed ? 1_000 : undefined,
-  );
 
   const seconds = useMemo(() => {
     if (!data) return 0;
@@ -78,8 +64,8 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isSuccess]);
   const raiseTime = useMemo(() => formatTime(seconds * 1000), [seconds]);
   const displayTime = useMemo(
-    () => (isRaising || isWaitSeal || isPreSeal || isSealing ? formatted : isDelayed ? delayed : raiseTime),
-    [delayed, formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
+    () => (isRaising || isWaitSeal || isPreSeal || isSealing ? formatted : raiseTime),
+    [formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
   );
 
   useEffect(() => {
@@ -90,8 +76,6 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     setTargetDate(0);
   }, [seconds, isRaising, isDelayed, isSealing]);
-
-  useUnmount(clear);
 
   const [creating, handleCreate] = useProcessify(async () => {
     if (!data) return;
@@ -304,29 +288,33 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </div>
             </div>
 
-            <div
-              className={classNames('d-flex justify-content-between text-center lh-1', {
-                'text-gray': isClosed || isFailed,
-                'text-main': !isClosed && !isFailed,
-              })}
-            >
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.days}</p>
-                <p className="mb-0 text-gray">天</p>
+            {isDelayed || isSealing ? (
+              <p className="fs-30 fw-semibold">{formatUnixDate(isDelayed ? data.delay_seal_time : data.end_seal_time)}</p>
+            ) : (
+              <div
+                className={classNames('d-flex justify-content-between text-center lh-1', {
+                  'text-gray': isClosed || isFailed,
+                  'text-main': !isClosed && !isFailed,
+                })}
+              >
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.days}</p>
+                  <p className="mb-0 text-gray">天</p>
+                </div>
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.hours}</p>
+                  <p className="mb-0 text-gray">小时</p>
+                </div>
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.minutes}</p>
+                  <p className="mb-0 text-gray">分</p>
+                </div>
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.seconds}</p>
+                  <p className="mb-0 text-gray">秒</p>
+                </div>
               </div>
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.hours}</p>
-                <p className="mb-0 text-gray">小时</p>
-              </div>
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.minutes}</p>
-                <p className="mb-0 text-gray">分</p>
-              </div>
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.seconds}</p>
-                <p className="mb-0 text-gray">秒</p>
-              </div>
-            </div>
+            )}
 
             {renderAction()}
           </div>

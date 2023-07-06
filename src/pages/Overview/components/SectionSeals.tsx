@@ -1,14 +1,15 @@
 import classNames from 'classnames';
 
 import * as F from '@/utils/format';
-import { sec2day } from '@/utils/utils';
 import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
+import useChainInfo from '@/hooks/useChainInfo';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 
 const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { baseFee } = useChainInfo();
   const { data: pack } = usePackInfo(data);
   const { fines } = useDepositRaiser(data);
   const { pledge, sector, progress } = useAssetPack(data, pack);
@@ -81,13 +82,13 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </div>
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">超期时间</div>
-              {delayedDays ? <div className="col-8 table-cell">{sec2day(delayedDays)} 天</div> : <div className="col-8 table-cell text-gray">-</div>}
+              <div className="col-4 table-cell th">基础费率</div>
+              <div className="col-8 table-cell">{F.formatAmount(baseFee)} nanoFIL(24H)</div>
             </div>
           </div>
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">累计罚金</div>
+              <div className="col-4 table-cell th">违约罚金</div>
               {delayedDays ? (
                 <div className="col-8 table-cell">
                   <span className="me-auto">{F.formatAmount(fines, 2, 2)} FIL</span>

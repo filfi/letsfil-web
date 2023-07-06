@@ -1,11 +1,14 @@
 import { Input } from 'antd';
 import { useMemo } from 'react';
+import { parseEther } from 'viem';
 import classNames from 'classnames';
 
 import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import Avatar from '@/components/Avatar';
+import ModalDeposit from './ModalDeposit';
 import SpinBtn from '@/components/SpinBtn';
+import useContract from '@/hooks/useContract';
 import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseBase from '@/hooks/useRaiseBase';
@@ -13,6 +16,7 @@ import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useRaiseState from '@/hooks/useRaiseState';
+import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 import useDepositServicer from '@/hooks/useDepositServicer';
@@ -136,7 +140,8 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { investRate, opsRatio } = useRaiseRate(data);
   const { opsAmount, progress } = useAssetPack(data, pack);
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
-  const { isPending, isWaiting, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
+  const { addDepositOpsFund } = useContract(data?.raise_address);
+  const { isPending, isWaiting, isStarted, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
   const { amount, fines, total, interest, paying, withdrawing, payAction, withdrawAction } = useDepositServicer(data);
 
   // 可存入
@@ -149,6 +154,14 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const opsRemain = useMemo(() => Math.max(accSub(opsAmount, accMul(opsAmount, progress)), 0), [opsAmount, progress]);
   // 利息补偿
   const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]);
+
+  const [adding, handleAddDeposit] = useProcessify(async (amount: string) => {
+    if (!data?.raising_id) return;
+
+    await addDepositOpsFund(data?.raising_id, {
+      value: parseEther(`${+amount}`),
+    });
+  });
 
   const renderExtra = () => {
     if ((isClosed || isFailed) && opsInterest) {
@@ -239,6 +252,10 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               >
                 取回
               </SpinBtn>
+            ) : isStarted ? (
+              <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} loading={adding} data-bs-toggle="modal" data-bs-target="#deposit-add">
+                追加
+              </SpinBtn>
             ) : (
               <IconChecked />
             )
@@ -273,7 +290,9 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
       </div>
 
-      <Modal.Confirm id="deposit-confirm" footerClassName="border-0" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
+      <ModalDeposit id="deposit-add" onConfirm={handleAddDeposit} />
+
+      <Modal.Confirm id="deposit-confirm" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">
             <span>运维保证金做为劣后质押，与建设者的优先质押一同封装到存储节点中，分享网络激励。节点计划规定了如下质押比例。</span>

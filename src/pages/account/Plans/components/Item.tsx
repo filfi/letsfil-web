@@ -52,16 +52,13 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 function calcSealDays(data: API.Plan) {
   const r: string[] = [];
 
-  // 运营中
-  if (isWorking(data)) {
-    const sec = Math.max(accSub(data.end_seal_time, data.begin_seal_time), 0);
-    r.push(`${F.formatSeals(sec2day(sec))}天`);
-    r.push(`承诺${data.seal_days}天`);
+  let res = `< ${data.seal_days} 天`;
 
-    return r;
+  if (isSealing(data) || isDelayed(data) || isWorking(data)) {
+    res = F.formatUnixDate(isDelayed(data) ? data.delay_seal_time : data.end_seal_time);
   }
 
-  r.push(`< ${data.seal_days} 天`);
+  r.push(res);
 
   // 封装中
   if (isSealing(data) || isDelayed(data)) {
@@ -282,8 +279,8 @@ const Item: React.FC<{
             <span className="fw-500">{priorityRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">封装时间</span>
-            <span className="fw-500">{state.isWorking ? sealDays.join(' / ') : sealDays.join(' · ')}</span>
+            <span className="text-gray-dark">封装截止</span>
+            <span className="fw-500">{sealDays.join(' · ')}</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">技术服务</span>
