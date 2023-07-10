@@ -4,6 +4,7 @@ import { Link } from '@umijs/max';
 import * as F from '@/utils/format';
 import { catchify } from '@/utils/hackify';
 import { accSub, sec2day } from '@/utils/utils';
+import { isDelayed, isSealing } from '@/helpers/raise';
 import Countdown from './Countdown';
 import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
@@ -19,7 +20,6 @@ import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-import { isDelayed, isSealing, isWorking } from '@/helpers/raise';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
@@ -54,8 +54,8 @@ function calcSealDays(data: API.Plan) {
 
   let res = `< ${data.seal_days} 天`;
 
-  if (isSealing(data) || isDelayed(data) || isWorking(data)) {
-    res = F.formatUnixDate(isDelayed(data) ? data.delay_seal_time : data.end_seal_time);
+  if (data.end_seal_time) {
+    res = F.formatUnixDate(data.end_seal_time);
   }
 
   r.push(res);

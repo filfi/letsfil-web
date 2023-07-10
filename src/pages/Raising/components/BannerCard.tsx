@@ -12,9 +12,10 @@ import { formatAmount, formatProgress, formatRate, formatSponsor } from '@/utils
 export type BannerCardProps = {
   data: API.Plan;
   className?: string;
+  style?: React.CSSProperties;
 };
 
-const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
+const BannerCard: React.FC<BannerCardProps> = ({ className, data, style }) => {
   const { rate } = useIncomeRate(data);
   const provider = useSProvider(data.service_id);
   const { target, progress } = useRaiseBase(data);
@@ -23,7 +24,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
 
   return (
     <>
-      <div className={classNames('card', className)}>
+      <div className={classNames('card', className)} style={style}>
         <div className="card-body">
           <div className="float-end mt-lg-5 pt-lg-4">
             <p className="mb-0 fs-30 fw-600">{priorityRate}%</p>

@@ -156,7 +156,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]);
 
   const [adding, handleAddDeposit] = useProcessify(async (amount: string) => {
-    if (!data?.raising_id) return;
+    if (!isServicer || !data?.raising_id) return;
 
     await addDepositOpsFund(data?.raising_id, {
       value: parseEther(`${+amount}`),
@@ -252,7 +252,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               >
                 取回
               </SpinBtn>
-            ) : isStarted ? (
+            ) : isStarted && !isWorking && isServicer ? (
               <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} loading={adding} data-bs-toggle="modal" data-bs-target="#deposit-add">
                 追加
               </SpinBtn>

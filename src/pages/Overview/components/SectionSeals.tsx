@@ -49,7 +49,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               ) : (
                 <>
                   <div className="col-4 table-cell th">截止时间</div>
-                  <div className="col-8 table-cell">{F.formatUnixDate(data?.delay_seal_time || data?.end_seal_time, 'll')}</div>
+                  <div className="col-8 table-cell">{F.formatUnixDate(data?.end_seal_time, 'll')}</div>
                 </>
               )}
             </div>
@@ -58,7 +58,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="row g-0">
               <div className="col-4 table-cell th">封装时间</div>
               <div className="col-8 table-cell">
-                {isWorking ? <span>{sealedDays}天</span> : isDelayed || isSealing ? <span>第{runningDays}天</span> : <span>尚未开始</span>}
+                {isWorking ? <span>{sealedDays}天</span> : isDelayed || isSealing ? <span>第{runningDays}天</span> : <span>准备封装</span>}
                 <span className="mx-1">/</span>
                 <span>承诺{sealsDays}天</span>
               </div>

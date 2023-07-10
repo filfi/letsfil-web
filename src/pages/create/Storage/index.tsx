@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
@@ -7,7 +8,6 @@ import { isDef } from '@/utils/utils';
 import useUser from '@/hooks/useUser';
 import { minerInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
-// import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
@@ -38,7 +38,7 @@ export default function CreateStorage() {
       });
     }
   }, [user]);
-  useUpdateEffect(() => {
+  useEffect(() => {
     const item = list?.find((i) => i.is_default);
 
     if (item && !isDef(model?.serviceId)) {
@@ -290,26 +290,6 @@ export default function CreateStorage() {
           </div>
         </div>
       </Form>
-
-      {/* <Modal.Alert id="minerId-modal" title="什么是存储节点号？" confirmText="我知道了">
-        <div className="card bg-transparent border-0">
-          <div className="card-body">
-            <p>节点号解释</p>
-            <p>节点号解释</p>
-            <p className="mb-0">节点号解释</p>
-          </div>
-        </div>
-      </Modal.Alert>
-
-      <Modal.Alert id="provider-modal" title="如何成为技术服务商(SP Foundry)？" confirmText="我知道了">
-        <div className="card bg-transparent border-0">
-          <div className="card-body">
-            <p>技术服务商</p>
-            <p>技术服务商</p>
-            <p className="mb-0">技术服务商</p>
-          </div>
-        </div>
-      </Modal.Alert> */}
     </>
   );
 }

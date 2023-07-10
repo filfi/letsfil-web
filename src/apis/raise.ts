@@ -57,7 +57,7 @@ export function getEvents(params: API.PagingParams & { raising_id: number | stri
 }
 
 export function getBanner() {
-  return A.get<API.Plan>('/raising-plan/v2/plan/get/banner');
+  return A.get<{ bg_url: string; result: API.Plan }>('/raising-plan/v2/plan/get/banner');
 }
 
 export function getGasFee() {

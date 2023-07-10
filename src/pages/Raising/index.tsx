@@ -47,7 +47,7 @@ export default function Raising() {
   const seals = useMemo(() => filter(list, isSealing), [list]);
   const workes = useMemo(() => filter(list, isWorking), [list]);
   const isEmpty = useMemo(() => !((data && data.total > 0) || banner), [banner, data]);
-  const items = useMemo(() => (banner ? list?.concat(banner) : list), [list, banner]);
+  const items = useMemo(() => (banner?.result ? list?.concat(banner.result) : list), [list, banner]);
 
   return (
     <div className={classNames('container pt-4 pt-lg-5', styles.container)}>
@@ -58,7 +58,15 @@ export default function Raising() {
           </div>
         ) : (
           <>
-            {banner && <BannerCard className={classNames('mb-5', styles.banner)} data={banner} />}
+            {banner && (
+              <BannerCard
+                className={classNames('mb-5', styles.banner)}
+                data={banner?.result}
+                style={{
+                  backgroundImage: banner?.bg_url ? `url(${banner.bg_url})` : undefined,
+                }}
+              />
+            )}
 
             {isArrs(raises) && (
               <>
