@@ -48,27 +48,27 @@ export default function useRewardServicer(data?: API.Plan | null) {
   const [fRes, lRes, aRes, pRes, wRes] = useQueries({
     queries: [
       {
-        queryKey: ['servicerFinesReward', data?.raising_id],
+        queryKey: ['getServicerFinesReward', data?.raising_id],
         queryFn: withNull(getServicerFinesReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerLockedReward', data?.raising_id],
+        queryKey: ['getServicerLockedReward', data?.raising_id],
         queryFn: withNull(getServicerLockedReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerAvailableReward', data?.raising_id],
+        queryKey: ['getServicerAvailableReward', data?.raising_id],
         queryFn: withNull(getServicerAvailableReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerPendingReward', data?.raising_id],
+        queryKey: ['getServicerPendingReward', data?.raising_id],
         queryFn: withNull(getServicerPendingReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerWithdrawnReward', data?.raising_id],
+        queryKey: ['getServicerWithdrawnReward', data?.raising_id],
         queryFn: withNull(getServicerWithdrawnReward),
         staleTime: 60_000,
       },

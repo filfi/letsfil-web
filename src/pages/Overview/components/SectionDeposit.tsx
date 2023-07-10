@@ -8,6 +8,7 @@ import Modal from '@/components/Modal';
 import Avatar from '@/components/Avatar';
 import ModalDeposit from './ModalDeposit';
 import SpinBtn from '@/components/SpinBtn';
+import { safeAmount } from '@/constants/config';
 import useContract from '@/hooks/useContract';
 import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
@@ -183,7 +184,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     if (isSuccess) {
       const hasFines = fines > 0;
-      const hasOver = opsOver > 0;
+      const hasOver = isWorking && opsOver > 0;
       const hasRemain = isWorking && opsRemain > 0;
 
       if (hasOver || hasFines || hasRemain) {
@@ -275,7 +276,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="card-body">
           <div className="d-flex align-items-center mb-2">
             <p className="mb-0">
-              <span className="text-decimal">{F.formatAmount(isOpsPaid ? amount : total)}</span>
+              <span className="text-decimal">{F.formatAmount(accAdd(isOpsPaid ? amount : total, safeAmount))}</span>
               <span className="ms-1 text-gray">FIL</span>
             </p>
             {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(servicer)}</span>}

@@ -7,7 +7,8 @@ import useContract from './useContract';
 import { toNumber } from '@/utils/format';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import { accSub, sleep } from '@/utils/utils';
+import { safeAmount } from '@/constants/config';
+import { accAdd, accSub, sleep } from '@/utils/utils';
 import { isServicerPaied, isStarted } from '@/helpers/raise';
 
 /**
@@ -19,16 +20,21 @@ export default function useDepositServicer(data?: API.Plan | null) {
   const { withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
-  const getFundOps = async () => {
+  const getOpsFund = async () => {
     if (data && isServicerPaied(data)) {
-      return await contract.getFundOps(data.raising_id);
+      return await contract.getOpsFund(data.raising_id);
     }
   };
-  const getFundOpsCalc = async () => {
+  const getOpsCalcFund = async () => {
     if (data && isServicerPaied(data)) {
-      return await contract.getFundOpsCalc(data.raising_id);
+      return await contract.getOpsCalcFund(data.raising_id);
     }
   };
+  // const getOpsSafeFund = async () => {
+  //   if (data && isServicerPaied(data)) {
+  //     return await contract.getOpsSafeFund(data.raising_id);
+  //   }
+  // };
   const getServicerFines = async () => {
     if (data && isStarted(data)) {
       return await contract.getServicerFines(data.raising_id);
@@ -40,25 +46,30 @@ export default function useDepositServicer(data?: API.Plan | null) {
     }
   };
 
-  const [oRes, cRes, fRes, tRes] = useQueries({
+  const [oRes, cRes, /* sRes, */ fRes, tRes] = useQueries({
     queries: [
       {
-        queryKey: ['fundOps', data?.raising_id],
-        queryFn: withNull(getFundOps),
+        queryKey: ['getOpsFund', data?.raising_id],
+        queryFn: withNull(getOpsFund),
         staleTime: 60_000,
       },
       {
-        queryKey: ['fundOpsCalc', data?.raising_id],
-        queryFn: withNull(getFundOpsCalc),
+        queryKey: ['getOpsCalcFund', data?.raising_id],
+        queryFn: withNull(getOpsCalcFund),
         staleTime: 60_000,
       },
+      // {
+      //   queryKey: ['getOpsSafeFund', data?.raising_id],
+      //   queryFn: withNull(getOpsSafeFund),
+      //   staleTime: 60_000,
+      // },
       {
-        queryKey: ['servicerFines', data?.raising_id],
+        queryKey: ['getServicerFines', data?.raising_id],
         queryFn: withNull(getServicerFines),
         staleTime: 60_000,
       },
       {
-        queryKey: ['totalInterest', data?.raising_id],
+        queryKey: ['getTotalInterest', data?.raising_id],
         queryFn: withNull(getTotalInterest),
         staleTime: 60_000,
       },
@@ -66,6 +77,7 @@ export default function useDepositServicer(data?: API.Plan | null) {
   });
 
   const total = useMemo(() => toNumber(data?.ops_security_fund), [data?.ops_security_fund]); // 总保证金
+  // const safe = useMemo(() => sRes.data ?? 0, [sRes.data]); // 缓冲金
   const fines = useMemo(() => fRes.data ?? 0, [fRes.data]); // 罚金
   const actual = useMemo(() => cRes.data ?? 0, [cRes.data]); // 实际配比部分
   const interest = useMemo(() => tRes.data ?? 0, [tRes.data]); // 总利息
@@ -75,12 +87,12 @@ export default function useDepositServicer(data?: API.Plan | null) {
   const remain = useMemo(() => Math.max(accSub(actual, amount), 0), [actual, amount]); // 剩余部分
 
   const isLoading = useMemo(
-    () => cRes.isLoading || fRes.isLoading || oRes.isLoading || tRes.isLoading,
-    [cRes.isLoading, fRes.isLoading, oRes.isLoading, tRes.isLoading],
+    () => cRes.isLoading || fRes.isLoading /* || sRes.isLoading */ || oRes.isLoading || tRes.isLoading,
+    [cRes.isLoading, fRes.isLoading, /* sRes.isLoading, */ oRes.isLoading, tRes.isLoading],
   );
 
   const refetch = async () => {
-    await Promise.all([cRes.refetch(), fRes.refetch(), oRes.refetch(), tRes.refetch()]);
+    await Promise.all([cRes.refetch(), fRes.refetch(), /* sRes.refetch(), */ oRes.refetch(), tRes.refetch()]);
   };
 
   const [paying, payAction] = useProcessify(
@@ -88,7 +100,7 @@ export default function useDepositServicer(data?: API.Plan | null) {
       if (!data) return;
 
       const res = await contract.depositOpsFund(data.raising_id, {
-        value: parseEther(`${toNumber(data.ops_security_fund)}`),
+        value: parseEther(`${accAdd(toNumber(data.ops_security_fund), safeAmount)}`),
       });
 
       await sleep(1_000);
@@ -117,6 +129,7 @@ export default function useDepositServicer(data?: API.Plan | null) {
     fines,
     amount,
     over,
+    // safe,
     total,
     actual,
     remain,

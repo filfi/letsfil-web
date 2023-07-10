@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
+
 import { SCAN_URL } from '@/constants';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRaiseActions from '@/hooks/useRaiseActions';
@@ -13,7 +16,10 @@ import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
 const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const actions = useRaiseActions(data);
   const { isRaiser } = useRaiseRole(data);
+  const { actual, minTarget } = useRaiseBase(data);
   const { isPending, isWaiting, isRaising } = useRaiseState(data);
+
+  const cloable = useMemo(() => isRaising && actual >= minTarget, [actual, minTarget, isRaising]);
 
   const handleEdit = () => {
     actions.edit();
@@ -38,11 +44,11 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     const hide = Dialog.confirm({
       icon: 'error',
-      title: isRaising ? '提前关闭节点计划' : '关闭节点计划',
-      summary: isRaising
+      title: cloable ? '提前关闭节点计划' : '关闭节点计划',
+      summary: cloable
         ? '达到最低目标，即可正常结束节点计划。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示'
         : '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
-      content: isRaising ? (
+      content: cloable ? (
         <div className="text-gray">
           <ul>
             <li>提前沟通技术服务商，与封装排期计划保持同步</li>
@@ -61,7 +67,7 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </p>
         </div>
       ),
-      confirmText: isRaising ? '提前关闭计划' : '关闭并支付罚金',
+      confirmText: cloable ? '提前关闭计划' : '关闭并支付罚金',
       confirmBtnVariant: 'danger',
       confirmLoading: actions.closing,
       onConfirm: async () => {
@@ -100,7 +106,7 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </a>
       )}
 
-      {(isWaiting || isRaising) && isRaiser && (
+      {isRaiser && (isWaiting || cloable) && (
         <div className="dropdown">
           <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
             <span className="bi bi-three-dots-vertical fs-3"></span>

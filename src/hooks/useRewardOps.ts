@@ -35,12 +35,12 @@ export default function useRewardOps(data?: API.Plan | null) {
   const [tRes, fRes] = useQueries({
     queries: [
       {
-        queryKey: ['totalReward', data?.raising_id],
+        queryKey: ['getTotalReward', data?.raising_id],
         queryFn: withNull(getTotalReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['opsRewardFines', data?.raising_id],
+        queryKey: ['getOpsRewardFines', data?.raising_id],
         queryFn: withNull(getOpsRewardFines),
         staleTime: 60_000,
       },

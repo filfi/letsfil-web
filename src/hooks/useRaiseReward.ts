@@ -27,12 +27,12 @@ export default function useRaiseReward(data?: API.Plan | null) {
   const [rewardRes, finesRes] = useQueries({
     queries: [
       {
-        queryKey: ['totalReward', data?.raising_id],
+        queryKey: ['getTotalReward', data?.raising_id],
         queryFn: withNull(getTotalReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerFines', data?.raising_id],
+        queryKey: ['getServicerFines', data?.raising_id],
         queryFn: withNull(getServicerFines),
         staleTime: 60_000,
       },

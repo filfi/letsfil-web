@@ -131,21 +131,28 @@ export default function useContract(address?: API.Address) {
   /**
    * 获取运维保证金
    */
-  const getFundOps = async (id: string, _address = address) => {
+  const getOpsFund = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('opsSecurityFundRemain', [id], _address));
   };
 
   /**
    * 获取总运维保证金
    */
-  const getFundOpsCalc = async (id: string, _address = address) => {
+  const getOpsCalcFund = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('opsCalcFund', [id], _address));
+  };
+
+  /**
+   * 获取封装缓冲金
+   */
+  const getOpsSafeFund = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('safeSealFund', [id], _address));
   };
 
   /**
    * 获取主办人保证金
    */
-  const getFundRaiser = async (id: string, _address = address) => {
+  const getRaiserFund = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('securityFundRemain', [id], _address));
   };
 
@@ -451,9 +458,10 @@ export default function useContract(address?: API.Address) {
 
   return {
     getOwner,
-    getFundOps,
-    getFundOpsCalc,
-    getFundRaiser,
+    getOpsFund,
+    getOpsCalcFund,
+    getOpsSafeFund,
+    getRaiserFund,
     getNodeState,
     getRaiseState,
     getBackAssets,

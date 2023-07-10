@@ -19,9 +19,9 @@ export default function useDepositRaiser(data?: API.Plan | null) {
   const { withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
-  const getFundRaiser = async () => {
+  const getRaiserFund = async () => {
     if (data && isRaiserPaied(data)) {
-      return await contract.getFundRaiser(data.raising_id);
+      return await contract.getRaiserFund(data.raising_id);
     }
   };
   const getTotalInterest = async () => {
@@ -33,12 +33,12 @@ export default function useDepositRaiser(data?: API.Plan | null) {
   const [fund, interest] = useQueries({
     queries: [
       {
-        queryKey: ['fundRaiser', data?.raising_id],
-        queryFn: withNull(getFundRaiser),
+        queryKey: ['getRaiserFund', data?.raising_id],
+        queryFn: withNull(getRaiserFund),
         staleTime: 60_000,
       },
       {
-        queryKey: ['totalInterest', data?.raising_id],
+        queryKey: ['getTotalInterest', data?.raising_id],
         queryFn: withNull(getTotalInterest),
         staleTime: 60_000,
       },

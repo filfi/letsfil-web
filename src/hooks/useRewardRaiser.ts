@@ -38,17 +38,17 @@ export default function useRewardRaiser(data?: API.Plan | null) {
   const [aRes, pRes, wRes] = useQueries({
     queries: [
       {
-        queryKey: ['raiserAvailableReward', data?.raising_id],
+        queryKey: ['getRaiserAvailableReward', data?.raising_id],
         queryFn: withNull(getRaiserAvailableReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['raiserPendingReward', data?.raising_id],
+        queryKey: ['getRaiserPendingReward', data?.raising_id],
         queryFn: withNull(getRaiserPendingReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['raiserWithdrawnReward', data?.raising_id],
+        queryKey: ['getRaiserWithdrawnReward', data?.raising_id],
         queryFn: withNull(getRaiserWithdrawnReward),
         staleTime: 60_000,
       },

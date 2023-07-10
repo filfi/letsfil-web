@@ -240,10 +240,8 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   ? '正在质押中！距离截止还有'
                   : isWaitSeal || isPreSeal
                   ? '质押成功'
-                  : isSealing
-                  ? '封装倒计时'
-                  : isDelayed
-                  ? '封装延期'
+                  : isSealing || isDelayed
+                  ? '封装截止'
                   : '质押时间'}
               </h4>
               <div className="ms-auto">
@@ -259,7 +257,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </div>
 
             {isDelayed || isSealing ? (
-              <p className="fs-30 fw-semibold">{formatUnixDate(data.end_seal_time)}</p>
+              <p className="fs-32 fw-semibold text-main">{formatUnixDate(data.end_seal_time)}</p>
             ) : (
               <div
                 className={classNames('d-flex justify-content-between text-center lh-1', {

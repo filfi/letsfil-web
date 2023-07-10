@@ -34,17 +34,17 @@ export default function useRaiseBase(data?: API.Plan | null) {
   const [ownerRes, pledgeRes, sealedRes] = useQueries({
     queries: [
       {
-        queryKey: ['raiseOwner', data?.raising_id],
+        queryKey: ['getOwner', data?.raising_id],
         queryFn: withNull(getOwner),
         staleTime: 60_000,
       },
       {
-        queryKey: ['raiseTotalPledge', data?.raising_id],
+        queryKey: ['getTotalPledge', data?.raising_id],
         queryFn: withNull(getTotalPledge),
         staleTime: 60_000,
       },
       {
-        queryKey: ['raiseTotalSealed', data?.raising_id],
+        queryKey: ['getTotalSealed', data?.raising_id],
         queryFn: withNull(getTotalSealed),
         staleTime: 60_000,
       },
