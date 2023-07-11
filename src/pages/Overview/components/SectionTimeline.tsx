@@ -30,7 +30,7 @@ const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { nodeState, isClosed, isFailed, isRaising, isSuccess, isWaitSeal, isPreSeal } = useRaiseState(data);
 
   const isRaiseEnd = useMemo(() => isSuccess && nodeState >= NodeState.Started && !isPreSeal, [nodeState, isSuccess, isPreSeal]);
-  const isProgress = useMemo(() => isRaising || (isSuccess && (isWaitSeal || isPreSeal)), [isRaising, isSuccess, isWaitSeal, isPreSeal]);
+  const isProgress = useMemo(() => !isSuccess && (isRaising || isWaitSeal || isPreSeal), [isRaising, isSuccess, isWaitSeal, isPreSeal]);
 
   if (isClosed || isFailed) {
     return (
@@ -48,10 +48,10 @@ const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 };
 
 const StepSeal: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isSealing, isDelayed, isWorking } = useRaiseState(data);
+  const { isSuccess, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   return (
-    <Steps.Item title="封装阶段截止" status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}>
+    <Steps.Item title="封装阶段截止" status={isWorking ? 'finish' : isSuccess && (isSealing || isDelayed) ? 'active' : undefined}>
       {data?.end_seal_time ? F.formatUnixDate(data.end_seal_time) : `+ ${data!.seal_days} 天`}
     </Steps.Item>
   );

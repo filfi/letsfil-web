@@ -41,11 +41,11 @@ export function isRunning(data: API.Plan) {
 }
 
 export function isSealing(data: API.Plan) {
-  return isSuccess(data) && data.sealed_status === NodeState.Started;
+  return isStarted(data) && data.sealed_status === NodeState.Started;
 }
 
 export function isDelayed(data: API.Plan) {
-  return isSuccess(data) && data.sealed_status === NodeState.Delayed;
+  return isStarted(data) && data.sealed_status === NodeState.Delayed;
 }
 
 export function isFinished(data: API.Plan) {

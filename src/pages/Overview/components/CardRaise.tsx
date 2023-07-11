@@ -62,10 +62,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     return day2sec(data.raise_days);
   }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isSuccess]);
   const raiseTime = useMemo(() => formatTime(seconds * 1000), [seconds]);
-  const displayTime = useMemo(
-    () => (isRaising || isWaitSeal || isPreSeal || isSealing ? formatted : raiseTime),
-    [formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
-  );
+  const displayTime = useMemo(() => (isRaising || isWaitSeal || isPreSeal ? formatted : raiseTime), [formatted, raiseTime, isRaising, isWaitSeal, isPreSeal]);
 
   useEffect(() => {
     if (isRaising || isWaitSeal || isPreSeal || isSealing) {
@@ -237,11 +234,11 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   : isClosed
                   ? '节点计划已关闭'
                   : isRaising
-                  ? '正在质押中！距离截止还有'
+                  ? '距离截止还有'
                   : isWaitSeal || isPreSeal
                   ? '质押成功'
                   : isSealing || isDelayed
-                  ? '封装截止'
+                  ? '封装截止时间'
                   : '质押时间'}
               </h4>
               <div className="ms-auto">
@@ -256,8 +253,8 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </div>
             </div>
 
-            {isDelayed || isSealing ? (
-              <p className="fs-32 fw-semibold text-main">{formatUnixDate(data.end_seal_time)}</p>
+            {isSuccess && (isDelayed || isSealing) ? (
+              <p className="countdown-text">{formatUnixDate(data.end_seal_time)}</p>
             ) : (
               <div
                 className={classNames('d-flex justify-content-between text-center lh-1', {

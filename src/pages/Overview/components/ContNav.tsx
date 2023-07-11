@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import useRaiseState from '@/hooks/useRaiseState';
 
 const ContNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isStarted, isSuccess, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
+  const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
   return (
     <ul className="nav nav-pills d-inline-flex flex-lg-column mb-2">
@@ -12,7 +12,7 @@ const ContNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           质押目标
         </a>
       </li>
-      {isSuccess && !isDestroyed && (
+      {(isSealing || isDelayed || isFinished) && (
         <li className="nav-item">
           <a className="nav-link" href="#seals">
             封装进度

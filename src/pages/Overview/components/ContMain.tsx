@@ -20,7 +20,7 @@ import useRaiseState from '@/hooks/useRaiseState';
 
 const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
-  const { isStarted, isSuccess, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
+  const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
   return (
     <>
@@ -45,7 +45,7 @@ const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           )}
         </div>
       </section>
-      {isSuccess && !isDestroyed && (
+      {(isSealing || isDelayed || isFinished) && (
         <section id="seals" className="section">
           <div className="section-header">
             <h4 className="section-title">封装进度</h4>
