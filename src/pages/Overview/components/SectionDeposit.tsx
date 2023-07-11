@@ -143,7 +143,10 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
   const { addDepositOpsFund } = useContract(data?.raise_address);
   const { isPending, isWaiting, isStarted, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
-  const { amount, fines, total, interest, paying, withdrawing, payAction, withdrawAction } = useDepositServicer(data);
+  const { amount, fines, total, interest, safe, paying, withdrawing, payAction, withdrawAction } = useDepositServicer(data);
+
+  const after = useMemo(() => accAdd(amount, safe), [amount, safe]);
+  const before = useMemo(() => accAdd(total, safeAmount), [safeAmount, total]);
 
   // 可存入
   const payable = useMemo(() => isServicer && isWaiting, [isServicer, isWaiting]);
@@ -276,7 +279,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="card-body">
           <div className="d-flex align-items-center mb-2">
             <p className="mb-0">
-              <span className="text-decimal">{F.formatAmount(accAdd(isOpsPaid ? amount : total, safeAmount))}</span>
+              <span className="text-decimal">{F.formatAmount(isOpsPaid ? after : before)}</span>
               <span className="ms-1 text-gray">FIL</span>
             </p>
             {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(servicer)}</span>}

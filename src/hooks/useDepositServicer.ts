@@ -30,11 +30,11 @@ export default function useDepositServicer(data?: API.Plan | null) {
       return await contract.getOpsCalcFund(data.raising_id);
     }
   };
-  // const getOpsSafeFund = async () => {
-  //   if (data && isServicerPaied(data)) {
-  //     return await contract.getOpsSafeFund(data.raising_id);
-  //   }
-  // };
+  const getOpsSafeFund = async () => {
+    if (data && isServicerPaied(data)) {
+      return await contract.getOpsSafeFund(data.raising_id);
+    }
+  };
   const getServicerFines = async () => {
     if (data && isStarted(data)) {
       return await contract.getServicerFines(data.raising_id);
@@ -46,7 +46,7 @@ export default function useDepositServicer(data?: API.Plan | null) {
     }
   };
 
-  const [oRes, cRes, /* sRes, */ fRes, tRes] = useQueries({
+  const [oRes, cRes, sRes, fRes, tRes] = useQueries({
     queries: [
       {
         queryKey: ['getOpsFund', data?.raising_id],
@@ -58,11 +58,11 @@ export default function useDepositServicer(data?: API.Plan | null) {
         queryFn: withNull(getOpsCalcFund),
         staleTime: 60_000,
       },
-      // {
-      //   queryKey: ['getOpsSafeFund', data?.raising_id],
-      //   queryFn: withNull(getOpsSafeFund),
-      //   staleTime: 60_000,
-      // },
+      {
+        queryKey: ['getOpsSafeFund', data?.raising_id],
+        queryFn: withNull(getOpsSafeFund),
+        staleTime: 60_000,
+      },
       {
         queryKey: ['getServicerFines', data?.raising_id],
         queryFn: withNull(getServicerFines),
@@ -77,7 +77,7 @@ export default function useDepositServicer(data?: API.Plan | null) {
   });
 
   const total = useMemo(() => toNumber(data?.ops_security_fund), [data?.ops_security_fund]); // 总保证金
-  // const safe = useMemo(() => sRes.data ?? 0, [sRes.data]); // 缓冲金
+  const safe = useMemo(() => sRes.data ?? 0, [sRes.data]); // 缓冲金
   const fines = useMemo(() => fRes.data ?? 0, [fRes.data]); // 罚金
   const actual = useMemo(() => cRes.data ?? 0, [cRes.data]); // 实际配比部分
   const interest = useMemo(() => tRes.data ?? 0, [tRes.data]); // 总利息
@@ -87,12 +87,12 @@ export default function useDepositServicer(data?: API.Plan | null) {
   const remain = useMemo(() => Math.max(accSub(actual, amount), 0), [actual, amount]); // 剩余部分
 
   const isLoading = useMemo(
-    () => cRes.isLoading || fRes.isLoading /* || sRes.isLoading */ || oRes.isLoading || tRes.isLoading,
-    [cRes.isLoading, fRes.isLoading, /* sRes.isLoading, */ oRes.isLoading, tRes.isLoading],
+    () => cRes.isLoading || fRes.isLoading || sRes.isLoading || oRes.isLoading || tRes.isLoading,
+    [cRes.isLoading, fRes.isLoading, sRes.isLoading, oRes.isLoading, tRes.isLoading],
   );
 
   const refetch = async () => {
-    await Promise.all([cRes.refetch(), fRes.refetch(), /* sRes.refetch(), */ oRes.refetch(), tRes.refetch()]);
+    await Promise.all([cRes.refetch(), fRes.refetch(), sRes.refetch(), oRes.refetch(), tRes.refetch()]);
   };
 
   const [paying, payAction] = useProcessify(
@@ -129,7 +129,7 @@ export default function useDepositServicer(data?: API.Plan | null) {
     fines,
     amount,
     over,
-    // safe,
+    safe,
     total,
     actual,
     remain,

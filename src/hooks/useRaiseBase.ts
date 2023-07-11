@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
-import { accDiv, accMul } from '@/utils/utils';
 import useContract from './useContract';
 import { toNumber } from '@/utils/format';
 import { withNull } from '@/utils/hackify';
+import { accDiv, accMul } from '@/utils/utils';
 import { isPending, isStarted, isSuccess } from '@/helpers/raise';
 
 /**
