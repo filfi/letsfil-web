@@ -39,16 +39,18 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const renderExtra = () => {
     if (isClosed || isFailed) {
-      <div className="bg-light my-2 px-3 py-2 rounded-3">
-        <p className="d-flex gap-3 my-2">
-          <span className="text-gray-dark">
-            <span>累计罚金</span>
-            <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fines, 2, 2)}</span>
-            <span className="ms-1">FIL</span>
-          </span>
-          {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
-        </p>
-      </div>;
+      return (
+        <div className="bg-light my-2 px-3 py-2 rounded-3">
+          <p className="d-flex gap-3 my-2">
+            <span className="text-gray-dark">
+              <span>累计罚金</span>
+              <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fines, 2, 2)}</span>
+              <span className="ms-1">FIL</span>
+            </span>
+            {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
+          </p>
+        </div>
+      );
     }
 
     if (isSuccess) {

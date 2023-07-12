@@ -14,7 +14,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { fines } = useDepositRaiser(data);
   const { pledge, sector, progress } = useAssetPack(data, pack);
   const { sealsDays, delayedDays, sealedDays, runningDays } = useRaiseSeals(data, pack);
-  const { isSuccess, isWaitSeal, isPreSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
+  const { isRaising, isSuccess, isWaitSeal, isPreSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
 
   if (isSuccess || isSealing || isDelayed || isWorking) {
     return (
@@ -34,6 +34,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             ></div>
             <span className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
               <span className="text-white fw-bold">封装进度 {F.formatRate(progress)}</span>
+              {isRaising && <span className="text-white fw-bold">（质押还在进行，进度可能抖动）</span>}
             </span>
           </div>
         </div>
