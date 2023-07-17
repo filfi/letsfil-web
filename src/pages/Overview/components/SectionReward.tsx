@@ -42,7 +42,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   // const { perFil, perPledge } = useChainInfo();
   // const { period, target } = useRaiseBase(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
-  const { priorityRate, raiserRate, opsRatio, ffiRate } = useRaiseRate(data);
+  const { priorityRate, raiserRate, servicerRate, ffiRate } = useRaiseRate(data);
 
   // 预估节点激励 = 24小时产出效率 * 封装天数 * 总算力(质押目标 / 当前扇区质押量)
   // const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
@@ -50,10 +50,10 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     () => [
       { name: '建设者权益', value: priorityRate },
       { name: '主办人权益', value: raiserRate },
-      { name: '技术运维服务费', value: opsRatio },
+      { name: '技术运维服务费', value: servicerRate },
       { name: 'FilFi协议费用', value: ffiRate },
     ],
-    [priorityRate, raiserRate, opsRatio, ffiRate],
+    [priorityRate, raiserRate, servicerRate, ffiRate],
   );
 
   return (
@@ -101,7 +101,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <span className="reward-dot"></span>
                 <p className="reward-label">技术运维服务费</p>
                 <p className="reward-text">
-                  <span className="text-decimal">{opsRatio}</span>
+                  <span className="text-decimal">{servicerRate}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>
