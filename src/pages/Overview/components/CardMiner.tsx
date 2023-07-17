@@ -14,9 +14,9 @@ import { accAdd, accSub, sleep } from '@/utils/utils';
 
 const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isRaiser } = useRaiseRole(data);
+  const { isStarted, isSuccess } = useRaiseState(data);
   const { actual, minTarget, refetch } = useRaiseBase(data);
   const { funds, pledge, safe, sealed } = useRaiseMiner(data);
-  const { isRaising, isPreSeal, isWaitSeal } = useRaiseState(data);
   const { startPreSeal } = useContract(data?.raise_address);
 
   // 可转入 = 总质押 + 运维保证金 + 缓冲金 - 已封装
@@ -46,7 +46,7 @@ const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     });
   };
 
-  if ((isRaising || isWaitSeal || isPreSeal) && isRaiser && actual >= minTarget) {
+  if (isRaiser && (isStarted || isSuccess) && actual >= minTarget && amount > 0) {
     return (
       <>
         <div className="card section-card">

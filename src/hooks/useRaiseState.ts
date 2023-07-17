@@ -31,8 +31,6 @@ export default function useRaiseState(data?: API.Plan | null) {
   const isRunning = useMemo(() => data && H.isRunning(data), [data]);
   // 等待封装
   const isWaitSeal = useMemo(() => data && H.isWaitSeal(data), [data]);
-  // 预封装
-  const isPreSeal = useMemo(() => data && H.isPreSeal(data), [data]);
   // 封装中
   const isSealing = useMemo(() => data && H.isSealing(data), [data]);
   // 已延期
@@ -57,7 +55,6 @@ export default function useRaiseState(data?: API.Plan | null) {
     isPending,
     isRaising,
     isWaitSeal,
-    isPreSeal,
     isSealing,
     isWorking,
     isDelayed,

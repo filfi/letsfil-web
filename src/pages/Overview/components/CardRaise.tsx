@@ -32,7 +32,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { data: pack } = usePackInfo(data);
   const { power, pledge } = useAssetPack(data, pack);
   const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
-  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
+  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
   const [, formatted] = useCountDown({ targetDate });
@@ -47,7 +47,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       }
     }
 
-    if (isRaising || isWaitSeal || isPreSeal) {
+    if (isRaising || isWaitSeal) {
       return data.closing_time;
     }
 
@@ -60,12 +60,12 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     }
 
     return day2sec(data.raise_days);
-  }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isSuccess]);
+  }, [data, isClosed, isRaising, isWaitSeal, isSealing, isSuccess]);
   const raiseTime = useMemo(() => formatTime(seconds * 1000), [seconds]);
-  const displayTime = useMemo(() => (isRaising || isWaitSeal || isPreSeal ? formatted : raiseTime), [formatted, raiseTime, isRaising, isWaitSeal, isPreSeal]);
+  const displayTime = useMemo(() => (isRaising || isWaitSeal ? formatted : raiseTime), [formatted, raiseTime, isRaising, isWaitSeal]);
 
   useEffect(() => {
-    if (isRaising || isWaitSeal || isPreSeal || isSealing) {
+    if (isRaising || isWaitSeal || isSealing) {
       setTargetDate(seconds * 1000);
       return;
     }
@@ -235,7 +235,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   ? '节点计划已关闭'
                   : isRaising
                   ? '距离截止还有'
-                  : isWaitSeal || isPreSeal
+                  : isWaitSeal
                   ? '质押成功'
                   : isSealing || isDelayed
                   ? '封装截止时间'
@@ -243,9 +243,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </h4>
               <div className="ms-auto">
                 {isFailed ? <span className="badge badge-danger">质押未成功</span> : isSuccess ? <span className="badge badge-success">质押成功</span> : null}
-                {isPreSeal ? (
-                  <span className="badge ms-2">准备封装</span>
-                ) : isDelayed ? (
+                {isDelayed ? (
                   <span className="badge badge-warning ms-2">封装延期</span>
                 ) : isSealing ? (
                   <span className="badge badge-primary ms-2">正在封装</span>

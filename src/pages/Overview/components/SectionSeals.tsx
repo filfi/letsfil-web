@@ -14,7 +14,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { fines } = useDepositRaiser(data);
   const { pledge, sector, progress } = useAssetPack(data, pack);
   const { sealsDays, delayedDays, sealedDays, runningDays } = useRaiseSeals(data, pack);
-  const { isRaising, isSuccess, isWaitSeal, isPreSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
+  const { isRaising, isSuccess, isWaitSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
 
   if (isSuccess || isSealing || isDelayed || isWorking) {
     return (
@@ -68,17 +68,13 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <div className="col table-row">
             <div className="row g-0">
               <div className="col-4 table-cell th">消耗质押</div>
-              {isWaitSeal || isPreSeal ? (
-                <div className="col-8 table-cell text-gray">-</div>
-              ) : (
-                <div className="col-8 table-cell">{F.formatAmount(pledge)} FIL</div>
-              )}
+              {isWaitSeal ? <div className="col-8 table-cell text-gray">-</div> : <div className="col-8 table-cell">{F.formatAmount(pledge)} FIL</div>}
             </div>
           </div>
           <div className="col table-row">
             <div className="row g-0">
               <div className="col-4 table-cell th">封装扇区</div>
-              {isWaitSeal || isPreSeal ? <div className="col-8 table-cell text-gray">-</div> : <div className="col-8 table-cell">{sector} 个</div>}
+              {isWaitSeal ? <div className="col-8 table-cell text-gray">-</div> : <div className="col-8 table-cell">{sector} 个</div>}
             </div>
           </div>
           <div className="col table-row">

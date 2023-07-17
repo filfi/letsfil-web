@@ -22,11 +22,11 @@ function isRaising(data: API.Plan) {
 }
 
 function isSealing(data: API.Plan) {
-  return data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.PreSeal, NodeState.Started, NodeState.Delayed].includes(data.sealed_status);
+  return data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.Started, NodeState.Delayed].includes(data.sealed_status);
 }
 
 function isWorking(data: API.Plan) {
-  return data.status === RaiseState.Success && data.sealed_status >= NodeState.End && data.sealed_status !== NodeState.PreSeal;
+  return data.status === RaiseState.Success && data.sealed_status >= NodeState.End;
 }
 
 export default function Raising() {
