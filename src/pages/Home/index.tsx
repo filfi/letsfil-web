@@ -118,6 +118,18 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <section className={classNames(styles.section, styles.sectionTint)}>
+        <div className="container">
+          <ul className="list-inline">
+            <li className="list-inline-item">
+              <a className="text-reset" href="">
+                <img src={require('./imgs/partners/sxx.png')} alt="SXX" />
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
     </>
   );
 }
