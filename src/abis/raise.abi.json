@@ -1779,6 +1779,25 @@
         "type": "uint256"
       }
     ],
+    "name": "raiserFundBack",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
     "name": "raiserRewardAvailableLeft",
     "outputs": [
       {
@@ -1907,6 +1926,25 @@
       }
     ],
     "name": "secPack",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "securityFundBack",
     "outputs": [
       {
         "internalType": "uint256",

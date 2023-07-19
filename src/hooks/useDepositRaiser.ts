@@ -24,17 +24,27 @@ export default function useDepositRaiser(data?: API.Plan | null) {
       return await contract.getRaiserFund(data.raising_id);
     }
   };
+  const getRaiserBackFund = async () => {
+    if (data && isRaiserPaied(data)) {
+      return await contract.getRaiserBackFund(data.raising_id);
+    }
+  };
   const getTotalInterest = async () => {
     if (data && isRaiserPaied(data)) {
       return await contract.getTotalInterest(data.raising_id);
     }
   };
 
-  const [fund, interest] = useQueries({
+  const [fRes, bRes, interest] = useQueries({
     queries: [
       {
         queryKey: ['getRaiserFund', data?.raising_id],
         queryFn: withNull(getRaiserFund),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['getRaiserBackFund', data?.raising_id],
+        queryFn: withNull(getRaiserBackFund),
         staleTime: 60_000,
       },
       {
@@ -45,13 +55,14 @@ export default function useDepositRaiser(data?: API.Plan | null) {
     ],
   });
 
+  const back = useMemo(() => bRes.data ?? 0, [bRes.data]); // 罚息
   const fines = useMemo(() => interest.data ?? 0, [interest.data]); // 罚息
-  const amount = useMemo(() => fund.data ?? toNumber(data?.raise_security_fund), [fund.data, data?.raise_security_fund]); // 当前保证金
+  const amount = useMemo(() => fRes.data ?? toNumber(data?.raise_security_fund), [fRes.data, data?.raise_security_fund]); // 当前保证金
   const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]); // 总保证金
-  const isLoading = useMemo(() => fund.isLoading || interest.isLoading, [fund.isLoading, interest.isLoading]);
+  const isLoading = useMemo(() => fRes.isLoading || bRes.isLoading || interest.isLoading, [fRes.isLoading, bRes.isLoading, interest.isLoading]);
 
   const refetch = async () => {
-    return Promise.all([fund.refetch(), interest.refetch()]);
+    return Promise.all([fRes.refetch(), bRes.refetch(), interest.refetch()]);
   };
 
   const [paying, payAction] = useProcessify(
@@ -64,7 +75,8 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(1_000);
 
-      fund.refetch();
+      fRes.refetch();
+      bRes.refetch();
 
       return res;
     }),
@@ -78,13 +90,15 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(200);
 
-      fund.refetch();
+      fRes.refetch();
+      bRes.refetch();
 
       return res;
     }),
   );
 
   return {
+    back,
     fines,
     total,
     amount,
