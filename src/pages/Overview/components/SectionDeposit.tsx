@@ -30,8 +30,8 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
   const { actual } = useRaiseBase(data);
   const { raiser, isRaiser, isRaisePaid } = useRaiseRole(data);
+  const { amount, fines, total, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
   const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = useRaiseState(data);
-  const { amount, back, fines, total, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
 
   const fee = useMemo(() => accMul(actual, 0.003), [actual]); // 手续费
   const payable = useMemo(() => isRaiser && isWaiting, [isRaiser, isWaiting]);
@@ -91,7 +91,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </div>
 
           {isRaisePaid ? (
-            withdrawable && back > 0 ? (
+            withdrawable ? (
               <SpinBtn
                 className="btn btn-primary ms-auto"
                 style={{ minWidth: 120 }}
