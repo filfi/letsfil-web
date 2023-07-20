@@ -1,38 +1,31 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 
-import { toNumber } from '@/utils/format';
-import { withNull } from '@/utils/hackify';
-import { getIncomeRate } from '@/apis/raise';
+import useChainInfo from './useChainInfo';
 import { accDiv, accMul } from '@/utils/utils';
 
 /**
  * 年化节点激励率
- * @param plan
+ * @param data
  * @returns
  */
-export default function useIncomeRate(plan?: API.Plan | null) {
-  const service = async () => {
-    if (plan?.raising_id) {
-      return await getIncomeRate(plan.raising_id);
-    }
-  };
+export default function useIncomeRate(data?: API.Plan | null) {
+  const { perFil: _perFil, perPledge: _perPledge } = useChainInfo();
 
-  const { data, isLoading, refetch } = useQuery(['income', plan?.raising_id], withNull(service), {
-    staleTime: 60_000,
-  });
-
-  const ratio = useMemo(() => plan?.raiser_coin_share ?? 70, [plan?.raiser_coin_share]);
-  const income = useMemo(() => toNumber(`${data?.ec_income_rate ?? 0}`, 6), [data?.ec_income_rate]);
+  const ratio = useMemo(() => data?.raiser_coin_share ?? 0, [data?.raiser_coin_share]);
+  const perFil = useMemo(() => accMul(data?.fil_per_tera_day ?? 0, 1024), [data?.fil_per_tera_day]);
+  const perPledge = useMemo(() => accMul(data?.pledge_per_tera_day ?? 0, 1024), [data?.pledge_per_tera_day]);
 
   const rate = useMemo(() => {
-    const r = accMul(income, accDiv(ratio, 100));
-    return Number.isNaN(r) ? 0 : r;
-  }, [income, ratio]);
+    let r = 0;
+    const fil = perFil || _perFil;
+    const pledge = perPledge || _perPledge;
 
-  return {
-    rate,
-    isLoading,
-    refetch,
-  };
+    if (pledge > 0) {
+      r = accMul(accDiv(accMul(fil, 360), pledge), accDiv(ratio, 100));
+    }
+
+    return Number.isNaN(r) ? 0 : r;
+  }, [_perFil, _perPledge, perFil, perPledge, ratio]);
+
+  return { rate };
 }
