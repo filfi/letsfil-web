@@ -10,16 +10,17 @@ console.log('[RUN_ENV]: ', RUN_ENV);
 
 export const defaultLocale = 'zh-CN';
 
-export const SUPPORTED_CHAINS =
-  RUN_ENV === 'main'
-    ? [
-        '0x13a', // 314, // Filecoin - Mainnet
-      ]
-    : [
-        // '0x13a', // 314, // Filecoin Mainnet
-        // '0xc45', // 3141, // Hypersapce testnet
-        '0x4cb2f', // 314159, // Calibration testnet
-      ];
+export const isMainnet = ['main', 'staging'].includes(RUN_ENV);
+
+export const SUPPORTED_CHAINS = isMainnet
+  ? [
+      '0x13a', // 314, // Filecoin - Mainnet
+    ]
+  : [
+      // '0x13a', // 314, // Filecoin Mainnet
+      // '0xc45', // 3141, // Hypersapce testnet
+      '0x4cb2f', // 314159, // Calibration testnet
+    ];
 
 // Calibration testnet
 // const RAISE_ADDR = '0x30d10A82a29A367bD403bB2139d8994333550F80'; // 5200
@@ -27,14 +28,14 @@ const RAISE_ADDR = '0x390CB629D5057AB6F990471a725179FdfB64dEFD'; // 5000
 /**
  * Raise Facory Contract Address
  */
-export const RAISE_ADDRESS = (RUN_ENV === 'main' ? ADDRESS : RAISE_ADDR) as API.Address;
+export const RAISE_ADDRESS = (isMainnet ? ADDRESS : RAISE_ADDR) as API.Address;
 
 const SCAN_URL_MAIN = 'https://filfox.info/en'; // mainnet
 const SCAN_URL_CB = 'https://calibration.filscan.io'; // calibration testnet
 /**
  * Miner Overview address
  */
-export const SCAN_URL = RUN_ENV === 'main' ? SCAN_URL_MAIN : SCAN_URL_CB;
+export const SCAN_URL = isMainnet ? SCAN_URL_MAIN : SCAN_URL_CB;
 
 export const locales = [
   {

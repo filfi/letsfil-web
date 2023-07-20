@@ -3,9 +3,8 @@ import { publicProvider } from 'wagmi/providers/public';
 import { filecoin, filecoinCalibration } from 'viem/chains';
 import { Chain, configureChains, createConfig } from 'wagmi';
 
-import { RUN_ENV } from '@/constants';
+import { isMainnet } from '@/constants';
 
-const isMainnet = RUN_ENV === 'main';
 // const _chains: Chain[] = [filecoin];
 const _chains: Chain[] = isMainnet ? [filecoin] : [filecoinCalibration];
 
