@@ -262,152 +262,6 @@
 //   }
 // }
 
-/** pagination **/
-.pagination {
-  --bs-pagination-size: 34px;
-  --bs-pagination-padding-x: 8px;
-  --bs-pagination-padding-y: 8px;
-  --bs-pagination-font-size: 14px;
-  --bs-pagination-border-width: 0;
-  --bs-pagination-border-radius: 50%;
-  --bs-pagination-focus-box-shadow: none;
-  --bs-pagination-bg: #fff;
-  --bs-pagination-color: var(--bs-gray-600);
-  --bs-pagination-hover-bg: var(--bs-gray-50);
-  --bs-pagination-hover-color: var(--bs-gray-600);
-  --bs-pagination-active-bg: var(--bs-gray-50);
-  --bs-pagination-active-color: var(--bs-gray-600);
-  // --bs-pagination-disabled-bg: var(--bs-gray-25);
-  --bs-pagination-disabled-color: var(--bs-gray-300);
-
-  display: flex;
-
-  .ant-pagination-item,
-  .ant-pagination-next,
-  .ant-pagination-prev {
-    margin: 0;
-    display: block;
-    height: unset;
-    min-width: unset;
-    line-height: unset;
-    border: unset;
-    font-family: inherit;
-    font-weight: unset;
-    border-radius: unset;
-    background-color: unset;
-
-    &:not(.ant-pagination-item-active):hover {
-      background-color: unset;
-    }
-  }
-
-  .ant-pagination-item > a {
-    position: relative;
-    display: inline-flex;
-    width: var(--bs-pagination-size);
-    height: var(--bs-pagination-size);
-    appearance: none;
-    appearance: none;
-    align-items: center;
-    justify-content: center;
-    padding: var(--bs-pagination-padding-y) var(--bs-pagination-padding-x);
-    font-size: var(--bs-pagination-font-size);
-    color: var(--bs-pagination-color);
-    line-height: 1;
-    background-color: var(--bs-pagination-bg);
-    border: var(--bs-pagination-border-width) solid var(--bs-pagination-border-color);
-    border-radius: var(--bs-pagination-border-radius);
-    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  }
-
-  .ant-pagination-next .ant-pagination-item-link,
-  .ant-pagination-prev .ant-pagination-item-link {
-    padding: 6px 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: var(--bs-gray-700);
-    border: 1px solid var(--bs-gray-300);
-
-    &:disabled,
-    &:disabled:hover {
-      color: var(--bs-gray-300);
-      border-color: var(--bs-gray-200);
-    }
-  }
-
-  .page-link {
-    display: inline-flex;
-    width: var(--bs-pagination-size);
-    height: var(--bs-pagination-size);
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-  }
-
-  .ant-pagination-item > a:hover {
-    z-index: 2;
-    color: var(--bs-pagination-hover-color);
-    background-color: var(--bs-pagination-hover-bg);
-    border-color: var(--bs-pagination-hover-border-color);
-  }
-
-  .ant-pagination-item > a:focus {
-    z-index: 3;
-    color: var(--bs-pagination-focus-color);
-    background-color: var(--bs-pagination-focus-bg);
-    outline: 0;
-    box-shadow: var(--bs-pagination-focus-box-shadow);
-  }
-
-  .ant-pagination-item-active > a {
-    z-index: 3;
-    color: var(--bs-pagination-active-color);
-    background-color: var(--bs-pagination-active-bg);
-    border-color: var(--bs-pagination-active-border-color);
-  }
-
-  .ant-pagination-item-disabled > a {
-    color: var(--bs-pagination-disabled-color);
-    pointer-events: none;
-    background-color: var(--bs-pagination-disabled-bg);
-    border-color: var(--bs-pagination-disabled-border-color);
-  }
-}
-@media screen and (min-width: 992px) {
-  .pagination {
-    --bs-pagination-size: 40px;
-  }
-}
-
-/** progress **/
-.progress-stacked {
-  --bs-progress-height: 1rem;
-  --bs-progress-font-size: 0.75rem;
-  --bs-progress-bg: #e9ecef;
-  --bs-progress-border-radius: 0.375rem;
-  --bs-progress-box-shadow: inset 0 1px 2px rgb(0 0 0 / 7.5%);
-  --bs-progress-bar-color: #fff;
-  --bs-progress-bar-bg: #0d6efd;
-  --bs-progress-bar-transition: width 0.6s ease;
-
-  display: flex;
-  height: var(--bs-progress-height);
-  overflow: hidden;
-  font-size: var(--bs-progress-font-size);
-  background-color: var(--bs-progress-bg);
-  border-radius: var(--bs-progress-border-radius);
-
-  > .progress {
-    overflow: visible;
-
-    > .progress-bar {
-      width: 100%;
-    }
-  }
-}
-
 /** table **/
 .table {
   --bs-table-color: var(--bs-gray-600);
@@ -470,6 +324,28 @@ table.table,
 
 .bg-warning-tertiary {
   background-color: var(--color-warning-50);
+}
+
+.display-7 {
+  font-size: calc(1.325rem + 0.9vw);
+  font-weight: 300;
+  line-height: 1.2;
+}
+@media (min-width: 1200px) {
+  .display-7 {
+    font-size: 2rem;
+  }
+}
+
+.display-8 {
+  font-size: calc(1.275rem + 0.3vw);
+  font-weight: 300;
+  line-height: 1.2;
+}
+@media (min-width: 1200px) {
+  .display-8 {
+    font-size: 1.5rem;
+  }
 }
 
 .fs-16 {
@@ -550,6 +426,18 @@ table.table,
 
 .object-fit-cover {
   object-fit: cover;
+}
+
+.min-w-25 {
+  min-width: 25%;
+}
+
+.min-w-50 {
+  min-width: 50%;
+}
+
+.min-w-75 {
+  min-width: 75%;
 }
 
 .vh-50 {

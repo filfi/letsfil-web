@@ -17,11 +17,12 @@ import { ReactComponent as IconInfo } from '@/assets/icons/info.svg';
 import { ReactComponent as IconSafe } from '@/assets/icons/safe.svg';
 import { ReactComponent as IconSuccess } from '@/assets/icons/success.svg';
 import { ReactComponent as IconTag } from '@/assets/icons/tag.svg';
+import { ReactComponent as IconTransfer } from '@/assets/icons/transfer.svg';
 import { ReactComponent as IconWarn } from '@/assets/icons/warn.svg';
 
 type DivProps = React.HtmlHTMLAttributes<HTMLDivElement>;
 
-export type IconSet = 'delete' | 'dollor' | 'dollor-warn' | 'edit' | 'error' | 'info' | 'safe' | 'success' | 'tag' | 'warn';
+export type IconSet = 'delete' | 'dollor' | 'dollor-warn' | 'edit' | 'error' | 'info' | 'safe' | 'success' | 'tag' | 'transfer' | 'warn';
 
 export type ModalProps = Omit<DivProps, 'title'> & {
   icon?: React.ReactNode | IconSet;
@@ -98,6 +99,8 @@ export function renderModalIcon(icon?: IconSet | React.ReactNode) {
       return <IconSuccess />;
     case 'tag':
       return <IconTag />;
+    case 'transfer':
+      return <IconTransfer />;
     case 'warn':
       return <IconWarn />;
     default:

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import * as A from '@/apis/user';
 import useAccount from './useAccount';
+import { withNull } from '@/utils/hackify';
 
 export default function useUser() {
   const { address, withAccount } = useAccount();
@@ -10,7 +11,7 @@ export default function useUser() {
     data: user,
     isLoading,
     refetch,
-  } = useQuery(['user', address], withAccount(A.query), {
+  } = useQuery(['user', address], withNull(withAccount(A.query)), {
     staleTime: 60_000,
   });
 

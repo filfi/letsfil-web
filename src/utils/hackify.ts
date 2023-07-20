@@ -1,7 +1,8 @@
 import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError } from 'viem';
 
-import Modal from '@/components/Modal';
-import type { AlertOptions } from '@/components/Modal';
+// import Modal from '@/components/Modal';
+import Dialog from '@/components/Dialog';
+import type { AlertOptions } from '@/components/Dialog';
 
 export type Service<R = any, P extends unknown[] = any> = (...args: P) => Promise<R>;
 
@@ -24,16 +25,15 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
     try {
       return await service(...args);
     } catch (e: any) {
+      console.log(e);
+
       if (e.code === 'ACTION_REJECTED' || e.cause instanceof UserRejectedRequestError) {
-        console.log('User rejected request!');
         throw e;
       }
 
       let msg = e.reason ?? e.data?.errorMessage ?? e.message;
 
       if (e instanceof BaseError) {
-        console.log('BaseError', e.cause);
-
         msg = e.details || e.shortMessage;
 
         const revertedError = e.walk((e) => e instanceof ContractFunctionRevertedError) as ContractFunctionRevertedError;
@@ -41,9 +41,10 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
         msg = revertedError?.data?.errorName ?? msg;
       }
 
-      Modal.alert({
+      Dialog.alert({
         icon: 'error',
         title: '操作失败',
+        summary: e.code,
         content: msg,
         ...options,
       });

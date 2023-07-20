@@ -3,11 +3,11 @@ import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 
 import Avatar from '@/components/Avatar';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useSProvider from '@/hooks/useSProvider';
 import useIncomeRate from '@/hooks/useIncomeRate';
-import { formatProgress, formatRate, formatSponsor } from '@/utils/format';
+import { formatAmount, formatProgress, formatRate, formatSponsor } from '@/utils/format';
 
 export type BannerCardProps = {
   data: API.Plan;
@@ -16,8 +16,8 @@ export type BannerCardProps = {
 
 const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
   const { rate } = useIncomeRate(data);
-  const { progress } = useRaiseInfo(data);
   const provider = useSProvider(data.service_id);
+  const { target, progress } = useRaiseBase(data);
   const { opsRatio, priorityRate } = useRaiseRate(data);
   const [, formatted] = useCountDown({ targetDate: data.closing_time * 1000 });
 
@@ -25,7 +25,7 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
     <>
       <div className={classNames('card', className)}>
         <div className="card-body">
-          <div className="float-end mt-lg-5 pt-lg-3">
+          <div className="float-end mt-lg-5 pt-lg-4">
             <p className="mb-0 fs-30 fw-600">{priorityRate}%</p>
             <p className="mb-0 fs-16 fw-500">建设者获得</p>
           </div>
@@ -41,22 +41,22 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data }) => {
               </h3>
 
               <div className="mb-3 fs-16 fw-500">
-                <p className="mb-1">封装时间 &lt; {data.seal_days}天</p>
-                <p className="mb-0">预估年化 {formatRate(rate)}</p>
+                <p className="mb-0">质押目标 {formatAmount(target)} FIL</p>
+                <p className="mb-1">预估年化 {formatRate(rate)}</p>
               </div>
 
               <div className="mb-3 d-flex gap-3">
                 <div className="flex-shrink-0 my-auto">
                   <Avatar address={provider?.wallet_address} size={32} src={provider?.logo_url} />
                 </div>
-                <div className="flex-grow-1 d-flex flex-column flex-lg-row gap-1 my-auto lh-sm">
+                <div className="flex-grow-1 d-flex flex-column flex-md-row gap-1 my-auto lh-sm">
                   <p className="mb-0">
                     <span>{provider?.full_name}</span>
-                    <span className="mx-1">·</span>
-                    <span>保证金占比 {opsRatio}%</span>
                   </p>
                   <span className="mx-1 d-none d-lg-inline my-auto">·</span>
                   <p className="mb-0">
+                    <span>保证金{opsRatio}%</span>
+                    <span className="mx-1">·</span>
                     <span>提供技术服务</span>
                   </p>
                 </div>

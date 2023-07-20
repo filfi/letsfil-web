@@ -44,6 +44,7 @@
     "react-dom": "^18.0.0",
     "react-jazzicon": "^1.0.4",
     "react-render-html": "^0.6.0",
+    "vconsole": "^3.15.1",
     "viem": "^0.3.50",
     "wagmi": "^1.1.0"
   },

@@ -49,8 +49,8 @@ const Calculator: React.FC = () => {
               <div className="modal-body border-top">
                 <div className="row row-cols-1 row-cols-md-2 g-0 g-md-3 g-lg-4">
                   <div className="col d-flex flex-column">
-                    <Form.Item label="集合质押金额" name="total">
-                      <Input placeholder="输入集合质押金额" suffix="FIL" />
+                    <Form.Item label="质押金额" name="total">
+                      <Input placeholder="输入质押金额" suffix="FIL" />
                     </Form.Item>
 
                     <div className="row row-cols-2 order-md-2">

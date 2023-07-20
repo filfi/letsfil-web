@@ -2,7 +2,7 @@ import 'dayjs/locale/zh-cn';
 import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
 import RelativeTime from 'dayjs/plugin/relativeTime';
-import { newDelegatedEthAddress } from '@glif/filecoin-address';
+import { newActorAddress, newDelegatedEthAddress, newIDAddress } from '@glif/filecoin-address';
 
 dayjs.extend(RelativeTime);
 dayjs.locale('zh-cn');
@@ -135,23 +135,18 @@ export function parseMinerID(minerID: number | string) {
   return `${minerID}`.trim().replace(/^(f0|t0)/i, '');
 }
 
+export function toF2Address(minerId?: string) {
+  if (minerId) {
+    return newActorAddress(newIDAddress(parseMinerID(minerId)).bytes).toString();
+  }
+
+  return '';
+}
+
 export function toF4Address(addr?: string) {
   if (addr) {
     return newDelegatedEthAddress(addr).toString();
   }
 
   return '';
-}
-
-export function randomRange(min: number, max: number) {
-  return ~~(Math.random() * (max - min) + min);
-}
-
-export function randomAvatar() {
-  const colors = ['9b8afb'];
-
-  const index = randomRange(0, colors.length);
-  const color = colors[index];
-
-  return `https://via.placeholder.com/120/${color}/ffffff.jpg?text=Logo`;
 }

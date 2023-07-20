@@ -124,7 +124,7 @@ export default function CreateStorage() {
         layout="vertical"
         initialValues={{
           minerType: 1,
-          // raiser: address,
+          raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
@@ -200,7 +200,7 @@ export default function CreateStorage() {
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">Filecoin存储节点</h4>
             <p className="text-gray">
-              集合质押资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
+              质押资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
               {/* <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
                 什么是存储节点号？
               </a> */}

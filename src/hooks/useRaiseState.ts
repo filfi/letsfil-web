@@ -9,7 +9,7 @@ import { RaiseState } from '@/constants/state';
  * @returns
  */
 export default function useRaiseState(data?: API.Plan | null) {
-  const raiseState = useMemo(() => data?.status ?? -1, [data?.status]); // 集合质押状态
+  const raiseState = useMemo(() => data?.status ?? -1, [data?.status]); // 质押状态
   const nodeState = useMemo(() => data?.sealed_status ?? -1, [data?.sealed_status]); // 节点状态
 
   // 等待上链
@@ -18,8 +18,8 @@ export default function useRaiseState(data?: API.Plan | null) {
   const isWaiting = useMemo(() => data && H.isWaiting(data), [data]);
   // 已开始
   const isStarted = useMemo(() => data && H.isStarted(data), [data]);
-  // 集合质押中
-  const isRaising = useMemo(() => data && H.isRaising(data), [raiseState]);
+  // 质押中
+  const isRaising = useMemo(() => data && H.isRaising(data), [data]);
   // 已关闭
   const isClosed = useMemo(() => data && H.isClosed(data), [data]);
   // 已失败

@@ -4,7 +4,7 @@ import { useQueries } from '@tanstack/react-query';
 
 import useAccount from './useAccount';
 import useContract from './useContract';
-import useRaiseInfo from './useRaiseInfo';
+import useRaiseBase from './useRaiseBase';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
 import { accDiv, sleep } from '@/utils/utils';
@@ -19,7 +19,7 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   const { address, withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
-  const { actual } = useRaiseInfo(data);
+  const { actual } = useRaiseBase(data);
 
   const getBackAssets = async () => {
     if (address && data && (isClosed(data) || isFailed(data) || isWorking(data))) {

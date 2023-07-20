@@ -7,19 +7,19 @@ export enum RaiseState {
    */
   WaitingStart = 0,
   /**
-   * 集合质押中
+   * 质押中
    */
   Raising = 1,
   /**
-   * 集合质押关闭
+   * 质押关闭
    */
   Closed = 2,
   /**
-   * 集合质押成功
+   * 质押成功
    */
   Success = 3,
   /**
-   * 集合质押失败
+   * 质押失败
    */
   Failure = 4,
   /**

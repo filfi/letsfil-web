@@ -106,7 +106,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
           </div>
           <div className="d-inline-flex flex-column">
             <p className="mb-0 fw-500">{formatEther(data?.hisInitialPledge)} FIL</p>
-            <p className="mb-0 text-gray-dark">质押币</p>
+            <p className="mb-0 text-gray-dark">质押</p>
           </div>
           <div className="d-inline-flex flex-column">
             <p className="mb-0 fw-500">{formatEther(data?.hisBlance)} FIL</p>
@@ -127,7 +127,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
               <span>已存在的</span>
               <span className="fw-bold">算力</span>
               <span>和</span>
-              <span className="fw-bold">质押币</span>
+              <span className="fw-bold">质押</span>
               <span>按以上分配比例</span>
             </Checkbox>
           </Form.Item>

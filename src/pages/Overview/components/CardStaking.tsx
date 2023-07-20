@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
 import SpinBtn from '@/components/SpinBtn';
-import { number } from '@/utils/validators';
+import { integer } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
 import { accSub, sleep } from '@/utils/utils';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
+import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
@@ -13,14 +13,14 @@ const limit = 5_000_000;
 
 const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
-  const { actual, target } = useRaiseInfo(data);
+  const { actual, target } = useRaiseBase(data);
   const { isRaising, isSealing } = useRaiseState(data);
   const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
 
   const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
 
   const amountValidator = async (rule: unknown, value: string) => {
-    await number(rule, value);
+    await integer(rule, value);
 
     if (value) {
       if (+value <= 0) {

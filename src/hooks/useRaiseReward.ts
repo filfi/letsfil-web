@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-// import { useDebounceEffect } from 'ahooks';
 import { useQueries } from '@tanstack/react-query';
 
 import useContract from './useContract';
@@ -47,10 +46,6 @@ export default function useRaiseReward(data?: API.Plan | null) {
   const refetch = () => {
     return Promise.all([rewardRes.refetch(), finesRes.refetch()]);
   };
-
-  // useDebounceEffect(() => {
-  //   data && refetch();
-  // }, [data], { wait: 200 });
 
   return {
     fines,

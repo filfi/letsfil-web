@@ -1,5 +1,5 @@
 import { usePublicClient /* useWalletClient */ } from 'wagmi';
-import type { Account } from 'viem';
+// import type { Account } from 'viem';
 
 import { isDef } from '@/utils/utils';
 import { toNumber } from '@/utils/format';
@@ -9,10 +9,11 @@ import raiseAbi from '@/abis/raise.abi.json';
 import factoryAbi from '@/abis/factory.abi.json';
 import { NodeState, RaiseState } from '@/constants/state';
 // import { RevertedError } from '@/core/errors/RevertedError';
-import { writeContract as _writeContract } from '@/core/actions';
+import { writeContract as ethersContract } from '@/core/contract/write';
+import type { WriteContractOptions } from '@/core/contract/write';
 
 export type WriteOptions = TxOptions & {
-  account?: Account;
+  // account?: Account;
   address?: API.Address;
 };
 
@@ -26,9 +27,9 @@ export default function useContract(address?: API.Address) {
   const publicClient = usePublicClient();
   // const { data: walletClient } = useWalletClient();
 
-  // const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | undefined>) {
+  // const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | string | undefined>) {
   //   return async (...args: P) => {
-  //     const hash = await service(...args);
+  //     const hash = (await service(...args)) as API.Address;
 
   //     if (hash) {
   //       const res = await publicClient.waitForTransactionReceipt({ hash });
@@ -59,10 +60,47 @@ export default function useContract(address?: API.Address) {
     return res as R;
   };
 
+  // const writeContract = async function <P extends unknown[] = any>(
+  //   functionName: string,
+  //   args: P,
+  //   { account: _account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
+  // ) {
+  //   const abi = _abi ?? raiseAbi;
+  //   const addr = _address ?? address;
+
+  //   if (!addr || !walletClient) return;
+
+  //   // publicClient.e
+
+  //   const account = _account ?? walletClient.account;
+  //   const gas = await publicClient.estimateContractGas({
+  //     abi,
+  //     args,
+  //     account,
+  //     functionName,
+  //     address: addr,
+  //     ...opts,
+  //   });
+
+  //   const params = {
+  //     abi,
+  //     gas,
+  //     args,
+  //     account,
+  //     functionName,
+  //     address: addr,
+  //     ...(opts as any),
+  //   };
+
+  //   console.log(params);
+
+  //   return await waitTransaction(walletClient.writeContract)(params);
+  // };
+
   const writeContract = async function <P extends unknown[] = any>(
     functionName: string,
     args: P,
-    { abi: _abi, address: _address, ...opts }: Omit<WriteOptions, 'account'> & { abi?: any } = {},
+    { abi: _abi, address: _address, ...opts }: Partial<Omit<WriteContractOptions<string, P>, 'args' | 'functionName'>> = {},
   ) {
     const abi = _abi ?? raiseAbi;
     const addr = _address ?? address;
@@ -79,7 +117,8 @@ export default function useContract(address?: API.Address) {
 
     console.log({ ...params });
 
-    return await _writeContract(params);
+    const res = await ethersContract(params);
+    return res;
   };
 
   // const writeContract = async function <P extends unknown[] = any>(
@@ -175,7 +214,21 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
-   * 获取已质押总额
+   * 获取质押金额
+   */
+  const getPledgeAmount = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('pledgeTotalAmount', [id], _address));
+  };
+
+  /**
+   * 获取封装金额
+   */
+  const getSealedAmount = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('toSealAmount', [id], _address));
+  };
+
+  /**
+   * 获取质押总额
    */
   const getTotalPledge = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('pledgeTotalCalcAmount', [id], _address));
@@ -259,10 +312,31 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
-   * 获取服务商罚金
+   * 获取运维保证金罚金
+   */
+  const getOpsFines = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spFundFine', [id], _address));
+  };
+
+  /**
+   * 获取运维保证金收益罚金
+   */
+  const getOpsRewardFines = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spFundRewardFine', [id], _address));
+  };
+
+  /**
+   * 获取服务商总罚金
    */
   const getServicerFines = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('spFine', [id], _address));
+  };
+
+  /**
+   * 获取服务商收益罚金
+   */
+  const getServicerFinesReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('spRewardFine', [id], _address));
   };
 
   /**
@@ -405,6 +479,8 @@ export default function useContract(address?: API.Address) {
     getRaiseState,
     getBackAssets,
     getInvestorInfo,
+    getPledgeAmount,
+    getSealedAmount,
     getTotalPledge,
     getTotalSealed,
     getTotalReward,
@@ -417,7 +493,10 @@ export default function useContract(address?: API.Address) {
     getInvestorPendingReward,
     getInvestorAvailableReward,
     getInvestorWithdrawnRecord,
+    getOpsFines,
+    getOpsRewardFines,
     getServicerFines,
+    getServicerFinesReward,
     getServicerLockedReward,
     getServicerPendingReward,
     getServicerAvailableReward,

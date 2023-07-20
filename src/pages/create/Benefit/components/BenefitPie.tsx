@@ -27,7 +27,7 @@ const BenefitPie: React.FC<{
     color: ['#2699FB', '#BCE0FD'],
     statistic: {
       title: {
-        content: '质押币',
+        content: '质押',
         style: {
           fontSize: '14px',
           fontWeight: 500,
