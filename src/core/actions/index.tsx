@@ -1,0 +1,1 @@
+export { writeContract } from './writeContract';

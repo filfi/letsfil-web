@@ -115,11 +115,39 @@ export default function useContract(address?: API.Address) {
       ...opts,
     };
 
-    console.log(params);
+    console.log({ ...params });
 
     const res = await ethersContract(params);
     return res;
   };
+
+  // const writeContract = async function <P extends unknown[] = any>(
+  //   functionName: string,
+  //   args: P,
+  //   { account: _account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
+  // ) {
+  //   const abi = _abi ?? raiseAbi;
+  //   const addr = _address ?? address;
+
+  //   if (!addr || !walletClient) return;
+
+  //   const account = _account ?? walletClient?.account;
+
+  //   const params = {
+  //     abi,
+  //     args,
+  //     account,
+  //     functionName,
+  //     address: addr,
+  //     ...opts,
+  //   };
+
+  //   const gas = await publicClient.estimateContractGas(params);
+
+  //   console.log({ ...params, gas });
+
+  //   return await waitTransaction(walletClient.writeContract)({ ...params, gas });
+  // };
 
   /**
    * 获取Owner权限
