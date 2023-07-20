@@ -153,7 +153,7 @@ export default function Home() {
             {partners.map((item, i) => (
               <li key={i} className="list-inline-item m-3 m-lg-4">
                 <a className="text-reset" title={item.title} href={item.url} target="_blank" rel="noreferrer">
-                  <img src={item.img} alt={item.title} />
+                  <img src={item.img} height="48" alt={item.title} />
                 </a>
               </li>
             ))}
