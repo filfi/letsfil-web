@@ -11,6 +11,31 @@ import { ReactComponent as IconSmile } from './imgs/icon-smile.svg';
 import { ReactComponent as IconDots } from './imgs/icon-dots.svg';
 import { ReactComponent as IconShield } from './imgs/icon-shield.svg';
 
+const partners = [
+  { img: require('./imgs/partners/sxx.png'), title: 'SXX', url: 'https://sxxfuture.com/' },
+  { img: require('./imgs/partners/filfox.png'), title: 'Filfox', url: 'https://filfox.info/zh' },
+  { img: require('./imgs/partners/FNS-DAO.png'), title: 'FNS DAO', url: 'https://fns.space/' },
+  { img: require('./imgs/partners/filemarket.png'), title: 'Filemarket', url: 'https://filemarket.xyz/' },
+  { img: require('./imgs/partners/filscan.png'), title: 'Filscan', url: 'https://filscan.io/' },
+  { img: require('./imgs/partners/DSPA.png'), title: 'DSPA', url: 'https://dspa-asia.io' },
+  { img: require('./imgs/partners/Flamelaunch.png'), title: 'Flamelaunch', url: 'https://www.flamelaunch.com' },
+  { img: require('./imgs/partners/opengate.png'), title: 'opengate', url: 'https://fil.opengatenft.com/#/' },
+  { img: require('./imgs/partners/SPex.png'), title: 'SPex', url: 'https://www.spex.website' },
+  { img: require('./imgs/partners/vedao.png'), title: 'veDAO', url: 'https://www.vedao.com' },
+  { img: require('./imgs/partners/MetaPath.png'), title: 'MetaPath', url: 'https://dapp.path.finance/#/swap?source=path-dapp' },
+  { img: require('./imgs/partners/SWFT-Bridge.png'), title: 'SWFT Bridge', url: 'https://defi.swft.pro/#/' },
+  { img: require('./imgs/partners/Filedoge.png'), title: 'Filedoge', url: 'https://filedoge.io' },
+  { img: require('./imgs/partners/FileDrive.png'), title: 'FileDrive', url: 'https://filedrive.io' },
+  { img: require('./imgs/partners/Filutils.png'), title: 'Filutils', url: 'https://www.filutils.com/zh' },
+  { img: require('./imgs/partners/seer.png'), title: 'seer', url: 'https://seer.eco/#/' },
+  { img: require('./imgs/partners/Cointime.png'), title: 'Cointime', url: 'https://www.cointime.com/' },
+  { img: require('./imgs/partners/Filecoin.png'), title: 'Filecoin', url: 'https://filecoin.io/zh-cn/' },
+  { img: require('./imgs/partners/FVM.png'), title: 'FVM', url: 'https://fvm.filecoin.io' },
+  { img: require('./imgs/partners/Protocal-Labs.png'), title: 'Protocal Labs', url: 'https://protocol.ai' },
+  { img: require('./imgs/partners/Filecoin-Foundation.png'), title: 'Filecoin Foundation', url: 'https://fil.org' },
+  { img: require('./imgs/partners/filecoingreen.png'), title: 'filecoingreen', url: 'https://green.filecoin.io/' },
+];
+
 export default function Home() {
   const { withConnect } = useAccount();
 
@@ -121,12 +146,17 @@ export default function Home() {
 
       <section className={classNames(styles.section, styles.sectionTint)}>
         <div className="container">
-          <ul className="list-inline">
-            <li className="list-inline-item">
-              <a className="text-reset" href="">
-                <img src={require('./imgs/partners/sxx.png')} alt="SXX" />
-              </a>
-            </li>
+          <div className="mb-5 text-center">
+            <p className={classNames('text-gray-dark', styles.summary)}>合作伙伴及媒体支持</p>
+          </div>
+          <ul className="list-inline text-center">
+            {partners.map((item, i) => (
+              <li key={i} className="list-inline-item m-3 m-lg-4">
+                <a className="text-reset" title={item.title} href={item.url} target="_blank" rel="noreferrer">
+                  <img src={item.img} alt={item.title} />
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       </section>
