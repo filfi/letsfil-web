@@ -6,6 +6,7 @@
   "scripts": {
     "build": "max build",
     "build:main": "cross-env RUN_ENV=main max build",
+    "build:staging": "cross-env RUN_ENV=staging max build",
     "build:test": "cross-env RUN_ENV=test max build",
     "dev": "max dev",
     "format": "prettier --cache --write .",
@@ -15,8 +16,8 @@
     "prepare": "husky install",
     "setup": "max setup",
     "start": "npm run dev",
-    "start:local": "cross-env RUN_ENV=local npm run dev",
     "start:main": "cross-env RUN_ENV=main npm run dev",
+    "start:staging": "cross-env RUN_ENV=staging npm run dev",
     "start:test": "cross-env RUN_ENV=test npm run dev"
   },
   "dependencies": {

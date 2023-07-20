@@ -3,7 +3,7 @@ import { useUpdateEffect } from 'ahooks';
 import { Form, Input, Skeleton } from 'antd';
 import { history, useModel } from '@umijs/max';
 
-import { RUN_ENV } from '@/constants';
+import { isMainnet } from '@/constants';
 // import Modal from '@/components/Modal';
 import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
@@ -14,8 +14,6 @@ import { accDiv, accMul, pb2byte } from '@/utils/utils';
 import { formatAmount, formatNum, toFixed } from '@/utils/format';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
-
-const isMainnet = RUN_ENV === 'main';
 
 export default function CreateProgram() {
   const [form] = Form.useForm();
