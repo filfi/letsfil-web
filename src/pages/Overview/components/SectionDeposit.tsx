@@ -20,6 +20,7 @@ import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
+import useRaiseSyncCount from '@/hooks/useRaiseSyncCount';
 import useDepositServicer from '@/hooks/useDepositServicer';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
@@ -29,12 +30,14 @@ import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.
 const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
   const { actual } = useRaiseBase(data);
+  const { data: count } = useRaiseSyncCount(data);
   const { raiser, isRaiser, isRaisePaid } = useRaiseRole(data);
   const { amount, fines, total, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
   const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = useRaiseState(data);
 
   const fee = useMemo(() => accMul(actual, 0.003), [actual]); // 手续费
   const payable = useMemo(() => isRaiser && isWaiting, [isRaiser, isWaiting]);
+  const show = useMemo(() => (count?.seal_delay_sync_count ?? 0) > 0, [count?.seal_delay_sync_count]);
   const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isWorking), [isRaiser, isClosed, isFailed, isWorking]);
 
   const renderExtra = () => {
@@ -91,7 +94,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </div>
 
           {isRaisePaid ? (
-            withdrawable ? (
+            withdrawable && show ? (
               <SpinBtn
                 className="btn btn-primary ms-auto"
                 style={{ minWidth: 120 }}

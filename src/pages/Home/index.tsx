@@ -149,15 +149,17 @@ export default function Home() {
           <div className="mb-5 text-center">
             <p className={classNames('text-gray-dark', styles.summary)}>合作伙伴及媒体支持</p>
           </div>
-          <ul className="list-inline text-center">
-            {partners.map((item, i) => (
-              <li key={i} className="list-inline-item m-3 m-lg-4">
-                <a className="text-reset" title={item.title} href={item.url} target="_blank" rel="noreferrer">
-                  <img src={item.img} alt={item.title} />
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div className="mx-n3 text-center">
+            <ul className="list-inline">
+              {partners.map((item, i) => (
+                <li key={i} className="list-inline-item m-3 m-xl-4">
+                  <a className="text-reset" title={item.title} href={item.url} target="_blank" rel="noreferrer">
+                    <img src={item.img} height="48" alt={item.title} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
     </>

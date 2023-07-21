@@ -185,13 +185,6 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
-   * 获取主办人返还保证金
-   */
-  const getRaiserBackFund = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('raiserFundBack', [id], _address));
-  };
-
-  /**
    * 获取节点状态
    */
   const getNodeState = async (id: string, _address = address) => {
@@ -330,6 +323,13 @@ export default function useContract(address?: API.Address) {
    */
   const getOpsFines = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('spFundFine', [id], _address));
+  };
+
+  /**
+   * 获取运维保证金奖励
+   */
+  const getOpsFundReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('opsFundReward', [id], _address));
   };
 
   /**
@@ -497,7 +497,6 @@ export default function useContract(address?: API.Address) {
     getOpsCalcFund,
     getOpsSafeFund,
     getRaiserFund,
-    getRaiserBackFund,
     getNodeState,
     getRaiseState,
     getBackAssets,
@@ -517,6 +516,7 @@ export default function useContract(address?: API.Address) {
     getInvestorAvailableReward,
     getInvestorWithdrawnRecord,
     getOpsFines,
+    getOpsFundReward,
     getOpsRewardFines,
     getServicerFines,
     getServicerFinesReward,

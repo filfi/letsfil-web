@@ -72,6 +72,10 @@ export function count(raising_id: string) {
   return A.get<{ investor_count: number }>('/raising-plan/v2/plan/investor/count', { raising_id });
 }
 
+export function countSync(raising_id: string) {
+  return A.get<{ seal_delay_sync_count: number }>('/raising-plan/v2/raise-sync-count', { raising_id });
+}
+
 export function statChainInfo() {
   return A.get<API.Base>('/service-provier/get-filscan-stat-chain-info');
 }
