@@ -19,6 +19,7 @@ import useSProvider from '@/hooks/useSProvider';
 import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
+import useDepositOps from '@/hooks/useDepositOps';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 import useRaiseSyncCount from '@/hooks/useRaiseSyncCount';
 import useDepositServicer from '@/hooks/useDepositServicer';
@@ -144,11 +145,12 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { data: pack } = usePackInfo(data);
   const provider = useSProvider(data?.service_id);
   const { investRate, opsRatio } = useRaiseRate(data);
+  const { fines, interest } = useDepositServicer(data);
   const { opsAmount, progress } = useAssetPack(data, pack);
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
   const { addDepositOpsFund } = useContract(data?.raise_address);
+  const { amount, need, safe, total, paying, withdrawing, payAction, withdrawAction } = useDepositOps(data);
   const { isPending, isWaiting, isStarted, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
-  const { amount, fines, total, interest, safe, paying, withdrawing, payAction, withdrawAction } = useDepositServicer(data);
 
   const after = useMemo(() => accAdd(amount, safe), [amount, safe]);
   const before = useMemo(() => accAdd(total, safeAmount), [safeAmount, total]);
@@ -164,11 +166,11 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   // 利息补偿
   const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]);
 
-  const [adding, handleAddDeposit] = useProcessify(async (amount: string) => {
+  const [adding, handleAddDeposit] = useProcessify(async () => {
     if (!isServicer || !data?.raising_id) return;
 
     await addDepositOpsFund(data?.raising_id, {
-      value: parseEther(`${+amount}`),
+      value: parseEther(`${need}`),
     });
   });
 
@@ -261,7 +263,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               >
                 取回
               </SpinBtn>
-            ) : isStarted && !isWorking && isServicer ? (
+            ) : isStarted && !isDestroyed && isServicer && need > 0 ? (
               <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} loading={adding} data-bs-toggle="modal" data-bs-target="#deposit-add">
                 追加
               </SpinBtn>
@@ -299,7 +301,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
       </div>
 
-      <ModalDeposit id="deposit-add" onConfirm={handleAddDeposit} />
+      <ModalDeposit id="deposit-add" amount={need} onConfirm={handleAddDeposit} />
 
       <Modal.Confirm id="deposit-confirm" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
         <div className="p-3">

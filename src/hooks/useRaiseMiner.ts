@@ -23,14 +23,14 @@ export default function useRaiseMiner(data?: API.Plan | null) {
       return await contract.getSealedAmount(data.raising_id);
     }
   };
-  const getOpsCalcFund = async () => {
+  const getOpsFundCalc = async () => {
     if (data && !isPending(data)) {
-      return await contract.getOpsCalcFund(data.raising_id);
+      return await contract.getOpsFundCalc(data.raising_id);
     }
   };
-  const getOpsSafeFund = async () => {
+  const getOpsFundSeal = async () => {
     if (data && !isPending(data)) {
-      return await contract.getOpsSafeFund(data.raising_id);
+      return await contract.getOpsFundSeal(data.raising_id);
     }
   };
 
@@ -47,13 +47,13 @@ export default function useRaiseMiner(data?: API.Plan | null) {
         staleTime: 60_000,
       },
       {
-        queryKey: ['getOpsCalcFund', data?.raising_id],
-        queryFn: withNull(getOpsCalcFund),
+        queryKey: ['getOpsFundCalc', data?.raising_id],
+        queryFn: withNull(getOpsFundCalc),
         staleTime: 60_000,
       },
       {
-        queryKey: ['getOpsSafeFund', data?.raising_id],
-        queryFn: withNull(getOpsSafeFund),
+        queryKey: ['getOpsFundSeal', data?.raising_id],
+        queryFn: withNull(getOpsFundSeal),
         staleTime: 60_000,
       },
     ],

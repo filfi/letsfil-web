@@ -175,7 +175,7 @@ const Item: React.FC<{
         </>
       );
     }
-    if (state.isWaitSeal || state.isPreSeal) {
+    if (state.isWaitSeal) {
       return <span className="badge">准备封装</span>;
     }
     if (state.isSealing) {

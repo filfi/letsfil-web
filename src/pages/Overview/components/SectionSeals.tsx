@@ -29,7 +29,7 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             aria-valuemax={100}
           >
             <div
-              style={{ width: `${progress * 100}%` }}
+              style={{ width: `${Math.min(progress * 100, 100)}%` }}
               className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isSealing || isDelayed })}
             ></div>
             <span className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
