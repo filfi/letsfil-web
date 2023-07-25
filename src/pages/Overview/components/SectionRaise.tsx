@@ -47,7 +47,7 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   <span className="ms-1 text-neutral">%</span>
                 </span>
                 <span className="badge badge-primary ms-auto">
-                  <span className="me-1">预估年化{F.formatRate(rate, '0.00%')}</span>
+                  <span className="me-1">静态年化{F.formatRate(rate, '0.00%')}</span>
 
                   <Tooltip title={`“年化收益率” 按照节点计划创建时刻全网产出（${F.formatAmount(perFil, 6)}FIL/TiB）静态估算`}>
                     <span className="bi bi-question-circle"></span>
