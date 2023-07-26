@@ -5,9 +5,9 @@ import useContract from './useContract';
 import useRaiseBase from './useRaiseBase';
 import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
+import { toNumber } from '@/utils/format';
 import { withNull } from '@/utils/hackify';
 import { isServicerPaied } from '@/helpers/raise';
-import { toFixed, toNumber } from '@/utils/format';
 import useDepositInvestor from './useDepositInvestor';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
@@ -35,7 +35,7 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   const pledge = useMemo(() => toNumber(pack?.total_pledge_amount), [pack?.total_pledge_amount]);
 
   // 运维保证金 = (实际募集 * 保证金分配比例) / (1 - 保证金分配比例)
-  const opsAmount = useMemo(() => +toFixed(accDiv(accMul(actual, accDiv(ratio, 100)), accSub(1, accDiv(ratio, 100))), 2, 2), [actual, ratio]);
+  const opsAmount = useMemo(() => accDiv(accMul(actual, accDiv(ratio, 100)), accSub(1, accDiv(ratio, 100))), [actual, ratio]);
   // 总质押 = 实际募集 + 运维保证金 + 已封装缓冲金
   const total = useMemo(() => accAdd(actual, opsAmount, opsSealed ?? 0), [actual, opsAmount, opsSealed]);
   // 运维保证金占比 = 运维保证金 / 总质押
