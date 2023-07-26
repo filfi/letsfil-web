@@ -13,11 +13,12 @@ import useProcessify from '@/hooks/useProcessify';
 import { accAdd, accSub, sleep } from '@/utils/utils';
 
 const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { startPreSeal } = useContract(data?.raise_address);
+
   const { isRaiser } = useRaiseRole(data);
-  const { isStarted, isSuccess } = useRaiseState(data);
   const { actual, minTarget, refetch } = useRaiseBase(data);
   const { funds, pledge, safe, sealed } = useRaiseMiner(data);
-  const { startPreSeal } = useContract(data?.raise_address);
+  const { isStarted, isSuccess, isWorking } = useRaiseState(data);
 
   // 可转入 = 总质押 + 运维保证金 + 缓冲金 - 已封装
   const amount = useMemo(() => accSub(accAdd(pledge, funds, safe), sealed), [funds, pledge, safe, sealed]);
@@ -46,7 +47,7 @@ const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     });
   };
 
-  if (isRaiser && (isStarted || isSuccess) && actual >= minTarget && amount > 0) {
+  if (isRaiser && (isStarted || isSuccess) && !isWorking && actual >= minTarget && amount > 0) {
     return (
       <>
         <div className="card section-card">

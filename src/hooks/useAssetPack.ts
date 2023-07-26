@@ -5,6 +5,7 @@ import useContract from './useContract';
 import useRaiseBase from './useRaiseBase';
 import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
+import { withNull } from '@/utils/hackify';
 import { isServicerPaied } from '@/helpers/raise';
 import { toFixed, toNumber } from '@/utils/format';
 import useDepositInvestor from './useDepositInvestor';
@@ -24,7 +25,7 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   const { record, isInvestor } = useDepositInvestor(plan);
   const { priorityRate, raiserRate, opsRatio: ratio, servicerRate } = useRaiseRate(plan);
   // 已封装的缓冲金
-  const { data: opsSealed } = useQuery(['getOpsFundSealed', plan?.raising_id], getOpsFundSealed);
+  const { data: opsSealed } = useQuery(['getOpsFundSealed', plan?.raising_id], withNull(getOpsFundSealed));
 
   // 总算力
   const power = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);

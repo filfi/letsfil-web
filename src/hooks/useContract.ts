@@ -150,10 +150,17 @@ export default function useContract(address?: API.Address) {
   // };
 
   /**
-   * 获取Owner权限
+   * 获取是否有Owner权限
    */
   const getOwner = async (_address = address) => {
     return await readContract<boolean>('gotMiner', [], _address);
+  };
+
+  /**
+   * 获取是否已封装结束
+   */
+  const getProgressEnd = async (id: string, _address = address) => {
+    return await readContract<boolean>('progressEnd', [id], _address);
   };
 
   /**
@@ -507,6 +514,7 @@ export default function useContract(address?: API.Address) {
 
   return {
     getOwner,
+    getProgressEnd,
     getOpsFund,
     getOpsFundCalc,
     getOpsFundNeed,

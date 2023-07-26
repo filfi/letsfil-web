@@ -141,9 +141,9 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
 const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
-  const { actual } = useRaiseBase(data);
   const { data: pack } = usePackInfo(data);
   const provider = useSProvider(data?.service_id);
+  const { actual, isProcessed } = useRaiseBase(data);
   const { investRate, opsRatio } = useRaiseRate(data);
   const { fines, interest } = useDepositServicer(data);
   const { opsAmount, progress } = useAssetPack(data, pack);
@@ -210,7 +210,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>
               </p>
             )}
-            {hasRemain && (
+            {hasRemain && isProcessed && (
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>封装剩余部分</span>
