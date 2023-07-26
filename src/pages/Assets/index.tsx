@@ -56,14 +56,8 @@ export default function Assets() {
 
   const power = useMemo(() => [investorPower, raiserPower, servicerPower, opsPower][role] ?? 0, [role, investorPower, raiserPower, servicerPower, opsPower]);
   const pledge = useMemo(() => [investorAmount, 0, 0, opsAmount][role] ?? 0, [role, investorAmount, opsAmount]);
-  const reward = useMemo(
-    () => [investor.reward, raiser.reward, servicer.reward, ops.record][role] ?? 0,
-    [role, investor.reward, raiser.reward, servicer.reward, ops.reward],
-  );
-  const record = useMemo(
-    () => [investor.record, raiser.record, servicer.record, ops.record][role] ?? 0,
-    [role, investor.record, raiser.record, servicer.record, ops.record],
-  );
+  const reward = useMemo(() => [investor.reward, raiser.reward, servicer.reward, 0][role] ?? 0, [role, investor.reward, raiser.reward, servicer.reward]);
+  const record = useMemo(() => [investor.record, raiser.record, servicer.record, 0][role] ?? 0, [role, investor.record, raiser.record, servicer.record]);
   const pending = useMemo(
     () => [investor.pending, raiser.pending, servicer.pending, ops.pending][role] ?? 0,
     [role, investor.pending, raiser.pending, servicer.pending, ops.pending],

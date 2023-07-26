@@ -8,17 +8,19 @@ import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseReward from '@/hooks/useRaiseReward';
+import useAssetPack from '@/hooks/useAssetPack';
 
 const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { opsAmount } = useAssetPack(data);
+  const { priorityRate } = useRaiseRate(data);
   const { rate, perFil } = useIncomeRate(data);
   const { fines, reward } = useRaiseReward(data);
-  const { opsRatio, priorityRate } = useRaiseRate(data);
   const { actual, minRate, target, progress } = useRaiseBase(data);
   const { isPending, isWaiting, isStarted, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已质押金额)
-  const opsAmount = useMemo(() => U.accDiv(U.accMul(actual, U.accDiv(opsRatio, 100)), U.accSub(1, U.accDiv(opsRatio, 100))), [actual, opsRatio]);
+  // const opsAmount = useMemo(() => U.accDiv(U.accMul(actual, U.accDiv(opsRatio, 100)), U.accSub(1, U.accDiv(opsRatio, 100))), [actual, opsRatio]);
 
   return (
     <>

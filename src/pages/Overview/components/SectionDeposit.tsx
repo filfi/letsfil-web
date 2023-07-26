@@ -197,10 +197,10 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       const hasOver = isWorking && opsOver > 0;
       const hasRemain = isWorking && opsRemain > 0;
 
-      if (hasOver || hasFines || hasRemain) {
+      if ((isProcessed && (hasOver || hasRemain)) || hasFines) {
         return (
           <div className="bg-light my-2 px-3 py-2 rounded-3">
-            {hasOver && (
+            {hasOver && isProcessed && (
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>超配部分</span>
