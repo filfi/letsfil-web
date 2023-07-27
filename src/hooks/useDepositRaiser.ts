@@ -19,9 +19,9 @@ export default function useDepositRaiser(data?: API.Plan | null) {
   const { withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
-  const getFundRaiser = async () => {
+  const getRaiserFund = async () => {
     if (data && isRaiserPaied(data)) {
-      return await contract.getFundRaiser(data.raising_id);
+      return await contract.getRaiserFund(data.raising_id);
     }
   };
   const getTotalInterest = async () => {
@@ -30,15 +30,15 @@ export default function useDepositRaiser(data?: API.Plan | null) {
     }
   };
 
-  const [fund, interest] = useQueries({
+  const [fRes, interest] = useQueries({
     queries: [
       {
-        queryKey: ['fundRaiser', data?.raising_id],
-        queryFn: withNull(getFundRaiser),
+        queryKey: ['getRaiserFund', data?.raising_id],
+        queryFn: withNull(getRaiserFund),
         staleTime: 60_000,
       },
       {
-        queryKey: ['totalInterest', data?.raising_id],
+        queryKey: ['getTotalInterest', data?.raising_id],
         queryFn: withNull(getTotalInterest),
         staleTime: 60_000,
       },
@@ -46,12 +46,12 @@ export default function useDepositRaiser(data?: API.Plan | null) {
   });
 
   const fines = useMemo(() => interest.data ?? 0, [interest.data]); // 罚息
-  const amount = useMemo(() => fund.data ?? toNumber(data?.raise_security_fund), [fund.data, data?.raise_security_fund]); // 当前保证金
+  const amount = useMemo(() => fRes.data ?? toNumber(data?.raise_security_fund), [fRes.data, data?.raise_security_fund]); // 当前保证金
   const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]); // 总保证金
-  const isLoading = useMemo(() => fund.isLoading || interest.isLoading, [fund.isLoading, interest.isLoading]);
+  const isLoading = useMemo(() => fRes.isLoading || interest.isLoading, [fRes.isLoading, interest.isLoading]);
 
   const refetch = async () => {
-    return Promise.all([fund.refetch(), interest.refetch()]);
+    return Promise.all([fRes.refetch(), interest.refetch()]);
   };
 
   const [paying, payAction] = useProcessify(
@@ -64,7 +64,7 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(1_000);
 
-      fund.refetch();
+      fRes.refetch();
 
       return res;
     }),
@@ -78,7 +78,7 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(200);
 
-      fund.refetch();
+      fRes.refetch();
 
       return res;
     }),

@@ -5,7 +5,10 @@ import classNames from 'classnames';
 import * as F from '@/utils/format';
 import Modal from '@/components/Modal';
 import Avatar from '@/components/Avatar';
+import ModalDeposit from './ModalDeposit';
 import SpinBtn from '@/components/SpinBtn';
+import { safeAmount } from '@/constants/config';
+import useContract from '@/hooks/useContract';
 import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseBase from '@/hooks/useRaiseBase';
@@ -13,8 +16,11 @@ import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useRaiseState from '@/hooks/useRaiseState';
+import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
+import useDepositOps from '@/hooks/useDepositOps';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
+import useRaiseSyncCount from '@/hooks/useRaiseSyncCount';
 import useDepositServicer from '@/hooks/useDepositServicer';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 import { ReactComponent as IconDander } from '@/assets/icons/safe-danger.svg';
@@ -24,26 +30,30 @@ import { ReactComponent as IconChecked } from '@/assets/icons/check-verified-02.
 const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
   const { actual } = useRaiseBase(data);
+  const { data: count } = useRaiseSyncCount(data);
   const { raiser, isRaiser, isRaisePaid } = useRaiseRole(data);
+  const { amount, fines, total, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
   const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = useRaiseState(data);
-  const { amount, total, fines, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
 
   const fee = useMemo(() => accMul(actual, 0.003), [actual]); // 手续费
   const payable = useMemo(() => isRaiser && isWaiting, [isRaiser, isWaiting]);
+  const show = useMemo(() => (count?.seal_delay_sync_count ?? 0) > 0, [count?.seal_delay_sync_count]);
   const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isWorking), [isRaiser, isClosed, isFailed, isWorking]);
 
   const renderExtra = () => {
     if (isClosed || isFailed) {
-      <div className="bg-light my-2 px-3 py-2 rounded-3">
-        <p className="d-flex gap-3 my-2">
-          <span className="text-gray-dark">
-            <span>累计罚金</span>
-            <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fines, 2, 2)}</span>
-            <span className="ms-1">FIL</span>
-          </span>
-          {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
-        </p>
-      </div>;
+      return (
+        <div className="bg-light my-2 px-3 py-2 rounded-3">
+          <p className="d-flex gap-3 my-2">
+            <span className="text-gray-dark">
+              <span>累计罚金</span>
+              <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fines, 2, 2)}</span>
+              <span className="ms-1">FIL</span>
+            </span>
+            {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
+          </p>
+        </div>
+      );
     }
 
     if (isSuccess) {
@@ -84,7 +94,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </div>
 
           {isRaisePaid ? (
-            withdrawable ? (
+            withdrawable && show ? (
               <SpinBtn
                 className="btn btn-primary ms-auto"
                 style={{ minWidth: 120 }}
@@ -130,14 +140,19 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
 const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
-  const { actual } = useRaiseBase(data);
   const { data: pack } = usePackInfo(data);
   const provider = useSProvider(data?.service_id);
+  const { actual, isProcessed } = useRaiseBase(data);
   const { investRate, opsRatio } = useRaiseRate(data);
+  const { fines, interest } = useDepositServicer(data);
   const { opsAmount, progress } = useAssetPack(data, pack);
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
-  const { isPending, isWaiting, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
-  const { amount, fines, total, interest, paying, withdrawing, payAction, withdrawAction } = useDepositServicer(data);
+  const { addDepositOpsFund } = useContract(data?.raise_address);
+  const { amount, need, safe, total, paying, withdrawing, payAction, withdrawAction } = useDepositOps(data);
+  const { isPending, isWaiting, isStarted, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
+
+  const after = useMemo(() => accAdd(amount, safe), [amount, safe]);
+  const before = useMemo(() => accAdd(total, safeAmount), [safeAmount, total]);
 
   // 可存入
   const payable = useMemo(() => isServicer && isWaiting, [isServicer, isWaiting]);
@@ -149,6 +164,14 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const opsRemain = useMemo(() => Math.max(accSub(opsAmount, accMul(opsAmount, progress)), 0), [opsAmount, progress]);
   // 利息补偿
   const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]);
+
+  const [adding, handleAddDeposit] = useProcessify(async () => {
+    if (!isServicer || !data?.raising_id) return;
+
+    await addDepositOpsFund(data?.raising_id, {
+      value: need as bigint,
+    });
+  });
 
   const renderExtra = () => {
     if ((isClosed || isFailed) && opsInterest) {
@@ -170,13 +193,13 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     if (isSuccess) {
       const hasFines = fines > 0;
-      const hasOver = opsOver > 0;
+      const hasOver = isWorking && opsOver > 0;
       const hasRemain = isWorking && opsRemain > 0;
 
-      if (hasOver || hasFines || hasRemain) {
+      if ((isProcessed && (hasOver || hasRemain)) || hasFines) {
         return (
           <div className="bg-light my-2 px-3 py-2 rounded-3">
-            {hasOver && (
+            {hasOver && isProcessed && (
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>超配部分</span>
@@ -186,7 +209,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>
               </p>
             )}
-            {hasRemain && (
+            {hasRemain && isProcessed && (
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>封装剩余部分</span>
@@ -239,6 +262,10 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               >
                 取回
               </SpinBtn>
+            ) : isStarted && !isDestroyed && isServicer && need > 0 ? (
+              <SpinBtn className="btn btn-primary ms-auto" style={{ minWidth: 120 }} loading={adding} data-bs-toggle="modal" data-bs-target="#deposit-add">
+                追加
+              </SpinBtn>
             ) : (
               <IconChecked />
             )
@@ -258,7 +285,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="card-body">
           <div className="d-flex align-items-center mb-2">
             <p className="mb-0">
-              <span className="text-decimal">{F.formatAmount(isOpsPaid ? amount : total)}</span>
+              <span className="text-decimal">{F.formatAmount(isOpsPaid ? after : before)}</span>
               <span className="ms-1 text-gray">FIL</span>
             </p>
             {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(servicer)}</span>}
@@ -273,7 +300,9 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
       </div>
 
-      <Modal.Confirm id="deposit-confirm" footerClassName="border-0" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
+      <ModalDeposit id="deposit-add" amount={F.toNumber(need)} onConfirm={handleAddDeposit} />
+
+      <Modal.Confirm id="deposit-confirm" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
         <div className="p-3">
           <p className="mb-4 fs-16 fw-500">
             <span>运维保证金做为劣后质押，与建设者的优先质押一同封装到存储节点中，分享网络激励。节点计划规定了如下质押比例。</span>

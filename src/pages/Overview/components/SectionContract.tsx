@@ -4,22 +4,24 @@ import { getAddress } from 'viem';
 import classNames from 'classnames';
 
 import { SCAN_URL } from '@/constants';
-import Modal from '@/components/Modal';
-import { toF4Address } from '@/utils/utils';
+import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useContract from '@/hooks/useContract';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
+import useProcessify from '@/hooks/useProcessify';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 import { ReactComponent as IconShare } from '@/assets/icons/link-external-02.svg';
 
 const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { hasOwner } = useRaiseBase(data);
+  const { backOwner } = useContract(data?.raise_address);
+
+  const { hasOwner, refetch } = useRaiseBase(data);
   const { isRaiser, isSigned, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed, isPending } = useRaiseState(data);
 
   const address = useMemo(() => (data?.raise_address ? getAddress(data.raise_address) : ''), [data?.raise_address]);
-  const f4Address = useMemo(() => (data?.raise_address ? toF4Address(data.raise_address) : ''), [data?.raise_address]);
   const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
 
   const handleSign = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -29,6 +31,12 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     target?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const [backing, handleBack] = useProcessify(async () => {
+    await backOwner();
+
+    await refetch();
+  });
 
   if (!data) return null;
 
@@ -67,9 +75,9 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               <p className="text-gray mb-0">{hasOwner ? '恢复为原始Owner' : '已恢复为原始Owner'}</p>
             </div>
             {hasOwner ? (
-              <button className="btn btn-primary my-auto" type="button" data-bs-toggle="modal" data-bs-target="#restore-modal">
+              <SpinBtn className="btn btn-primary my-auto" loading={backing} onClick={handleBack}>
                 收回 {data.miner_id} 的Owner权限
-              </button>
+              </SpinBtn>
             ) : (
               <span className="badge badge-success my-auto">已收回 {data.miner_id} 的Owner权限</span>
             )}
@@ -101,24 +109,6 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </a>
         </div>
       </div>
-
-      <Modal.Alert id="restore-modal" title={`收回 ${data.miner_id ?? ''} 的Owner权限`}>
-        <div className="p-3">
-          <p className="mb-0 fs-16 fw-500">
-            <span>在安全环境下执行以下命令，将智能合约地址修改为Owner地址。</span>
-          </p>
-
-          <div className="p-2 border rounded-1 my-4">
-            <div className="d-flex align-items-start bg-dark rounded-1 p-2">
-              <span className="flex-shrink-0 text-white fw-600">$</span>
-              <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">lotus-miner actor set-owner --really-do-it &lt;ownerAddress&gt; {f4Address}</div>
-              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it <ownerAddress> ${f4Address}`}>
-                <IconCopy />
-              </ShareBtn>
-            </div>
-          </div>
-        </div>
-      </Modal.Alert>
     </>
   );
 };

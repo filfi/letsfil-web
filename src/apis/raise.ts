@@ -57,7 +57,7 @@ export function getEvents(params: API.PagingParams & { raising_id: number | stri
 }
 
 export function getBanner() {
-  return A.get<API.Plan>('/raising-plan/v2/plan/get/banner');
+  return A.get<{ bg_url: string; result: API.Plan }>('/raising-plan/v2/plan/get/banner');
 }
 
 export function getGasFee() {
@@ -70,6 +70,10 @@ export function getIncomeRate(raising_id: string) {
 
 export function count(raising_id: string) {
   return A.get<{ investor_count: number }>('/raising-plan/v2/plan/investor/count', { raising_id });
+}
+
+export function countSync(raising_id: string) {
+  return A.get<{ seal_delay_sync_count: number }>('/raising-plan/v2/raise-sync-count', { raising_id });
 }
 
 export function statChainInfo() {

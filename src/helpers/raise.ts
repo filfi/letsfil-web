@@ -32,20 +32,16 @@ export function isWaitSeal(data: API.Plan) {
   return isSuccess(data) && data.sealed_status === NodeState.WaitingStart;
 }
 
-export function isPreSeal(data: API.Plan) {
-  return isSuccess(data) && data.sealed_status === NodeState.PreSeal;
-}
-
 export function isRunning(data: API.Plan) {
-  return isSuccess(data) && data.sealed_status !== NodeState.PreSeal;
+  return isSuccess(data) && data.sealed_status > NodeState.WaitingStart;
 }
 
 export function isSealing(data: API.Plan) {
-  return isSuccess(data) && data.sealed_status === NodeState.Started;
+  return isStarted(data) && data.sealed_status === NodeState.Started;
 }
 
 export function isDelayed(data: API.Plan) {
-  return isSuccess(data) && data.sealed_status === NodeState.Delayed;
+  return isStarted(data) && data.sealed_status === NodeState.Delayed;
 }
 
 export function isFinished(data: API.Plan) {
@@ -58,10 +54,6 @@ export function isDestroyed(data: API.Plan) {
 
 export function isWorking(data: API.Plan) {
   return isSuccess(data) && [NodeState.End, NodeState.Destroy].includes(data.sealed_status);
-}
-
-export function isRaiseOperating(data: API.Plan) {
-  return isSuccess(data) && data.sealed_status > NodeState.WaitingStart && data.sealed_status !== NodeState.PreSeal;
 }
 
 export function isRaiserPaied(data: API.Plan) {

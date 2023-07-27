@@ -4,6 +4,7 @@ import { Link } from '@umijs/max';
 import * as F from '@/utils/format';
 import { catchify } from '@/utils/hackify';
 import { accSub, sec2day } from '@/utils/utils';
+import { isDelayed, isSealing } from '@/helpers/raise';
 import Countdown from './Countdown';
 import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
@@ -19,7 +20,6 @@ import useLoadingify from '@/hooks/useLoadingify';
 import useProcessify from '@/hooks/useProcessify';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-import { isDelayed, isSealing, isWorking } from '@/helpers/raise';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
 function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: P) => Promise<R>) {
@@ -52,16 +52,13 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 function calcSealDays(data: API.Plan) {
   const r: string[] = [];
 
-  // 运营中
-  if (isWorking(data)) {
-    const sec = Math.max(accSub(data.end_seal_time, data.begin_seal_time), 0);
-    r.push(`${F.formatSeals(sec2day(sec))}天`);
-    r.push(`承诺${data.seal_days}天`);
+  let res = `< ${data.seal_days} 天`;
 
-    return r;
+  if (data.end_seal_time) {
+    res = F.formatUnixDate(data.end_seal_time);
   }
 
-  r.push(`< ${data.seal_days} 天`);
+  r.push(res);
 
   // 封装中
   if (isSealing(data) || isDelayed(data)) {
@@ -112,7 +109,7 @@ const Item: React.FC<{
         <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
           {showAssets && (
             <div className="d-flex justify-content-between gap-3 py-2">
-              <span className="text-gray-dark">我的投入</span>
+              <span className="text-gray-dark">我的质押</span>
               <span className="fw-500">{F.formatAmount(amount)} FIL</span>
             </div>
           )}
@@ -178,7 +175,7 @@ const Item: React.FC<{
         </>
       );
     }
-    if (state.isWaitSeal || state.isPreSeal) {
+    if (state.isWaitSeal) {
       return <span className="badge">准备封装</span>;
     }
     if (state.isSealing) {
@@ -282,8 +279,8 @@ const Item: React.FC<{
             <span className="fw-500">{priorityRate}%</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">封装时间</span>
-            <span className="fw-500">{state.isWorking ? sealDays.join(' / ') : sealDays.join(' · ')}</span>
+            <span className="text-gray-dark">封装截止</span>
+            <span className="fw-500">{sealDays.join(' · ')}</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
             <span className="text-gray-dark">技术服务</span>

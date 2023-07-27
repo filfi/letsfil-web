@@ -150,30 +150,58 @@ export default function useContract(address?: API.Address) {
   // };
 
   /**
-   * 获取Owner权限
+   * 获取是否有Owner权限
    */
   const getOwner = async (_address = address) => {
     return await readContract<boolean>('gotMiner', [], _address);
   };
 
   /**
+   * 获取是否已封装结束
+   */
+  const getProgressEnd = async (id: string, _address = address) => {
+    return await readContract<boolean>('progressEnd', [id], _address);
+  };
+
+  /**
    * 获取运维保证金
    */
-  const getFundOps = async (id: string, _address = address) => {
+  const getOpsFund = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('opsSecurityFundRemain', [id], _address));
   };
 
   /**
    * 获取总运维保证金
    */
-  const getFundOpsCalc = async (id: string, _address = address) => {
+  const getOpsFundCalc = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('opsCalcFund', [id], _address));
+  };
+
+  /**
+   * 获需追加的保证金
+   */
+  const getOpsFundNeed = async (id: string, _address = address) => {
+    return await readContract<bigint>('securityNeed', [id], _address);
+  };
+
+  /**
+   * 获取剩余封装缓冲金
+   */
+  const getOpsFundSeal = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('safeSealFund', [id], _address));
+  };
+
+  /**
+   * 获取已封装的封装缓冲金
+   */
+  const getOpsFundSealed = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('safeSealedFund', [id], _address));
   };
 
   /**
    * 获取主办人保证金
    */
-  const getFundRaiser = async (id: string, _address = address) => {
+  const getRaiserFund = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('securityFundRemain', [id], _address));
   };
 
@@ -319,6 +347,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取运维保证金奖励
+   */
+  const getOpsFundReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('opsFundReward', [id], _address));
+  };
+
+  /**
    * 获取运维保证金收益罚金
    */
   const getOpsRewardFines = async (id: string, _address = address) => {
@@ -368,6 +403,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 取回Owner权限
+   */
+  const backOwner = toastify(async (opts?: WriteOptions) => {
+    return await writeContract('backOwner', [], opts);
+  });
+
+  /**
    * 质押
    */
   const staking = toastify(async (id: string, opts?: WriteOptions) => {
@@ -386,6 +428,13 @@ export default function useContract(address?: API.Address) {
    */
   const depositOpsFund = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('payOpsSecurityFund', [id], opts);
+  });
+
+  /**
+   * 追加运维保证金
+   */
+  const addDepositOpsFund = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('addOpsSecurityFund', [id], opts);
   });
 
   /**
@@ -472,9 +521,13 @@ export default function useContract(address?: API.Address) {
 
   return {
     getOwner,
-    getFundOps,
-    getFundOpsCalc,
-    getFundRaiser,
+    getProgressEnd,
+    getOpsFund,
+    getOpsFundCalc,
+    getOpsFundNeed,
+    getOpsFundSeal,
+    getOpsFundSealed,
+    getRaiserFund,
     getNodeState,
     getRaiseState,
     getBackAssets,
@@ -494,6 +547,7 @@ export default function useContract(address?: API.Address) {
     getInvestorAvailableReward,
     getInvestorWithdrawnRecord,
     getOpsFines,
+    getOpsFundReward,
     getOpsRewardFines,
     getServicerFines,
     getServicerFinesReward,
@@ -501,6 +555,7 @@ export default function useContract(address?: API.Address) {
     getServicerPendingReward,
     getServicerAvailableReward,
     getServicerWithdrawnReward,
+    backOwner,
     staking,
     unStaking,
     startPreSeal,
@@ -508,6 +563,7 @@ export default function useContract(address?: API.Address) {
     startRaisePlan,
     createRaisePlan,
     depositOpsFund,
+    addDepositOpsFund,
     depositRaiserFund,
     servicerSign,
     raiserWithdraw,

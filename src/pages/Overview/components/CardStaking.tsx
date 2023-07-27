@@ -14,7 +14,7 @@ const limit = 5_000_000;
 const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
   const { actual, target } = useRaiseBase(data);
-  const { isRaising, isSealing } = useRaiseState(data);
+  const { isDelayed, isRaising, isSuccess, isSealing } = useRaiseState(data);
   const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
 
   const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
@@ -43,7 +43,7 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     form.resetFields();
   };
 
-  if (isRaising || isSealing) {
+  if (isRaising || isSealing || isDelayed) {
     return (
       <>
         <div className="card section-card">
@@ -55,9 +55,9 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </p>
           </div>
           <div className="card-body">
-            {isSealing ? (
+            {isSuccess && (isDelayed || isSealing) ? (
               <SpinBtn className="btn btn-light btn-lg w-100" disabled>
-                {isSealing ? '正在封装' : '等待封装'}
+                {isDelayed || isSealing ? '正在封装' : '准备封装'}
               </SpinBtn>
             ) : (
               <Form className="ffi-form" form={form} onFinish={handleStake}>

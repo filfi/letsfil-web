@@ -1,10 +1,9 @@
 import classNames from 'classnames';
+import { useCountDown } from 'ahooks';
 import { useEffect, useMemo, useState } from 'react';
-import { useCountDown, useInterval, useMemoizedFn, useUnmount } from 'ahooks';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
-// import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useContract from '@/hooks/useContract';
@@ -15,7 +14,7 @@ import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
 import { day2sec, toF4Address } from '@/utils/utils';
-import { formatAmount, formatPower } from '@/utils/format';
+import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
 const formatTime = (mill: number) => {
@@ -33,25 +32,11 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { data: pack } = usePackInfo(data);
   const { power, pledge } = useAssetPack(data, pack);
   const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
-  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isPreSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
+  const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
-  const [delayed, setDelayed] = useState(formatTime(0));
   const [, formatted] = useCountDown({ targetDate });
   const { createRaisePlan, servicerSign, startRaisePlan } = useContract(data?.raise_address);
-
-  const clear = useInterval(
-    useMemoizedFn(() => {
-      let sec = 0;
-
-      if (data) {
-        sec = Math.max(Date.now() / 1000 - data.end_seal_time, 0);
-      }
-
-      setDelayed(formatTime(sec * 1000));
-    }),
-    isDelayed ? 1_000 : undefined,
-  );
 
   const seconds = useMemo(() => {
     if (!data) return 0;
@@ -62,7 +47,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       }
     }
 
-    if (isRaising || isWaitSeal || isPreSeal) {
+    if (isRaising || isWaitSeal) {
       return data.closing_time;
     }
 
@@ -75,23 +60,18 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     }
 
     return day2sec(data.raise_days);
-  }, [data, isClosed, isRaising, isWaitSeal, isPreSeal, isSealing, isSuccess]);
+  }, [data, isClosed, isRaising, isWaitSeal, isSealing, isSuccess]);
   const raiseTime = useMemo(() => formatTime(seconds * 1000), [seconds]);
-  const displayTime = useMemo(
-    () => (isRaising || isWaitSeal || isPreSeal || isSealing ? formatted : isDelayed ? delayed : raiseTime),
-    [delayed, formatted, raiseTime, isRaising, isWaitSeal, isPreSeal, isSealing, isDelayed],
-  );
+  const displayTime = useMemo(() => (isRaising || isWaitSeal ? formatted : raiseTime), [formatted, raiseTime, isRaising, isWaitSeal]);
 
   useEffect(() => {
-    if (isRaising || isWaitSeal || isPreSeal || isSealing) {
+    if (isRaising || isWaitSeal || isSealing) {
       setTargetDate(seconds * 1000);
       return;
     }
 
     setTargetDate(0);
   }, [seconds, isRaising, isDelayed, isSealing]);
-
-  useUnmount(clear);
 
   const [creating, handleCreate] = useProcessify(async () => {
     if (!data) return;
@@ -103,40 +83,11 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     await createRaisePlan(raise, node, extra);
   });
 
-  // const [sealing, sealAction] = useProcessify(async () => {
-  //   if (!data) return;
-
-  //   await startPreSeal(data.raising_id);
-  // });
-
   const [starting, handleStart] = useProcessify(async () => {
     if (!data) return;
 
     await startRaisePlan(data.raising_id);
   });
-
-  // const handleSeal = () => {
-  //   const hide = Dialog.confirm({
-  //     icon: 'error',
-  //     title: '提前启动封装',
-  //     summary: '扇区封装通常是一项需要排期的工作，提前启动注意以下提示',
-  //     content: (
-  //       <div className="text-gray">
-  //         <ul>
-  //           <li>提前沟通技术服务商，与封装排期计划保持同步</li>
-  //           <li>检查节点计划承诺的封装时间，封装延期将产生罚金</li>
-  //         </ul>
-  //       </div>
-  //     ),
-  //     confirmBtnVariant: 'danger',
-  //     confirmText: '提前启动封装',
-  //     onConfirm: () => {
-  //       hide();
-
-  //       sealAction();
-  //     },
-  //   });
-  // };
 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
@@ -283,20 +234,16 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   : isClosed
                   ? '节点计划已关闭'
                   : isRaising
-                  ? '正在质押中！距离截止还有'
-                  : isWaitSeal || isPreSeal
+                  ? '距离截止还有'
+                  : isWaitSeal
                   ? '质押成功'
-                  : isSealing
-                  ? '封装倒计时'
-                  : isDelayed
-                  ? '封装延期'
+                  : isSealing || isDelayed
+                  ? '封装截止时间'
                   : '质押时间'}
               </h4>
               <div className="ms-auto">
                 {isFailed ? <span className="badge badge-danger">质押未成功</span> : isSuccess ? <span className="badge badge-success">质押成功</span> : null}
-                {isPreSeal ? (
-                  <span className="badge ms-2">准备封装</span>
-                ) : isDelayed ? (
+                {isDelayed ? (
                   <span className="badge badge-warning ms-2">封装延期</span>
                 ) : isSealing ? (
                   <span className="badge badge-primary ms-2">正在封装</span>
@@ -304,29 +251,33 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </div>
             </div>
 
-            <div
-              className={classNames('d-flex justify-content-between text-center lh-1', {
-                'text-gray': isClosed || isFailed,
-                'text-main': !isClosed && !isFailed,
-              })}
-            >
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.days}</p>
-                <p className="mb-0 text-gray">天</p>
+            {isSuccess && (isDelayed || isSealing) ? (
+              <p className="countdown-text">{formatUnixDate(data.end_seal_time)}</p>
+            ) : (
+              <div
+                className={classNames('d-flex justify-content-between text-center lh-1', {
+                  'text-gray': isClosed || isFailed,
+                  'text-main': !isClosed && !isFailed,
+                })}
+              >
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.days}</p>
+                  <p className="mb-0 text-gray">天</p>
+                </div>
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.hours}</p>
+                  <p className="mb-0 text-gray">小时</p>
+                </div>
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.minutes}</p>
+                  <p className="mb-0 text-gray">分</p>
+                </div>
+                <div className="countdown-item">
+                  <p className="fs-36 fw-bold mb-1">{displayTime.seconds}</p>
+                  <p className="mb-0 text-gray">秒</p>
+                </div>
               </div>
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.hours}</p>
-                <p className="mb-0 text-gray">小时</p>
-              </div>
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.minutes}</p>
-                <p className="mb-0 text-gray">分</p>
-              </div>
-              <div className="countdown-item">
-                <p className="fs-36 fw-bold mb-1">{displayTime.seconds}</p>
-                <p className="mb-0 text-gray">秒</p>
-              </div>
-            </div>
+            )}
 
             {renderAction()}
           </div>

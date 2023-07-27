@@ -1,6 +1,7 @@
 .content {
   --header-margin-y: 32px;
   --content-item-gap: 24px;
+  --countdown-title-size: 32px;
   --section-header-padding-y: 12px;
   --section-header-spacer-y: 16px;
   --section-decimal-font-size: 20px;
@@ -164,6 +165,12 @@
       font-weight: 600;
       line-height: 1.333;
     }
+
+    .countdown-text {
+      font-size: var(--countdown-title-size);
+      font-weight: 600;
+      color: var(--bs-body-color);
+    }
   }
 }
 
@@ -256,6 +263,12 @@
 
   .sidebar {
     width: 33.125%;
+  }
+}
+
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+  .content {
+    --countdown-title-size: 24px;
   }
 }
 

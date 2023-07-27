@@ -6,7 +6,7 @@ import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import { isRaiseOperating } from '@/helpers/raise';
+import { isSuccess } from '@/helpers/raise';
 import { accAdd, accSub, sleep } from '@/utils/utils';
 
 /**
@@ -20,27 +20,27 @@ export default function useRewardServicer(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getServicerFinesReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getServicerFinesReward(data.raising_id);
     }
   };
   const getServicerLockedReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getServicerLockedReward(data.raising_id);
     }
   };
   const getServicerAvailableReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getServicerAvailableReward(data.raising_id);
     }
   };
   const getServicerPendingReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getServicerPendingReward(data.raising_id);
     }
   };
   const getServicerWithdrawnReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getServicerWithdrawnReward(data.raising_id);
     }
   };
@@ -48,27 +48,27 @@ export default function useRewardServicer(data?: API.Plan | null) {
   const [fRes, lRes, aRes, pRes, wRes] = useQueries({
     queries: [
       {
-        queryKey: ['servicerFinesReward', data?.raising_id],
+        queryKey: ['getServicerFinesReward', data?.raising_id],
         queryFn: withNull(getServicerFinesReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerLockedReward', data?.raising_id],
+        queryKey: ['getServicerLockedReward', data?.raising_id],
         queryFn: withNull(getServicerLockedReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerAvailableReward', data?.raising_id],
+        queryKey: ['getServicerAvailableReward', data?.raising_id],
         queryFn: withNull(getServicerAvailableReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerPendingReward', data?.raising_id],
+        queryKey: ['getServicerPendingReward', data?.raising_id],
         queryFn: withNull(getServicerPendingReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerWithdrawnReward', data?.raising_id],
+        queryKey: ['getServicerWithdrawnReward', data?.raising_id],
         queryFn: withNull(getServicerWithdrawnReward),
         staleTime: 60_000,
       },

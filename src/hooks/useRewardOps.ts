@@ -3,12 +3,11 @@ import { useQueries } from '@tanstack/react-query';
 
 import useAccount from './useAccount';
 import useContract from './useContract';
-import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
+import { isSuccess } from '@/helpers/raise';
 import useProcessify from './useProcessify';
-import { isRaiseOperating } from '@/helpers/raise';
-import { accDiv, accMul, accSub, sleep } from '@/utils/utils';
+import { accSub, sleep } from '@/utils/utils';
 
 /**
  * 服务商节点激励
@@ -17,46 +16,43 @@ import { accDiv, accMul, accSub, sleep } from '@/utils/utils';
  */
 export default function useRewardOps(data?: API.Plan | null) {
   const { withConnect } = useAccount();
-  const { opsRate } = useRaiseRate(data);
   const { isServicer } = useRaiseRole(data);
   const contract = useContract(data?.raise_address);
 
-  const getTotalReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
-      return await contract.getTotalReward(data.raising_id);
+  const getOpsFundReward = async () => {
+    if (data && isSuccess(data) && isServicer) {
+      return await contract.getOpsFundReward(data.raising_id);
     }
   };
   const getOpsRewardFines = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && isSuccess(data) && isServicer) {
       return await contract.getOpsRewardFines(data.raising_id);
     }
   };
 
-  const [tRes, fRes] = useQueries({
+  const [rRes, fRes] = useQueries({
     queries: [
       {
-        queryKey: ['totalReward', data?.raising_id],
-        queryFn: withNull(getTotalReward),
+        queryKey: ['getOpsFundReward', data?.raising_id],
+        queryFn: withNull(getOpsFundReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['opsRewardFines', data?.raising_id],
+        queryKey: ['getOpsRewardFines', data?.raising_id],
         queryFn: withNull(getOpsRewardFines),
         staleTime: 60_000,
       },
     ],
   });
 
-  const reward = useMemo(() => 0, []); // 可提取
-  const record = useMemo(() => 0, []); // 已提取
-  const _fines = useMemo(() => fRes.data ?? 0, [fRes.data]); // 保证金罚金
-  const _total = useMemo(() => tRes.data ?? 0, [tRes.data]); // 总收益
-  const pending = useMemo(() => Math.max(accSub(accMul(_total, accDiv(opsRate, 100)), _fines), 0), [fRes.data]); // 待释放
+  const fines = useMemo(() => fRes.data ?? 0, [fRes.data]); // 保证金罚金
+  const reward = useMemo(() => rRes.data ?? 0, [rRes.data]); // 待释放
+  const pending = useMemo(() => Math.max(accSub(reward, fines), 0), [reward, fines]);
 
-  const isLoading = useMemo(() => tRes.isLoading || fRes.isLoading, [tRes.isLoading, fRes.isLoading]);
+  const isLoading = useMemo(() => rRes.isLoading || fRes.isLoading, [rRes.isLoading, fRes.isLoading]);
 
   const refetch = () => {
-    return Promise.all([tRes.refetch(), fRes.refetch()]);
+    return Promise.all([rRes.refetch(), fRes.refetch()]);
   };
 
   const [withdarwing, withdrawAction] = useProcessify(
@@ -74,7 +70,7 @@ export default function useRewardOps(data?: API.Plan | null) {
   );
 
   return {
-    record,
+    fines,
     reward,
     pending,
     isLoading,

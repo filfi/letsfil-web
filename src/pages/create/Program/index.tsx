@@ -20,8 +20,6 @@ export default function CreateProgram() {
   const [data, setData] = useModel('stepform');
 
   const amount = Form.useWatch('amount', form);
-  const seals = Form.useWatch('sealDays', form);
-  const period = Form.useWatch('raiseDays', form);
   const target = Form.useWatch('targetAmount', form);
   const minRate = Form.useWatch('minRaiseRate', form);
   const amountType = Form.useWatch('amountType', form);
@@ -53,7 +51,7 @@ export default function CreateProgram() {
     return Number.isNaN(val) ? 0 : val;
   }, [evalMax, rate]);
 
-  const deposit = useMemo(() => calcRaiseDepost(target, period, seals), [target, period, seals]);
+  const deposit = useMemo(() => calcRaiseDepost(target), [target]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await validators.integer(rule, value);
@@ -234,7 +232,7 @@ export default function CreateProgram() {
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">主办人保证金</h4>
             <p className="text-gray">
-              根据节点计划自动计算，节点计划成功上链之后放开存入。封装工作完成后，主办人即可取回保证金。
+              保障集合质押和封装进度的保证金和FilFi协议手续费，预缴数额分别为质押目标的5%和0.3%。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}

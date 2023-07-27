@@ -3,7 +3,7 @@ import { useQueries } from '@tanstack/react-query';
 
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
-import { isRaiseOperating } from '@/helpers/raise';
+import { isSuccess } from '@/helpers/raise';
 
 /**
  * 节点计划的节点激励
@@ -14,12 +14,12 @@ export default function useRaiseReward(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getTotalReward = async () => {
-    if (data && isRaiseOperating(data)) {
+    if (data && isSuccess(data)) {
       return await contract.getTotalReward(data.raising_id);
     }
   };
   const getServicerFines = async () => {
-    if (data && isRaiseOperating(data)) {
+    if (data && isSuccess(data)) {
       return await contract.getServicerFines(data.raising_id);
     }
   };
@@ -27,12 +27,12 @@ export default function useRaiseReward(data?: API.Plan | null) {
   const [rewardRes, finesRes] = useQueries({
     queries: [
       {
-        queryKey: ['totalReward', data?.raising_id],
+        queryKey: ['getTotalReward', data?.raising_id],
         queryFn: withNull(getTotalReward),
         staleTime: 60_000,
       },
       {
-        queryKey: ['servicerFines', data?.raising_id],
+        queryKey: ['getServicerFines', data?.raising_id],
         queryFn: withNull(getServicerFines),
         staleTime: 60_000,
       },

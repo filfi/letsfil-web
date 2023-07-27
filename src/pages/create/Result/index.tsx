@@ -4,7 +4,6 @@ import { useMemo, useRef } from 'react';
 import { Link, history, useModel, useParams } from '@umijs/max';
 
 import * as A from '@/apis/raise';
-// import Modal from '@/components/Modal';
 import Result from '@/components/Result';
 import { toastify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
@@ -12,7 +11,6 @@ import { transformModel } from '@/helpers/app';
 import useLoadingify from '@/hooks/useLoadingify';
 import { ReactComponent as IconEdit } from '@/assets/step-edit.svg';
 import { ReactComponent as IconSafe } from '@/assets/step-safe.svg';
-import { ReactComponent as IconLaunch } from '@/assets/step-launch.svg';
 
 export default function CreateResult() {
   const params = useParams();
@@ -108,18 +106,6 @@ export default function CreateResult() {
                 <p className="mb-0 text-gray-dark">扇区全部到期后，技术服务商可取回保证金，保证金原路退回存入时使用的钱包。</p>
               </div>
             </li>
-            <li className="list-group-item d-flex gap-3 border-0 mb-3">
-              <div className="flex-shrink-0">
-                <IconLaunch />
-              </div>
-              <div className="flex-grow-1">
-                <p className="mb-0">
-                  <span className="fw-bold">主办人</span>
-                  <span>启动</span>
-                </p>
-                <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后质押期开始计时。</p>
-              </div>
-            </li>
           </ul>
         </div>
       </div>
@@ -136,71 +122,6 @@ export default function CreateResult() {
           </Link>
         </div>
       </div>
-
-      {/* <Modal.Alert id="more-modal" title="接下来做什么？" confirmText="我知道了">
-        <ul className="list-group list-group-flush text-main" role="group">
-          <li className="list-group-item d-flex gap-3 border-0 mb-3">
-            <div className="flex-shrink-0">
-              <IconEdit />
-            </div>
-            <div className="flex-grow-1">
-              <p className="mb-0">
-                <span className="fw-bold">主办人</span>
-                <span>签名</span>
-              </p>
-              <p className="mb-0 text-gray-dark">对节点计划达成共识，主办人签名完成链上部署，上链之后不可修改。</p>
-            </div>
-          </li>
-          <li className="list-group-item d-flex gap-3 border-0 mb-3">
-            <div className="flex-shrink-0">
-              <IconSafe />
-            </div>
-            <div className="flex-grow-1">
-              <p className="mb-0">
-                <span className="fw-bold">主办人</span>
-                <span>存入”主办人保证金“</span>
-              </p>
-              <p className="mb-0 text-gray-dark">封装结束后，主办人可取回保证金，保证金原路退回存入时使用的钱包。</p>
-            </div>
-          </li>
-          <li className="list-group-item d-flex gap-3 border-0 mb-3">
-            <div className="flex-shrink-0">
-              <IconEdit />
-            </div>
-            <div className="flex-grow-1">
-              <p className="mb-0">
-                <span className="fw-bold">技术服务商</span>
-                <span>签名</span>
-              </p>
-              <p className="mb-0 text-gray-dark">节点计划需要得到技术服务商签名确认，同时将存储节点的Owner交给智能合约。</p>
-            </div>
-          </li>
-          <li className="list-group-item d-flex gap-3 border-0 mb-3">
-            <div className="flex-shrink-0">
-              <IconSafe />
-            </div>
-            <div className="flex-grow-1">
-              <p className="mb-0">
-                <span className="fw-bold">技术服务商</span>
-                <span>存入”运维保证金“</span>
-              </p>
-              <p className="mb-0 text-gray-dark">扇区全部到期后，技术服务商可取回保证金，保证金原路退回存入时使用的钱包。</p>
-            </div>
-          </li>
-          <li className="list-group-item d-flex gap-3 border-0">
-            <div className="flex-shrink-0">
-              <IconLaunch />
-            </div>
-            <div className="flex-grow-1">
-              <p className="mb-0">
-                <span className="fw-bold">主办人</span>
-                <span>启动</span>
-              </p>
-              <p className="mb-0 text-gray-dark">满足所有条件后，启动按钮生效，主办人决定启动时间，启动后质押期开始计时。</p>
-            </div>
-          </li>
-        </ul>
-      </Modal.Alert> */}
     </>
   );
 }

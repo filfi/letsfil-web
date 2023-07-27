@@ -23,42 +23,57 @@ export default function useRaiseMiner(data?: API.Plan | null) {
       return await contract.getSealedAmount(data.raising_id);
     }
   };
-  const getFundOpsCalc = async () => {
+  const getOpsFundCalc = async () => {
     if (data && !isPending(data)) {
-      return await contract.getFundOpsCalc(data.raising_id);
+      return await contract.getOpsFundCalc(data.raising_id);
+    }
+  };
+  const getOpsFundSeal = async () => {
+    if (data && !isPending(data)) {
+      return await contract.getOpsFundSeal(data.raising_id);
     }
   };
 
-  const [pRes, sRes, fRes] = useQueries({
+  const [pRes, sRes, fRes, oRes] = useQueries({
     queries: [
       {
-        queryKey: ['pledgeAmount', data?.raising_id],
+        queryKey: ['getPledgeAmount', data?.raising_id],
         queryFn: withNull(getPledgeAmount),
         staleTime: 60_000,
       },
       {
-        queryKey: ['sealedAmount', data?.raising_id],
+        queryKey: ['getSealedAmount', data?.raising_id],
         queryFn: withNull(getSealedAmount),
         staleTime: 60_000,
       },
       {
-        queryKey: ['fundOpsCalc', data?.raising_id],
-        queryFn: withNull(getFundOpsCalc),
+        queryKey: ['getOpsFundCalc', data?.raising_id],
+        queryFn: withNull(getOpsFundCalc),
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ['getOpsFundSeal', data?.raising_id],
+        queryFn: withNull(getOpsFundSeal),
         staleTime: 60_000,
       },
     ],
   });
 
+  const safe = useMemo(() => oRes.data ?? 0, [oRes.data]);
   const funds = useMemo(() => fRes.data ?? 0, [fRes.data]);
   const pledge = useMemo(() => pRes.data ?? 0, [pRes.data]);
   const sealed = useMemo(() => sRes.data ?? 0, [sRes.data]);
-  const isLoading = useMemo(() => fRes.isLoading || pRes.isLoading || sRes.isLoading, [fRes.isLoading, pRes.isLoading, sRes.isLoading]);
+  const isLoading = useMemo(
+    () => fRes.isLoading || pRes.isLoading || sRes.isLoading || oRes.isLoading,
+    [fRes.isLoading, pRes.isLoading, sRes.isLoading, oRes.isLoading],
+  );
 
   const refetch = () => {
-    return Promise.all([pRes.refetch(), sRes.refetch(), fRes.refetch()]);
+    return Promise.all([pRes.refetch(), sRes.refetch(), fRes.refetch(), oRes.isLoading]);
   };
 
   return {
+    safe,
     funds,
     pledge,
     sealed,

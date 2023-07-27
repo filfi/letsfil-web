@@ -35,12 +35,12 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   const [backAsset, investorInfo] = useQueries({
     queries: [
       {
-        queryKey: ['backAsset', address, data?.raising_id],
+        queryKey: ['getBackAssets', address, data?.raising_id],
         queryFn: withNull(getBackAssets),
         staleTime: 60_000,
       },
       {
-        queryKey: ['investorInfo', address, data?.raising_id],
+        queryKey: ['getInvestInfo', address, data?.raising_id],
         queryFn: withNull(getInvestInfo),
         staleTime: 60_000,
       },
