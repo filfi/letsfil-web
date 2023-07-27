@@ -403,6 +403,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 取回Owner权限
+   */
+  const backOwner = toastify(async (opts?: WriteOptions) => {
+    return await writeContract('backOwner', [], opts);
+  });
+
+  /**
    * 质押
    */
   const staking = toastify(async (id: string, opts?: WriteOptions) => {
@@ -548,6 +555,7 @@ export default function useContract(address?: API.Address) {
     getServicerPendingReward,
     getServicerAvailableReward,
     getServicerWithdrawnReward,
+    backOwner,
     staking,
     unStaking,
     startPreSeal,
