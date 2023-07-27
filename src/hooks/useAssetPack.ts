@@ -22,10 +22,10 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
 
   const { isRaiser, isServicer } = useRaiseRole(plan);
   const { record, isInvestor } = useDepositInvestor(plan);
-  const { actual, progress: _progress } = useRaiseBase(plan);
+  const { actual, progress: _progress, target } = useRaiseBase(plan);
   const { priorityRate, raiserRate, opsRatio: ratio, servicerRate } = useRaiseRate(plan);
   // 已封装的缓冲金
-  const { data: opsSealed } = useQuery(['getOpsFundSealed', plan?.raising_id], withNull(getOpsFundSealed));
+  const { data: opsSealed, isLoading } = useQuery(['getOpsFundSealed', plan?.raising_id], withNull(getOpsFundSealed));
 
   // 总算力
   const power = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);
@@ -34,19 +34,20 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   // 已封装质押
   const pledge = useMemo(() => toNumber(pack?.total_pledge_amount), [pack?.total_pledge_amount]);
 
-  // 运维保证金 = (实际缴纳保证金(实际募集 * 保证金分配比例) / (1 - 保证金分配比例)) * 募集比例 + 已封装缓冲金
-  const opsAmount = useMemo(
-    () => accAdd(accMul(toFixed(accDiv(accMul(actual, accDiv(ratio, 100)), accSub(1, accDiv(ratio, 100))), 2, 2), _progress), opsSealed ?? 0),
-    [actual, ratio, _progress, opsSealed],
-  );
-  // 总质押 = 实际募集 + 运维保证金
+  // 已缴纳运维保证金 = (募集目标 * 保证金分配比例) / (1 - 保证金分配比例)
+  const opsActual = useMemo(() => +toFixed(accDiv(accMul(target, accDiv(ratio, 100)), accSub(1, accDiv(ratio, 100))), 2, 2), [target, ratio]);
+  // 实际配比运维保证金 = 已缴纳运维保证金 * 募集比例
+  const opsCurrent = useMemo(() => accMul(opsActual, _progress), [opsActual, _progress]);
+  // 总运维保证金 = 实际配比运维保证金 + 已封装缓冲金
+  const opsAmount = useMemo(() => accAdd(opsCurrent, opsSealed ?? 0), [opsCurrent, opsSealed]);
+  // 总质押 = 实际募集 + 总运维保证金
   const total = useMemo(() => accAdd(actual, opsAmount), [actual, opsAmount]);
-  // 运维保证金占比 = 运维保证金 / 总质押
+  // 运维保证金占比 = 总运维保证金 / 总质押
   const opsRatio = useMemo(() => (total > 0 ? accDiv(opsAmount, total) : 0), [opsAmount, total]);
   // 建设者投资占比 = 投入金额 / 总质押
   const investorRatio = useMemo(() => (total > 0 ? Math.min(accDiv(record, total), 1) : 0), [record, total]);
-  // 封装进度 = 已封装质押 / 总质押
-  const progress = useMemo(() => (total > 0 ? accDiv(pledge, total) : 0), [pledge, total]);
+  // 封装进度 = 已封装质押 / (实际募集 + 实际配比运维保证金)
+  const progress = useMemo(() => (actual > 0 ? accDiv(pledge, accAdd(actual, opsCurrent)) : 0), [pledge, actual, opsCurrent]);
 
   // 建设者封装算力 = 总算力 * 建设者投资占比
   const investorSealsPower = useMemo(() => (isInvestor ? accMul(power, investorRatio) : 0), [power, investorRatio, isInvestor]);
@@ -97,5 +98,6 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
     servicerPledge,
     holdPower,
     holdPledge,
+    isLoading,
   };
 }

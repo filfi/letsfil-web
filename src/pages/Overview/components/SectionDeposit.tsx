@@ -1,6 +1,5 @@
 import { Input } from 'antd';
 import { useMemo } from 'react';
-import { parseEther } from 'viem';
 import classNames from 'classnames';
 
 import * as F from '@/utils/format';
@@ -170,7 +169,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     if (!isServicer || !data?.raising_id) return;
 
     await addDepositOpsFund(data?.raising_id, {
-      value: parseEther(`${need}`),
+      value: need as bigint,
     });
   });
 
@@ -301,7 +300,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
       </div>
 
-      <ModalDeposit id="deposit-add" amount={need} onConfirm={handleAddDeposit} />
+      <ModalDeposit id="deposit-add" amount={F.toNumber(need)} onConfirm={handleAddDeposit} />
 
       <Modal.Confirm id="deposit-confirm" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
         <div className="p-3">

@@ -9,13 +9,19 @@ export type ModalDepositProps = Omit<ModalProps, 'onConfirm'> & {
   onConfirm?: () => any;
 };
 
-const ModalDeposit: React.FC<ModalDepositProps> = ({ amount, onConfirm, onHidden, ...props }) => {
+const ModalDeposit: React.FC<ModalDepositProps> = ({ amount, onConfirm, onHidden, onShown, ...props }) => {
   const [form] = Form.useForm();
 
   const _onHidden = () => {
     form.resetFields();
 
     onHidden?.();
+  };
+
+  const _onShown = () => {
+    form.setFieldValue('amount', amount ?? 0);
+
+    onShown?.();
   };
 
   const handleValidate = async () => {
@@ -33,7 +39,15 @@ const ModalDeposit: React.FC<ModalDepositProps> = ({ amount, onConfirm, onHidden
   };
 
   return (
-    <Modal.Confirm title="追加保证金" bodyClassName="pb-0" footerClassName="border-top" {...props} onHidden={_onHidden} onConfirm={handleValidate}>
+    <Modal.Confirm
+      title="追加保证金"
+      bodyClassName="pb-0"
+      footerClassName="border-top"
+      {...props}
+      onHidden={_onHidden}
+      onShown={_onShown}
+      onConfirm={handleValidate}
+    >
       <div className="ffi-form px-3">
         <Form form={form} size="large" initialValues={{ amount }} onFinish={handleFinish}>
           <div className="ffi-item">

@@ -181,7 +181,7 @@ export default function useContract(address?: API.Address) {
    * 获需追加的保证金
    */
   const getOpsFundNeed = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('securityNeed', [id], _address));
+    return await readContract<bigint>('securityNeed', [id], _address);
   };
 
   /**
