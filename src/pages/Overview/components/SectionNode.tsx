@@ -9,12 +9,18 @@ import useRaiseState from '@/hooks/useRaiseState';
 import { accDiv, accMul, accSub, byte2gb } from '@/utils/utils';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 
-function calcPerPledge(perTera?: number | string) {
+function calcPerPledge(perTera?: number | string, defaultVal = 0) {
   const val = accMul(perTera ?? 0, 1024);
 
-  if (!Number.isNaN(val)) {
+  if (val > 0) {
     return val;
   }
+
+  return defaultVal;
+}
+
+function fixNaN(val: number) {
+  return Number.isNaN(val) ? 0 : val;
 }
 
 const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
@@ -23,10 +29,10 @@ const SectionNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { actual, target } = useRaiseBase(data);
   const { isSuccess, isWorking } = useRaiseState(data);
 
-  const price = useMemo(() => calcPerPledge(data?.pledge_per_tera_day) ?? perPledge, [perPledge, data?.pledge_per_tera_day]);
-  const actualPower = useMemo(() => accMul(accDiv(actual, price), Math.pow(1024, 5)), [price, actual]);
-  const targetPower = useMemo(() => accMul(accDiv(target, price), Math.pow(1024, 5)), [price, target]);
-  const sealsPower = useMemo(() => accSub(pack?.total_power || 0, 0), [pack?.total_power]);
+  const price = useMemo(() => calcPerPledge(data?.pledge_per_tera_day, perPledge), [perPledge, data?.pledge_per_tera_day]);
+  const actualPower = useMemo(() => fixNaN(accMul(accDiv(actual, price), Math.pow(1024, 5))), [price, actual]);
+  const targetPower = useMemo(() => fixNaN(accMul(accDiv(target, price), Math.pow(1024, 5))), [price, target]);
+  const sealsPower = useMemo(() => fixNaN(accSub(pack?.total_power || 0, 0)), [pack?.total_power]);
 
   return (
     <>
