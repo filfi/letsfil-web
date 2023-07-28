@@ -10,8 +10,10 @@ import { accDiv, accMul, accSub, byte2gb } from '@/utils/utils';
 import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 
 function calcPerPledge(perTera?: number | string) {
-  if (perTera && +perTera > 0) {
-    return +perTera;
+  const val = accMul(perTera ?? 0, 1024);
+
+  if (!Number.isNaN(val)) {
+    return val;
   }
 }
 
