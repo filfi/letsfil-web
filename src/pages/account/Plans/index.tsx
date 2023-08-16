@@ -49,10 +49,10 @@ export default function AccountPlans() {
     { wait: 200 },
   );
 
-  const handleCreate = withConnect(async () => {
+  const handleCreate = withConnect(async (planType: number = 1) => {
     setModel(undefined);
 
-    history.push('/create');
+    history.push(planType === 2 ? '/mount' : '/create');
   });
 
   const handleEdit = async (data: API.Plan) => {
@@ -82,7 +82,7 @@ export default function AccountPlans() {
               <Link className="btn btn-light" to="/raising">
                 查看开放的节点计划
               </Link>
-              <button className="btn btn-primary" type="button" onClick={handleCreate}>
+              <button className="btn btn-primary" type="button" onClick={() => handleCreate()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-2">发起节点计划</span>
               </button>
@@ -90,8 +90,12 @@ export default function AccountPlans() {
           </Result>
         ) : (
           <>
-            <p className="float-lg-end mt-lg-3 text-end">
-              <button className="btn btn-primary" type="button" onClick={handleCreate}>
+            <p className="hstack flex-wrap gap-3 float-lg-end mt-lg-3 text-end">
+              <button className="btn btn-light" type="button" onClick={() => handleCreate(2)}>
+                <span className="bi bi-hdd-stack"></span>
+                <span className="ms-2">挂载历史节点</span>
+              </button>
+              <button className="btn btn-primary" type="button" onClick={() => handleCreate()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-2">发起节点计划</span>
               </button>

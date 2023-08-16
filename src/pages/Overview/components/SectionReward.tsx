@@ -5,8 +5,10 @@ import { Pie, PieConfig } from '@ant-design/plots';
 // import { accDiv, accMul } from '@/utils/utils';
 // import useChainInfo from '@/hooks/useChainInfo';
 // import useRaiseBase from '@/hooks/useRaiseBase';
+import { isMountPlan } from '@/helpers/raise';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const config: PieConfig = {
   data: [],
@@ -41,11 +43,13 @@ const config: PieConfig = {
 const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   // const { perFil, perPledge } = useChainInfo();
   // const { period, target } = useRaiseBase(data);
+  const { isInvestor } = useDepositInvestor(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
   const { priorityRate, raiserRate, servicerRate, ffiRate } = useRaiseRate(data);
 
   // 预估节点激励 = 24小时产出效率 * 封装天数 * 总算力(质押目标 / 当前扇区质押量)
   // const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
+  const isMount = useMemo(() => isMountPlan(data), [data]);
   const pieData = useMemo(
     () => [
       { name: '建设者权益', value: priorityRate },
@@ -133,12 +137,21 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-8 table-cell">实时分账随时提取</div>
           </div>
         </div>
-        <div className="col table-row">
-          <div className="row g-0">
-            <div className="col-4 table-cell th">封装Gas费</div>
-            <div className="col-8 table-cell">由主办人承担</div>
+        {isMount ? (
+          <div className="col table-row">
+            <div className="row g-0">
+              <div className="col-4 table-cell th">质押</div>
+              <div className="col-8 table-cell">100%建设者持有</div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="col table-row">
+            <div className="row g-0">
+              <div className="col-4 table-cell th">封装Gas费</div>
+              <div className="col-8 table-cell">由主办人承担</div>
+            </div>
+          </div>
+        )}
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">我的角色</div>
@@ -153,11 +166,13 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   <span className="d-inline-block p-1 rounded-circle" style={{ backgroundColor: '#7FC4FD' }}></span>
                   <span className="ms-1">主办人</span>
                 </>
-              ) : (
+              ) : isInvestor ? (
                 <>
                   <span className="d-inline-block p-1 rounded-circle" style={{ backgroundColor: '#2699FB' }}></span>
                   <span className="ms-1">建设者</span>
                 </>
+              ) : (
+                <span className="text-gray">-</span>
               )}
             </div>
           </div>

@@ -76,6 +76,14 @@ export function countSync(raising_id: string) {
   return A.get<{ seal_delay_sync_count: number }>('/raising-plan/v2/raise-sync-count', { raising_id });
 }
 
+export function addEquity(id: string, data: API.Base) {
+  return A.post(`/raising-plan/v2/add/raise-equity/${id}`, data);
+}
+
+export function updateEquity(id: string, data: API.Base) {
+  return A.post(`/raising-plan/v2/modify/raise-equity/${id}`, data);
+}
+
 export function statChainInfo() {
   return A.get<API.Base>('/service-provier/get-filscan-stat-chain-info');
 }

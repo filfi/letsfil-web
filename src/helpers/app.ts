@@ -123,16 +123,16 @@ export function calcRaiseDepost(target: number) {
 
 export function transformParams(data: API.Base) {
   const {
-    sealDays,
-    raiseDays,
-    sectorSize,
-    minRaiseRate,
-    sectorPeriod,
-    targetAmount,
-    ffiProtocolFee,
-    opsSecurityFund,
-    raiseSecurityFund,
-    opsSecurityFundRate,
+    sealDays = 0,
+    raiseDays = 0,
+    sectorSize = 0,
+    minRaiseRate = 0,
+    sectorPeriod = 0,
+    targetAmount = 0,
+    ffiProtocolFee = 0,
+    opsSecurityFund = 0,
+    raiseSecurityFund = 0,
+    opsSecurityFundRate = 0,
     ...props
   } = data;
   const _params = omit(props, ['amount', 'amountType']);
@@ -149,6 +149,16 @@ export function transformParams(data: API.Base) {
     opsSecurityFund: ethers.utils.parseEther(`${opsSecurityFund}`).toString(),
     raiseSecurityFund: ethers.utils.parseEther(`${raiseSecurityFund}`).toString(),
     targetAmount: ethers.utils.parseEther(`${targetAmount}`).toString(),
+  };
+}
+
+export function transformInvestor(data: API.Base) {
+  const { rate = 0, amount = 0, ...props } = data;
+
+  return {
+    ...props,
+    pledge_amount: ethers.utils.parseEther(`${amount}`).toString(),
+    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
   };
 }
 

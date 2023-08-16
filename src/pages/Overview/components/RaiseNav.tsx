@@ -2,7 +2,7 @@ import classNames from 'classnames';
 
 import useRaiseState from '@/hooks/useRaiseState';
 
-const ContNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
   return (
@@ -65,4 +65,4 @@ const ContNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   );
 };
 
-export default ContNav;
+export default RaiseNav;

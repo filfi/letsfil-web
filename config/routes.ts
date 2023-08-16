@@ -95,6 +95,29 @@ const routes: IBestAFSRoute[] = [
     ],
   },
   {
+    name: 'mount',
+    path: 'mount',
+    component: './mount/layout',
+    routes: [
+      {
+        name: 'storage',
+        path: 'storage',
+        component: './mount/Storage',
+      },
+      {
+        name: 'benefit',
+        path: 'benefit',
+        component: './mount/Benefit',
+      },
+      {
+        name: 'result',
+        path: 'result/:id',
+        component: './mount/Result',
+      },
+      { path: '/mount', redirect: '/mount/storage' },
+    ],
+  },
+  {
     name: 'overview',
     path: 'overview/:id',
     component: './Overview',
@@ -103,6 +126,24 @@ const routes: IBestAFSRoute[] = [
     name: 'assets',
     path: 'assets/:id',
     component: './Assets',
+  },
+  {
+    name: 'fspa',
+    path: 'fspa',
+    component: './fspa/layout',
+    routes: [
+      {
+        path: 'list',
+        name: 'FSPAList',
+        component: './fspa/List',
+      },
+      {
+        path: 'overview/:id',
+        name: 'FSPAOverview',
+        component: './fspa/Overview',
+      },
+      { path: '/fspa', redirect: '/fspa/list' },
+    ],
   },
   // other 404
   { path: '*', redirect: '/' },

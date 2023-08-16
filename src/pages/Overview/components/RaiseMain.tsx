@@ -18,7 +18,7 @@ import SectionTimeline from './SectionTimeline';
 import SectionProvider from './SectionProvider';
 import useRaiseState from '@/hooks/useRaiseState';
 
-const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
   const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
@@ -125,4 +125,4 @@ const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   );
 };
 
-export default ContMain;
+export default RaiseMain;

@@ -2,15 +2,14 @@ import { useMemo } from 'react';
 import { useTitle } from 'ahooks';
 import { Outlet, useLocation } from '@umijs/max';
 
-// import Modal from '@/components/Modal';
 import Steps from '@/components/Steps';
 import PageHeader from '@/components/PageHeader';
 
-const paths = ['storage', 'program', 'benefit', 'result'];
-const items = [{ title: '定制存储方案' }, { title: '填写质押目标' }, { title: '设计分配方案' }, { title: '完成' }];
+const paths = ['node', 'benefit', 'result'];
+const items = [{ title: '指定历史节点' }, { title: '填写分配方案' }, { title: '完成', path: 'result' }];
 
-export default function Create() {
-  useTitle('发起节点计划 - FilFi', { restoreOnUnmount: true });
+export default function MountLayout() {
+  useTitle('挂载历史节点 - FilFi', { restoreOnUnmount: true });
 
   const location = useLocation();
   const current = useMemo(() => paths.findIndex((path) => location.pathname.includes(path)), [location.pathname]);
@@ -19,10 +18,10 @@ export default function Create() {
     <>
       <div className="container pb-4 pb-lg-5">
         <PageHeader
-          title="新建节点计划"
+          title="新建分配计划"
           desc={
             <>
-              <span>依靠强大的FVM智能合约，合作共建Filecoin存储。</span>
+              <span>将历史节点挂载到FilFi网络，委托智能合约分配激励</span>
               {/* <a className="text-underline" href="#create-tips" data-bs-toggle="modal">
                 了解更多
               </a> */}

@@ -4,22 +4,21 @@ import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
 import { useDebounceFn, useLockFn, useUpdateEffect } from 'ahooks';
 
-import { isDef } from '@/utils/utils';
 import useUser from '@/hooks/useUser';
 import { minerInfo } from '@/apis/raise';
-import Dialog from '@/components/Dialog';
-import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
-import { formatAddr } from '@/utils/format';
 import useAccount from '@/hooks/useAccount';
+import { accAdd, isDef } from '@/utils/utils';
 import useProviders from '@/hooks/useSProviders';
-import FormRadio from '@/components/FormRadio';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
+import { formatAddr, toNumber } from '@/utils/format';
+import Dialog from '@/components/Dialog';
+import SpinBtn from '@/components/SpinBtn';
 import AvatarInput from '@/components/AvatarInput';
 import ProviderSelect from '@/components/ProviderRadio';
 
-export default function CreateStorage() {
+export default function MountStorage() {
   const [form] = Form.useForm();
   const [model, setModel] = useModel('stepform');
 
@@ -49,21 +48,23 @@ export default function CreateStorage() {
     }
   }, [list, model?.serviceId]);
 
+  const onMinerChange = (data: API.MinerAsset) => {
+    const {
+      available_balance, // 可用余额
+      locked_funds, // 锁仓奖励
+      initial_pledge, // 扇区质押
+    } = data;
+
+    const balance = accAdd(toNumber(available_balance), toNumber(initial_pledge), toNumber(locked_funds));
+    form.setFieldValue('hisBlance', balance);
+  };
+
+  const onServiceSelect = (_: unknown, item: API.Provider) => {
+    form.setFieldValue('serviceProviderAddress', item.wallet_address);
+  };
+
   const [mining, getMiner] = useLoadingify(async (id: string) => {
-    const r = await catchify(minerInfo)(id);
-    const [, res] = r;
-    const isOld = res && res?.sector_count > 0;
-
-    form.setFieldsValue({
-      minerType: isOld ? 2 : 1,
-      hisBlance: isOld ? res.balance : '0',
-      hisPower: isOld ? res.miner_power : '0',
-      hisInitialPledge: isOld ? res.initial_pledge : '0',
-      hisSectorCount: isOld ? res.sector_count : 0,
-      raiseHisPowerRate: isOld ? 90 : 0,
-      raiseHisInitialPledgeRate: isOld ? 100 : 0,
-    });
-
+    const [, r] = await catchify(minerInfo)(id);
     return r;
   });
 
@@ -79,14 +80,17 @@ export default function CreateStorage() {
     if (value) {
       const res = await validateMiner(value);
 
-      if (res?.[0]) {
+      if (!res) {
         return Promise.reject('无效的节点，请重新输入');
       }
-    }
-  };
 
-  const onServiceSelect = (_: unknown, item: API.Provider) => {
-    form.setFieldValue('serviceProviderAddress', item.wallet_address);
+      // *有募集计划* 或 *有欠款* 或 *有预存款* 均不可挂载
+      if (res.has_plan !== 0 || +res.fee_debt > 0 || +res.pre_commit_deposits > 0) {
+        return Promise.reject('节点不可用');
+      }
+
+      onMinerChange(res);
+    }
   };
 
   const handleMiner = async (ev: React.KeyboardEvent | React.MouseEvent) => {
@@ -113,7 +117,7 @@ export default function CreateStorage() {
 
     setModel((d) => ({ ...d, ...vals }));
 
-    history.push('/create/program');
+    history.push('/mount/benefit');
   });
 
   return (
@@ -123,54 +127,34 @@ export default function CreateStorage() {
         size="large"
         layout="vertical"
         initialValues={{
-          planType: 1,
+          planOpen: 1,
+          planType: 2,
+          hisBlance: 0,
           minerType: 1,
           raiser: address,
-          sectorSize: 32,
-          sectorPeriod: 540,
           sponsorLogo: user?.url,
           sponsorCompany: address,
-          hisBlance: '0',
-          hisPower: '0',
-          hisInitialPledge: '0',
-          hisSectorCount: 0,
-          raiseHisPowerRate: 0,
-          raiseHisInitialPledgeRate: 0,
           ...model,
         }}
         onFinish={handleSubmit}
       >
-        <Form.Item hidden name="raiser">
+        <Form.Item hidden name="minerType">
+          <Input />
+        </Form.Item>
+        <Form.Item hidden name="planOpen">
           <Input />
         </Form.Item>
         <Form.Item hidden name="planType">
           <Input />
         </Form.Item>
-        <Form.Item hidden name="hisBlance">
-          <Input />
-        </Form.Item>
-        <Form.Item hidden name="hisPower">
-          <Input />
-        </Form.Item>
-        <Form.Item hidden name="hisInitialPledge">
-          <Input />
-        </Form.Item>
-        <Form.Item hidden name="hisSectorCount">
-          <Input />
-        </Form.Item>
-        <Form.Item hidden name="raiseHisPowerRate">
-          <Input />
-        </Form.Item>
-        <Form.Item hidden name="raiseHisInitialPledgeRate">
+        <Form.Item hidden name="raiser">
           <Input />
         </Form.Item>
 
         <div className="ffi-form">
           <div className={classNames('ffi-item border-bottom')}>
             <h4 className="ffi-label">完善主办人资料</h4>
-            <p className="text-gray">
-              主办人的名称和Logo都会显示在节点计划中，使用有助于建设者识别的名称，也可以使用机构名称。名称允许修改，会产生Gas费，修改历史会在链上记录。
-            </p>
+            <p className="text-gray">主办人发起历史节点的分配计划。主办人必须了解历史节点的所有利益结构。</p>
 
             <div className="d-flex gap-3">
               <div className="flex-shrink-0">
@@ -190,21 +174,10 @@ export default function CreateStorage() {
             </div>
           </div>
 
-          {/* <div className="ffi-item border-bottom">
-            <h4 className="ffi-label mb-3">节点计划名称</h4>
-
-            <Form.Item
-              name="raisingName"
-              rules={[{ required: true, message: '请输入名称' }]}
-            >
-              <Input maxLength={64} placeholder="输入名称" />
-            </Form.Item>
-          </div> */}
-
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">Filecoin存储节点</h4>
             <p className="text-gray">
-              质押资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
+              填写委托给FilFi协议的历史节点的节点号。委托成功意味着该节点的Owner地址将移交给FilFi智能合约。
               {/* <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
                 什么是存储节点号？
               </a> */}
@@ -231,45 +204,28 @@ export default function CreateStorage() {
                 </SpinBtn>
               </div>
             </div>
-            <Form.Item name="minerType">
-              <FormRadio
-                grid
-                disabled
-                items={[
-                  { label: '新建节点', value: 1 },
-                  { label: '扩建节点', value: 2 },
-                ]}
-              />
-            </Form.Item>
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">Filecoin存储方案</h4>
-            <p className="text-gray">选择封装扇区的参数</p>
+            <h4 className="ffi-label">Miner余额的处理</h4>
+            <p className="text-gray">
+              Miner内的余额被视为可分配的激励，FilFi协议会按照计划约定的分配方案执行分配。若不希望留给FilFi智能合约管理，请务必在技术服务商移交Ower地址之前，转出所有余额。
+            </p>
 
-            <Form.Item name="sectorSize" rules={[{ required: true, message: '请选择存储方案' }]}>
-              <FormRadio
-                items={[
-                  { label: '32GB 扇区', value: 32 },
-                  { label: '64GB 扇区', value: 64 },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item name="sectorPeriod" rules={[{ required: true, message: '请选择存储方案' }]}>
-              <FormRadio
-                items={[
-                  { label: '210 天到期', value: 210 },
-                  { label: '360 天到期', value: 360 },
-                  { label: '540 天到期', value: 540 },
-                ]}
-              />
-            </Form.Item>
+            <div className="row">
+              <div className="col-12 col-md-8 col-lg-6">
+                <p className="ffi-label">Miner当前余额为（余额会随着时间变化）</p>
+                <Form.Item noStyle name="hisBlance">
+                  <Input readOnly suffix="FIL" />
+                </Form.Item>
+              </div>
+            </div>
           </div>
 
           <div className="ffi-item">
             <h4 className="ffi-label">技术服务商</h4>
             <p className="text-gray">
-              技术服务商提供扇区封装、技术运维、IDC数据中心整体解决方案，是存储节点长期健康运行的最终保障。
+              历史节点的技术服务商。只有FilFi协议认可的技术服务商的历史节点，才可以委托给FilFi协议。
               {/* <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">
                 如何成为技术服务商(SP Foundry)？
               </a> */}

@@ -2,14 +2,14 @@ import { useMemo } from 'react';
 import classNames from 'classnames';
 import { NavLink } from '@umijs/max';
 
-import ContActions from './ContActions';
+import RaiseActions from './RaiseActions';
 import PageHeader from '@/components/PageHeader';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
 import { formatID, formatSponsor } from '@/utils/format';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
-const ContHeader: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseHeader: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSuccess } = useRaiseState(data);
   const { isInvestor } = useDepositInvestor(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
@@ -24,7 +24,7 @@ const ContHeader: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         desc={isSuccess ? <span className="text-uppercase">算力包 {formatID(data?.raising_id)}</span> : '依靠强大的FVM智能合约，合作共建Filecoin存储'}
       >
         <div className="d-flex align-items-center gap-3 text-nowrap">
-          <ContActions data={data} />
+          <RaiseActions data={data} />
         </div>
       </PageHeader>
 
@@ -46,4 +46,4 @@ const ContHeader: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   );
 };
 
-export default ContHeader;
+export default RaiseHeader;

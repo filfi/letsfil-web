@@ -1,5 +1,9 @@
 import { NodeState, RaiseState } from '@/constants/state';
 
+export function isMountPlan(data?: API.Plan | null) {
+  return data?.plan_type === 2;
+}
+
 export function isPending(data: API.Plan) {
   return data.status === RaiseState.Pending;
 }

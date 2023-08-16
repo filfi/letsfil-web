@@ -165,30 +165,9 @@ const Header: React.FC = () => {
                   </Link>
                 </li>
                 <li className="nav-item dropdown">
-                  <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
-                    <span className="me-2">
-                      <FormattedMessage id="menu.storage" />
-                    </span>
-
-                    <span className="bi bi-chevron-down align-middle fw-600 text-gray-dark"></span>
-                  </a>
-
-                  <div className="dropdown-menu border-0 shadow rounded-4">
-                    <div className="d-flex flex-column gap-2">
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Borrow FIL</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Raise FIL</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">SP Foundry</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                    </div>
-                  </div>
+                  <Link className="nav-link" to="/fspa">
+                    <FormattedMessage id="menu.storage" />
+                  </Link>
                 </li>
                 <li className="nav-item dropdown">
                   <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">

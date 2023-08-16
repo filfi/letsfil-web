@@ -6,7 +6,7 @@ import CardRaise from './CardRaise';
 import CardAssets from './CardAssets';
 import CardStaking from './CardStaking';
 
-const ContSider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseSider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
 
   if (responsive.lg) {
@@ -30,4 +30,4 @@ const ContSider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   return null;
 };
 
-export default ContSider;
+export default RaiseSider;

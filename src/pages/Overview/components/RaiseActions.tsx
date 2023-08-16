@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
+
 import { SCAN_URL } from '@/constants';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import { isMountPlan } from '@/helpers/raise';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
@@ -11,11 +14,14 @@ import { ReactComponent as IconTrash } from '@/assets/icons/trash-04.svg';
 import { ReactComponent as IconShare4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
 
-const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const actions = useRaiseActions(data);
   const { isRaiser } = useRaiseRole(data);
   const { actual, minTarget } = useRaiseBase(data);
   const { isPending, isWaiting, isRaising } = useRaiseState(data);
+
+  const isMount = useMemo(() => isMountPlan(data), [data]);
+  const name = useMemo(() => (isMount ? '分配计划' : '节点计划'), [isMount]);
 
   const handleEdit = () => {
     actions.edit();
@@ -24,8 +30,8 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const handleDelete = () => {
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: '删除节点计划',
-      summary: '未签名的节点计划可以永久删除。',
+      title: `删除${name}`,
+      summary: `未签名的${name}可以永久删除。`,
       confirmLoading: actions.removing,
       onConfirm: () => {
         hide();
@@ -38,19 +44,19 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const handleClose = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
 
-    const isSafe = actual >= minTarget;
+    const isSafe = !isMount && actual >= minTarget;
 
     const hide = Dialog.confirm({
       icon: 'error',
-      title: isSafe ? '提前关闭节点计划' : '关闭节点计划',
+      title: isSafe ? `提前关闭${name}` : `关闭${name}`,
       summary: isSafe
-        ? '达到最低目标，即可正常结束节点计划。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示'
-        : '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
+        ? `达到最低目标，即可正常结束${name}。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示`
+        : `${name}已经部署在链上，关闭已经启动的{name}被视为违约。`,
       content: isSafe ? (
         <div className="text-gray">
           <ul>
             <li>提前沟通技术服务商，与封装排期计划保持同步</li>
-            <li>检查节点计划承诺的封装时间，封装延期将产生罚金</li>
+            <li>检查{name}承诺的封装时间，封装延期将产生罚金</li>
           </ul>
         </div>
       ) : (
@@ -83,7 +89,7 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       {isPending && isRaiser && (
         <>
           <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
-            修改节点计划
+            修改{name}
           </SpinBtn>
 
           <SpinBtn className="btn btn-danger" icon={<IconTrash />} loading={actions.removing} onClick={handleDelete}>
@@ -124,4 +130,4 @@ const ContActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   );
 };
 
-export default ContActions;
+export default RaiseActions;
