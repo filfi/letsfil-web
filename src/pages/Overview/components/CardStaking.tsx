@@ -2,17 +2,30 @@ import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
 import SpinBtn from '@/components/SpinBtn';
+import useAccount from '@/hooks/useAccount';
 import { integer } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
-import { accSub, sleep } from '@/utils/utils';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseState from '@/hooks/useRaiseState';
+import { accSub, isEqual, sleep } from '@/utils/utils';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const limit = 5_000_000;
 
+const ids = ['22223211692164564'];
+const whitelist = ['0xE0CF21a51c882be4C6F6B597ca44013C7256fB73'];
+
+function isDisable(account?: string, data?: API.Plan | null) {
+  if (data && ids.some((id) => isEqual(id, data.raising_id))) {
+    return whitelist.some((addr) => isEqual(addr, account));
+  }
+
+  return false;
+}
+
 const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
+  const { address } = useAccount();
   const { actual, target } = useRaiseBase(data);
   const { isDelayed, isRaising, isSuccess, isSealing } = useRaiseState(data);
   const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
@@ -69,12 +82,13 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                     max={max}
                     step={0.01}
                     placeholder="输入数量"
+                    readOnly={isDisable(address, data)}
                     suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
                   />
                 </Form.Item>
 
                 <p className="mb-0">
-                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={staking}>
+                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={isDisable(address, data)} loading={staking}>
                     质押
                   </SpinBtn>
                 </p>
