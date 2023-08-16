@@ -15,12 +15,12 @@ const limit = 5_000_000;
 const ids = ['22223211692164564'];
 const whitelist = ['0xE0CF21a51c882be4C6F6B597ca44013C7256fB73'];
 
-function isDisable(account?: string, data?: API.Plan | null) {
+function isEnable(account?: string, data?: API.Plan | null) {
   if (data && ids.some((id) => isEqual(id, data.raising_id))) {
-    return whitelist.some((addr) => isEqual(addr, account));
+    return !whitelist.some((addr) => isEqual(addr, account));
   }
 
-  return false;
+  return true;
 }
 
 const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
@@ -82,13 +82,13 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                     max={max}
                     step={0.01}
                     placeholder="输入数量"
-                    readOnly={isDisable(address, data)}
+                    readOnly={isEnable(address, data)}
                     suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
                   />
                 </Form.Item>
 
                 <p className="mb-0">
-                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={isDisable(address, data)} loading={staking}>
+                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={isEnable(address, data)} loading={staking}>
                     质押
                   </SpinBtn>
                 </p>
