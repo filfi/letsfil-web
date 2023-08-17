@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
+import * as M from '@/helpers/mount';
+import * as R from '@/helpers/raise';
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
-import { isSuccess } from '@/helpers/raise';
 
 /**
  * 节点计划的节点激励
@@ -14,12 +15,12 @@ export default function useRaiseReward(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getTotalReward = async () => {
-    if (data && isSuccess(data)) {
+    if (data && (M.isMountPlan(data) ? M.isWorking(data) : R.isSuccess(data))) {
       return await contract.getTotalReward(data.raising_id);
     }
   };
   const getServicerFines = async () => {
-    if (data && isSuccess(data)) {
+    if (data && (M.isMountPlan(data) ? M.isWorking(data) : R.isSuccess(data))) {
       return await contract.getServicerFines(data.raising_id);
     }
   };

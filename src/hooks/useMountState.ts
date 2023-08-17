@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
-import { isMountPlan } from '@/helpers/raise';
-import { AssignState } from '@/constants/state';
+import * as H from '@/helpers/mount';
 
 /**
  * 分配计划状态及
@@ -9,18 +8,18 @@ import { AssignState } from '@/constants/state';
  * @returns
  */
 export default function useMountState(data?: API.Plan | null) {
-  const isPending = useMemo(() => isMountPlan(data) && data?.assign_status === AssignState.Inactive, [data]);
-  const isActive = useMemo(() => isMountPlan(data) && data?.assign_status === AssignState.Active, [data]);
-  const isDone = useMemo(() => isMountPlan(data) && data?.assign_status === AssignState.Done, [data]);
-  const isOver = useMemo(() => isMountPlan(data) && data?.assign_status === AssignState.Over, [data]);
-  const isStarted = useMemo(() => data && isMountPlan(data) && data.assign_status >= AssignState.Active, [data]);
-  const isWorking = useMemo(() => data && isMountPlan(data) && data.assign_status >= AssignState.Done, [data]);
+  const isInactive = useMemo(() => H.isMountPlan(data) && H.isInactive(data), [data]);
+  const isActive = useMemo(() => H.isMountPlan(data) && H.isActive(data), [data]);
+  const isDone = useMemo(() => H.isMountPlan(data) && H.isDone(data), [data]);
+  const isOver = useMemo(() => H.isMountPlan(data) && H.isOver(data), [data]);
+  const isStarted = useMemo(() => H.isMountPlan(data) && H.isStarted(data), [data]);
+  const isWorking = useMemo(() => H.isMountPlan(data) && H.isWorking(data), [data]);
 
   return {
     isActive,
     isDone,
+    isInactive,
     isOver,
-    isPending,
     isStarted,
     isWorking,
   };
