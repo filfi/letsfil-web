@@ -1,14 +1,15 @@
 import { Form, Input } from 'antd';
 import { useEffect, useMemo } from 'react';
 
+import { isBlock } from '@/helpers/raise';
 import SpinBtn from '@/components/SpinBtn';
 import useAccount from '@/hooks/useAccount';
 import { integer } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
+import { whitelist } from '@/constants/config';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseState from '@/hooks/useRaiseState';
 import { accSub, isEqual, sleep } from '@/utils/utils';
-import { blocklist, whitelist } from '@/constants/config';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const limit = 5_000_000;
@@ -22,9 +23,9 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
 
-  const isBlock = useMemo(() => data && blocklist.includes(data.raising_id), [data]);
+  const isBlocked = useMemo(() => data && isBlock(data), [data]);
   const whiteItem = useMemo(() => whitelist.find((i) => isEqual(i.address, address)), [address]);
-  const isReadonly = useMemo(() => !!(isBlock && whiteItem && whiteItem.limit), [isBlock, whiteItem]);
+  const isReadonly = useMemo(() => !!(isBlocked && whiteItem && whiteItem.limit), [isBlocked, whiteItem]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await integer(rule, value);
@@ -51,12 +52,12 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   };
 
   useEffect(() => {
-    if (isBlock && whiteItem && whiteItem.limit) {
+    if (isBlocked && whiteItem && whiteItem.limit) {
       form.setFieldValue('amount', whiteItem.limit);
     }
-  }, [isBlock, whiteItem]);
+  }, [isBlocked, whiteItem]);
 
-  if (isBlock && !whiteItem) return null;
+  if (isBlocked && !whiteItem) return null;
 
   if (isRaising || isSealing || isDelayed) {
     return (
