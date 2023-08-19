@@ -1,5 +1,6 @@
 import { usePublicClient /* useWalletClient */ } from 'wagmi';
 // import type { Account } from 'viem';
+import type { BigNumberish } from 'ethers';
 
 import { isDef } from '@/utils/utils';
 import { toNumber } from '@/utils/format';
@@ -445,6 +446,13 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 建设者签名
+   */
+  const investorSign = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('investorSign', [id], opts);
+  });
+
+  /**
    * 服务商签名
    */
   const servicerSign = toastify(async (opts?: WriteOptions) => {
@@ -476,6 +484,50 @@ export default function useContract(address?: API.Address) {
       address: RAISE_ADDRESS,
     });
   });
+
+  /**
+   * 挂载历史节点
+   */
+  const mountNode = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 建设者地址列表
+       */
+      investors: string[],
+      /**
+       * 建设者质押列表
+       */
+      investorPledges: BigNumberish[],
+      /**
+       * 建设者分配比例列表
+       */
+      investorRates: BigNumberish[],
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates);
+      return await writeContract('mountNode', [raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
 
   /**
    * 启动节点计划
@@ -557,6 +609,7 @@ export default function useContract(address?: API.Address) {
     getServicerWithdrawnReward,
     backOwner,
     staking,
+    mountNode,
     unStaking,
     startPreSeal,
     closeRaisePlan,
@@ -565,6 +618,7 @@ export default function useContract(address?: API.Address) {
     depositOpsFund,
     addDepositOpsFund,
     depositRaiserFund,
+    investorSign,
     servicerSign,
     raiserWithdraw,
     investorWithdraw,

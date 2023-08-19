@@ -1,11 +1,8 @@
 import { useResponsive } from 'ahooks';
 
-import CardBack from './CardBack';
-import CardMiner from './CardMiner';
-import CardRaise from './CardRaise';
-import CardAssets from './CardAssets';
-import CardStaking from './CardStaking';
-import SectionNode from './SectionNode';
+import CardMount from './CardMount';
+import MountNode from './MountNode';
+import MountDetails from './MountDetails';
 import SectionEvents from './SectionEvents';
 import SectionReward from './SectionReward';
 import SectionContract from './SectionContract';
@@ -27,23 +24,9 @@ const MountMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         )}
 
         <div className="vstack gap-3">
-          <SectionNode data={data} />
+          <MountNode data={data} />
 
-          {responsive.lg ? null : (
-            <>
-              <CardRaise data={data} />
-
-              <CardMiner data={data} />
-
-              <CardStaking data={data} />
-
-              <CardBack data={data} />
-
-              <CardAssets data={data} />
-
-              {/* <CardCalc /> */}
-            </>
-          )}
+          {responsive.lg ? null : <CardMount data={data} />}
         </div>
       </section>
       <section id="reward" className="section">
@@ -60,7 +43,7 @@ const MountMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <p className="mb-0">历史节点挂载到FilFi智能合约，按照约定分配方案自动分配。</p>
         </div>
 
-        <SectionReward data={data} />
+        <MountDetails data={data} />
       </section>
       <section id="provider" className="section">
         <div className="section-header">

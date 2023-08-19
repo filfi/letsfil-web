@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import { Avatar, Input } from 'antd';
 import { useMemo, useState } from 'react';
 import { useDebounceEffect } from 'ahooks';
-import { Link, NavLink, useParams } from '@umijs/max';
+import { Link, useParams } from '@umijs/max';
 
 import styles from './styles.less';
 import * as F from '@/utils/format';
@@ -10,9 +10,9 @@ import { SCAN_URL } from '@/constants';
 import SpinBtn from '@/components/SpinBtn';
 import Activity from './components/Activity';
 import FormRadio from '@/components/FormRadio';
-import PageHeader from '@/components/PageHeader';
 import LoadingView from '@/components/LoadingView';
 import RewardChart from './components/RewardChart';
+import { isMountPlan } from '@/helpers/mount';
 import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useRaiseRole from '@/hooks/useRaiseRole';
@@ -22,6 +22,7 @@ import useRaiseInfo from '@/hooks/useRaiseInfo';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRewardOps from '@/hooks/useRewardOps';
+import AssetsHeader from './components/AssetsHeader';
 import useRewardRaiser from '@/hooks/useRewardRaiser';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
@@ -114,32 +115,7 @@ export default function Assets() {
     <>
       <div className="container">
         <LoadingView data={plan} error={hasErr} loading={isLoading} retry={refetch}>
-          <PageHeader
-            className="mb-3 pb-0"
-            title={
-              plan ? (
-                <span>
-                  {F.formatSponsor(plan.sponsor_company)}发起的节点计划@{plan.miner_id}
-                </span>
-              ) : (
-                '-'
-              )
-            }
-            desc={<span className="text-uppercase">算力包 {F.formatID(param.id)}</span>}
-          />
-
-          <ul className="nav nav-tabs ffi-tabs mb-3 mb-lg-4">
-            <li className="nav-item">
-              <NavLink className="nav-link" to={`/assets/${param.id}`}>
-                我的资产
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to={`/overview/${param.id}`}>
-                节点计划
-              </NavLink>
-            </li>
-          </ul>
+          <AssetsHeader data={plan} />
 
           <div className="row g-3 g-lg-4">
             <div className="col-12 col-lg-4">
@@ -168,7 +144,11 @@ export default function Assets() {
                   </div>
 
                   <div className="flex-grow-1">
-                    <p className="mb-1 fw-500">{F.formatSponsor(plan?.sponsor_company)}发起的节点计划</p>
+                    {isMountPlan(plan) ? (
+                      <p className="mb-1 fw-500">{F.formatSponsor(plan?.sponsor_company)}挂载的分配计划</p>
+                    ) : (
+                      <p className="mb-1 fw-500">{F.formatSponsor(plan?.sponsor_company)}发起的节点计划</p>
+                    )}
                     <p className="mb-0 text-gray-dark">
                       {isClosed ? (
                         <span className="badge">已关闭</span>

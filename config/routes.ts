@@ -138,7 +138,7 @@ const routes: IBestAFSRoute[] = [
         component: './fspa/List',
       },
       {
-        path: 'overview/:id',
+        path: 'overview/:address',
         name: 'FSPAOverview',
         component: './fspa/Overview',
       },

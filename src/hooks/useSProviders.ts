@@ -7,7 +7,7 @@ import { providers } from '@/apis/raise';
  * @returns
  */
 export default function useProviders() {
-  const { data, isLoading, refetch } = useQuery(['base', 'providers'], providers, {
+  const { data, isLoading, isError, refetch } = useQuery(['base', 'providers'], providers, {
     staleTime: Infinity,
     select: (d) => d.list,
   });
@@ -22,6 +22,7 @@ export default function useProviders() {
 
   return {
     data,
+    isError,
     isLoading,
     getProvider,
     renderLabel,

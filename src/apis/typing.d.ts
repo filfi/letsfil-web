@@ -152,4 +152,19 @@ declare namespace API {
   type ContractData = {
     pledge_total_calc_amount: string;
   };
+
+  type Equity = {
+    ID: number;
+    CreatedAt: string;
+    UpdatedAt: string;
+    DeletedAt: string;
+    raise_id: string;
+    address: string;
+    role: number;
+    role_level: number;
+    pledge_amount: string;
+    power_proportion: string;
+    sign_status: number;
+    sign_time: string;
+  };
 }

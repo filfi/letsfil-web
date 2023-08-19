@@ -153,6 +153,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sponsorAddr",
+        "type": "address"
+      }
+    ],
+    "name": "InvestorSign",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "uint256",
         "name": "raiseID",
@@ -529,6 +548,25 @@
       }
     ],
     "name": "SpWithdraw",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sponsorAddr",
+        "type": "address"
+      }
+    ],
+    "name": "SponsorSign",
     "type": "event"
   },
   {
@@ -1224,6 +1262,49 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "investorAck",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "investorAckNo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "name": "investorFine",
@@ -1280,6 +1361,62 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "investorNo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "investorPower",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "investorSign",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "id",
         "type": "uint256"
       }
@@ -1297,6 +1434,177 @@
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "targetAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minRaiseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "securityFund",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "raiseDays",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "investorShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spFundShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "raiserShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "servicerShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "filFiShare",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "sponsor",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "raiseCompany",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct ILetsFilPackInfo.RaiseInfo",
+        "name": "_raiseInfo",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "minerId",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nodeSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sectorSize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sealDays",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nodeDays",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "opsSecurityFund",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "spAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "companyId",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ILetsFilPackInfo.NodeInfo",
+        "name": "_nodeInfo",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address[]",
+        "name": "sponsorList",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "sponsorPPL",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "investorList",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "investorPL",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "investorPPL",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "mountNode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "mountOrNot",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -2095,6 +2403,19 @@
         "type": "uint256"
       }
     ],
+    "name": "setSealTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
     "name": "setSectorPackage",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -2309,6 +2630,105 @@
       }
     ],
     "name": "spWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "sponsorAck",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "sponsorAckNo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "sponsorNo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "sponsorPower",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "sponsorSign",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

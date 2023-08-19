@@ -225,9 +225,13 @@ export default function CreateStorage() {
                 </Form.Item>
               </div>
               <div>
-                <SpinBtn className="btn btn-outline-light btn-lg text-nowrap" loading={mining} onClick={handleMiner}>
-                  <i className="bi bi-arrow-repeat"></i>
-                  <span className="ms-2">检测</span>
+                <SpinBtn
+                  className="btn btn-outline-light btn-lg text-nowrap"
+                  loading={mining}
+                  icon={<i className="bi bi-arrow-repeat"></i>}
+                  onClick={handleMiner}
+                >
+                  检测
                 </SpinBtn>
               </div>
             </div>

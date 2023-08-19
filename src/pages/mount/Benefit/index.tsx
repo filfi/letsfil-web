@@ -136,6 +136,23 @@ export default function MountBenefit() {
       return false;
     }
 
+    const items = list.reduce((prev, { address }) => {
+      const key = `${address}`.toLowerCase();
+
+      if (prev[key]) {
+        prev[key] += 1;
+      } else {
+        prev[key] = 1;
+      }
+
+      return prev;
+    }, {});
+
+    if (Object.keys(items).some((key) => items[key] > 1)) {
+      message.error('钱包地址不能重复');
+      return false;
+    }
+
     if (list.reduce((sum, { rate }) => accAdd(sum, rate), 0) > priority) {
       message.error(`建设者分成比例累加不能超过${priority}%`);
       return false;

@@ -32,7 +32,7 @@ const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </div>
               <p className="d-flex flex-column flex-lg-row align-items-start gap-1 mb-0">
                 {isMount ? (
-                  <span className={classNames('badge', data && !isStarted ? 'badge-success' : 'badge-danger')}>{data && isStarted ? '已签名' : '待签名'}</span>
+                  <span className={classNames('badge', data && isStarted ? 'badge-success' : 'badge-danger')}>{data && isStarted ? '已签名' : '待签名'}</span>
                 ) : (
                   <>
                     <span className={classNames('badge', data && !isPending ? 'badge-success' : 'badge-danger')}>

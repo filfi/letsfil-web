@@ -50,6 +50,7 @@ export default function MountStorage() {
 
   const onMinerChange = (data: API.MinerAsset) => {
     const {
+      miner_power, // 算力
       available_balance, // 可用余额
       locked_funds, // 锁仓奖励
       initial_pledge, // 扇区质押
@@ -57,6 +58,7 @@ export default function MountStorage() {
 
     const balance = accAdd(toNumber(available_balance), toNumber(initial_pledge), toNumber(locked_funds));
     form.setFieldValue('hisBlance', balance);
+    form.setFieldValue('hisPower', miner_power);
   };
 
   const onServiceSelect = (_: unknown, item: API.Provider) => {
@@ -129,6 +131,7 @@ export default function MountStorage() {
         initialValues={{
           planOpen: 1,
           planType: 2,
+          hisPower: 0,
           hisBlance: 0,
           minerType: 1,
           raiser: address,
@@ -138,6 +141,9 @@ export default function MountStorage() {
         }}
         onFinish={handleSubmit}
       >
+        <Form.Item hidden name="hisPower">
+          <Input />
+        </Form.Item>
         <Form.Item hidden name="minerType">
           <Input />
         </Form.Item>
@@ -198,9 +204,13 @@ export default function MountStorage() {
                 </Form.Item>
               </div>
               <div>
-                <SpinBtn className="btn btn-outline-light btn-lg text-nowrap" loading={mining} onClick={handleMiner}>
-                  <i className="bi bi-arrow-repeat"></i>
-                  <span className="ms-2">检测</span>
+                <SpinBtn
+                  className="btn btn-outline-light btn-lg text-nowrap"
+                  loading={mining}
+                  icon={<i className="bi bi-arrow-repeat"></i>}
+                  onClick={handleMiner}
+                >
+                  检测
                 </SpinBtn>
               </div>
             </div>

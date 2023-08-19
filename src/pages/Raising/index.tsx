@@ -12,21 +12,24 @@ import RaisingCard from './components/RaisingCard';
 import SealingCard from './components/SealingCard';
 import WorkingCard from './components/WorkingCard';
 import { NodeState, RaiseState } from '@/constants/state';
+import { isMountPlan, isWorking as isMountWorking } from '@/helpers/mount';
 
 const isArrs = function <V>(v: V | undefined): v is V {
   return Array.isArray(v) && v.length > 0;
 };
 
 function isRaising(data: API.Plan) {
-  return data.status === RaiseState.Raising;
+  return !isMountPlan(data) && data.status === RaiseState.Raising;
 }
 
 function isSealing(data: API.Plan) {
-  return data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.Started, NodeState.Delayed].includes(data.sealed_status);
+  return (
+    !isMountPlan(data) && data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.Started, NodeState.Delayed].includes(data.sealed_status)
+  );
 }
 
 function isWorking(data: API.Plan) {
-  return data.status === RaiseState.Success && data.sealed_status >= NodeState.End;
+  return isMountPlan(data) ? isMountWorking(data) : data.status === RaiseState.Success && data.sealed_status >= NodeState.End;
 }
 
 export default function Raising() {

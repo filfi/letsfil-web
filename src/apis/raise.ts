@@ -76,6 +76,10 @@ export function countSync(raising_id: string) {
   return A.get<{ seal_delay_sync_count: number }>('/raising-plan/v2/raise-sync-count', { raising_id });
 }
 
+export function getEquity(id: string, params: API.PagingParams) {
+  return A.get<API.PagingRes<API.Equity>>(`/raising-plan/v2/plan/get/raise-equity/${id}`, params);
+}
+
 export function addEquity(id: string, data: API.Base) {
   return A.post(`/raising-plan/v2/add/raise-equity/${id}`, data);
 }
