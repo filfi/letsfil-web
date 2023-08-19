@@ -13,6 +13,7 @@ import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
 import { isEqual, sleep } from '@/utils/utils';
+import { filterRaises } from '@/helpers/raise';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
 import useRaiseActions from '@/hooks/useRaiseActions';
@@ -35,8 +36,8 @@ export default function AccountPlans() {
 
   const { data, error, isLoading, refetch } = useQuery(['investList', address], withNull(service));
   const isEmpty = useMemo(() => !isLoading && (!data || data.total === 0), [data, isLoading]);
-  const lists = useMemo(() => data?.list?.all_list, [data?.list?.all_list]);
-  const investors = useMemo(() => data?.list?.invest_list, [data?.list?.invest_list]);
+  const lists = useMemo(() => filterRaises(address)(data?.list?.all_list), [address, data?.list?.all_list]);
+  const investors = useMemo(() => data?.list?.invest_list, [address, data?.list?.invest_list]);
   const raises = useMemo(() => lists?.filter((item) => isEqual(item.raiser, address)), [lists, address]);
   const services = useMemo(() => lists?.filter((item) => isEqual(item.service_provider_address, address)), [lists, address]);
   const invests = useMemo(() => lists?.filter((item) => investors?.some((id) => isEqual(id, item.raising_id))), [lists, investors]);

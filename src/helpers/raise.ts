@@ -1,3 +1,7 @@
+import type { Address } from 'viem';
+
+import { isEqual } from '@/utils/utils';
+import { blocklist, whitelist } from '@/constants/config';
 import { NodeState, RaiseState } from '@/constants/state';
 
 export function isPending(data: API.Plan) {
@@ -70,4 +74,16 @@ export function isRaiserSigned(data: API.Plan) {
 
 export function isServicerSigned(data: API.Plan) {
   return data.sp_sign_status === 1;
+}
+
+export function filterRaises(address?: Address | string) {
+  return function <T extends { raising_id: string }>(list?: T[]) {
+    return list?.filter((i) => {
+      if (blocklist.includes(i.raising_id)) {
+        return whitelist.some((n) => isEqual(n.address, address));
+      }
+
+      return true;
+    });
+  };
 }

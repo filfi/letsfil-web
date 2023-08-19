@@ -1,23 +1,30 @@
-import { useMemo } from 'react';
 import { Form, Input } from 'antd';
+import { useEffect, useMemo } from 'react';
 
 import SpinBtn from '@/components/SpinBtn';
+import useAccount from '@/hooks/useAccount';
 import { integer } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
-import { accSub, sleep } from '@/utils/utils';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseState from '@/hooks/useRaiseState';
+import { accSub, isEqual, sleep } from '@/utils/utils';
+import { blocklist, whitelist } from '@/constants/config';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const limit = 5_000_000;
 
 const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
+  const { address } = useAccount();
   const { actual, target } = useRaiseBase(data);
   const { isDelayed, isRaising, isSuccess, isSealing } = useRaiseState(data);
   const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
 
   const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
+
+  const isBlock = useMemo(() => data && blocklist.includes(data.raising_id), [data]);
+  const whiteItem = useMemo(() => whitelist.find((i) => isEqual(i.address, address)), [address]);
+  const isReadonly = useMemo(() => !!(isBlock && whiteItem && whiteItem.limit), [isBlock, whiteItem]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await integer(rule, value);
@@ -43,6 +50,14 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     form.resetFields();
   };
 
+  useEffect(() => {
+    if (isBlock && whiteItem && whiteItem.limit) {
+      form.setFieldValue('amount', whiteItem.limit);
+    }
+  }, [isBlock, whiteItem]);
+
+  if (isBlock && !whiteItem) return null;
+
   if (isRaising || isSealing || isDelayed) {
     return (
       <>
@@ -66,9 +81,10 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                     type="number"
                     className="decimal lh-1 fw-500"
                     min={0}
-                    max={max}
                     step={0.01}
                     placeholder="输入数量"
+                    readOnly={isReadonly}
+                    max={isReadonly ? undefined : max}
                     suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
                   />
                 </Form.Item>

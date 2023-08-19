@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { listPacks } from '@/apis/packs';
 import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
+import { filterRaises } from '@/helpers/raise';
 import AssetItem from './components/AssetItem';
 import LoadingView from '@/components/LoadingView';
 
@@ -17,7 +18,7 @@ export default function AccountAssets() {
 
   const { data, error, isLoading, refetch } = useQuery(['listPacks', address], withNull(service));
 
-  const list = useMemo(() => data?.list, [data?.list]);
+  const list = useMemo(() => filterRaises(address)(data?.list), [address, data?.list]);
 
   useDebounceEffect(
     () => {

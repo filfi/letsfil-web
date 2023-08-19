@@ -6,6 +6,8 @@ import { useRequest, useTitle } from 'ahooks';
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Empty from '@/components/Empty';
+import useAccount from '@/hooks/useAccount';
+import { filterRaises } from '@/helpers/raise';
 import BannerCard from './components/BannerCard';
 import LoadingView from '@/components/LoadingView';
 import RaisingCard from './components/RaisingCard';
@@ -32,6 +34,8 @@ function isWorking(data: API.Plan) {
 export default function Raising() {
   useTitle('节点计划 - FilFi', { restoreOnUnmount: true });
 
+  const { address } = useAccount();
+
   const service = async () => {
     return await A.list({
       page: 1,
@@ -42,12 +46,12 @@ export default function Raising() {
 
   const { data: banner } = useRequest(A.getBanner);
   const { data, error, loading, refresh } = useRequest(service);
-  const list = useMemo(() => data?.list, [data?.list]);
+  const list = useMemo(() => filterRaises(address)(data?.list), [address, data?.list]);
   const raises = useMemo(() => list?.filter(isRaising), [list]);
   const seals = useMemo(() => filter(list, isSealing), [list]);
   const workes = useMemo(() => filter(list, isWorking), [list]);
   const isEmpty = useMemo(() => !((data && data.total > 0) || banner), [banner, data]);
-  const items = useMemo(() => (banner?.result ? list?.concat(banner.result) : list), [list, banner]);
+  const items = useMemo(() => (banner?.result ? list?.concat(filterRaises(address)([banner.result])!) : list), [address, list, banner]);
 
   return (
     <div className={classNames('container pt-4 pt-lg-5', styles.container)}>

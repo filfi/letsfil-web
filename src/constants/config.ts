@@ -26,3 +26,7 @@ export const config = createConfig({
 });
 
 export const defaultWallet = 'MetaMask';
+
+export const blocklist = [''];
+
+export const whitelist = [{ address: '', limit: 0 }, { address: '', limit: 100 }, { address: '' }];
