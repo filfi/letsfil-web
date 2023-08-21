@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import { SCAN_URL } from '@/constants';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import { isMountPlan } from '@/helpers/raise';
+import { isMountPlan } from '@/helpers/mount';
 import useContract from '@/hooks/useContract';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';

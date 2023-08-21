@@ -5,7 +5,7 @@ import { Pie, PieConfig } from '@ant-design/plots';
 // import { accDiv, accMul } from '@/utils/utils';
 // import useChainInfo from '@/hooks/useChainInfo';
 // import useRaiseBase from '@/hooks/useRaiseBase';
-import { isMountPlan } from '@/helpers/raise';
+import { isMountPlan } from '@/helpers/mount';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useDepositInvestor from '@/hooks/useDepositInvestor';

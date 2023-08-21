@@ -7,7 +7,7 @@ import Dialog from '@/components/Dialog';
 import { catchify } from '@/utils/hackify';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
-import { isMountPlan } from '@/helpers/raise';
+import { isMountPlan } from '@/helpers/mount';
 import { transformModel } from '@/helpers/app';
 import type { WriteOptions } from './useContract';
 
@@ -22,14 +22,14 @@ export default function useRaiseActions(data?: API.Plan | null) {
     const model = Object.keys(_data).reduce(
       (d, key) => ({
         ...d,
-        [camelCase(key)]: _data[key as keyof typeof data],
+        [camelCase(key)]: _data[key as keyof typeof _data],
       }),
       {},
     );
 
     setModel(transformModel(model));
 
-    history.replace(isMountPlan(data) ? '/mount' : '/create');
+    history.replace(isMountPlan(_data) ? '/mount' : '/create');
   };
 
   const [closing, close] = useProcessify(async (id = data?.raising_id, opts?: WriteOptions) => {

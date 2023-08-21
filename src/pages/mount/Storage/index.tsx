@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { parseEther } from 'viem';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
@@ -12,7 +13,7 @@ import { accAdd, isDef } from '@/utils/utils';
 import useProviders from '@/hooks/useSProviders';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
-import { formatAddr, toNumber } from '@/utils/format';
+import { formatAddr, toFixed, toNumber } from '@/utils/format';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import AvatarInput from '@/components/AvatarInput';
@@ -21,14 +22,17 @@ import ProviderSelect from '@/components/ProviderRadio';
 export default function MountStorage() {
   const [form] = Form.useForm();
   const [model, setModel] = useModel('stepform');
+  const balance: string = Form.useWatch('hisBlance', form);
 
   const { address } = useAccount();
   const { user, createOrUpdate } = useUser();
   const { data: list, isLoading: pFetching } = useProviders();
 
-  // useUpdateEffect(() => {
-  //   form.setFieldValue('raiser', address);
-  // }, [address]);
+  const formattedBalance = useMemo(() => toNumber(balance), [balance]);
+
+  useUpdateEffect(() => {
+    form.setFieldValue('raiser', address);
+  }, [address]);
   useUpdateEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -57,8 +61,8 @@ export default function MountStorage() {
     } = data;
 
     const balance = accAdd(toNumber(available_balance), toNumber(initial_pledge), toNumber(locked_funds));
-    form.setFieldValue('hisBlance', balance);
     form.setFieldValue('hisPower', miner_power);
+    form.setFieldValue('hisBlance', parseEther(`${+toFixed(balance, 7)}`).toString());
   };
 
   const onServiceSelect = (_: unknown, item: API.Provider) => {
@@ -141,6 +145,9 @@ export default function MountStorage() {
         }}
         onFinish={handleSubmit}
       >
+        <Form.Item hidden name="hisBlance">
+          <Input />
+        </Form.Item>
         <Form.Item hidden name="hisPower">
           <Input />
         </Form.Item>
@@ -225,8 +232,8 @@ export default function MountStorage() {
             <div className="row">
               <div className="col-12 col-md-8 col-lg-6">
                 <p className="ffi-label">Miner当前余额为（余额会随着时间变化）</p>
-                <Form.Item noStyle name="hisBlance">
-                  <Input readOnly suffix="FIL" />
+                <Form.Item noStyle>
+                  <Input readOnly suffix="FIL" value={formattedBalance} />
                 </Form.Item>
               </div>
             </div>

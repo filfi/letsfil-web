@@ -4,7 +4,7 @@ import { SCAN_URL } from '@/constants';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import { isMountPlan } from '@/helpers/raise';
+import { isMountPlan } from '@/helpers/mount';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';

@@ -5,7 +5,7 @@ import { useParams } from '@umijs/max';
 import { useDebounceEffect } from 'ahooks';
 
 import styles from './styles.less';
-import { isMountPlan } from '@/helpers/raise';
+import { isMountPlan } from '@/helpers/mount';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
 import LoadingView from '@/components/LoadingView';
 import MountNav from './components/MountNav';

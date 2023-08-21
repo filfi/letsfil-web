@@ -9,11 +9,12 @@ import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
 import styles from './styles.less';
 import { catchify } from '@/utils/hackify';
+import useMinerInfo from '@/hooks/useMinerInfo';
 import useSProvider from '@/hooks/useSProvider';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
-import { formatAmount, formatNum } from '@/utils/format';
-import { accAdd, accDiv, accMul, accSub, isEqual } from '@/utils/utils';
+import { accAdd, accSub, isEqual } from '@/utils/utils';
+import { formatAmount, formatNum, toFixed, toNumber } from '@/utils/format';
 // import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
@@ -102,10 +103,10 @@ export default function MountBenefit() {
   const priority = Form.useWatch('raiserCoinShare', form);
   const ratio = Form.useWatch('opsSecurityFundRate', form);
 
-  const balance = useMemo(() => model?.hisBlance ?? 0, [model]);
+  const { data } = useMinerInfo(model?.minerId);
+  const balance = useMemo(() => +toFixed(toNumber(data?.initial_pledge), 7), [data]);
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
-  const available = useMemo(() => accMul(balance, accDiv(priority, 100)), [balance, priority]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
 
   const { list: investors, getKey, ...handles } = useDynamicList<API.Base>([{ address: '', amount: '', rate: '' }]);
@@ -348,7 +349,7 @@ export default function MountBenefit() {
             </p>
 
             <p className="fw-500">
-              将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(available)} FIL</span> 质押分配给以下地址
+              将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(balance, 7)} FIL</span> 质押分配给以下地址
             </p>
             <p className="text-end">
               <button className="btn btn-light" type="button" onClick={() => handles.push({ address: '', amount: '', rate: '' })}>
@@ -374,10 +375,15 @@ export default function MountBenefit() {
                         initialValue={item.amount}
                         rules={[
                           { required: true, message: '请输入持有质押数量' },
-                          { validator: validators.createNumRangeValidator([0, available], `请输入0-${available}之间的数`) },
+                          {
+                            validator: validators.Queue.create()
+                              .add(validators.createNumRangeValidator([0, balance], `请输入0-${balance}之间的数`))
+                              .add(validators.createDecimalValidator(7, `最多支持7位小数`))
+                              .build(),
+                          },
                         ]}
                       >
-                        <Input type="number" min={0} max={available} placeholder="输入持有质押数量" suffix="FIL" />
+                        <Input placeholder="输入持有质押数量" suffix="FIL" />
                       </Form.Item>
                     </div>
                     <div className="col-12 col-md-4">
@@ -386,10 +392,15 @@ export default function MountBenefit() {
                         initialValue={item.rate}
                         rules={[
                           { required: true, message: '请输入算力分配比例' },
-                          { validator: validators.createNumRangeValidator([0, priority], `请输入0-${priority}之间的数`) },
+                          {
+                            validator: validators.Queue.create()
+                              .add(validators.createNumRangeValidator([0, priority], `请输入0-${priority}之间的数`))
+                              .add(validators.createDecimalValidator(5, '最多支持5小数'))
+                              .build(),
+                          },
                         ]}
                       >
-                        <Input type="number" min={0} max={priority} placeholder="输入算力分配比例" suffix="%" />
+                        <Input placeholder="输入算力分配比例" suffix="%" />
                       </Form.Item>
                     </div>
                   </div>

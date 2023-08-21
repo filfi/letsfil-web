@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import classNames from 'classnames';
 
 import Avatar from '@/components/Avatar';
-import { isMountPlan } from '@/helpers/raise';
+import { isMountPlan } from '@/helpers/mount';
 import { formatSponsor } from '@/utils/format';
 import useSProvider from '@/hooks/useSProvider';
 import useRaiseState from '@/hooks/useRaiseState';

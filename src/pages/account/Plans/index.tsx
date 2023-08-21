@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import classNames from 'classnames';
 import { useDebounceEffect } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
-import { Link, history, useModel } from '@umijs/max';
+import { /* Link, */ history, useModel } from '@umijs/max';
 
 import * as A from '@/apis/raise';
 import styles from './styles.less';
@@ -12,6 +12,7 @@ import Result from '@/components/Result';
 import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
+import { isMountPlan } from '@/helpers/mount';
 import { isEqual, sleep } from '@/utils/utils';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
@@ -52,7 +53,7 @@ export default function AccountPlans() {
   const handleCreate = withConnect(async (planType: number = 1) => {
     setModel(undefined);
 
-    history.push(planType === 2 ? '/mount' : '/create');
+    history.push(isMountPlan({ plan_type: planType }) ? '/mount' : '/create');
   });
 
   const handleEdit = async (data: API.Plan) => {
@@ -79,9 +80,13 @@ export default function AccountPlans() {
         {isEmpty ? (
           <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参与的节点计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
-              <Link className="btn btn-light" to="/raising">
+              {/* <Link className="btn btn-light" to="/raising">
                 查看开放的节点计划
-              </Link>
+              </Link> */}
+              <button className="btn btn-light" type="button" onClick={() => handleCreate(2)}>
+                <span className="bi bi-hdd-stack"></span>
+                <span className="ms-2">挂载历史节点</span>
+              </button>
               <button className="btn btn-primary" type="button" onClick={() => handleCreate()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-2">发起节点计划</span>
