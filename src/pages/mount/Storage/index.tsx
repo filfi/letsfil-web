@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from 'react';
 import { parseEther } from 'viem';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
+import { useEffect, useMemo } from 'react';
 import { history, useModel } from '@umijs/max';
 import { useDebounceFn, useLockFn, useUpdateEffect } from 'ahooks';
 
@@ -69,14 +69,14 @@ export default function MountStorage() {
     form.setFieldValue('serviceProviderAddress', item.wallet_address);
   };
 
-  const [mining, getMiner] = useLoadingify(async (id: string) => {
-    const [, r] = await catchify(minerInfo)(id);
-    return r;
-  });
+  const [fetching, fetchMiner] = useLoadingify(catchify(minerInfo));
 
-  const { run: validateMiner } = useDebounceFn(useLockFn(getMiner), { wait: 500, trailing: true });
+  const { run: getMinerInfo } = useDebounceFn(useLockFn(fetchMiner), { wait: 500, trailing: true });
 
   const minerValidator = async (rule: unknown, value: string) => {
+    form.setFieldValue('hisPower', 0);
+    form.setFieldValue('hisBlance', '0');
+
     const [e] = await catchify(validators.minerID)(rule, value);
 
     if (e) {
@@ -84,14 +84,26 @@ export default function MountStorage() {
     }
 
     if (value) {
-      const res = await validateMiner(value);
+      const [e, res] = (await getMinerInfo(value)) ?? [];
+
+      if (e) {
+        return Promise.reject('检测失败：' + e.message);
+      }
 
       if (!res) {
         return Promise.reject('无效的节点，请重新输入');
       }
 
-      // *有募集计划* 或 *有欠款* 或 *有预存款* 均不可挂载
-      if (res.has_plan !== 0 || +res.fee_debt > 0 || +res.pre_commit_deposits > 0) {
+      const {
+        has_plan,
+        fee_debt, // 欠款
+        miner_power, // 算力
+        initial_pledge, // 扇区质押
+        pre_commit_deposits, // 预存款
+      } = res;
+
+      // *有募集计划* 或 *有欠款* 或 *有预存款* 或 *无算力* 或 *无质押* 均不可挂载
+      if (has_plan !== 0 || +fee_debt > 0 || +pre_commit_deposits > 0 || +miner_power <= 0 || toNumber(initial_pledge) <= 0) {
         return Promise.reject('节点不可用');
       }
 
@@ -213,7 +225,7 @@ export default function MountStorage() {
               <div>
                 <SpinBtn
                   className="btn btn-outline-light btn-lg text-nowrap"
-                  loading={mining}
+                  loading={fetching}
                   icon={<i className="bi bi-arrow-repeat"></i>}
                   onClick={handleMiner}
                 >
