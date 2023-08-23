@@ -37,8 +37,8 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const fee = useMemo(() => accMul(actual, 0.003), [actual]); // 手续费
   const payable = useMemo(() => isRaiser && isWaiting, [isRaiser, isWaiting]);
-  const show = useMemo(() => (count?.seal_delay_sync_count ?? 0) > 0, [count?.seal_delay_sync_count]);
   const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isWorking), [isRaiser, isClosed, isFailed, isWorking]);
+  const show = useMemo(() => isClosed || isFailed || (count?.seal_delay_sync_count ?? 0) > 0, [isClosed, isFailed, count?.seal_delay_sync_count]);
 
   const renderExtra = () => {
     if (isClosed || isFailed) {
