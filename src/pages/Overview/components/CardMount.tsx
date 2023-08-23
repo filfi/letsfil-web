@@ -4,6 +4,7 @@ import { Link } from '@umijs/max';
 
 import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
+import { isClosed } from '@/helpers/raise';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useAccount from '@/hooks/useAccount';
@@ -30,6 +31,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { data: investors } = useMountEquity(data);
   const { mountNode } = useContract(data?.raise_address);
 
+  const pledge = useMemo(() => `${data?.his_initial_pledge ?? 0}`, []);
   const power = useMemo(() => +`${info?.miner_power || '0'}`, [info?.miner_power]);
   const iPower = useMemo(() => accMul(power, accDiv(raiserRate, 100)), [power, raiserRate]);
 
@@ -44,7 +46,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     const investorPledges = investors.map((i) => i.pledge_amount);
     const investorRates = investors.map((i) => +i.power_proportion);
 
-    await mountNode(raise, node, sponsors, sponsorRates, _investors, investorPledges, investorRates);
+    await mountNode(raise, node, sponsors, sponsorRates, _investors, investorPledges, investorRates, pledge);
   });
 
   return (
@@ -63,12 +65,25 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <span className="ms-1">{formatPower(iPower)?.[1]}</span>
           </p>
 
-          <p className="mb-3">
-            <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} disabled={isStarted} onClick={handleCreate}>
-              {isStarted ? '主办人已签名' : '主办人签名'}
-            </SpinBtn>
-          </p>
-          <p>与相关方共识后签名，链上部署后不可修改。</p>
+          {isStarted ? (
+            <>
+              <p className="mb-3">
+                <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
+                  主办人已签名
+                </SpinBtn>
+              </p>
+              <p>等待其他人完成签名</p>
+            </>
+          ) : (
+            <>
+              <p className="mb-3">
+                <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} onClick={handleCreate}>
+                  主办人签名
+                </SpinBtn>
+              </p>
+              <p>与相关方共识后签名，链上部署后不可修改。</p>
+            </>
+          )}
         </div>
       </div>
     </>
@@ -77,12 +92,11 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
 const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSigned } = useRaiseRole(data);
+  const { isStarted } = useMountState(data);
   const { servicerRate } = useRaiseRate(data);
   const { data: info } = useMinerInfo(data?.miner_id);
-  const { data: investors } = useMountEquity(data);
   const { servicerSign } = useContract(data?.raise_address);
 
-  const signed = useMemo(() => investors?.every((i) => i.sign_status), [investors]);
   const power = useMemo(() => +`${info?.miner_power || '0'}`, [info?.miner_power]);
   const iPower = useMemo(() => accMul(power, accDiv(servicerRate, 100)), [power, servicerRate]);
 
@@ -110,18 +124,31 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <span className="ms-1">{formatPower(iPower)?.[1]}</span>
           </p>
 
-          <p className="mb-3">
-            <SpinBtn
-              className="btn btn-primary btn-lg w-100"
-              loading={signing}
-              disabled={!signed || isSigned}
-              data-bs-toggle="modal"
-              data-bs-target="#signer-confirm"
-            >
-              {isSigned ? '技术服务商已签名' : '技术服务商签名'}
-            </SpinBtn>
-          </p>
-          <p>等待其他所有人完成签名</p>
+          {isSigned ? (
+            <>
+              <p className="mb-3">
+                <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
+                  技术服务商已签名
+                </SpinBtn>
+              </p>
+              <p>等待其他人完成签名</p>
+            </>
+          ) : (
+            <>
+              <p className="mb-3">
+                <SpinBtn
+                  className="btn btn-primary btn-lg w-100"
+                  loading={signing}
+                  disabled={!isStarted}
+                  data-bs-toggle="modal"
+                  data-bs-target="#signer-confirm"
+                >
+                  技术服务商签名
+                </SpinBtn>
+              </p>
+              <p>{isStarted ? '确认计划内容，移交节点Owner权限给FilFi智能合约' : '等待所有主办人完成签名'}</p>
+            </>
+          )}
         </div>
       </div>
 
@@ -155,7 +182,9 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
 const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { address } = useAccount();
+  const { isStarted } = useMountState(data);
   const { data: items } = useMountEquity(data);
+  const { isSigned: isSpSigned } = useRaiseRole(data);
   const { data: info } = useMinerInfo(data?.miner_id);
   const { investorSign } = useContract(data?.raise_address);
 
@@ -196,12 +225,25 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <span className="ms-1">FIL</span>
           </p>
 
-          <p className="mb-3">
-            <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={isSigned} onClick={handleSign}>
-              {isSigned ? '已签名' : '签名'}
-            </SpinBtn>
-          </p>
-          <p>确认自己的权益后签名，签名后上链不可更改。</p>
+          {isSigned ? (
+            <>
+              <p className="mb-3">
+                <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
+                  已签名
+                </SpinBtn>
+              </p>
+              <p>等待其他人完成签名</p>
+            </>
+          ) : (
+            <>
+              <p className="mb-3">
+                <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={!isStarted || !isSpSigned} onClick={handleSign}>
+                  签名
+                </SpinBtn>
+              </p>
+              <p>{isStarted && isSpSigned ? '确认自己的权益后签名，签名后上链不可更改。' : '等待主办人和技术服务商签名'}</p>
+            </>
+          )}
         </div>
       </div>
     </>
@@ -217,6 +259,18 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isInactive, isWorking } = useMountState(data);
 
   if (!data) return null;
+
+  if (isClosed(data)) {
+    return (
+      <div className="card section-card">
+        <div className="card-header d-flex align-items-center border-0">
+          <h4 className="card-title fw-bold mb-0 me-2">计划已关闭</h4>
+
+          <span className="badge badge-danger ms-auto">分配计划已关闭</span>
+        </div>
+      </div>
+    );
+  }
 
   // 运行中
   if (isWorking) {

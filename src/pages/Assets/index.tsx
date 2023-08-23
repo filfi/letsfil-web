@@ -69,8 +69,11 @@ export default function Assets() {
       { icon: <IconUser />, label: '我是建设者', value: 0 },
       { icon: <IconStar />, label: '我是主办人', value: 1 },
       { icon: <IconTool />, label: '我是技术服务商', value: 2 },
-      { icon: <IconTool />, label: '运维保证金', value: 3 },
     ];
+
+    if (plan && !isMountPlan(plan)) {
+      items.push({ icon: <IconTool />, label: '运维保证金', value: 3 });
+    }
 
     return items.filter((n, i) => roles[i]);
   }, [roles]);

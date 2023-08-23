@@ -5,7 +5,7 @@ import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'reac
 import Modal from '@/components/Modal';
 import { calcEachEarn } from '@/helpers/app';
 import { accMul, accSub } from '@/utils/utils';
-import { createNumRangeValidator } from '@/utils/validators';
+import * as validators from '@/utils/validators';
 
 type DivProps = React.HtmlHTMLAttributes<HTMLDivElement>;
 type Values = ReturnType<typeof calcEachEarn>;
@@ -47,7 +47,15 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
           <Form.Item
             className="mb-0"
             name="priority"
-            rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 94.56], '最小0%，最大94.56%') }]}
+            rules={[
+              { required: true, message: '请输入' },
+              {
+                validator: validators.Queue.create()
+                  .add(validators.createNumRangeValidator([0, 89.13043], '最小0%，最大89.13043%'))
+                  .add(validators.createDecimalValidator(5, '最多支持5位小数'))
+                  .build(),
+              },
+            ]}
           >
             <Input type="number" min={0} max={94.56} placeholder="请输入" suffix="%" />
           </Form.Item>
@@ -121,9 +129,17 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
                 <Form.Item
                   className="mb-0"
                   name="spRate"
-                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, opsMax], `最小5%，最大${opsMax}%`) }]}
+                  rules={[
+                    { required: true, message: '请输入' },
+                    {
+                      validator: validators.Queue.create()
+                        .add(validators.createNumRangeValidator([10, opsMax], `最小5%，最大${opsMax}%`))
+                        .add(validators.createDecimalValidator(5, '最多支持5位小数'))
+                        .build(),
+                    },
+                  ]}
                 >
-                  <Input type="number" min={5} max={opsMax} placeholder="请输入" suffix="%" />
+                  <Input type="number" min={10} max={opsMax} placeholder="请输入" suffix="%" />
                 </Form.Item>
               </div>
             </div>
@@ -151,7 +167,7 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
 });
 
 const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalProps> = (
-  { priority = 70, spRate = 5, ratio = 5, onConfirm, ...props },
+  { priority = 70, spRate = 10, ratio = 5, onConfirm, ...props },
   ref?: React.Ref<ModalAttrs> | null,
 ) => {
   const modal = useRef<ModalAttrs>(null);

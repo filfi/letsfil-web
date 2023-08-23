@@ -5,7 +5,7 @@ import { ethers, BigNumber } from 'ethers';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
-import { toFixed } from '@/utils/format';
+import { toFixed, toNumber } from '@/utils/format';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
@@ -176,6 +176,16 @@ export function transformModel(data: API.Base) {
     opsSecurityFund: +ethers.utils.formatEther(opsSecurityFund),
     raiseSecurityFund: +ethers.utils.formatEther(raiseSecurityFund),
   };
+}
+
+export function transformInvestors(list: API.Equity[]) {
+  return list
+    .filter((item) => item.role === 2)
+    .map((i) => ({
+      address: i.address,
+      amount: toNumber(i.pledge_amount).toString(),
+      rate: toNumber(i.power_proportion, 5).toString(),
+    }));
 }
 
 /**

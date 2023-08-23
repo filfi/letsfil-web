@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { SCAN_URL } from '@/constants';
+import usePackInfo from '@/hooks/usePackInfo';
 import useMinerInfo from '@/hooks/useMinerInfo';
 import useMountState from '@/hooks/useMountState';
 import useRaiseReward from '@/hooks/useRaiseReward';
@@ -14,10 +15,11 @@ const MountNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { reward } = useRaiseReward(data);
   const { data: counter } = useInvestorCount(data);
   const { data: info } = useMinerInfo(data?.miner_id);
+  const { data: pack } = usePackInfo(data);
 
-  const power = useMemo(() => info?.miner_power ?? 0, [info?.miner_power]);
   const pledge = useMemo(() => toNumber(info?.initial_pledge), [info?.initial_pledge]);
   const balance = useMemo(() => toNumber(info?.total_balance), [info?.total_balance]);
+  const power = useMemo(() => (isWorking ? pack?.total_power : info?.miner_power) ?? 0, [info?.miner_power, pack?.total_power]);
 
   return (
     <>

@@ -23,7 +23,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     {
       title: '角色',
       dataIndex: 'role',
-      render: (r) => <span className="badge badge-primary">{['建设者', '主办人'][r]}</span>,
+      render: (r) => <span className="badge badge-primary">{['', '主办人', '建设者', '技术服务商'][r]}</span>,
     },
     {
       title: '分配比例',

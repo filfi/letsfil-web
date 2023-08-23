@@ -711,6 +711,11 @@
         "internalType": "uint256[]",
         "name": "investorPPL",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalPledge",
+        "type": "uint256"
       }
     ],
     "name": "mountNode",

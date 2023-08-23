@@ -1,9 +1,11 @@
+import { Modal } from 'bootstrap';
+import { parseEther } from 'viem';
 import { snakeCase } from 'lodash';
+import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { useMemo, useRef } from 'react';
-import { Form, Input, message } from 'antd';
 import { history, useModel } from '@umijs/max';
-import { useDynamicList, useUpdateEffect } from 'ahooks';
+import { useDebounceEffect, useDynamicList, useUpdateEffect } from 'ahooks';
 
 import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
@@ -13,7 +15,7 @@ import useMinerInfo from '@/hooks/useMinerInfo';
 import useSProvider from '@/hooks/useSProvider';
 import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
-import { accAdd, accSub, isEqual } from '@/utils/utils';
+import { accAdd, accSub, isEqual, sleep } from '@/utils/utils';
 import { formatAmount, formatNum, toFixed, toNumber } from '@/utils/format';
 // import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
@@ -77,7 +79,7 @@ const defaultTreeData = {
   ],
 };
 
-const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
+const getTreeData = (priority: number = 70, spRate = 10, ratio = 5) => {
   const data = Object.assign({}, defaultTreeData);
   const vals = H.calcEachEarn(priority, spRate, ratio);
 
@@ -92,6 +94,18 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
   return data;
 };
 
+const getInitInvestors = (items?: API.Base[]) => {
+  if (Array.isArray(items)) {
+    return items.filter(Boolean);
+  }
+
+  return [
+    { address: '', amount: '', rate: '' },
+    { address: '', amount: '', rate: '' },
+    { address: '', amount: '', rate: '' },
+  ];
+};
+
 export default function MountBenefit() {
   const modal = useRef<ModalAttrs>(null);
 
@@ -99,6 +113,7 @@ export default function MountBenefit() {
   const provider = useSProvider(model?.serviceId);
 
   const [form] = Form.useForm();
+  const _investors = Form.useWatch('investors', form);
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
   const ratio = Form.useWatch('opsSecurityFundRate', form);
@@ -109,18 +124,66 @@ export default function MountBenefit() {
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
 
-  const { list: investors, getKey, ...handles } = useDynamicList<API.Base>([{ address: '', amount: '', rate: '' }]);
+  const { list: investors, getKey, ...handles } = useDynamicList<API.Base>(getInitInvestors(model?.investors));
 
+  useUpdateEffect(() => {
+    form.setFieldValue('hisInitialPledge', parseEther(`${balance}`).toString());
+  }, [balance]);
   useUpdateEffect(() => {
     if (provider) {
       form.setFieldValue('opsSecurityFundAddr', provider?.wallet_address);
     }
   }, [provider]);
 
+  useDebounceEffect(
+    () => {
+      if (_investors) {
+        setModel((data) => {
+          if (data) {
+            return {
+              ...data,
+              investors: _investors.filter(Boolean),
+            };
+          }
+
+          return data;
+        });
+      }
+    },
+    [_investors],
+    { wait: 300 },
+  );
+
   const handleReset = () => {
     form.setFieldsValue({
-      opServerShare: 5,
+      opServerShare: 10,
       raiserCoinShare: 70,
+    });
+  };
+
+  const handleEdit = () => {
+    const openModal = async () => {
+      await sleep(300);
+
+      const modal = Modal.getOrCreateInstance('#benefit-modal');
+
+      modal && modal.show();
+    };
+
+    const hide = Dialog.confirm({
+      icon: 'error',
+      title: '修改分配方案会清空已填写详细分配比例',
+      summary: '建设者和主办人的详细分配比例，依赖“分配方案”中定义的比例。修改“分配方案”中的任何比例，都会自动清空已填写的详细分配比例。',
+      content: '是否继续？',
+      confirmText: '继续修改',
+      confirmBtnVariant: 'danger',
+      onConfirm: () => {
+        hide();
+
+        handles.resetList(getInitInvestors());
+
+        openModal();
+      },
     });
   };
 
@@ -131,9 +194,13 @@ export default function MountBenefit() {
     });
   };
 
+  const showErr = (content: string, title = '建设者详细分配') => {
+    Dialog.error({ content, title });
+  };
+
   const validateInvestors = (list: API.Base[]) => {
     if (!Array.isArray(list)) {
-      message.error('请添加建设者');
+      showErr('请添加建设者');
       return false;
     }
 
@@ -150,12 +217,17 @@ export default function MountBenefit() {
     }, {});
 
     if (Object.keys(items).some((key) => items[key] > 1)) {
-      message.error('钱包地址不能重复');
+      showErr('钱包地址不能重复');
       return false;
     }
 
-    if (list.reduce((sum, { rate }) => accAdd(sum, rate), 0) > priority) {
-      message.error(`建设者分成比例累加不能超过${priority}%`);
+    if (list.reduce((sum, { amount }) => accAdd(sum, amount), 0) !== balance) {
+      showErr(`建设者持有质押币累加必须精确等于${formatAmount(balance, 7)}`);
+      return false;
+    }
+
+    if (list.reduce((sum, { rate }) => accAdd(sum, rate), 0) !== +priority) {
+      showErr(`建设者分成比例累加必须精确等于${priority}%`);
       return false;
     }
 
@@ -249,7 +321,7 @@ export default function MountBenefit() {
         size="large"
         layout="vertical"
         initialValues={{
-          opServerShare: 5,
+          opServerShare: 10,
           raiserCoinShare: 70,
           opsSecurityFundRate: 5,
           opsSecurityFundAddr: provider?.wallet_address,
@@ -267,6 +339,9 @@ export default function MountBenefit() {
               </a> */}
             </p>
 
+            <Form.Item hidden name="hisInitialPledge">
+              <Input />
+            </Form.Item>
             <Form.Item hidden name="opsSecurityFund">
               <Input />
             </Form.Item>
@@ -332,9 +407,9 @@ export default function MountBenefit() {
                       <button className="btn btn-light btn-lg" type="button" onClick={handleReset}>
                         重置
                       </button>
-                      <a className="btn btn-primary btn-lg flex-fill" href="#benefit-modal" data-bs-toggle="modal" role="button">
+                      <button className="btn btn-primary btn-lg flex-fill" type="button" onClick={handleEdit}>
                         修改
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -352,7 +427,12 @@ export default function MountBenefit() {
               将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(balance, 7)} FIL</span> 质押分配给以下地址
             </p>
             <p className="text-end">
-              <button className="btn btn-light" type="button" onClick={() => handles.push({ address: '', amount: '', rate: '' })}>
+              <button
+                className="btn btn-light"
+                type="button"
+                disabled={investors.length >= 50}
+                onClick={() => handles.push({ address: '', amount: '', rate: '' })}
+              >
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-1">添加建设者</span>
               </button>
@@ -377,7 +457,7 @@ export default function MountBenefit() {
                           { required: true, message: '请输入持有质押数量' },
                           {
                             validator: validators.Queue.create()
-                              .add(validators.createNumRangeValidator([0, balance], `请输入0-${balance}之间的数`))
+                              .add(validators.createNumRangeValidator([1, balance], `请输入1-${balance}之间的数`))
                               .add(validators.createDecimalValidator(7, `最多支持7位小数`))
                               .build(),
                           },
@@ -394,6 +474,7 @@ export default function MountBenefit() {
                           { required: true, message: '请输入算力分配比例' },
                           {
                             validator: validators.Queue.create()
+                              .add(validators.createGtValidator(0))
                               .add(validators.createNumRangeValidator([0, priority], `请输入0-${priority}之间的数`))
                               .add(validators.createDecimalValidator(5, '最多支持5小数'))
                               .build(),
@@ -414,7 +495,7 @@ export default function MountBenefit() {
 
             <p>
               <span className="me-1">共 {investors.length} 地址</span>
-              <span className="text-danger">分配比例累加不能超过{priority}%</span>
+              <span className="text-danger">分配比例累加必须精确等于{priority}%</span>
             </p>
           </div>
         </div>

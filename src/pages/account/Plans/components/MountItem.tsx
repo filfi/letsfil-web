@@ -2,17 +2,21 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
 import * as F from '@/utils/format';
+import { isEqual } from '@/utils/utils';
 import { catchify } from '@/utils/hackify';
+import { isClosed } from '@/helpers/raise';
 import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import useAccount from '@/hooks/useAccount';
+import usePackInfo from '@/hooks/usePackInfo';
 import useMinerInfo from '@/hooks/useMinerInfo';
-import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useMountState from '@/hooks/useMountState';
+import useMountEquity from '@/hooks/useMountEquity';
 import useInvestorCount from '@/hooks/useInvestorCount';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
@@ -51,16 +55,20 @@ const MountItem: React.FC<{
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
 }> = ({ data, onEdit, onDelete }) => {
+  const { address } = useAccount();
   const state = useMountState(data);
-  const { opsRatio } = useRaiseRate(data);
-  const { isRaiser } = useRaiseRole(data);
   const provider = useSProvider(data.service_id);
   const { data: counter } = useInvestorCount(data);
   const { data: info } = useMinerInfo(data.miner_id);
+  const { data: pack } = usePackInfo(data);
+  const { data: investors } = useMountEquity(data);
+  const { isRaiser, isSigned: isSpSigned } = useRaiseRole(data);
 
-  const power = useMemo(() => +`${info?.miner_power || 0}`, [info?.miner_power]);
   const pledge = useMemo(() => F.toNumber(info?.initial_pledge), [info?.initial_pledge]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
+  const investor = useMemo(() => investors?.find((i) => isEqual(i.address, address)), [address, investors]);
+  const power = useMemo(() => (state.isWorking ? pack?.total_power : info?.miner_power) ?? 0, [info, pack, state.isWorking]);
+  const isInvestorSigned = useMemo(() => investor?.sign_status === 1, [investor]);
 
   const [deleting, deleteAction] = useLoadingify(async () => {
     await onDelete?.();
@@ -69,18 +77,28 @@ const MountItem: React.FC<{
   const handleDelete = withConfirm(data, deleteAction);
 
   const renderStatus = () => {
+    if (isClosed(data)) {
+      return <span className="badge">已关闭</span>;
+    }
+
     if (state.isInactive) {
       if (isRaiser) {
         return <span className="badge">可编辑</span>;
       }
 
-      return <span className="badge-danger">待签名</span>;
+      return <span className="badge">待主办人签名</span>;
     }
+
     if (state.isActive) {
-      return <span className="badge badge-primary">签名中</span>;
+      if (isSpSigned || isInvestorSigned) {
+        return <span className="badge badge-success">已签名</span>;
+      }
+
+      return <span className="badge badge-danger">待签名</span>;
     }
+
     if (state.isWorking) {
-      return <span className="badge badge-success">运行中</span>;
+      return <span className="badge badge-success">运维中</span>;
     }
 
     return null;
@@ -151,8 +169,6 @@ const MountItem: React.FC<{
               </span>
               <span className="align-middle ms-1">
                 <span>{provider?.short_name}</span>
-                <span className="mx-1">·</span>
-                <span>保证金{opsRatio}%</span>
               </span>
             </span>
           </div>

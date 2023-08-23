@@ -23,7 +23,7 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 const EVENTS_MAP: Record<string, string> = {
   ESealEnd: '封装结束',
   EStartSeal: '开始封装',
-  EMountNode: '挂载节点',
+  EMountNode: '主办人签名',
   ESponsorSign: '主办人签名',
   EInvestorSign: '建设者签名',
   ESPWithdraw: '服务商提取激励',

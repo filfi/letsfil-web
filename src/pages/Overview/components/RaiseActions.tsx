@@ -51,7 +51,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       title: isSafe ? `提前关闭${name}` : `关闭${name}`,
       summary: isSafe
         ? `达到最低目标，即可正常结束${name}。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示`
-        : `${name}已经部署在链上，关闭已经启动的{name}被视为违约。`,
+        : `${name}已经部署在链上，关闭已经启动的${name}被视为违约。`,
       content: isSafe ? (
         <div className="text-gray">
           <ul>

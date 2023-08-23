@@ -1,14 +1,14 @@
 import { camelCase } from 'lodash';
 import { history, useModel } from '@umijs/max';
 
-import { del } from '@/apis/raise';
 import useContract from './useContract';
 import Dialog from '@/components/Dialog';
-import { catchify } from '@/utils/hackify';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
+import { del, getEquity } from '@/apis/raise';
 import { isMountPlan } from '@/helpers/mount';
-import { transformModel } from '@/helpers/app';
+import { catchify, toastify } from '@/utils/hackify';
+import { transformInvestors, transformModel } from '@/helpers/app';
 import type { WriteOptions } from './useContract';
 
 export default function useRaiseActions(data?: API.Plan | null) {
@@ -27,9 +27,19 @@ export default function useRaiseActions(data?: API.Plan | null) {
       {},
     );
 
+    const isMount = isMountPlan(_data);
+
+    if (isMount) {
+      const [e, res] = await catchify(toastify(getEquity))(_data.raising_id, { page: 1, page_size: 1000 });
+
+      if (e) throw e;
+
+      Object.assign(model, { investors: transformInvestors(res.list) });
+    }
+
     setModel(transformModel(model));
 
-    history.replace(isMountPlan(_data) ? '/mount' : '/create');
+    history.replace(isMount ? '/mount' : '/create');
   };
 
   const [closing, close] = useProcessify(async (id = data?.raising_id, opts?: WriteOptions) => {

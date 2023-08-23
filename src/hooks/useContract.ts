@@ -518,10 +518,14 @@ export default function useContract(address?: API.Address) {
        * 建设者分配比例列表
        */
       investorRates: BigNumberish[],
+      /**
+       * 总质押
+       */
+      totalPledge: BigNumberish,
       opts?: Omit<TxOptions, 'abi' | 'address'>,
     ) => {
-      console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates);
-      return await writeContract('mountNode', [raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates], {
+      console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates, totalPledge);
+      return await writeContract('mountNode', [raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates, totalPledge], {
         ...opts,
         abi: factoryAbi,
         address: RAISE_ADDRESS,

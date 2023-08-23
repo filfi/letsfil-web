@@ -5,10 +5,10 @@ import { Link, history, useModel, useParams } from '@umijs/max';
 
 import * as A from '@/apis/raise';
 import Result from '@/components/Result';
-import { toastify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
-import { transformModel } from '@/helpers/app';
 import useLoadingify from '@/hooks/useLoadingify';
+import { catchify, toastify } from '@/utils/hackify';
+import { transformInvestors, transformModel } from '@/helpers/app';
 import { ReactComponent as IconEdit } from '@/assets/step-edit.svg';
 import { ReactComponent as IconSafe } from '@/assets/step-safe.svg';
 
@@ -32,7 +32,13 @@ export default function MountResult() {
         {},
       );
 
-      setModel(transformModel(model));
+      const [e, res] = await catchify(toastify(A.getEquity))(data.raising_id, { page: 1, page_size: 1000 });
+
+      if (e) throw e;
+
+      const investors = transformInvestors(res.list);
+
+      setModel({ ...transformModel(model), investors });
 
       clearable.current = false;
 

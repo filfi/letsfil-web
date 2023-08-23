@@ -153,7 +153,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
@@ -197,6 +197,38 @@
       }
     ],
     "name": "InvestorWithdraw",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      }
+    ],
+    "name": "MountFailed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "pledgeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "MountSuccess",
     "type": "event"
   },
   {
@@ -303,6 +335,25 @@
       }
     ],
     "name": "PushOldAssetPackValue",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "PushPledgeAmount",
     "type": "event"
   },
   {
@@ -554,7 +605,7 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
@@ -983,29 +1034,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getToolAddr",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "tool",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "miner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "process",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1584,6 +1612,11 @@
         "internalType": "uint256[]",
         "name": "investorPPL",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalPledge",
+        "type": "uint256"
       }
     ],
     "name": "mountNode",
@@ -1926,6 +1959,24 @@
       }
     ],
     "name": "pushOldAssetPackValue",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "pushPledgeAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
