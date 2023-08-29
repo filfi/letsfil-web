@@ -18,7 +18,7 @@ export default function MountLayout() {
     <>
       <div className="container pb-4 pb-lg-5">
         <PageHeader
-          title="新建分配计划"
+          title="挂载历史节点"
           desc={
             <>
               <span>将历史节点挂载到FilFi网络，委托智能合约分配激励</span>

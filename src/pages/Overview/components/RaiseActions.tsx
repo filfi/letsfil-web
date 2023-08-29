@@ -7,6 +7,7 @@ import ShareBtn from '@/components/ShareBtn';
 import { isMountPlan } from '@/helpers/mount';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
+import useMountState from '@/hooks/useMountState';
 import useRaiseState from '@/hooks/useRaiseState';
 import useRaiseActions from '@/hooks/useRaiseActions';
 import { ReactComponent as IconEdit } from '@/assets/icons/edit-05.svg';
@@ -18,6 +19,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const actions = useRaiseActions(data);
   const { isRaiser } = useRaiseRole(data);
   const { actual, minTarget } = useRaiseBase(data);
+  const { isActive, isInactive } = useMountState(data);
   const { isPending, isWaiting, isRaising } = useRaiseState(data);
 
   const isMount = useMemo(() => isMountPlan(data), [data]);
@@ -41,17 +43,15 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     });
   };
 
-  const handleClose = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    e.preventDefault();
-
-    const isSafe = !isMount && actual >= minTarget;
+  const closeRaise = () => {
+    const isSafe = actual >= minTarget;
 
     const hide = Dialog.confirm({
       icon: 'error',
-      title: isSafe ? `提前关闭${name}` : `关闭${name}`,
+      title: isSafe ? '提前关闭节点计划' : '关闭节点计划',
       summary: isSafe
-        ? `达到最低目标，即可正常结束${name}。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示`
-        : `${name}已经部署在链上，关闭已经启动的${name}被视为违约。`,
+        ? '达到最低目标，即可正常结束节点计划。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示'
+        : '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
       content: isSafe ? (
         <div className="text-gray">
           <ul>
@@ -82,11 +82,33 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     });
   };
 
+  const closeMount = () => {
+    const hide = Dialog.confirm({
+      icon: 'error',
+      title: '关闭分配计划',
+      summary: '分配计划已经部署在链上，确定关闭吗？',
+      confirmText: '关闭计划',
+      confirmBtnVariant: 'danger',
+      confirmLoading: actions.closing,
+      onConfirm: async () => {
+        hide();
+
+        await actions.close();
+      },
+    });
+  };
+
+  const handleClose = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
+
+    isMount ? closeMount() : closeRaise();
+  };
+
   if (!data) return null;
 
   return (
     <>
-      {isPending && isRaiser && (
+      {isRaiser && (isMount ? isInactive : isPending) && (
         <>
           <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
             修改{name}
@@ -103,14 +125,14 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <span className="align-middle ms-1">分享</span>
       </ShareBtn>
 
-      {!isPending && (
+      {(isMount ? !isInactive : !isPending) && (
         <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
           <IconShare4 />
           <span className="align-middle ms-1">智能合约</span>
         </a>
       )}
 
-      {isRaiser && (isWaiting || isRaising) && (
+      {isRaiser && (isMount ? isActive : isWaiting || isRaising) && (
         <div className="dropdown">
           <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
             <span className="bi bi-three-dots-vertical fs-3"></span>

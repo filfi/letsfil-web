@@ -1,18 +1,41 @@
 import { Table } from 'antd';
 import { useMemo } from 'react';
+import { parseUnits } from 'viem';
 import classNames from 'classnames';
 import type { TableColumnsType } from 'antd';
 
 import { accDiv, accMul } from '@/utils/utils';
-import useMinerInfo from '@/hooks/useMinerInfo';
-import useMountEquity from '@/hooks/useMountEquity';
+import useRaiseRole from '@/hooks/useRaiseRole';
+import useMountState from '@/hooks/useMountState';
+import useMountAssets from '@/hooks/useMountAssets';
 import { formatAddr, formatAmount, formatPower, toNumber } from '@/utils/format';
 
 const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { data: info } = useMinerInfo(data?.miner_id);
-  const { data: items, isLoading } = useMountEquity(data);
+  const { isStarted } = useMountState(data);
+  const { raiser, servicer, isSigned: isSPSigned } = useRaiseRole(data);
+  const { investors, raiserRate, servicerRate, power } = useMountAssets(data);
 
-  const power = useMemo(() => +`${info?.miner_power || '0'}`, [info?.miner_power]);
+  const items = useMemo(() => {
+    return [
+      {
+        ID: -1,
+        role: 1,
+        address: raiser,
+        pledge_amount: '0',
+        power_proportion: parseUnits(`${raiserRate}`, 5).toString(),
+        sign_status: isStarted ? 1 : 0,
+      },
+      {
+        ID: 0,
+        role: 3,
+        address: servicer,
+        pledge_amount: '0',
+        power_proportion: parseUnits(`${servicerRate}`, 5).toString(),
+        sign_status: isSPSigned ? 1 : 0,
+      },
+      ...(investors ?? []),
+    ];
+  }, [investors, raiser, servicer, raiserRate, servicerRate, isStarted, isSPSigned]);
 
   const columns: TableColumnsType<API.Base> = [
     {
@@ -54,7 +77,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <Table<API.Base> rowKey="ID" columns={columns} loading={isLoading} dataSource={items} pagination={false} />
+      <Table<API.Base> rowKey="ID" columns={columns} dataSource={items} pagination={false} />
     </>
   );
 };

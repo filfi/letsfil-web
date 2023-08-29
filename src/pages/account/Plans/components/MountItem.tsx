@@ -2,21 +2,17 @@ import { useMemo } from 'react';
 import { Link } from '@umijs/max';
 
 import * as F from '@/utils/format';
-import { isEqual } from '@/utils/utils';
 import { catchify } from '@/utils/hackify';
 import { isClosed } from '@/helpers/raise';
 import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useAccount from '@/hooks/useAccount';
-import usePackInfo from '@/hooks/usePackInfo';
-import useMinerInfo from '@/hooks/useMinerInfo';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useMountState from '@/hooks/useMountState';
-import useMountEquity from '@/hooks/useMountEquity';
+import useMountAssets from '@/hooks/useMountAssets';
 import useInvestorCount from '@/hooks/useInvestorCount';
 import { ReactComponent as IconShare } from '@/assets/icons/share-06.svg';
 
@@ -55,19 +51,14 @@ const MountItem: React.FC<{
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
 }> = ({ data, onEdit, onDelete }) => {
-  const { address } = useAccount();
-  const state = useMountState(data);
   const provider = useSProvider(data.service_id);
   const { data: counter } = useInvestorCount(data);
-  const { data: info } = useMinerInfo(data.miner_id);
-  const { data: pack } = usePackInfo(data);
-  const { data: investors } = useMountEquity(data);
-  const { isRaiser, isSigned: isSpSigned } = useRaiseRole(data);
+  const { isInactive, isActive, isWorking } = useMountState(data);
+  const { isRaiser, isServicer, isSigned: isSpSigned } = useRaiseRole(data);
 
-  const pledge = useMemo(() => F.toNumber(info?.initial_pledge), [info?.initial_pledge]);
+  const { power, pledge, investor, raiserPower, investorPower, servicerPower, investorPledge } = useMountAssets(data);
+
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
-  const investor = useMemo(() => investors?.find((i) => isEqual(i.address, address)), [address, investors]);
-  const power = useMemo(() => (state.isWorking ? pack?.total_power : info?.miner_power) ?? 0, [info, pack, state.isWorking]);
   const isInvestorSigned = useMemo(() => investor?.sign_status === 1, [investor]);
 
   const [deleting, deleteAction] = useLoadingify(async () => {
@@ -76,12 +67,39 @@ const MountItem: React.FC<{
 
   const handleDelete = withConfirm(data, deleteAction);
 
+  const renderAssets = () => {
+    if (!isClosed(data) && isWorking) {
+      const power = isRaiser ? raiserPower : isServicer ? servicerPower : investorPower;
+
+      return (
+        <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
+          {investor && (
+            <div className="d-flex justify-content-between gap-3 py-2">
+              <span className="text-gray-dark">我的质押</span>
+              <span className="fw-500">{F.formatAmount(investorPledge)} FIL</span>
+            </div>
+          )}
+          <div className="d-flex justify-content-between gap-3 py-2">
+            <span className="text-gray-dark">我的资产</span>
+            <Link className="fw-500 text-underline" to={`/assets/${data.raising_id}`}>
+              <span>{F.formatByte(power)}</span>
+              <span>@</span>
+              <span>{data.miner_id}</span>
+            </Link>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   const renderStatus = () => {
     if (isClosed(data)) {
       return <span className="badge">已关闭</span>;
     }
 
-    if (state.isInactive) {
+    if (isInactive) {
       if (isRaiser) {
         return <span className="badge">可编辑</span>;
       }
@@ -89,15 +107,15 @@ const MountItem: React.FC<{
       return <span className="badge">待主办人签名</span>;
     }
 
-    if (state.isActive) {
-      if (isSpSigned || isInvestorSigned) {
+    if (isActive) {
+      if (isRaiser || isSpSigned || isInvestorSigned) {
         return <span className="badge badge-success">已签名</span>;
       }
 
       return <span className="badge badge-danger">待签名</span>;
     }
 
-    if (state.isWorking) {
+    if (isWorking) {
       return <span className="badge badge-success">运维中</span>;
     }
 
@@ -105,12 +123,9 @@ const MountItem: React.FC<{
   };
 
   const renderActions = () => {
-    const editable = state.isInactive;
-    const deletable = state.isInactive;
-
-    return (
-      <>
-        {deletable && (
+    if (isRaiser && isInactive) {
+      return (
+        <>
           <SpinBtn
             className="btn btn-outline-danger border-0 shadow-none"
             loading={deleting}
@@ -119,16 +134,16 @@ const MountItem: React.FC<{
           >
             删除
           </SpinBtn>
-        )}
 
-        {editable && (
           <button className="btn btn-outline-light" type="button" onClick={onEdit}>
             <span className="bi bi-pencil"></span>
             <span className="ms-1">编辑</span>
           </button>
-        )}
-      </>
-    );
+        </>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -173,11 +188,11 @@ const MountItem: React.FC<{
             </span>
           </div>
         </div>
-
+        {renderAssets()}
         <div className="card-footer d-flex align-items-center gap-3">
           <div className="flex-shrink-0 me-auto">{renderStatus()}</div>
           <div className="d-flex flex-shrink-0 justify-content-between gap-2">
-            {isRaiser && renderActions()}
+            {renderActions()}
             <Link className="btn btn-success" to={`/overview/${data.raising_id}`}>
               <span className="bi bi-eye"></span>
               <span className="ms-1">查看</span>

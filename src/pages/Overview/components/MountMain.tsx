@@ -2,6 +2,7 @@ import { useResponsive } from 'ahooks';
 
 import CardMount from './CardMount';
 import MountNode from './MountNode';
+import { isClosed } from '@/helpers/raise';
 import MountDetails from './MountDetails';
 import SectionEvents from './SectionEvents';
 import SectionReward from './SectionReward';
@@ -16,7 +17,7 @@ const MountMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   return (
     <>
       <section id="sector" className="section">
-        {isStarted && (
+        {data && !isClosed(data) && isStarted && (
           <div className="section-header">
             <h4 className="section-title">分配计划@{data?.miner_id}</h4>
             <p className="mb-0">挂载成功</p>

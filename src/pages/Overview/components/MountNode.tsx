@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
 import { SCAN_URL } from '@/constants';
-import usePackInfo from '@/hooks/usePackInfo';
 import useMinerInfo from '@/hooks/useMinerInfo';
 import useMountState from '@/hooks/useMountState';
+import useMountAssets from '@/hooks/useMountAssets';
 import useRaiseReward from '@/hooks/useRaiseReward';
 import useInvestorCount from '@/hooks/useInvestorCount';
 import { formatAmount, formatPower, toNumber } from '@/utils/format';
@@ -12,14 +12,12 @@ import { ReactComponent as NodeIcon } from '@/assets/icons/node-black.svg';
 const MountNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isWorking } = useMountState(data);
 
-  const { reward } = useRaiseReward(data);
-  const { data: counter } = useInvestorCount(data);
+  const { pledge, power } = useMountAssets(data);
+  const { fines, reward } = useRaiseReward(data);
   const { data: info } = useMinerInfo(data?.miner_id);
-  const { data: pack } = usePackInfo(data);
+  const { data: counter } = useInvestorCount(data);
 
-  const pledge = useMemo(() => toNumber(info?.initial_pledge), [info?.initial_pledge]);
   const balance = useMemo(() => toNumber(info?.total_balance), [info?.total_balance]);
-  const power = useMemo(() => (isWorking ? pack?.total_power : info?.miner_power) ?? 0, [info?.miner_power, pack?.total_power]);
 
   return (
     <>
@@ -57,7 +55,7 @@ const MountNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               <div className="row g-0 px-2">
                 <div className="col-4 col-lg-5 col-xl-4 table-cell th">累计激励</div>
                 <div className="col-8 col-lg-7 col-xl-8 table-cell">
-                  <span className="text-decimal me-1">{formatAmount(reward)}</span>
+                  <span className="text-decimal me-1">{formatAmount(reward, 2)}</span>
                   <span className="text-neutral small fw-bold">FIL</span>
                 </div>
               </div>
@@ -80,6 +78,17 @@ const MountNode: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </div>
             </div>
           </div>
+          {isWorking && (
+            <div className="col table-row">
+              <div className="row g-0 px-2">
+                <div className="col-4 col-lg-5 col-xl-4 table-cell th">累计罚金</div>
+                <div className="col-8 col-lg-7 col-xl-8 table-cell">
+                  <span className="text-decimal me-1">{formatAmount(fines, 2, 2)}</span>
+                  <span className="text-neutral small fw-bold">FIL</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

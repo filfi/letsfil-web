@@ -35,6 +35,8 @@ const EVENTS_MAP: Record<string, string> = {
   ERaiseWithdraw: '主办人提取激励',
   CloseRaisePlan: '关闭质押',
   StartRaisePlan: '开始质押',
+  ENodeMountFailed: '节点挂载失败',
+  ENodeMountSuccess: '节点挂载成功',
   SpSignWithMiner: '技术服务商签名',
   ECreateAssetPack: '主办人签名',
   EClosePlanToSeal: '关闭计划并进入封装',

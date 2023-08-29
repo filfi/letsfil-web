@@ -1,9 +1,10 @@
+import { Image } from 'antd';
 import { Link } from '@umijs/max';
 
 import Avatar from '@/components/Avatar';
+import { formatAddr } from '@/utils/format';
 import useSProviders from '@/hooks/useSProviders';
 import LoadingView from '@/components/LoadingView';
-import { formatAddr } from '@/utils/format';
 
 export default function FSPAList() {
   const { data, isError, isLoading, refetch } = useSProviders();
@@ -31,15 +32,25 @@ export default function FSPAList() {
           <h4 className="mb-3 display-6 fw-600">Storage Provider</h4>
           <p className="mb-5">已通过FilFi DAO 社区KYC，正在FilFi网络提供服务</p>
 
-          <LoadingView data={data} error={isError} loading={isLoading} retry={refetch}>
+          <LoadingView className="my-5 py-5" data={data} error={isError} loading={isLoading} retry={refetch}>
             <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 g-md-4">
               {data?.map((item) => (
                 <div key={item.id} className="col">
                   <Link className="card h-100 rounded-4" to={`/fspa/overview/${item.wallet_address}`}>
                     <div className="card-body">
-                      <p className="my-3">
-                        {item.logo_url ? <img className="img-fluid object-fit-contain" src={item.logo_url} style={{ height: 72 }} /> : <Avatar size={72} />}
-                      </p>
+                      <div className="my-3">
+                        {item.logo_url ? (
+                          <Image
+                            className="img-fluid object-fit-contain"
+                            height={72}
+                            preview={false}
+                            src={item.logo_url}
+                            placeholder={<Image className="object-fit-contain" height={72} preview={false} src={require('@/assets/placeholder.png')} />}
+                          />
+                        ) : (
+                          <Avatar address={item.wallet_address} size={72} />
+                        )}
+                      </div>
                       <h4 className="mb-1 fw-600 card-title">{formatAddr(item.wallet_address)}</h4>
                       <p className="mb-3 text-gray">{item.full_name}</p>
                     </div>

@@ -1,39 +1,33 @@
 import { useMemo } from 'react';
-import { parseUnits } from 'viem';
+import { parseEther, parseUnits } from 'viem';
 import { Link } from '@umijs/max';
 
 import * as H from '@/helpers/app';
+import MountBack from './MountBack';
 import Modal from '@/components/Modal';
 import { isClosed } from '@/helpers/raise';
+import { toF4Address } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
-import useMinerInfo from '@/hooks/useMinerInfo';
-import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
 import useProcessify from '@/hooks/useProcessify';
 import useMountState from '@/hooks/useMountState';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
-import useMountEquity from '@/hooks/useMountEquity';
+import useMountAssets from '@/hooks/useMountAssets';
 import useRaiseReward from '@/hooks/useRaiseReward';
 import useInvestorCount from '@/hooks/useInvestorCount';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-import { formatAmount, formatPower, toNumber } from '@/utils/format';
-import { accDiv, accMul, isEqual, toF4Address } from '@/utils/utils';
+import { formatAmount, formatPower } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
 const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { address } = useAccount();
   const { isStarted } = useMountState(data);
-  const { raiserRate } = useRaiseRate(data);
-  const { data: info } = useMinerInfo(data?.miner_id);
-  const { data: investors } = useMountEquity(data);
   const { mountNode } = useContract(data?.raise_address);
 
-  const pledge = useMemo(() => `${data?.his_initial_pledge ?? 0}`, []);
-  const power = useMemo(() => +`${info?.miner_power || '0'}`, [info?.miner_power]);
-  const iPower = useMemo(() => accMul(power, accDiv(raiserRate, 100)), [power, raiserRate]);
+  const { investors, pledge, raiserRate, raiserPower } = useMountAssets(data);
 
   const [creating, handleCreate] = useProcessify(async () => {
     if (!data || !Array.isArray(investors)) return;
@@ -45,8 +39,9 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     const _investors = investors.map((i) => i.address);
     const investorPledges = investors.map((i) => i.pledge_amount);
     const investorRates = investors.map((i) => +i.power_proportion);
+    const _pledge = parseEther(`${pledge}`).toString();
 
-    await mountNode(raise, node, sponsors, sponsorRates, _investors, investorPledges, investorRates, pledge);
+    await mountNode(raise, node, sponsors, sponsorRates, _investors, investorPledges, investorRates, _pledge);
   });
 
   return (
@@ -61,8 +56,8 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
           <h4 className="card-title fw-normal mb-0">我的算力</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold text-main">{formatPower(iPower)?.[0]}</span>
-            <span className="ms-1">{formatPower(iPower)?.[1]}</span>
+            <span className="fs-30 fw-bold text-main">{formatPower(raiserPower)?.[0]}</span>
+            <span className="ms-1">{formatPower(raiserPower)?.[1]}</span>
           </p>
 
           {isStarted ? (
@@ -93,12 +88,9 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSigned } = useRaiseRole(data);
   const { isStarted } = useMountState(data);
-  const { servicerRate } = useRaiseRate(data);
-  const { data: info } = useMinerInfo(data?.miner_id);
   const { servicerSign } = useContract(data?.raise_address);
 
-  const power = useMemo(() => +`${info?.miner_power || '0'}`, [info?.miner_power]);
-  const iPower = useMemo(() => accMul(power, accDiv(servicerRate, 100)), [power, servicerRate]);
+  const { servicerRate, servicerPower } = useMountAssets(data);
 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
@@ -120,8 +112,8 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
           <h4 className="card-title fw-normal mb-0">我的算力</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold text-main">{formatPower(iPower)?.[0]}</span>
-            <span className="ms-1">{formatPower(iPower)?.[1]}</span>
+            <span className="fs-30 fw-bold text-main">{formatPower(servicerPower)?.[0]}</span>
+            <span className="ms-1">{formatPower(servicerPower)?.[1]}</span>
           </p>
 
           {isSigned ? (
@@ -181,21 +173,13 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 };
 
 const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { address } = useAccount();
   const { isStarted } = useMountState(data);
-  const { data: items } = useMountEquity(data);
   const { isSigned: isSpSigned } = useRaiseRole(data);
-  const { data: info } = useMinerInfo(data?.miner_id);
   const { investorSign } = useContract(data?.raise_address);
 
-  const investor = useMemo(() => items?.find((item) => isEqual(item.address, address)), [address, items]);
-  const rate = useMemo(() => toNumber(investor?.power_proportion, 5), [investor]);
-  const power = useMemo(() => +`${info?.miner_power || '0'}`, [info?.miner_power]);
-  const pledge = useMemo(() => toNumber(info?.initial_pledge), [info?.initial_pledge]);
-  const isSigned = useMemo(() => !!investor?.sign_status, [investor]);
+  const { investor, investorRate, investorPledge, investorPower } = useMountAssets(data);
 
-  const iPower = useMemo(() => accMul(power, accDiv(rate, 100)), [power, rate]);
-  const iPledge = useMemo(() => accMul(pledge, accDiv(rate, 100)), [pledge, rate]);
+  const isSigned = useMemo(() => !!investor?.sign_status, [investor]);
 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
@@ -209,19 +193,19 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="card-body">
           <h4 className="card-title fw-normal mb-0">我的分配比例</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold text-main">{rate}</span>
+            <span className="fs-30 fw-bold text-main">{investorRate}</span>
             <span className="ms-1">%</span>
           </p>
 
           <h4 className="card-title fw-normal mb-0">我的算力</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold text-main">{formatPower(iPower)?.[0]}</span>
-            <span className="ms-1">{formatPower(iPower)?.[1]}</span>
+            <span className="fs-30 fw-bold text-main">{formatPower(investorPower)?.[0]}</span>
+            <span className="ms-1">{formatPower(investorPower)?.[1]}</span>
           </p>
 
           <h4 className="card-title fw-normal mb-0">我的质押</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold">{formatAmount(iPledge)}</span>
+            <span className="fs-30 fw-bold">{formatAmount(investorPledge)}</span>
             <span className="ms-1">FIL</span>
           </p>
 
@@ -303,13 +287,15 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </span>
             </p>
 
-            <p className="mt-3 mb-0">
+            <p className="mt-3">
               <Link className="btn btn-primary btn-lg w-100" to={`/assets/${data?.raising_id ?? ''}`}>
                 查看我的算力资产
               </Link>
             </p>
           </div>
         </div>
+
+        <MountBack data={data} />
       </>
     );
   }

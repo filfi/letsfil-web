@@ -21,7 +21,7 @@ const MountHeader: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     <>
       <PageHeader
         className={classNames({ 'border-bottom': !showAsset, 'mb-3 pb-0': showAsset })}
-        title={data ? `${formatSponsor(data.sponsor_company)}挂载的分配计划@${data.miner_id}` : '-'}
+        title={data ? `${formatSponsor(data.sponsor_company)}挂载节点@${data.miner_id}` : '-'}
         desc={isWorking ? <span className="text-uppercase">算力包 {formatID(data?.raising_id)}</span> : '将历史节点的分配计划委托给FilFi智能合约'}
       />
 

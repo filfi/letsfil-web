@@ -264,6 +264,14 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取已释放的质押币
+   * @returns
+   */
+  const getReleasedPledge = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('pledgeReleased', [id], _address));
+  };
+
+  /**
    * 获取已封装总额
    */
   const getTotalSealed = async (id: string, _address = address) => {
@@ -590,6 +598,7 @@ export default function useContract(address?: API.Address) {
     getInvestorInfo,
     getPledgeAmount,
     getSealedAmount,
+    getReleasedPledge,
     getTotalPledge,
     getTotalSealed,
     getTotalReward,

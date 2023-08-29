@@ -3,9 +3,9 @@ import { parseEther } from 'viem';
 import { snakeCase } from 'lodash';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
-import { useMemo, useRef } from 'react';
 import { history, useModel } from '@umijs/max';
-import { useDebounceEffect, useDynamicList, useUpdateEffect } from 'ahooks';
+import { useEffect, useMemo, useRef } from 'react';
+import { useDebounceEffect, useDynamicList } from 'ahooks';
 
 import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
@@ -81,7 +81,7 @@ const defaultTreeData = {
 
 const getTreeData = (priority: number = 70, spRate = 10, ratio = 5) => {
   const data = Object.assign({}, defaultTreeData);
-  const vals = H.calcEachEarn(priority, spRate, ratio);
+  const vals = H.calcEachEarn(priority, spRate, ratio, 5);
 
   data.children[0].rate = vals.priority;
   // data.children[0].children[0].rate = vals.investRate;
@@ -99,11 +99,7 @@ const getInitInvestors = (items?: API.Base[]) => {
     return items.filter(Boolean);
   }
 
-  return [
-    { address: '', amount: '', rate: '' },
-    { address: '', amount: '', rate: '' },
-    { address: '', amount: '', rate: '' },
-  ];
+  return [{ address: '', amount: '', rate: '' }];
 };
 
 export default function MountBenefit() {
@@ -126,10 +122,10 @@ export default function MountBenefit() {
 
   const { list: investors, getKey, ...handles } = useDynamicList<API.Base>(getInitInvestors(model?.investors));
 
-  useUpdateEffect(() => {
+  useEffect(() => {
     form.setFieldValue('hisInitialPledge', parseEther(`${balance}`).toString());
   }, [balance]);
-  useUpdateEffect(() => {
+  useEffect(() => {
     if (provider) {
       form.setFieldValue('opsSecurityFundAddr', provider?.wallet_address);
     }
@@ -154,38 +150,45 @@ export default function MountBenefit() {
     { wait: 300 },
   );
 
-  const handleReset = () => {
+  function withWarning<P extends unknown[] = any>(handle: (...args: P) => void, isReset?: boolean) {
+    return (...args: P) => {
+      const action = isReset ? '重置' : '修改';
+
+      const hide = Dialog.confirm({
+        icon: 'error',
+        title: `${action}分配方案会清空已填写详细分配比例`,
+        summary: `建设者和主办人的详细分配比例，依赖“分配方案”中定义的比例。${action}“分配方案”中的任何比例，会自动清空已填写的详细分配比例。`,
+        content: '是否继续？',
+        confirmText: isReset ? '确认重置' : '继续修改',
+        confirmBtnVariant: 'danger',
+        onConfirm: () => {
+          hide();
+
+          handle(...args);
+        },
+      });
+    };
+  }
+
+  const handleReset = withWarning(() => {
     form.setFieldsValue({
+      investors: [],
       opServerShare: 10,
       raiserCoinShare: 70,
     });
-  };
+    handles.resetList(getInitInvestors());
+  }, true);
 
-  const handleEdit = () => {
-    const openModal = async () => {
-      await sleep(300);
+  const handleEdit = withWarning(async () => {
+    form.setFieldValue('investors', []);
+    handles.resetList(getInitInvestors());
 
-      const modal = Modal.getOrCreateInstance('#benefit-modal');
+    await sleep(300);
 
-      modal && modal.show();
-    };
+    const modal = Modal.getOrCreateInstance('#benefit-modal');
 
-    const hide = Dialog.confirm({
-      icon: 'error',
-      title: '修改分配方案会清空已填写详细分配比例',
-      summary: '建设者和主办人的详细分配比例，依赖“分配方案”中定义的比例。修改“分配方案”中的任何比例，都会自动清空已填写的详细分配比例。',
-      content: '是否继续？',
-      confirmText: '继续修改',
-      confirmBtnVariant: 'danger',
-      onConfirm: () => {
-        hide();
-
-        handles.resetList(getInitInvestors());
-
-        openModal();
-      },
-    });
-  };
+    modal && modal.show();
+  });
 
   const handleSteps = ({ priority, spRate }: Values) => {
     form.setFieldsValue({
@@ -204,7 +207,7 @@ export default function MountBenefit() {
       return false;
     }
 
-    const items = list.reduce((prev, { address }) => {
+    const items = list.filter(Boolean).reduce((prev, { address }) => {
       const key = `${address}`.toLowerCase();
 
       if (prev[key]) {
@@ -221,12 +224,12 @@ export default function MountBenefit() {
       return false;
     }
 
-    if (list.reduce((sum, { amount }) => accAdd(sum, amount), 0) !== balance) {
+    if (list.filter(Boolean).reduce((sum, { amount }) => accAdd(sum, amount), 0) !== balance) {
       showErr(`建设者持有质押币累加必须精确等于${formatAmount(balance, 7)}`);
       return false;
     }
 
-    if (list.reduce((sum, { rate }) => accAdd(sum, rate), 0) !== +priority) {
+    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== +priority) {
       showErr(`建设者分成比例累加必须精确等于${priority}%`);
       return false;
     }
@@ -254,7 +257,7 @@ export default function MountBenefit() {
         await A.update(raiseId, body);
         await A.updateEquity(raiseId, {
           sponsor_equities: [],
-          investor_equities: investors.map((i: API.Base) => ({
+          investor_equities: investors.filter(Boolean).map((i: API.Base) => ({
             ...H.transformInvestor(i),
             raise_id: raiseId,
           })),
@@ -264,7 +267,7 @@ export default function MountBenefit() {
         await A.add({ ...body, raising_id: raiseId });
         await A.addEquity(raiseId, {
           sponsor_equities: [],
-          investor_equities: investors.map((i: API.Base) => ({
+          investor_equities: investors.filter(Boolean).map((i: API.Base) => ({
             ...H.transformInvestor(i),
             raise_id: raiseId,
           })),
@@ -301,7 +304,7 @@ export default function MountBenefit() {
       <div className={classNames(styles.node, { [styles.active]: data.active })}>
         <p className="d-flex flex-wrap flex-lg-nowrap mb-1 fw-500">
           <span className="me-auto">{data.label}</span>
-          <span className="ms-lg-2 fw-bold">{formatNum(data.rate, '0.00')}%</span>
+          <span className="ms-lg-2 fw-bold">{formatNum(data.rate, '0.00000')}%</span>
         </p>
         <p className="small mb-0 text-gray">{data.desc}</p>
 

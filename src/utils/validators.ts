@@ -44,7 +44,7 @@ export const number = createValidator(/^\d+(\.\d+)?$/, '请输入数字');
 
 export const integer = createValidator(/^[1-9]([0-9]+)?$/, '请输入正整数');
 
-export const minerID = createValidator(/^(f0|t0)[0-9]+$/i, '无效的MinerID');
+export const minerID = createValidator(/^(f0|t0)[0-9]+$/i, '无效的节点号');
 
 export function createGtValidator(min: number, message?: string) {
   return async function validator(rule: unknown, value: string) {

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { providers } from '@/apis/raise';
+import { isEqual } from '@/utils/utils';
 
 /**
  * 服务商列表
@@ -20,12 +21,17 @@ export default function useProviders() {
     return getProvider(id)?.full_name;
   };
 
+  const getByAddress = (address?: string) => {
+    return data?.find((item) => isEqual(item.wallet_address, address));
+  };
+
   return {
     data,
     isError,
     isLoading,
     getProvider,
     renderLabel,
+    getByAddress,
     refetch,
   };
 }

@@ -3,7 +3,7 @@ import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { useEffect, useMemo } from 'react';
 import { history, useModel } from '@umijs/max';
-import { useDebounceFn, useLockFn, useUpdateEffect } from 'ahooks';
+import { useDebounceFn, useUpdateEffect } from 'ahooks';
 
 import useUser from '@/hooks/useUser';
 import { minerInfo } from '@/apis/raise';
@@ -22,6 +22,7 @@ import ProviderSelect from '@/components/ProviderRadio';
 export default function MountStorage() {
   const [form] = Form.useForm();
   const [model, setModel] = useModel('stepform');
+  const minerId: string = Form.useWatch('minerId', form);
   const balance: string = Form.useWatch('hisBlance', form);
 
   const { address } = useAccount();
@@ -41,6 +42,10 @@ export default function MountStorage() {
       });
     }
   }, [user]);
+  useUpdateEffect(() => {
+    form.setFieldValue('hisPower', '0');
+    form.setFieldValue('hisBlance', '0');
+  }, [minerId]);
   useEffect(() => {
     const item = list?.find((i) => i.is_default);
 
@@ -71,43 +76,32 @@ export default function MountStorage() {
 
   const [fetching, fetchMiner] = useLoadingify(catchify(minerInfo));
 
-  const { run: getMinerInfo } = useDebounceFn(useLockFn(fetchMiner), { wait: 500, trailing: true });
+  const { run: getMinerInfo } = useDebounceFn(fetchMiner, { wait: 500 });
 
   const minerValidator = async (rule: unknown, value: string) => {
-    form.setFieldValue('hisPower', 0);
-    form.setFieldValue('hisBlance', '0');
-
-    const [e] = await catchify(validators.minerID)(rule, value);
-
-    if (e) {
-      return e;
-    }
-
     if (value) {
       const [e, res] = (await getMinerInfo(value)) ?? [];
 
       if (e) {
-        return Promise.reject('检测失败：' + e.message);
+        return Promise.reject((e as any).code === 3000002 ? '节点不存在' : '检测失败');
       }
 
-      if (!res) {
-        return Promise.reject('无效的节点，请重新输入');
+      if (res) {
+        const {
+          has_plan,
+          fee_debt, // 欠款
+          miner_power, // 算力
+          initial_pledge, // 扇区质押
+          pre_commit_deposits, // 预存款
+        } = res;
+
+        // *有募集计划* 或 *有欠款* 或 *有预存款* 或 *无算力* 或 *无质押* 均不可挂载
+        if (has_plan !== 0 || +fee_debt > 0 || +pre_commit_deposits > 0 || +miner_power <= 0 || toNumber(initial_pledge) <= 0) {
+          return Promise.reject('节点不可用');
+        }
+
+        onMinerChange(res);
       }
-
-      const {
-        has_plan,
-        fee_debt, // 欠款
-        miner_power, // 算力
-        initial_pledge, // 扇区质押
-        pre_commit_deposits, // 预存款
-      } = res;
-
-      // *有募集计划* 或 *有欠款* 或 *有预存款* 或 *无算力* 或 *无质押* 均不可挂载
-      if (has_plan !== 0 || +fee_debt > 0 || +pre_commit_deposits > 0 || +miner_power <= 0 || toNumber(initial_pledge) <= 0) {
-        return Promise.reject('节点不可用');
-      }
-
-      onMinerChange(res);
     }
   };
 
@@ -152,7 +146,7 @@ export default function MountStorage() {
           minerType: 1,
           raiser: address,
           sponsorLogo: user?.url,
-          sponsorCompany: address,
+          sponsorCompany: user?.name ?? address,
           ...model,
         }}
         onFinish={handleSubmit}
@@ -215,7 +209,7 @@ export default function MountStorage() {
                   rules={[
                     { required: true, message: '请输入节点号' },
                     {
-                      validator: minerValidator,
+                      validator: validators.Queue.create().add(validators.minerID).add(minerValidator).build(),
                     },
                   ]}
                 >

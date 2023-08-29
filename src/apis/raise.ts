@@ -88,6 +88,14 @@ export function updateEquity(id: string, data: API.Base) {
   return A.post(`/raising-plan/v2/modify/raise-equity/${id}`, data);
 }
 
+export function getSPInfo(address: string) {
+  return A.get<{ list: (API.Provider & API.Base)[] }>('/service-provier/info', { address });
+}
+
+export function getSPNodes(address: string) {
+  return A.get<{ list: API.Base[] }>('/service-provier/sp-node-list', { address });
+}
+
 export function statChainInfo() {
   return A.get<API.Base>('/service-provier/get-filscan-stat-chain-info');
 }

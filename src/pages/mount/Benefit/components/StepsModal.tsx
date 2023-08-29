@@ -22,6 +22,8 @@ export type StepsModalProps = DivProps & {
   onConfirm?: (vals: Values) => void;
 };
 
+const precision = 5;
+
 const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.ForwardedRef<FormInstance>) => {
   const [form] = Form.useForm<Values>();
   const amount = Form.useWatch('priority', form);
@@ -30,7 +32,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
     const { spRate = 5, ratio = 5 } = values ?? {};
     const priority = Number.isNaN(+amount) ? 0 : +amount;
 
-    form.setFieldsValue(calcEachEarn(priority, spRate, ratio));
+    form.setFieldsValue(calcEachEarn(priority, spRate, ratio, precision));
   }, [amount, values]);
 
   useImperativeHandle(ref, () => form, [form]);
@@ -97,13 +99,11 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
   const ffiRate = useMemo(() => values?.ffiRate ?? accMul(inferior, 0.08), [values?.ffiRate, inferior]);
   const opsMax = useMemo(() => Math.max(accSub(inferior, ffiRate), 0), [inferior, ffiRate]);
 
-  console.log(opsMax);
-
   useUpdateEffect(() => {
     const { priority = 70, ratio = 5 } = values ?? {};
     const spRate = Number.isNaN(+amount) ? 0 : +amount;
 
-    form.setFieldsValue(calcEachEarn(priority, spRate, ratio));
+    form.setFieldsValue(calcEachEarn(priority, spRate, ratio, precision));
   }, [amount, values]);
 
   useImperativeHandle(ref, () => form, [form]);
@@ -133,8 +133,8 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
                     { required: true, message: '请输入' },
                     {
                       validator: validators.Queue.create()
-                        .add(validators.createNumRangeValidator([10, opsMax], `最小5%，最大${opsMax}%`))
-                        .add(validators.createDecimalValidator(5, '最多支持5位小数'))
+                        .add(validators.createNumRangeValidator([10, opsMax], `最小10%，最大${opsMax}%`))
+                        .add(validators.createDecimalValidator(precision, '最多支持5位小数'))
                         .build(),
                     },
                   ]}
@@ -175,10 +175,10 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
   const serviceForm = useRef<FormInstance>(null);
 
   const [step, setStep] = useState(0);
-  const [values, setValues] = useState(calcEachEarn(priority, spRate, ratio));
+  const [values, setValues] = useState(calcEachEarn(priority, spRate, ratio, precision));
 
   useUpdateEffect(() => {
-    const vals = calcEachEarn(priority, spRate, ratio);
+    const vals = calcEachEarn(priority, spRate, ratio, precision);
     setValues({ ...vals });
 
     raiseForm.current?.setFieldsValue(vals);
@@ -209,7 +209,7 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
     const _vals = { ...values, ...vals };
     const { priority, spRate } = _vals;
 
-    setValues(calcEachEarn(priority, spRate, ratio));
+    setValues(calcEachEarn(priority, spRate, ratio, precision));
 
     if (step === 0) {
       setStep(1);

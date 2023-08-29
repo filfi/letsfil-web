@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { parseEther } from 'viem';
 import { useQueries } from '@tanstack/react-query';
 
+import * as M from '@/helpers/mount';
+import * as R from '@/helpers/raise';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseBase from './useRaiseBase';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
 import { accDiv, sleep } from '@/utils/utils';
-import { isClosed, isFailed, isPending, isWorking } from '@/helpers/raise';
 
 /**
  * 建设者的投资信息
@@ -22,12 +23,18 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   const { actual } = useRaiseBase(data);
 
   const getBackAssets = async () => {
-    if (address && data && (isClosed(data) || isFailed(data) || isWorking(data))) {
+    if (!address || !data) return;
+
+    const isMount = M.isMountPlan(data);
+    if (R.isClosed(data) || (isMount ? M.isWorking(data) : R.isFailed(data) || R.isWorking(data))) {
       return await contract.getBackAssets(data.raising_id, address);
     }
   };
   const getInvestInfo = async () => {
-    if (address && data && !isPending(data)) {
+    if (!address || !data) return;
+
+    const isMount = M.isMountPlan(data);
+    if (isMount ? !M.isInactive(data) : !R.isPending(data)) {
       return await contract.getInvestorInfo(data.raising_id, address);
     }
   };
