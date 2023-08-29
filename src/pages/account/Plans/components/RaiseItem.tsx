@@ -71,12 +71,12 @@ function calcSealDays(data: API.Plan) {
 
 const RaiseItem: React.FC<{
   data: API.Plan;
-  invest?: boolean;
+  role?: number;
   onEdit?: () => void;
   onHide?: () => Promise<any>;
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
-}> = ({ data, invest, onEdit, onDelete, onStart }) => {
+}> = ({ data, role, onEdit, onDelete, onStart }) => {
   const state = useRaiseState(data);
   const { data: pack } = usePackInfo(data);
   const { amount } = useDepositInvestor(data);
@@ -102,7 +102,7 @@ const RaiseItem: React.FC<{
 
   const renderAssets = () => {
     const showPack = state.isWorking && pack;
-    const showAssets = invest && amount > 0;
+    const showAssets = role === 3 && amount > 0;
 
     if (showAssets || showPack) {
       return (
@@ -132,7 +132,7 @@ const RaiseItem: React.FC<{
 
   const renderStatus = () => {
     if (state.isPending) {
-      if (isRaiser) {
+      if (role === 1 && isRaiser) {
         return <span className="badge">可编辑</span>;
       }
 

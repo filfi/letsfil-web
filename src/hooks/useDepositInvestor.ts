@@ -35,7 +35,8 @@ export default function useDepositInvestor(data?: API.Plan | null) {
 
     const isMount = M.isMountPlan(data);
     if (isMount ? !M.isInactive(data) : !R.isPending(data)) {
-      return await contract.getInvestorInfo(data.raising_id, address);
+      const res = await contract.getInvestorInfo(data.raising_id, address);
+      return res;
     }
   };
 

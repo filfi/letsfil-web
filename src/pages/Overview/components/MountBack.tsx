@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+
+import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useMountAssets from '@/hooks/useMountAssets';
@@ -7,7 +10,9 @@ import useDepositInvestor from '@/hooks/useDepositInvestor';
 const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { released } = useReleasedPledge(data);
   const { investor, investorPledge } = useMountAssets(data);
-  const { backAmount, unstaking, unStakeAction } = useDepositInvestor(data);
+  const { amount, record, backAmount, unstaking, unStakeAction } = useDepositInvestor(data);
+
+  const withdraw = useMemo(() => Math.max(accSub(record, amount), 0), [amount, record]);
 
   if (investor && released > 0) {
     return (
@@ -20,14 +25,21 @@ const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </div>
           <div className="card-body py-2 fs-16 text-main">
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>质押数额</span>
+              <span>我的质押数额</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{formatAmount(investorPledge)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>退回质押</span>
+              <span>已取回质押</span>
+              <span className="ms-auto">
+                <span className="fs-20 fw-600">{formatAmount(withdraw, 4, 3)}</span>
+                <span className="ms-1 text-neutral">FIL</span>
+              </span>
+            </p>
+            <p className="d-flex align-items-center gap-3 mb-2">
+              <span>新增可取回质押</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{formatAmount(backAmount)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
@@ -38,6 +50,7 @@ const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={unstaking} onClick={unStakeAction}>
               取回质押
             </SpinBtn>
+            <p className="mt-3 mb-2 text-gray-dark">扇区分批次到期，质押币逐步释放中</p>
           </div>
         </div>
       </>

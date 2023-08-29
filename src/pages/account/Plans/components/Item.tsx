@@ -4,7 +4,7 @@ import { isMountPlan } from '@/helpers/mount';
 
 const Item: React.FC<{
   data: API.Plan;
-  invest?: boolean;
+  role?: number;
   onEdit?: () => void;
   onHide?: () => Promise<any>;
   onDelete?: () => Promise<any>;

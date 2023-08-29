@@ -45,12 +45,12 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 
 const MountItem: React.FC<{
   data: API.Plan;
-  invest?: boolean;
+  role?: number;
   onEdit?: () => void;
   onHide?: () => Promise<any>;
   onDelete?: () => Promise<any>;
   onStart?: () => Promise<any>;
-}> = ({ data, onEdit, onDelete }) => {
+}> = ({ data, role, onEdit, onDelete }) => {
   const provider = useSProvider(data.service_id);
   const { data: counter } = useInvestorCount(data);
   const { isInactive, isActive, isWorking } = useMountState(data);
@@ -73,7 +73,7 @@ const MountItem: React.FC<{
 
       return (
         <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
-          {investor && (
+          {role === 3 && (
             <div className="d-flex justify-content-between gap-3 py-2">
               <span className="text-gray-dark">我的质押</span>
               <span className="fw-500">{F.formatAmount(investorPledge)} FIL</span>
@@ -100,7 +100,7 @@ const MountItem: React.FC<{
     }
 
     if (isInactive) {
-      if (isRaiser) {
+      if (role === 1 && isRaiser) {
         return <span className="badge">可编辑</span>;
       }
 
@@ -108,7 +108,16 @@ const MountItem: React.FC<{
     }
 
     if (isActive) {
-      if (isRaiser || isSpSigned || isInvestorSigned) {
+      const isInvestor = !!investor;
+      const steps = [
+        { role: isRaiser, signed: true },
+        { role: isServicer, signed: isSpSigned },
+        { role: isInvestor, signed: isInvestorSigned },
+      ];
+
+      const step = steps[(role ?? 0) - 1];
+
+      if (step.signed) {
         return <span className="badge badge-success">已签名</span>;
       }
 
