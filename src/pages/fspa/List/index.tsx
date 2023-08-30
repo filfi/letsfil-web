@@ -51,8 +51,8 @@ export default function FSPAList() {
                           <Avatar address={item.wallet_address} size={72} />
                         )}
                       </div>
-                      <h4 className="mb-1 fw-600 card-title">{formatAddr(item.wallet_address)}</h4>
-                      <p className="mb-3 text-gray">{item.full_name}</p>
+                      <h4 className="mb-1 fw-600 card-title">{item.full_name || formatAddr(item.wallet_address)}</h4>
+                      <p className="mb-3 text-gray">ONBOARDED</p>
                     </div>
                   </Link>
                 </div>

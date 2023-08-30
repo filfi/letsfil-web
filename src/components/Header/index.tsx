@@ -112,7 +112,7 @@ const Header: React.FC = () => {
                   </button>
                 )}
                 <div className="btn-group dropdown" role="group" onMouseEnter={setTrue} onMouseLeave={setFalse}>
-                  <Link to="/account" className="btn btn-outline-light rounded-end">
+                  <Link to="/account/assets" className="btn btn-outline-light rounded-end">
                     <span className="lh-1">
                       <IconUser />
                     </span>
@@ -123,7 +123,7 @@ const Header: React.FC = () => {
                     data-bs-popper={isHover ? 'static' : undefined}
                   >
                     <li>
-                      <Link className="dropdown-item" to="/account">
+                      <Link className="dropdown-item" to="/account/assets">
                         <span className="bi bi-person"></span>
                         <span className="ms-2">个人资料</span>
                       </Link>

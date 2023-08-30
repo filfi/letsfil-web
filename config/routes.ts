@@ -58,7 +58,7 @@ const routes: IBestAFSRoute[] = [
         path: 'stats',
         component: './account/Stats',
       },
-      { path: '/account', redirect: '/account/assets' },
+      { path: '/account', redirect: '/account/plans' },
     ],
   },
   {

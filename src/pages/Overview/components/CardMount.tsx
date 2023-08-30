@@ -205,7 +205,7 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
           <h4 className="card-title fw-normal mb-0">我的质押</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold">{formatAmount(investorPledge)}</span>
+            <span className="fs-30 fw-bold text-main">{formatAmount(investorPledge)}</span>
             <span className="ms-1">FIL</span>
           </p>
 

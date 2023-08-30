@@ -11,7 +11,7 @@ import Avatar from '@/components/Avatar';
 import ShareBtn from '@/components/ShareBtn';
 import LoadingView from '@/components/LoadingView';
 import { getSPInfo, getSPNodes } from '@/apis/raise';
-import { formatBytes, formatNum, formatPower, toNumber } from '@/utils/format';
+import { formatAddr, formatBytes, formatNum, formatPower, toNumber } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-06.svg';
 
 export default function FSPAOverview() {
@@ -91,14 +91,14 @@ export default function FSPAOverview() {
                       placeholder={<Image className="object-fit-contain" height={160} preview={false} src={require('@/assets/placeholder.png')} />}
                     />
                   ) : (
-                    <Avatar address={provider.wallet_address} size={72} />
+                    <Avatar address={provider.wallet_address} size={160} />
                   )
                 ) : (
                   <Image className="object-fit-contain" height={160} preview={false} src={require('@/assets/placeholder.png')} />
                 )}
               </div>
 
-              <h4 className="fw-600 mb-3">{provider?.full_name}</h4>
+              <h4 className="fw-600 mb-3">{provider?.full_name || formatAddr(provider?.wallet_address)}</h4>
 
               <p className="text-gray">FSPA联盟成员</p>
             </div>
