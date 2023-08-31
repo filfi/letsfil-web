@@ -79,7 +79,7 @@ const defaultTreeData = {
   ],
 };
 
-const getTreeData = (priority: number = 70, spRate = 10, ratio = 5) => {
+const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
   const data = Object.assign({}, defaultTreeData);
   const vals = H.calcEachEarn(priority, spRate, ratio, 5);
 
@@ -173,7 +173,7 @@ export default function MountBenefit() {
   const handleReset = withWarning(() => {
     form.setFieldsValue({
       investors: [],
-      opServerShare: 10,
+      opServerShare: 5,
       raiserCoinShare: 70,
     });
     handles.resetList(getInitInvestors());
@@ -324,7 +324,7 @@ export default function MountBenefit() {
         size="large"
         layout="vertical"
         initialValues={{
-          opServerShare: 10,
+          opServerShare: 5,
           raiserCoinShare: 70,
           opsSecurityFundRate: 5,
           opsSecurityFundAddr: provider?.wallet_address,

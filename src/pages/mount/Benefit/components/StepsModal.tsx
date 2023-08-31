@@ -53,13 +53,13 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
               { required: true, message: '请输入' },
               {
                 validator: validators.Queue.create()
-                  .add(validators.createNumRangeValidator([0, 89.13043], '最小0%，最大89.13043%'))
+                  .add(validators.createNumRangeValidator([0, 94.56521], '最小0%，最大94.56521%'))
                   .add(validators.createDecimalValidator(5, '最多支持5位小数'))
                   .build(),
               },
             ]}
           >
-            <Input type="number" min={0} max={94.56} placeholder="请输入" suffix="%" />
+            <Input type="number" min={0} max={94.56521} placeholder="请输入" suffix="%" />
           </Form.Item>
         </div>
         <div className="ffi-item bg-primary-tertiary p-4 mb-0">
@@ -133,13 +133,13 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
                     { required: true, message: '请输入' },
                     {
                       validator: validators.Queue.create()
-                        .add(validators.createNumRangeValidator([10, opsMax], `最小10%，最大${opsMax}%`))
+                        .add(validators.createNumRangeValidator([5, opsMax], `最小5%，最大${opsMax}%`))
                         .add(validators.createDecimalValidator(precision, '最多支持5位小数'))
                         .build(),
                     },
                   ]}
                 >
-                  <Input type="number" min={10} max={opsMax} placeholder="请输入" suffix="%" />
+                  <Input type="number" min={5} max={opsMax} placeholder="请输入" suffix="%" />
                 </Form.Item>
               </div>
             </div>
@@ -167,7 +167,7 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
 });
 
 const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalProps> = (
-  { priority = 70, spRate = 10, ratio = 5, onConfirm, ...props },
+  { priority = 70, spRate = 5, ratio = 5, onConfirm, ...props },
   ref?: React.Ref<ModalAttrs> | null,
 ) => {
   const modal = useRef<ModalAttrs>(null);
