@@ -13,6 +13,7 @@
   --color-primary-700: @primary-700;
   --color-primary-800: @primary-800;
   --color-primary-900: @primary-900;
+  --color-success-25: @success-25;
   --color-primary: @primary;
   --color-success: @success;
   --color-warning: @warning;
@@ -322,6 +323,10 @@ table.table,
   background-color: var(--color-primary-25);
 }
 
+.bg-success-tertiary {
+  background-color: var(--color-success-25);
+}
+
 .bg-warning-tertiary {
   background-color: var(--color-warning-50);
 }
@@ -424,12 +429,23 @@ table.table,
   color: var(--color-primary);
 }
 
+.text-primary-dark {
+  --bs-body: var(--color-primary-900);
+  --bs-color: var(--color-primary-900);
+
+  color: var(--bs-color);
+}
+
 .text-underline {
   text-decoration: underline;
 }
 
 .object-fit-cover {
   object-fit: cover;
+}
+
+.object-fit-contain {
+  object-fit: contain;
 }
 
 .mx-n3 {

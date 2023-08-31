@@ -23,6 +23,9 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 const EVENTS_MAP: Record<string, string> = {
   ESealEnd: '封装结束',
   EStartSeal: '开始封装',
+  EMountNode: '主办人签名',
+  ESponsorSign: '主办人签名',
+  EInvestorSign: '建设者签名',
   ESPWithdraw: '服务商提取激励',
   ENodeDestroy: '扇区到期',
   ERaiseFailed: '质押失败',
@@ -32,6 +35,8 @@ const EVENTS_MAP: Record<string, string> = {
   ERaiseWithdraw: '主办人提取激励',
   CloseRaisePlan: '关闭质押',
   StartRaisePlan: '开始质押',
+  ENodeMountFailed: '节点挂载失败',
+  ENodeMountSuccess: '节点挂载成功',
   SpSignWithMiner: '技术服务商签名',
   ECreateAssetPack: '主办人签名',
   EClosePlanToSeal: '关闭计划并进入封装',

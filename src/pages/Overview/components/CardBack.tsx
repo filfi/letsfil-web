@@ -3,12 +3,14 @@ import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
+import useReleasedPledge from '@/hooks/useReleasedPledge';
 
 const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { released } = useReleasedPledge(data);
   const { isClosed, isFailed, isWorking } = useRaiseState(data);
   const { amount, backAmount, backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
 
-  if (isInvestor && (isClosed || isFailed || isWorking)) {
+  if (isInvestor && (isClosed || isFailed || isWorking) && released > 0) {
     return (
       <>
         <div className="card section-card">

@@ -6,13 +6,14 @@ import { Outlet, useLocation } from '@umijs/max';
 import Steps from '@/components/Steps';
 import PageHeader from '@/components/PageHeader';
 
+const paths = ['storage', 'program', 'benefit', 'result'];
 const items = [{ title: '定制存储方案' }, { title: '填写质押目标' }, { title: '设计分配方案' }, { title: '完成' }];
 
 export default function Create() {
   useTitle('发起节点计划 - FilFi', { restoreOnUnmount: true });
 
   const location = useLocation();
-  const current = useMemo(() => ['storage', 'program', 'benefit', 'result'].findIndex((path) => location.pathname.includes(path)), [location.pathname]);
+  const current = useMemo(() => paths.findIndex((path) => location.pathname.includes(path)), [location.pathname]);
 
   return (
     <>

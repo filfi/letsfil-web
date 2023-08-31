@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
-import { useDebounceFn, useLockFn, useUpdateEffect } from 'ahooks';
+import { useDebounceFn, useUpdateEffect } from 'ahooks';
 
 import { isDef } from '@/utils/utils';
 import useUser from '@/hooks/useUser';
@@ -49,25 +49,23 @@ export default function CreateStorage() {
     }
   }, [list, model?.serviceId]);
 
-  const [mining, getMiner] = useLoadingify(async (id: string) => {
-    const r = await catchify(minerInfo)(id);
-    const [, res] = r;
-    const isOld = res && res?.sector_count > 0;
+  const [mining, getMiner] = useLoadingify(catchify(minerInfo));
+
+  const onMinerChange = async (data: API.MinerAsset) => {
+    const isOld = data.sector_count > 0;
 
     form.setFieldsValue({
       minerType: isOld ? 2 : 1,
-      hisBlance: isOld ? res.balance : '0',
-      hisPower: isOld ? res.miner_power : '0',
-      hisInitialPledge: isOld ? res.initial_pledge : '0',
-      hisSectorCount: isOld ? res.sector_count : 0,
+      hisBlance: isOld ? data.balance : '0',
+      hisPower: isOld ? data.miner_power : '0',
+      hisSectorCount: isOld ? data.sector_count : 0,
+      hisInitialPledge: isOld ? data.initial_pledge : '0',
       raiseHisPowerRate: isOld ? 90 : 0,
       raiseHisInitialPledgeRate: isOld ? 100 : 0,
     });
+  };
 
-    return r;
-  });
-
-  const { run: validateMiner } = useDebounceFn(useLockFn(getMiner), { wait: 500, trailing: true });
+  const { run: validateMiner } = useDebounceFn(getMiner, { wait: 500 });
 
   const minerValidator = async (rule: unknown, value: string) => {
     const [e] = await catchify(validators.minerID)(rule, value);
@@ -77,10 +75,14 @@ export default function CreateStorage() {
     }
 
     if (value) {
-      const res = await validateMiner(value);
+      const [e, res] = (await validateMiner(value)) ?? [];
 
-      if (res?.[0]) {
-        return Promise.reject('无效的节点，请重新输入');
+      if (e) {
+        return Promise.reject((e as any).code === 3000002 ? '节点不存在' : '检测失败');
+      }
+
+      if (res) {
+        onMinerChange(res);
       }
     }
   };
@@ -123,12 +125,13 @@ export default function CreateStorage() {
         size="large"
         layout="vertical"
         initialValues={{
+          planType: 1,
           minerType: 1,
           raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
-          sponsorCompany: address,
+          sponsorCompany: user?.name ?? address,
           hisBlance: '0',
           hisPower: '0',
           hisInitialPledge: '0',
@@ -140,6 +143,9 @@ export default function CreateStorage() {
         onFinish={handleSubmit}
       >
         <Form.Item hidden name="raiser">
+          <Input />
+        </Form.Item>
+        <Form.Item hidden name="planType">
           <Input />
         </Form.Item>
         <Form.Item hidden name="hisBlance">
@@ -213,7 +219,7 @@ export default function CreateStorage() {
                   rules={[
                     { required: true, message: '请输入节点号' },
                     {
-                      validator: minerValidator,
+                      validator: validators.Queue.create().add(validators.minerID).add(minerValidator).build(),
                     },
                   ]}
                 >
@@ -221,9 +227,13 @@ export default function CreateStorage() {
                 </Form.Item>
               </div>
               <div>
-                <SpinBtn className="btn btn-outline-light btn-lg text-nowrap" loading={mining} onClick={handleMiner}>
-                  <i className="bi bi-arrow-repeat"></i>
-                  <span className="ms-2">检测</span>
+                <SpinBtn
+                  className="btn btn-outline-light btn-lg text-nowrap"
+                  loading={mining}
+                  icon={<i className="bi bi-arrow-repeat"></i>}
+                  onClick={handleMiner}
+                >
+                  检测
                 </SpinBtn>
               </div>
             </div>

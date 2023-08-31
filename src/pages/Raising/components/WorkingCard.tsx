@@ -1,9 +1,10 @@
 import { Link } from '@umijs/max';
-import { useRequest } from 'ahooks';
+import classNames from 'classnames';
 
-import { count } from '@/apis/raise';
+import { isMountPlan } from '@/helpers/mount';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseReward from '@/hooks/useRaiseReward';
+import useInvestorCount from '@/hooks/useInvestorCount';
 import { formatAmount, formatSponsor } from '@/utils/format';
 
 export type WorkingCardProps = {
@@ -14,12 +15,12 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
   const { reward } = useRaiseReward(data);
   const { runningDays } = useRaiseSeals(data);
 
-  const { data: counter } = useRequest(() => count(data.raising_id), { refreshDeps: [data.raising_id] });
+  const { data: counter } = useInvestorCount(data);
 
   return (
     <>
-      <div className="card working-card h-100">
-        <div className="card-header py-2">
+      <div className="card h-100">
+        <div className={classNames('card-header py-2', isMountPlan(data) ? 'bg-success-tertiary' : 'bg-primary-tertiary')}>
           <p className="py-1 mb-0 d-flex gap-3 align-items-center">
             <span className="text-gray-dark">累计激励</span>
             <span className="ms-auto">
@@ -39,7 +40,15 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
           <p className="my-2 d-flex gap-3">
             <span className="flex-grow-1 text-break">
               <Link className="text-underline" to={`/overview/${data.raising_id}`}>
-                {formatSponsor(data.sponsor_company)}发起的节点计划@{data.miner_id}
+                {isMountPlan(data) ? (
+                  <span>
+                    {formatSponsor(data.sponsor_company)}挂载的分配计划@{data.miner_id}
+                  </span>
+                ) : (
+                  <span>
+                    {formatSponsor(data.sponsor_company)}发起的节点计划@{data.miner_id}
+                  </span>
+                )}
               </Link>
             </span>
             <span className="flex-shrink-0">

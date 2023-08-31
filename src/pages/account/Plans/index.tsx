@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import classNames from 'classnames';
 import { useDebounceEffect } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
-import { Link, history, useModel } from '@umijs/max';
+import { /* Link, */ history, useModel } from '@umijs/max';
 
 import * as A from '@/apis/raise';
 import styles from './styles.less';
@@ -12,12 +12,14 @@ import Result from '@/components/Result';
 import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
+import { isMountPlan } from '@/helpers/mount';
 import { isEqual, sleep } from '@/utils/utils';
 import { filterRaises } from '@/helpers/raise';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
 import useRaiseActions from '@/hooks/useRaiseActions';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
+import { formatSponsor } from '@/utils/format';
 
 const isArrs = function <V>(v: V | undefined): v is V {
   return Array.isArray(v) && v.length > 0;
@@ -50,10 +52,10 @@ export default function AccountPlans() {
     { wait: 200 },
   );
 
-  const handleCreate = withConnect(async () => {
+  const handleCreate = withConnect(async (planType: number = 1) => {
     setModel(undefined);
 
-    history.push('/create');
+    history.push(isMountPlan({ plan_type: planType }) ? '/mount' : '/create');
   });
 
   const handleEdit = async (data: API.Plan) => {
@@ -80,10 +82,14 @@ export default function AccountPlans() {
         {isEmpty ? (
           <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参与的节点计划。">
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
-              <Link className="btn btn-light" to="/raising">
+              {/* <Link className="btn btn-light" to="/raising">
                 查看开放的节点计划
-              </Link>
-              <button className="btn btn-primary" type="button" onClick={handleCreate}>
+              </Link> */}
+              <button className="btn btn-light" type="button" onClick={() => handleCreate(2)}>
+                <span className="bi bi-hdd-stack"></span>
+                <span className="ms-2">挂载历史节点</span>
+              </button>
+              <button className="btn btn-primary" type="button" onClick={() => handleCreate()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-2">发起节点计划</span>
               </button>
@@ -91,8 +97,12 @@ export default function AccountPlans() {
           </Result>
         ) : (
           <>
-            <p className="float-lg-end mt-lg-3 text-end">
-              <button className="btn btn-primary" type="button" onClick={handleCreate}>
+            <p className="hstack flex-wrap gap-3 float-lg-end mt-lg-3 text-end">
+              <button className="btn btn-light" type="button" onClick={() => handleCreate(2)}>
+                <span className="bi bi-hdd-stack"></span>
+                <span className="ms-2">挂载历史节点</span>
+              </button>
+              <button className="btn btn-primary" type="button" onClick={() => handleCreate()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-2">发起节点计划</span>
               </button>
@@ -106,6 +116,7 @@ export default function AccountPlans() {
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
+                        role={1}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}
@@ -124,8 +135,8 @@ export default function AccountPlans() {
                   {invests.map((item) => (
                     <div className="col" key={item.raising_id}>
                       <Item
-                        invest
                         data={item}
+                        role={3}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}
@@ -139,12 +150,13 @@ export default function AccountPlans() {
 
             {isArrs(services) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>{user?.name}提供技术服务的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>{formatSponsor(user?.name)}提供技术服务的节点计划</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {services.map((item) => (
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
+                        role={2}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}

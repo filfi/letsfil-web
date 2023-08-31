@@ -38,6 +38,7 @@ declare namespace API {
 
   interface Plan {
     actual_amount: string;
+    assign_status: number;
     begin_seal_time: number;
     begin_time: number;
     closing_time: number;
@@ -61,6 +62,7 @@ declare namespace API {
     ops_security_fund_addr: string;
     ops_security_fund_rate: number;
     plan_open: number;
+    plan_type: number;
     pledge_per_tera_day: string;
     power_progress: number;
     progress: number;
@@ -120,6 +122,7 @@ declare namespace API {
     sector_count: number;
     sector_size: number;
     total_balance: string;
+    has_plan: number;
   };
 
   type Pack = {
@@ -148,5 +151,20 @@ declare namespace API {
 
   type ContractData = {
     pledge_total_calc_amount: string;
+  };
+
+  type Equity = {
+    ID: number;
+    CreatedAt: string;
+    UpdatedAt: string;
+    DeletedAt: string;
+    raise_id: string;
+    address: string;
+    role: number;
+    role_level: number;
+    pledge_amount: string;
+    power_proportion: string;
+    sign_status: number;
+    sign_time: string;
   };
 }

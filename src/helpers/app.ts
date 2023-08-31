@@ -5,7 +5,7 @@ import { ethers, BigNumber } from 'ethers';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
-import { toFixed } from '@/utils/format';
+import { toFixed, toNumber } from '@/utils/format';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
@@ -80,16 +80,17 @@ export function genRaiseID(minerId: number | string) {
  * @param priority 优先部分（出币方权益）
  * @param spRate 技术运维服务费
  * @param ratio 保证金配比
+ * @param precision 精度
  */
-export function calcEachEarn(priority: number | string = 70, spRate: number | string = 5, ratio: number | string = 5) {
+export function calcEachEarn(priority: number | string = 70, spRate: number | string = 5, ratio: number | string = 5, precision: number = 2) {
   const _priority = Number.isNaN(+priority) ? 0 : +priority;
   const _spRate = Number.isNaN(+spRate) ? 0 : +spRate;
   const _ratio = Number.isNaN(+ratio) ? 0 : +ratio;
 
-  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), 2); // 建设者分成
-  const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), 2); // 保证金分成
+  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), precision); // 建设者分成
+  const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), precision); // 保证金分成
   const inferior = U.accSub(100, _priority); // 建设方分成(劣后部分)
-  const ffiRate = +toFixed(U.accMul(inferior, 0.08), 2, 2); // FilFi协议费用（建设方 * 8%）
+  const ffiRate = +toFixed(U.accMul(inferior, 0.08), precision, 2); // FilFi协议费用（建设方 * 8%）
   const raiserRate = Math.max(U.accSub(inferior, _spRate, ffiRate), 0); // 主办人分成
 
   return {
@@ -123,16 +124,16 @@ export function calcRaiseDepost(target: number) {
 
 export function transformParams(data: API.Base) {
   const {
-    sealDays,
-    raiseDays,
-    sectorSize,
-    minRaiseRate,
-    sectorPeriod,
-    targetAmount,
-    ffiProtocolFee,
-    opsSecurityFund,
-    raiseSecurityFund,
-    opsSecurityFundRate,
+    sealDays = 0,
+    raiseDays = 0,
+    sectorSize = 0,
+    minRaiseRate = 0,
+    sectorPeriod = 0,
+    targetAmount = 0,
+    ffiProtocolFee = 0,
+    opsSecurityFund = 0,
+    raiseSecurityFund = 0,
+    opsSecurityFundRate = 0,
     ...props
   } = data;
   const _params = omit(props, ['amount', 'amountType']);
@@ -152,6 +153,16 @@ export function transformParams(data: API.Base) {
   };
 }
 
+export function transformInvestor(data: API.Base) {
+  const { rate = 0, amount = 0, ...props } = data;
+
+  return {
+    ...props,
+    pledge_amount: ethers.utils.parseEther(`${amount}`).toString(),
+    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
+  };
+}
+
 export function transformModel(data: API.Base) {
   const { sectorSize, targetAmount, raiseSecurityFund, opsSecurityFund, ffiProtocolFee, ...props } = data;
 
@@ -166,6 +177,16 @@ export function transformModel(data: API.Base) {
     opsSecurityFund: +ethers.utils.formatEther(opsSecurityFund),
     raiseSecurityFund: +ethers.utils.formatEther(raiseSecurityFund),
   };
+}
+
+export function transformInvestors(list: API.Equity[]) {
+  return list
+    .filter((item) => item.role === 2)
+    .map((i) => ({
+      address: i.address,
+      amount: toNumber(i.pledge_amount).toString(),
+      rate: toNumber(i.power_proportion, 5).toString(),
+    }));
 }
 
 /**

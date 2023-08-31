@@ -76,6 +76,26 @@ export function countSync(raising_id: string) {
   return A.get<{ seal_delay_sync_count: number }>('/raising-plan/v2/raise-sync-count', { raising_id });
 }
 
+export function getEquity(id: string, params: API.PagingParams) {
+  return A.get<API.PagingRes<API.Equity>>(`/raising-plan/v2/plan/get/raise-equity/${id}`, params);
+}
+
+export function addEquity(id: string, data: API.Base) {
+  return A.post(`/raising-plan/v2/add/raise-equity/${id}`, data);
+}
+
+export function updateEquity(id: string, data: API.Base) {
+  return A.post(`/raising-plan/v2/modify/raise-equity/${id}`, data);
+}
+
+export function getSPInfo(address: string) {
+  return A.get<{ list: (API.Provider & API.Base)[] }>('/service-provier/info', { address });
+}
+
+export function getSPNodes(address: string) {
+  return A.get<{ list: API.Base[] }>('/service-provier/sp-node-list', { address });
+}
+
 export function statChainInfo() {
   return A.get<API.Base>('/service-provier/get-filscan-stat-chain-info');
 }

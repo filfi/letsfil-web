@@ -1,13 +1,18 @@
+import { useMemo } from 'react';
 import classNames from 'classnames';
 
 import Avatar from '@/components/Avatar';
+import { isMountPlan } from '@/helpers/mount';
 import { formatSponsor } from '@/utils/format';
 import useSProvider from '@/hooks/useSProvider';
 import useRaiseState from '@/hooks/useRaiseState';
+import useMountState from '@/hooks/useMountState';
 
 const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { isStarted } = useMountState(data);
   const { isPending } = useRaiseState(data);
   const provider = useSProvider(data?.service_id);
+  const isMount = useMemo(() => isMountPlan(data), [data]);
 
   return (
     <>
@@ -26,10 +31,18 @@ const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 </div>
               </div>
               <p className="d-flex flex-column flex-lg-row align-items-start gap-1 mb-0">
-                <span className={classNames('badge', data && !isPending ? 'badge-success' : 'badge-danger')}>{data && !isPending ? '已签名' : '待签名'}</span>
-                <span className={classNames('badge', ['badge-danger', 'badge-success'][data?.raise_margin_status ?? 0])}>
-                  主办人保证金·{['待缴', '已付'][data?.raise_margin_status ?? 0]}
-                </span>
+                {isMount ? (
+                  <span className={classNames('badge', data && isStarted ? 'badge-success' : 'badge-danger')}>{data && isStarted ? '已签名' : '待签名'}</span>
+                ) : (
+                  <>
+                    <span className={classNames('badge', data && !isPending ? 'badge-success' : 'badge-danger')}>
+                      {data && !isPending ? '已签名' : '待签名'}
+                    </span>
+                    <span className={classNames('badge', ['badge-danger', 'badge-success'][data?.raise_margin_status ?? 0])}>
+                      主办人保证金·{['待缴', '已付'][data?.raise_margin_status ?? 0]}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -54,9 +67,12 @@ const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <span className={classNames('badge', ['badge-danger', 'badge-success'][data?.sp_sign_status ?? 0])}>
                   {['待签名', '已签名'][data?.sp_sign_status ?? 0]}
                 </span>
-                <span className={classNames('badge', ['badge-danger', 'badge-success'][data?.sp_margin_status ?? 0])}>
-                  运维保证金·{['待缴', '已付'][data?.sp_margin_status ?? 0]}
-                </span>
+
+                {!isMount && (
+                  <span className={classNames('badge', ['badge-danger', 'badge-success'][data?.sp_margin_status ?? 0])}>
+                    运维保证金·{['待缴', '已付'][data?.sp_margin_status ?? 0]}
+                  </span>
+                )}
               </p>
             </div>
           </div>

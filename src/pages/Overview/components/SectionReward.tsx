@@ -5,8 +5,10 @@ import { Pie, PieConfig } from '@ant-design/plots';
 // import { accDiv, accMul } from '@/utils/utils';
 // import useChainInfo from '@/hooks/useChainInfo';
 // import useRaiseBase from '@/hooks/useRaiseBase';
+import { isMountPlan } from '@/helpers/mount';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const config: PieConfig = {
   data: [],
@@ -41,11 +43,20 @@ const config: PieConfig = {
 const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   // const { perFil, perPledge } = useChainInfo();
   // const { period, target } = useRaiseBase(data);
+  const { isInvestor } = useDepositInvestor(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
   const { priorityRate, raiserRate, servicerRate, ffiRate } = useRaiseRate(data);
 
   // 预估节点激励 = 24小时产出效率 * 封装天数 * 总算力(质押目标 / 当前扇区质押量)
   // const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
+  const roles = useMemo(() => {
+    return [
+      { role: isRaiser, color: '#7FC4FD', name: '主办人' },
+      { role: isServicer, color: '#9FD3FD', name: '技术服务商' },
+      { role: isInvestor, color: '#2699FB', name: '建设者' },
+    ].filter((i) => i.role);
+  }, [isRaiser, isServicer, isInvestor]);
+  const isMount = useMemo(() => isMountPlan(data), [data]);
   const pieData = useMemo(
     () => [
       { name: '建设者权益', value: priorityRate },
@@ -133,31 +144,36 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-8 table-cell">实时分账随时提取</div>
           </div>
         </div>
-        <div className="col table-row">
-          <div className="row g-0">
-            <div className="col-4 table-cell th">封装Gas费</div>
-            <div className="col-8 table-cell">由主办人承担</div>
+        {isMount ? (
+          <div className="col table-row">
+            <div className="row g-0">
+              <div className="col-4 table-cell th">质押</div>
+              <div className="col-8 table-cell">100%建设者持有</div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="col table-row">
+            <div className="row g-0">
+              <div className="col-4 table-cell th">封装Gas费</div>
+              <div className="col-8 table-cell">由主办人承担</div>
+            </div>
+          </div>
+        )}
         <div className="col table-row">
           <div className="row g-0">
             <div className="col-4 table-cell th">我的角色</div>
             <div className="col-8 table-cell">
-              {isServicer ? (
-                <>
-                  <span className="d-inline-block p-1 rounded-circle" style={{ backgroundColor: '#9FD3FD' }}></span>
-                  <span className="ms-1">技术服务商</span>
-                </>
-              ) : isRaiser ? (
-                <>
-                  <span className="d-inline-block p-1 rounded-circle" style={{ backgroundColor: '#7FC4FD' }}></span>
-                  <span className="ms-1">主办人</span>
-                </>
+              {roles.length ? (
+                roles.map(({ color, name }, i) => (
+                  <>
+                    <span className="d-inline-block p-1 rounded-circle" style={{ backgroundColor: color }} />
+                    <span className="ms-1">{name}</span>
+
+                    {i < roles.length - 1 && <span className="mx-1">·</span>}
+                  </>
+                ))
               ) : (
-                <>
-                  <span className="d-inline-block p-1 rounded-circle" style={{ backgroundColor: '#2699FB' }}></span>
-                  <span className="ms-1">建设者</span>
-                </>
+                <span className="text-gray">-</span>
               )}
             </div>
           </div>

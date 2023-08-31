@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import { SCAN_URL } from '@/constants';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import { isMountPlan } from '@/helpers/mount';
 import useContract from '@/hooks/useContract';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
@@ -21,6 +22,7 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isRaiser, isSigned, isServicer } = useRaiseRole(data);
   const { isClosed, isFailed, isDestroyed, isPending } = useRaiseState(data);
 
+  const isMount = useMemo(() => isMountPlan(data), [data]);
   const address = useMemo(() => (data?.raise_address ? getAddress(data.raise_address) : ''), [data?.raise_address]);
   const canRestore = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isClosed, isFailed, isDestroyed, isServicer]);
 
@@ -40,6 +42,8 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   if (!data) return null;
 
+  const name = isMount ? '分配计划' : '分配计划';
+
   if (isPending) {
     return (
       <div className="card section-card">
@@ -48,8 +52,10 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <span className="bi bi-info-circle"></span>
           </div>
           <div className="flex-grow-1 ms-3">
-            <p className="mb-1 fw-600">节点计划还未部署到智能合约，需要主办人签名</p>
-            <p className="mb-0">新创建的节点计划可以修改，便于达成共识。主办人签名后，节点计划将永久部署在链上，不可更改。</p>
+            <p className="mb-1 fw-600">{name}还未部署到智能合约，需要主办人签名</p>
+            <p className="mb-0">
+              新创建的{name}可以修改，便于达成共识。主办人签名后，{name}将永久部署在链上，不可更改。
+            </p>
             {isRaiser && (
               <p className="mt-2 mb-0 fw-600">
                 <span className="me-2">在哪里签名？</span>
@@ -96,7 +102,7 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       )}
 
       <div>
-        <label className="form-label">此节点计划的智能合约地址</label>
+        <label className="form-label">此{name}的智能合约地址</label>
         <div className="input-group">
           <Input className="form-control" readOnly value={address} />
 
