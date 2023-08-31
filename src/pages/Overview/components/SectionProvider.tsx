@@ -3,10 +3,10 @@ import classNames from 'classnames';
 
 import Avatar from '@/components/Avatar';
 import { isMountPlan } from '@/helpers/mount';
-import { formatSponsor } from '@/utils/format';
 import useSProvider from '@/hooks/useSProvider';
 import useRaiseState from '@/hooks/useRaiseState';
 import useMountState from '@/hooks/useMountState';
+import { formatAddr, formatSponsor } from '@/utils/format';
 
 const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isStarted } = useMountState(data);
@@ -58,7 +58,7 @@ const SectionProvider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   <Avatar address={provider?.wallet_address} size={32} src={provider?.logo_url} />
                 </div>
                 <div className="flex-grow-1 ms-2">
-                  <p className="mb-0">{provider?.full_name}</p>
+                  <p className="mb-0">{provider?.full_name || formatAddr(provider?.wallet_address)}</p>
                   <p className="mb-0 text-gray d-lg-none">技术服务商</p>
                   {/* <p className="mb-0 text-gray-dark">{F.formatAddr(provider.wallet_address)}</p> */}
                 </div>
