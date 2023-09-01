@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { parseEther, parseUnits } from 'viem';
 import { Link } from '@umijs/max';
+import { parseEther, parseUnits } from 'viem';
 
 import * as H from '@/helpers/app';
 import MountBack from './MountBack';
@@ -287,11 +287,13 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </span>
             </p>
 
-            <p className="mt-3">
-              <Link className="btn btn-primary btn-lg w-100" to={`/assets/${data?.raising_id ?? ''}`}>
-                查看我的算力资产
-              </Link>
-            </p>
+            {(isRaiser || isServicer || isInvestor) && (
+              <p className="mt-3">
+                <Link className="btn btn-primary btn-lg w-100" to={`/assets/${data?.raising_id ?? ''}`}>
+                  查看我的算力资产
+                </Link>
+              </p>
+            )}
           </div>
         </div>
 
