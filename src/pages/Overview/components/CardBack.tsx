@@ -8,7 +8,8 @@ import useReleasedPledge from '@/hooks/useReleasedPledge';
 const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { released } = useReleasedPledge(data);
   const { isClosed, isFailed, isWorking } = useRaiseState(data);
-  const { amount, backAmount, backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
+  const { amount, /* backAmount, */ backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
+  const backAmount = 0;
 
   if (isInvestor && (isClosed || isFailed || isWorking) && released > 0) {
     return (
