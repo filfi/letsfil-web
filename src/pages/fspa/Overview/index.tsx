@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { isAddress } from 'viem';
 import classNames from 'classnames';
+import renderHTML from 'react-render-html';
 import { Image, Input, Result } from 'antd';
 import { Link, useParams } from '@umijs/max';
 import { useQuery } from '@tanstack/react-query';
@@ -53,6 +54,12 @@ export default function FSPAOverview() {
     }
   }, [provider?.social_accounts]);
   const showExtra = useMemo(() => provider?.idc_location || provider?.email || provider?.website || links, [provider, links]);
+
+  const renderIntro = () => {
+    const intro = `<div>${provider?.tech_introduction}</div>`;
+
+    return renderHTML(intro);
+  };
 
   if (!address || !isAddress(address)) {
     return (
@@ -181,6 +188,11 @@ export default function FSPAOverview() {
                       ))}
                     </div>
                   </LoadingView>
+                </div>
+
+                <div className="mb-5">
+                  <h4 className="mb-3 fs-18 fw-600">技术简介</h4>
+                  <div className="text-gray-dark">{renderIntro()}</div>
                 </div>
               </div>
               {showExtra && (
