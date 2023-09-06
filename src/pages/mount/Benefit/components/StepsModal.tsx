@@ -53,13 +53,13 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
               { required: true, message: '请输入' },
               {
                 validator: validators.Queue.create()
-                  .add(validators.createNumRangeValidator([0, 94.56521], '最小0%，最大94.56521%'))
+                  .add(validators.createNumRangeValidator([0, 94.56], '最小0%，最大94.56%'))
                   .add(validators.createDecimalValidator(5, '最多支持5位小数'))
                   .build(),
               },
             ]}
           >
-            <Input type="number" min={0} max={94.56521} placeholder="请输入" suffix="%" />
+            <Input type="number" min={0} max={94.56} placeholder="请输入" suffix="%" />
           </Form.Item>
         </div>
         <div className="ffi-item bg-primary-tertiary p-4 mb-0">
