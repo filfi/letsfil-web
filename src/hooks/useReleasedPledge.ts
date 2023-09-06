@@ -10,7 +10,7 @@ export default function useReleasedPledge(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getReleasedPledge = async () => {
-    if (data && (M.isMountPlan(data) ? M.isWorking(data) : R.isWorking(data))) {
+    if (data && (M.isMountPlan(data) ? !M.isInactive(data) : !R.isPending(data))) {
       return await contract.getReleasedPledge(data.raising_id);
     }
   };

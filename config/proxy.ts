@@ -27,12 +27,13 @@ const proxies: Options = {
   // staging - cb testnet
   staging: {
     '/api': {
-      target: 'https://job.mining.filfi.io',
+      // target: 'https://job.mining.filfi.io',
+      target: 'http://10.100.244.100:3000',
       secure: false,
       changeOrigin: true,
-      pathRewrite: {
-        '^/api': '',
-      },
+      // pathRewrite: {
+      //   '^/api': '',
+      // },
     },
     '/rpc': {
       target: 'https://api.hyperspace.node.glif.io',

@@ -165,12 +165,12 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-8 table-cell">
               {roles.length ? (
                 roles.map(({ color, name }, i) => (
-                  <>
+                  <span key={i}>
                     <span className="d-inline-block p-1 rounded-circle" style={{ backgroundColor: color }} />
                     <span className="ms-1">{name}</span>
 
                     {i < roles.length - 1 && <span className="mx-1">·</span>}
-                  </>
+                  </span>
                 ))
               ) : (
                 <span className="text-gray">-</span>
