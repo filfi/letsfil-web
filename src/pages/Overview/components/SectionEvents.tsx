@@ -69,6 +69,12 @@ function renderName(event: string) {
 //   return 0;
 // }
 
+function eventsFilter({ event_sign }: API.Event) {
+  if (`${event_sign}`.toLowerCase().includes('push')) return false;
+
+  return !['EUnstackFromInverstor'].includes(event_sign);
+}
+
 const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
 
@@ -82,7 +88,7 @@ const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const { data: list, page, noMore, loading, changePage } = useInfiniteLoad(service, { pageSize: 20, refreshDeps: [data?.raising_id] });
 
-  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')), [list]); //.sort(sortEvents), [list]);
+  const dataSource = useMemo(() => list?.filter(eventsFilter), [list]); //.sort(sortEvents), [list]);
 
   const handleMore = async () => {
     if (noMore) return;
