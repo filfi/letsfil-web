@@ -1,9 +1,16 @@
+import { useMemo } from 'react';
+
 // import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
-import { formatAmount } from '@/utils/format';
 import useRaiseState from '@/hooks/useRaiseState';
-import useDepositInvestor from '@/hooks/useDepositInvestor';
+import { formatAmount, toNumber } from '@/utils/format';
 import useReleasedPledge from '@/hooks/useReleasedPledge';
+import useDepositInvestor from '@/hooks/useDepositInvestor';
+
+const blocks = [
+  { id: '22517091689516974', released: '194654768813898639' },
+  { id: '23091121690598746', released: '181500663088116717336' },
+];
 
 const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { released } = useReleasedPledge(data);
@@ -11,7 +18,17 @@ const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { amount, /* backAmount, */ backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
   const backAmount = 0;
 
-  if (isInvestor && (isClosed || isFailed || isWorking) && released > 0) {
+  const backReleased = useMemo(() => {
+    const item = blocks.find((i) => i.id === data?.raising_id);
+
+    if (item && released <= toNumber(item.released)) {
+      return 0;
+    }
+
+    return backAmount;
+  }, [data, backAmount, released]);
+
+  if (isInvestor && (isClosed || isFailed || isWorking || released > 0)) {
     return (
       <>
         <div className="card section-card">
@@ -30,7 +47,7 @@ const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <p className="d-flex align-items-center gap-3 mb-2">
               <span>退回金额</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatAmount(backAmount)}</span>
+                <span className="fs-20 fw-600">{formatAmount(backReleased)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
               </span>
             </p>
@@ -43,7 +60,7 @@ const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </p>
           </div>
           <div className="card-footer">
-            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={unstaking} onClick={unStakeAction}>
+            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backReleased <= 0} loading={unstaking} onClick={unStakeAction}>
               取回
             </SpinBtn>
           </div>

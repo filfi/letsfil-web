@@ -2,10 +2,15 @@ import { useMemo } from 'react';
 
 import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
-import { formatAmount } from '@/utils/format';
 import useMountAssets from '@/hooks/useMountAssets';
+import { formatAmount, toNumber } from '@/utils/format';
 import useReleasedPledge from '@/hooks/useReleasedPledge';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
+
+const blocks = [
+  { id: '22517091689516974', released: '194654768813898639' },
+  { id: '23091121690598746', released: '181500663088116717336' },
+];
 
 const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { released } = useReleasedPledge(data);
@@ -13,8 +18,17 @@ const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { amount, record, backAmount, unstaking, unStakeAction } = useDepositInvestor(data);
 
   const withdraw = useMemo(() => Math.max(accSub(record, amount), 0), [amount, record]);
+  const backReleased = useMemo(() => {
+    const item = blocks.find((i) => i.id === data?.raising_id);
 
-  if (investor && released > 0) {
+    if (item && released <= toNumber(item.released)) {
+      return 0;
+    }
+
+    return backAmount;
+  }, [data, backAmount, released]);
+
+  if (data && investor && released > 0) {
     return (
       <>
         <div className="card section-card">
@@ -41,13 +55,13 @@ const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <p className="d-flex align-items-center gap-3 mb-2">
               <span>新增可取回质押</span>
               <span className="ms-auto">
-                <span className="fs-20 fw-600">{formatAmount(backAmount)}</span>
+                <span className="fs-20 fw-600">{formatAmount(backReleased)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
               </span>
             </p>
           </div>
           <div className="card-footer">
-            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backAmount <= 0} loading={unstaking} onClick={unStakeAction}>
+            <SpinBtn className="btn btn-primary btn-lg w-100" disabled={backReleased <= 0} loading={unstaking} onClick={unStakeAction}>
               取回质押
             </SpinBtn>
             <p className="mt-3 mb-2 text-gray-dark">扇区分批次到期，质押币逐步释放中</p>
