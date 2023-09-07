@@ -87,10 +87,10 @@ export function calcEachEarn(priority: number | string = 70, spRate: number | st
   const _spRate = Number.isNaN(+spRate) ? 0 : +spRate;
   const _ratio = Number.isNaN(+ratio) ? 0 : +ratio;
 
+  const inferior = U.accSub(100, _priority); // 建设方分成(劣后部分)
+  const ffiRate = +toFixed(U.accMul(inferior, 0.08), 2, 2); // FilFi协议费用（建设方 * 8%）
   const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), precision); // 建设者分成
   const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), precision); // 保证金分成
-  const inferior = U.accSub(100, _priority); // 建设方分成(劣后部分)
-  const ffiRate = +toFixed(U.accMul(inferior, 0.08), precision, 2); // FilFi协议费用（建设方 * 8%）
   const raiserRate = Math.max(U.accSub(inferior, _spRate, ffiRate), 0); // 主办人分成
 
   return {
