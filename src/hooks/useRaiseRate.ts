@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import * as U from '@/utils/utils';
 import { toFixed } from '@/utils/format';
-import { isMountPlan } from '@/helpers/mount';
+// import { isMountPlan } from '@/helpers/mount';
 
 /**
  * 节点计划的各方权益
@@ -11,7 +11,7 @@ import { isMountPlan } from '@/helpers/mount';
  */
 export default function useRaiseRate(data?: API.Plan | null) {
   // 精度
-  const precision = useMemo(() => (isMountPlan(data) ? 5 : 2), [data]);
+  const precision = 2; // useMemo(() => (isMountPlan(data) ? 5 : 2), [data]);
   // 优先部分
   const priorityRate = useMemo(() => U.accSub(data?.raiser_coin_share ?? 70, 0), [data?.raiser_coin_share]);
   // 劣后部分

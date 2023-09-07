@@ -22,7 +22,7 @@ export type StepsModalProps = DivProps & {
   onConfirm?: (vals: Values) => void;
 };
 
-const precision = 5;
+const precision = 2;
 
 const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.ForwardedRef<FormInstance>) => {
   const [form] = Form.useForm<Values>();
@@ -54,7 +54,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
               {
                 validator: validators.Queue.create()
                   .add(validators.createNumRangeValidator([0, 94.56], '最小0%，最大94.56%'))
-                  .add(validators.createDecimalValidator(5, '最多支持5位小数'))
+                  .add(validators.createDecimalValidator(2, `最多支持${precision}位小数`))
                   .build(),
               },
             ]}
@@ -134,7 +134,7 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
                     {
                       validator: validators.Queue.create()
                         .add(validators.createNumRangeValidator([5, opsMax], `最小5%，最大${opsMax}%`))
-                        .add(validators.createDecimalValidator(precision, '最多支持5位小数'))
+                        .add(validators.createDecimalValidator(precision, `最多支持${precision}位小数`))
                         .build(),
                     },
                   ]}
