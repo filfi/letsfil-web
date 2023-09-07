@@ -81,7 +81,7 @@ const defaultTreeData = {
 
 const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
   const data = Object.assign({}, defaultTreeData);
-  const vals = H.calcEachEarn(priority, spRate, ratio, 5);
+  const vals = H.calcEachEarn(priority, spRate, ratio);
 
   data.children[0].rate = vals.priority;
   // data.children[0].children[0].rate = vals.investRate;
@@ -479,7 +479,7 @@ export default function MountBenefit() {
                             validator: validators.Queue.create()
                               .add(validators.createGtValidator(0))
                               .add(validators.createNumRangeValidator([0, priority], `请输入0-${priority}之间的数`))
-                              .add(validators.createDecimalValidator(5, '最多支持5小数'))
+                              .add(validators.createDecimalValidator(2, '最多支持2小数'))
                               .build(),
                           },
                         ]}
