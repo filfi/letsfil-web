@@ -24,6 +24,7 @@ import { accDiv, accMul, accSub, isEqual } from '@/utils/utils';
 import { formatEther, formatNum, toFixed } from '@/utils/format';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
+import RaiserList, { RaiserListActions } from './components/RaiserList';
 
 type Values = ReturnType<typeof H.calcEachEarn>;
 
@@ -96,11 +97,13 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
 
 export default function CreateBenefit() {
   const modal = useRef<ModalAttrs>(null);
+  const raiser = useRef<RaiserListActions>(null);
 
   const [model, setModel] = useModel('stepform');
   const provider = useSProvider(model?.serviceId);
 
   const [form] = Form.useForm();
+  const raiseres = Form.useWatch('raiseres', form);
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
   const ratio = Form.useWatch('opsSecurityFundRate', form);
@@ -427,6 +430,24 @@ export default function CreateBenefit() {
               </div>
             </>
           )}
+        </div>
+
+        <div className="ffi-form">
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">主办人详细分配</h4>
+            <p className="mb-3 text-gray">主办人的权益可再分配给多个地址。点击+号增加地址。第一个地址为第一主办人，不可删减，其分配比例自动计算。</p>
+
+            <div className="d-flex flex-column flex-lg-row gap-3 mb-3">
+              <p className="mb-0">将 {priority}% 分配给以下地址</p>
+
+              <button className="btn btn-light btn-lg" type="button" disabled={raiseres && raiseres.length >= 10} onClick={() => raiser.current?.add()}>
+                <span className="bi bi-plug-lg"></span>
+                <span className="ms-2">添加主办人</span>
+              </button>
+            </div>
+
+            <RaiserList ref={raiser} form={form} name="raiseres" />
+          </div>
         </div>
 
         <div className="border-top my-4"></div>
