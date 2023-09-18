@@ -19,6 +19,28 @@ import SpinBtn from '@/components/SpinBtn';
 import AvatarInput from '@/components/AvatarInput';
 import ProviderSelect from '@/components/ProviderRadio';
 
+const minerIgnores = ['f02220886'];
+
+function checkMiner(data: API.MinerAsset, minerId: string) {
+  const {
+    has_plan,
+    fee_debt, // 欠款
+    miner_power, // 算力
+    initial_pledge, // 扇区质押
+    pre_commit_deposits, // 预存款
+  } = data;
+
+  // *有募集计划* 或 *有欠款* 或 *无算力* 或 *无质押* 均不可挂载
+  let isValid = has_plan === 0 && +fee_debt === 0 && +miner_power > 0 && toNumber(initial_pledge) > 0;
+
+  if (minerIgnores.includes(`${minerId}`.toLowerCase())) {
+    return isValid;
+  }
+
+  // *有预存款* 不可挂载
+  return isValid && +pre_commit_deposits === 0;
+}
+
 export default function MountStorage() {
   const [form] = Form.useForm();
   const [model, setModel] = useModel('stepform');
@@ -87,16 +109,7 @@ export default function MountStorage() {
       }
 
       if (res) {
-        const {
-          has_plan,
-          fee_debt, // 欠款
-          miner_power, // 算力
-          initial_pledge, // 扇区质押
-          pre_commit_deposits, // 预存款
-        } = res;
-
-        // *有募集计划* 或 *有欠款* 或 *有预存款* 或 *无算力* 或 *无质押* 均不可挂载
-        if (has_plan !== 0 || +fee_debt > 0 || +pre_commit_deposits > 0 || +miner_power <= 0 || toNumber(initial_pledge) <= 0) {
+        if (!checkMiner(res, value)) {
           return Promise.reject('节点不可用');
         }
 
