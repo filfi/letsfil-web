@@ -215,14 +215,14 @@ export default function CreateProgram() {
                 <div className="col">
                   <p className="mb-1 fw-500">开放时间</p>
 
-                  <Form.Item name="beginTime">
-                    <DateTimePicker />
+                  <Form.Item name="beginTime" rules={[{ required: true, message: '请选择开放时间' }]}>
+                    <DateTimePicker placeholder="开放时间" />
                   </Form.Item>
                 </div>
                 <div className="col">
                   <p className="mb-1 fw-500">持续时间</p>
 
-                  <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
+                  <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入持续时间' }, { validator: validators.integer }]}>
                     <Input type="number" placeholder="输入天数" />
                   </Form.Item>
                 </div>

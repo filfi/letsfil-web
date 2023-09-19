@@ -1,3 +1,4 @@
+import { parseEther } from 'viem';
 import { snakeCase } from 'lodash';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
@@ -22,9 +23,9 @@ import useLoadingify from '@/hooks/useLoadingify';
 import { createNumRangeValidator } from '@/utils/validators';
 import { accDiv, accMul, accSub, isEqual } from '@/utils/utils';
 import { formatEther, formatNum, toFixed } from '@/utils/format';
+import RaiserList, { RaiserListActions } from './components/RaiserList';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
-import RaiserList, { RaiserListActions } from './components/RaiserList';
 
 type Values = ReturnType<typeof H.calcEachEarn>;
 
@@ -103,7 +104,7 @@ export default function CreateBenefit() {
   const provider = useSProvider(model?.serviceId);
 
   const [form] = Form.useForm();
-  const raiseres = Form.useWatch('raiseres', form);
+  const _raiseres = Form.useWatch('raiseres', form);
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
   const ratio = Form.useWatch('opsSecurityFundRate', form);
@@ -113,6 +114,8 @@ export default function CreateBenefit() {
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
+  const raiseres = useMemo(() => (Array.isArray(_raiseres) ? _raiseres.filter(Boolean) : []), [_raiseres]);
+  const raserRate = useMemo(() => H.calcEachEarn(priority, spRate, ratio).raiserRate, [priority, spRate, ratio]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0), [powerRate]);
   const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);
 
@@ -149,21 +152,42 @@ export default function CreateBenefit() {
     if (!data) return;
 
     let raiseId = data.raisingId;
+    const isEdit = !!raiseId;
     const params = H.transformParams(data);
-    const body = Object.keys(params).reduce(
+    const { raiseres, raiseWhiteList, ...body } = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
         [snakeCase(key)]: params[key as keyof typeof params],
       }),
-      {},
+      {} as API.Base,
     );
 
+    if (!isEdit) {
+      raiseId = H.genRaiseID(data.minerId).toString();
+    }
+
+    if (Array.isArray(raiseWhiteList)) {
+      body.raiseWhiteList = JSON.stringify(
+        raiseWhiteList.map((item) => ({
+          ...item,
+          raise_id: raiseId,
+          can_pledge_amount: item.limit ? parseEther(item.limit).toString() : '0',
+        })),
+      );
+    }
+
+    const sponsors = raiseres.filter(Boolean).map((i: API.Base) => ({
+      ...H.transformRaiser(i),
+      raise_id: raiseId,
+    }));
+
     const [e] = await catchify(async () => {
-      if (raiseId) {
+      if (isEdit) {
         await A.update(raiseId, body);
+        await A.updateEquity(raiseId, { investor_equities: [], sponsor_equities: sponsors });
       } else {
-        raiseId = H.genRaiseID(data.minerId).toString();
         await A.add({ ...body, raising_id: raiseId });
+        await A.addEquity(raiseId, { investor_equities: [], sponsor_equities: sponsors });
       }
     })();
 
@@ -433,20 +457,25 @@ export default function CreateBenefit() {
         </div>
 
         <div className="ffi-form">
-          <div className="ffi-item border-bottom">
+          <div className="ffi-item">
             <h4 className="ffi-label">主办人详细分配</h4>
             <p className="mb-3 text-gray">主办人的权益可再分配给多个地址。点击+号增加地址。第一个地址为第一主办人，不可删减，其分配比例自动计算。</p>
 
-            <div className="d-flex flex-column flex-lg-row gap-3 mb-3">
-              <p className="mb-0">将 {priority}% 分配给以下地址</p>
+            <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3">
+              <p className="mb-0 me-sm-auto">将 {raserRate}% 分配给以下地址</p>
 
-              <button className="btn btn-light btn-lg" type="button" disabled={raiseres && raiseres.length >= 10} onClick={() => raiser.current?.add()}>
-                <span className="bi bi-plug-lg"></span>
+              <button className="btn btn-light btn-lg" type="button" disabled={raiseres.length >= 20} onClick={() => raiser.current?.add()}>
+                <span className="bi bi-plus-lg"></span>
                 <span className="ms-2">添加主办人</span>
               </button>
             </div>
 
             <RaiserList ref={raiser} form={form} name="raiseres" />
+
+            <p>
+              <span className="me-1">共 {raiseres.length} 地址</span>
+              <span className="text-danger">算力分配比例累加要精确等于{raserRate}%</span>
+            </p>
           </div>
         </div>
 

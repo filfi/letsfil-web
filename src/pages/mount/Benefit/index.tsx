@@ -5,7 +5,6 @@ import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
 import { useEffect, useMemo, useRef } from 'react';
-import { useDebounceEffect, useDynamicList } from 'ahooks';
 
 import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
@@ -13,7 +12,6 @@ import styles from './styles.less';
 import { catchify } from '@/utils/hackify';
 import useMinerInfo from '@/hooks/useMinerInfo';
 import useSProvider from '@/hooks/useSProvider';
-import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
 import { accAdd, accSub, isEqual, sleep } from '@/utils/utils';
 import { formatAmount, formatNum, toFixed, toNumber } from '@/utils/format';
@@ -22,6 +20,8 @@ import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
 import StepsModal from './components/StepsModal';
+import InvestorList from './components/InvestorList';
+import type { InvestorListActions, InvestorItem } from './components/InvestorList';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 
@@ -94,7 +94,7 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
   return data;
 };
 
-const getInitInvestors = (items?: API.Base[]) => {
+const getInitInvestors = (items?: InvestorItem[]) => {
   if (Array.isArray(items)) {
     return items.filter(Boolean);
   }
@@ -104,6 +104,7 @@ const getInitInvestors = (items?: API.Base[]) => {
 
 export default function MountBenefit() {
   const modal = useRef<ModalAttrs>(null);
+  const investor = useRef<InvestorListActions>(null);
 
   const [model, setModel] = useModel('stepform');
   const provider = useSProvider(model?.serviceId);
@@ -119,8 +120,7 @@ export default function MountBenefit() {
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
-
-  const { list: investors, getKey, ...handles } = useDynamicList<API.Base>(getInitInvestors(model?.investors));
+  const investors = useMemo(() => (Array.isArray(_investors) ? _investors.filter(Boolean) : []), [_investors]);
 
   useEffect(() => {
     form.setFieldValue('hisInitialPledge', parseEther(`${balance}`).toString());
@@ -130,25 +130,6 @@ export default function MountBenefit() {
       form.setFieldValue('opsSecurityFundAddr', provider?.wallet_address);
     }
   }, [provider]);
-
-  useDebounceEffect(
-    () => {
-      if (_investors) {
-        setModel((data) => {
-          if (data) {
-            return {
-              ...data,
-              investors: _investors.filter(Boolean),
-            };
-          }
-
-          return data;
-        });
-      }
-    },
-    [_investors],
-    { wait: 300 },
-  );
 
   function withWarning<P extends unknown[] = any>(handle: (...args: P) => void, isReset?: boolean) {
     return (...args: P) => {
@@ -176,12 +157,12 @@ export default function MountBenefit() {
       opServerShare: 5,
       raiserCoinShare: 70,
     });
-    handles.resetList(getInitInvestors());
+    investor.current?.reset(getInitInvestors());
   }, true);
 
   const handleEdit = withWarning(async () => {
     form.setFieldValue('investors', []);
-    handles.resetList(getInitInvestors());
+    investor.current?.reset(getInitInvestors());
 
     await sleep(300);
 
@@ -430,71 +411,13 @@ export default function MountBenefit() {
               将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(balance, 7)} FIL</span> 质押分配给以下地址
             </p>
             <p className="text-end">
-              <button
-                className="btn btn-light"
-                type="button"
-                disabled={investors.length >= 50}
-                onClick={() => handles.push({ address: '', amount: '', rate: '' })}
-              >
+              <button className="btn btn-light" type="button" disabled={investors.length >= 50} onClick={() => investor.current?.add()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-1">添加建设者</span>
               </button>
             </p>
 
-            <ul className="list-unstyled">
-              {investors.map((item, idx) => (
-                <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative">
-                  <Form.Item
-                    name={['investors', getKey(idx), 'address']}
-                    initialValue={item.address}
-                    rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: validators.address }]}
-                  >
-                    <Input placeholder="输入建设者地址" />
-                  </Form.Item>
-                  <div className="row g-0">
-                    <div className="col-12 col-md-8 pe-lg-3">
-                      <Form.Item
-                        name={['investors', getKey(idx), 'amount']}
-                        initialValue={item.amount}
-                        rules={[
-                          { required: true, message: '请输入持有质押数量' },
-                          {
-                            validator: validators.Queue.create()
-                              .add(validators.createNumRangeValidator([1, balance], `请输入1-${balance}之间的数`))
-                              .add(validators.createDecimalValidator(7, `最多支持7位小数`))
-                              .build(),
-                          },
-                        ]}
-                      >
-                        <Input placeholder="输入持有质押数量" suffix="FIL" />
-                      </Form.Item>
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <Form.Item
-                        name={['investors', getKey(idx), 'rate']}
-                        initialValue={item.rate}
-                        rules={[
-                          { required: true, message: '请输入算力分配比例' },
-                          {
-                            validator: validators.Queue.create()
-                              .add(validators.createGtValidator(0))
-                              .add(validators.createNumRangeValidator([0, priority], `请输入0-${priority}之间的数`))
-                              .add(validators.createDecimalValidator(2, '最多支持2小数'))
-                              .build(),
-                          },
-                        ]}
-                      >
-                        <Input placeholder="输入算力分配比例" suffix="%" />
-                      </Form.Item>
-                    </div>
-                  </div>
-
-                  {investors.length > 1 && (
-                    <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => handles.remove(idx)}></button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <InvestorList ref={investor} name="investors" max={balance} rateMax={priority} />
 
             <p>
               <span className="me-1">共 {investors.length} 地址</span>

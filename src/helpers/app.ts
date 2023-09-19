@@ -153,6 +153,15 @@ export function transformParams(data: API.Base) {
   };
 }
 
+export function transformRaiser(data: API.Base) {
+  const { rate = 0, ...props } = data;
+
+  return {
+    ...props,
+    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
+  };
+}
+
 export function transformInvestor(data: API.Base) {
   const { rate = 0, amount = 0, ...props } = data;
 

@@ -1,12 +1,13 @@
 import { useModel } from '@umijs/max';
 import { Form, FormInstance, Input } from 'antd';
+import { forwardRef, useImperativeHandle } from 'react';
 import { useDebounceEffect, useDynamicList } from 'ahooks';
 
 import * as V from '@/utils/validators';
-import { forwardRef, useImperativeHandle } from 'react';
 
 export type RaiserItem = {
   address: string;
+  disabled?: boolean;
   rate: string;
 };
 
@@ -82,13 +83,13 @@ const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, Raiser
   return (
     <ul className="list-unstyled">
       {list.map((item, idx) => (
-        <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative">
+        <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative" style={{ paddingBottom: '0.01px' }}>
           <Form.Item
             name={[name, getKey(idx), 'address']}
             initialValue={item.address}
             rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.address }]}
           >
-            <Input placeholder="输入主办人地址" />
+            <Input disabled={item.disabled} placeholder="输入主办人地址" />
           </Form.Item>
           <Form.Item
             name={[name, getKey(idx), 'rate']}
@@ -104,7 +105,7 @@ const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, Raiser
               },
             ]}
           >
-            <Input placeholder="输入算力分配比例" suffix="%" />
+            <Input disabled={item.disabled} placeholder="输入算力分配比例" suffix="%" />
           </Form.Item>
 
           {list.length > 1 && <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => actions.remove(idx)}></button>}
