@@ -15,8 +15,7 @@ const blocks = [
 const CardBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { released } = useReleasedPledge(data);
   const { isClosed, isFailed, isWorking } = useRaiseState(data);
-  const { amount, /* backAmount, */ backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
-  const backAmount = 0;
+  const { amount, backAmount, backInterest, unstaking, isInvestor, unStakeAction } = useDepositInvestor(data);
 
   const backReleased = useMemo(() => {
     const item = blocks.find((i) => i.id === data?.raising_id);
