@@ -36,7 +36,7 @@ export default function useRaiseActions(data?: API.Plan | null) {
     }
 
     Object.assign(model, {
-      raiseres: H.transformRaiseres(res.list),
+      sponsors: H.transformSponsors(res.list),
       investors: H.transformInvestors(res.list),
       raiseWhiteList: H.transformWhiteList(model.raiseWhiteList),
     });

@@ -24,7 +24,7 @@ import useLoadingify from '@/hooks/useLoadingify';
 import { createNumRangeValidator } from '@/utils/validators';
 import { formatEther, formatNum, toFixed } from '@/utils/format';
 import { accAdd, accDiv, accMul, accSub, isEqual } from '@/utils/utils';
-import RaiserList, { RaiserListActions } from './components/RaiserList';
+import SponsorList, { SponsorListActions } from './components/SponsorList';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 
@@ -99,13 +99,13 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
 
 export default function CreateBenefit() {
   const modal = useRef<ModalAttrs>(null);
-  const raiser = useRef<RaiserListActions>(null);
+  const sponsor = useRef<SponsorListActions>(null);
 
   const [form] = Form.useForm();
   const [model, setModel] = useModel('stepform');
   const provider = useSProvider(model?.serviceId);
 
-  const _raiseres = Form.useWatch('raiseres', form);
+  const _sponsors = Form.useWatch('sponsors', form);
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
   const ratio = Form.useWatch('opsSecurityFundRate', form);
@@ -115,7 +115,7 @@ export default function CreateBenefit() {
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
-  const raiseres = useMemo(() => (Array.isArray(_raiseres) ? _raiseres.filter(Boolean) : []), [_raiseres]);
+  const sponsors = useMemo(() => (Array.isArray(_sponsors) ? _sponsors.filter(Boolean) : []), [_sponsors]);
   const raserRate = useMemo(() => H.calcEachEarn(priority, spRate, ratio).raiserRate, [priority, spRate, ratio]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0), [powerRate]);
   const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);
@@ -127,6 +127,7 @@ export default function CreateBenefit() {
 
     form.setFieldValue('opsSecurityFund', Number.isNaN(amount) ? 0 : toFixed(amount, 2, 2));
   }, [model?.targetAmount, pieVal]);
+
   useUpdateEffect(() => {
     if (provider) {
       form.setFieldValue('opsSecurityFundAddr', provider?.wallet_address);
@@ -147,20 +148,47 @@ export default function CreateBenefit() {
     });
   };
 
-  const handleValidate = (data: API.Base) => {
-    const { raiseres } = data;
+  const showErr = (content: string, title: string) => {
+    Dialog.error({ content, title });
+  };
 
-    if (Array.isArray(raiseres)) {
-      const sum = raiseres.reduce((s, c) => {
-        if (!c) return s;
-        return accAdd(s, c.rate);
-      }, 0);
+  const validateSponsors = (list: API.Base) => {
+    const title = '主办人详细分配';
 
-      if (Number(raserRate) !== sum) {
-        Dialog.alert(`主办人算力分配比例累加要精确等于${raserRate}%`);
-        return false;
-      }
+    if (!Array.isArray(list)) {
+      showErr('请添加主办人', title);
+      return false;
     }
+
+    const items = list.filter(Boolean).reduce((prev, { address }) => {
+      const key = `${address}`.toLowerCase();
+
+      if (prev[key]) {
+        prev[key] += 1;
+      } else {
+        prev[key] = 1;
+      }
+
+      return prev;
+    }, {});
+
+    if (Object.keys(items).some((key) => items[key] > 1)) {
+      showErr('主办人钱包地址不能重复', title);
+      return false;
+    }
+
+    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(raserRate)) {
+      showErr(`主办人算力分配比例累加要精确等于${raserRate}%`, title);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleValidate = (data: API.Base) => {
+    const { sponsors } = data;
+
+    if (!validateSponsors(sponsors)) return false;
 
     return true;
   };
@@ -173,7 +201,7 @@ export default function CreateBenefit() {
     let raiseId = data.raisingId;
     const isEdit = !!raiseId;
     const { beginTime, raiseWhiteList, ...params }: API.Base = H.transformParams(data);
-    const { raiseres, ...body } = Object.keys(params).reduce(
+    const { sponsors, ...body } = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
         [snakeCase(key)]: params[key as keyof typeof params],
@@ -199,7 +227,7 @@ export default function CreateBenefit() {
       );
     }
 
-    const sponsors = raiseres.filter(Boolean).map((i: API.Base) => ({
+    const _sponsors = sponsors.filter(Boolean).map((i: API.Base) => ({
       ...H.transformRaiser(i),
       raise_id: raiseId,
     }));
@@ -207,10 +235,10 @@ export default function CreateBenefit() {
     const [e] = await catchify(async () => {
       if (isEdit) {
         await A.update(raiseId, body);
-        await A.updateEquity(raiseId, { investor_equities: [], sponsor_equities: sponsors });
+        await A.updateEquity(raiseId, { investor_equities: [], sponsor_equities: _sponsors });
       } else {
         await A.add({ ...body, raising_id: raiseId });
-        await A.addEquity(raiseId, { investor_equities: [], sponsor_equities: sponsors });
+        await A.addEquity(raiseId, { investor_equities: [], sponsor_equities: _sponsors });
       }
     })();
 
@@ -489,16 +517,16 @@ export default function CreateBenefit() {
             <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3">
               <p className="mb-0 me-sm-auto">将 {raserRate}% 分配给以下地址</p>
 
-              <button className="btn btn-light btn-lg" type="button" disabled={raiseres.length >= 20} onClick={() => raiser.current?.add()}>
+              <button className="btn btn-light btn-lg" type="button" disabled={sponsors.length >= 20} onClick={() => sponsor.current?.add()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-2">添加主办人</span>
               </button>
             </div>
 
-            <RaiserList ref={raiser} form={form} max={raserRate} name="raiseres" />
+            <SponsorList ref={sponsor} form={form} max={raserRate} name="sponsors" />
 
             <p>
-              <span className="me-1">共 {raiseres.length} 地址</span>
+              <span className="me-1">共 {sponsors.length} 地址</span>
               <span className="text-danger">算力分配比例累加要精确等于{raserRate}%</span>
             </p>
           </div>

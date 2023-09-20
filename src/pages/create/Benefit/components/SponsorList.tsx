@@ -7,25 +7,25 @@ import * as V from '@/utils/validators';
 import useAccount from '@/hooks/useAccount';
 import { accAdd, accSub, isEqual } from '@/utils/utils';
 
-export type RaiserItem = {
+export type SponsorItem = {
   address: string;
   rate: string;
 };
 
-export type RaiserListProps = {
+export type SponsorListProps = {
   max?: number;
   name?: string;
   form?: FormInstance<any>;
   precision?: number;
 };
 
-export type RaiserListActions = {
+export type SponsorListActions = {
   add: () => void;
-  reset: (items?: RaiserItem[]) => void;
-  insert: (index: number, item?: RaiserItem) => void;
+  reset: (items?: SponsorItem[]) => void;
+  insert: (index: number, item?: SponsorItem) => void;
 };
 
-function normalizeList(val?: RaiserItem[]) {
+function normalizeList(val?: SponsorItem[]) {
   if (Array.isArray(val)) {
     const items = val?.filter(Boolean);
 
@@ -47,7 +47,10 @@ const RateInput: React.FC<RateInputProps> = ({ onChange, onChangeText, ...props 
   return <Input {...props} onChange={handleChange} />;
 };
 
-const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, RaiserListProps> = ({ max = 100, precision = 2, name = 'raiseList', form }, ref) => {
+const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, SponsorListProps> = (
+  { max = 100, precision = 2, name = 'sponsors', form },
+  ref,
+) => {
   const { address } = useAccount();
 
   const items = Form.useWatch(name, form);
@@ -74,17 +77,17 @@ const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, Raiser
     actions.push({ address: '', rate: '' });
   };
 
-  const handleInsert = (index: number, item?: RaiserItem) => {
+  const handleInsert = (index: number, item?: SponsorItem) => {
     actions.insert(index, { address: '', rate: '', ...item });
   };
 
-  const handleReset = (items?: RaiserItem[]) => {
+  const handleReset = (items?: SponsorItem[]) => {
     actions.resetList(items ?? []);
   };
 
   const { run: handleRateChange } = useDebounceFn(
     () => {
-      const list: RaiserItem[] = form?.getFieldValue(name) ?? [];
+      const list: SponsorItem[] = form?.getFieldValue(name) ?? [];
 
       const sum = list.filter(Boolean).reduce((sum, item) => {
         if (isRaiser(item.address)) return sum;
@@ -169,6 +172,6 @@ const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, Raiser
   );
 };
 
-const RaiserList = forwardRef(RaiserListRender);
+const SponsorList = forwardRef(SponsorListRender);
 
-export default RaiserList;
+export default SponsorList;

@@ -20,7 +20,9 @@ import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
 import StepsModal from './components/StepsModal';
+import SponsorList from './components/SponsorList';
 import InvestorList from './components/InvestorList';
+import type { SponsorListActions } from './components/SponsorList';
 import type { InvestorListActions, InvestorItem } from './components/InvestorList';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
@@ -104,12 +106,14 @@ const getInitInvestors = (items?: InvestorItem[]) => {
 
 export default function MountBenefit() {
   const modal = useRef<ModalAttrs>(null);
+  const sponsor = useRef<SponsorListActions>(null);
   const investor = useRef<InvestorListActions>(null);
 
   const [model, setModel] = useModel('stepform');
   const provider = useSProvider(model?.serviceId);
 
   const [form] = Form.useForm();
+  const _sponsors = Form.useWatch('sponsors', form);
   const _investors = Form.useWatch('investors', form);
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
@@ -120,7 +124,9 @@ export default function MountBenefit() {
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
+  const sponsors = useMemo(() => (Array.isArray(_sponsors) ? _sponsors.filter(Boolean) : []), [_sponsors]);
   const investors = useMemo(() => (Array.isArray(_investors) ? _investors.filter(Boolean) : []), [_investors]);
+  const raserRate = useMemo(() => H.calcEachEarn(priority, spRate, ratio).raiserRate, [priority, spRate, ratio]);
 
   useEffect(() => {
     form.setFieldValue('hisInitialPledge', parseEther(`${balance}`).toString());
@@ -178,13 +184,15 @@ export default function MountBenefit() {
     });
   };
 
-  const showErr = (content: string, title = '建设者详细分配') => {
+  const showErr = (content: string, title: string) => {
     Dialog.error({ content, title });
   };
 
-  const validateInvestors = (list: API.Base[]) => {
+  const validateSponsors = (list: API.Base) => {
+    const title = '主办人详细分配';
+
     if (!Array.isArray(list)) {
-      showErr('请添加建设者');
+      showErr('请添加主办人', title);
       return false;
     }
 
@@ -201,31 +209,70 @@ export default function MountBenefit() {
     }, {});
 
     if (Object.keys(items).some((key) => items[key] > 1)) {
-      showErr('钱包地址不能重复');
+      showErr('主办人钱包地址不能重复', title);
       return false;
     }
 
-    if (list.filter(Boolean).reduce((sum, { amount }) => accAdd(sum, amount), 0) !== balance) {
-      showErr(`建设者持有质押币累加必须精确等于${formatAmount(balance, 7)}`);
-      return false;
-    }
-
-    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== +priority) {
-      showErr(`建设者分成比例累加必须精确等于${priority}%`);
+    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(raserRate)) {
+      showErr(`主办人算力分配比例累加要精确等于${raserRate}%`, title);
       return false;
     }
 
     return true;
   };
 
-  const [loading, handleSubmit] = useLoadingify(async (vals?: API.Base) => {
-    const data = vals ?? model;
+  const validateInvestors = (list: API.Base[]) => {
+    const title = '建设者详细分配';
 
-    if (!data || !validateInvestors(data.investors)) return;
+    if (!Array.isArray(list)) {
+      showErr('请添加建设者', title);
+      return false;
+    }
 
+    const items = list.filter(Boolean).reduce((prev, { address }) => {
+      const key = `${address}`.toLowerCase();
+
+      if (prev[key]) {
+        prev[key] += 1;
+      } else {
+        prev[key] = 1;
+      }
+
+      return prev;
+    }, {});
+
+    if (Object.keys(items).some((key) => items[key] > 1)) {
+      showErr('建设者钱包地址不能重复', title);
+      return false;
+    }
+
+    if (list.filter(Boolean).reduce((sum, { amount }) => accAdd(sum, amount), 0) !== balance) {
+      showErr(`建设者持有质押币累加必须精确等于${formatAmount(balance, 7)}`, title);
+      return false;
+    }
+
+    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(priority)) {
+      showErr(`建设者分成比例累加必须精确等于${priority}%`, title);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleValidate = (data: API.Base) => {
+    const { sponsors, investors } = data;
+
+    if (!validateSponsors(sponsors)) return false;
+
+    if (!validateInvestors(investors)) return false;
+
+    return true;
+  };
+
+  const [loading, handleSubmit] = useLoadingify(async (data: API.Base) => {
     let raiseId = data.raisingId;
     const params = H.transformParams(data);
-    const { investors, ...body } = Object.keys(params).reduce(
+    const { sponsors, investors, ...body } = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
         [snakeCase(key)]: params[key as keyof typeof params],
@@ -233,26 +280,24 @@ export default function MountBenefit() {
       {} as API.Base,
     );
 
+    const _sponsors = sponsors.filter(Boolean).map((i: API.Base) => ({
+      ...H.transformRaiser(i),
+      raise_id: raiseId,
+    }));
+
+    const _investors = investors.filter(Boolean).map((i: API.Base) => ({
+      ...H.transformInvestor(i),
+      raise_id: raiseId,
+    }));
+
     const [e] = await catchify(async () => {
       if (raiseId) {
         await A.update(raiseId, body);
-        await A.updateEquity(raiseId, {
-          sponsor_equities: [],
-          investor_equities: investors.filter(Boolean).map((i: API.Base) => ({
-            ...H.transformInvestor(i),
-            raise_id: raiseId,
-          })),
-        });
+        await A.updateEquity(raiseId, { sponsor_equities: _sponsors, investor_equities: _investors });
       } else {
         raiseId = H.genRaiseID(data.minerId).toString();
         await A.add({ ...body, raising_id: raiseId });
-        await A.addEquity(raiseId, {
-          sponsor_equities: [],
-          investor_equities: investors.filter(Boolean).map((i: API.Base) => ({
-            ...H.transformInvestor(i),
-            raise_id: raiseId,
-          })),
-        });
+        await A.addEquity(raiseId, { sponsor_equities: _sponsors, investor_equities: _investors });
       }
     })();
 
@@ -277,7 +322,9 @@ export default function MountBenefit() {
       return;
     }
 
-    handleSubmit(data);
+    if (handleValidate(data)) {
+      handleSubmit(data);
+    }
   };
 
   const renderTreeContent = (data: any) => {
@@ -354,7 +401,7 @@ export default function MountBenefit() {
             </div>
           </div>
 
-          <div className="ffi-item">
+          <div className="ffi-item border-bottom">
             <h4 className="ffi-label">分配方案</h4>
             <p className="text-gray">
               主办人根据历史节点原来的利益结构，在FilFi协议上定义分配方案。（算力分配即收益分配，质押的分配已在前一项确定）
@@ -398,6 +445,29 @@ export default function MountBenefit() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="ffi-form border-bottom">
+            <div className="ffi-item">
+              <h4 className="ffi-label">主办人详细分配</h4>
+              <p className="mb-3 text-gray">主办人的权益可再分配给多个地址。点击+号增加地址。第一个地址为第一主办人，不可删减，其分配比例自动计算。</p>
+
+              <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3">
+                <p className="mb-0 me-sm-auto">将 {raserRate}% 分配给以下地址</p>
+
+                <button className="btn btn-light btn-lg" type="button" disabled={sponsors.length >= 20} onClick={() => sponsor.current?.add()}>
+                  <span className="bi bi-plus-lg"></span>
+                  <span className="ms-2">添加主办人</span>
+                </button>
+              </div>
+
+              <SponsorList ref={sponsor} form={form} max={raserRate} name="sponsors" />
+
+              <p>
+                <span className="me-1">共 {sponsors.length} 地址</span>
+                <span className="text-danger">算力分配比例累加要精确等于{raserRate}%</span>
+              </p>
             </div>
           </div>
 

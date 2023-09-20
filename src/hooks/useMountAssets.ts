@@ -12,7 +12,7 @@ export default function useMountAssets(data?: API.Plan | null) {
   const { address } = useAccount();
   const { isWorking } = useMountState(data);
   const { data: pack } = usePackInfo(data);
-  const { data: investors } = useRaiseEquity(data);
+  const { investors } = useRaiseEquity(data);
   const { servicerRate, raiserRate } = useRaiseRate(data);
 
   const power = useMemo(() => +((isWorking ? pack?.total_power : data?.his_power) ?? 0), [data, pack, isWorking]);

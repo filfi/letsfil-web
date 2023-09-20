@@ -494,6 +494,86 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 创建节点计划（做个主办人）
+   */
+  const createPlan = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 定时启动时间
+       */
+      startTime: BigNumberish,
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, startTime);
+      return await writeContract('createPlan', [raise, node, sponsors, sponsorRates, startTime], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
+
+  /**
+   * 创建定向计划
+   */
+  const createPrivatePlan = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 建设者地址列表
+       */
+      investors: string[],
+      /**
+       * 建设者最大质押列表
+       */
+      investorPledges: BigNumberish[],
+      /**
+       * 定时启动时间
+       */
+      startTime: BigNumberish,
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, startTime);
+      return await writeContract('createPrivatePlan', [raise, node, sponsors, sponsorRates, investors, investorPledges, startTime], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
+
+  /**
    * 挂载历史节点
    */
   const mountNode = toastify(
@@ -625,9 +705,11 @@ export default function useContract(address?: API.Address) {
     mountNode,
     unStaking,
     startPreSeal,
+    createPlan,
     closeRaisePlan,
     startRaisePlan,
     createRaisePlan,
+    createPrivatePlan,
     depositOpsFund,
     addDepositOpsFund,
     depositRaiserFund,

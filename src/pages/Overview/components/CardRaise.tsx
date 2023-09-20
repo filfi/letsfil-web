@@ -6,6 +6,7 @@ import * as H from '@/helpers/app';
 import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import { isTargeted } from '@/helpers/raise';
 import useContract from '@/hooks/useContract';
 import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
@@ -13,6 +14,7 @@ import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import useProcessing from '@/hooks/useProcessing';
+import useRaiseEquity from '@/hooks/useRaiseEquity';
 import { day2sec, toF4Address } from '@/utils/utils';
 import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
@@ -30,13 +32,14 @@ const formatTime = (mill: number) => {
 const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
   const { data: pack } = usePackInfo(data);
+  const contract = useContract(data?.raise_address);
   const { power, pledge } = useAssetPack(data, pack);
+  const { sponsors } = useRaiseEquity(data);
   const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
   const [, formatted] = useCountDown({ targetDate });
-  const { createRaisePlan, servicerSign, startRaisePlan } = useContract(data?.raise_address);
 
   const seconds = useMemo(() => {
     if (!data) return 0;
@@ -78,21 +81,34 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     const raise = H.transformRaiseInfo(data);
     const node = H.transformNodeInfo(data);
-    const extra = H.transformExtraInfo(data);
+    // const extra = H.transformExtraInfo(data);
 
-    await createRaisePlan(raise, node, extra);
+    const _sponsors = sponsors?.map((i) => i.address) ?? [];
+    const sponsorsRates = sponsors?.map((i) => i.power_proportion) ?? [];
+
+    // 定向计划
+    if (isTargeted(data)) {
+      const whitelist = H.parseWhitelist(data);
+      const _investors = whitelist.map((i) => i.address);
+      const investorPledges = whitelist.map((i) => i.can_pledge_amount);
+
+      await contract.createPrivatePlan(raise, node, _sponsors, sponsorsRates, _investors, investorPledges, data.begin_time);
+      return;
+    }
+
+    await contract.createPlan(raise, node, _sponsors, sponsorsRates, data.begin_time);
   });
 
   const [starting, handleStart] = useProcessify(async () => {
     if (!data) return;
 
-    await startRaisePlan(data.raising_id);
+    await contract.startRaisePlan(data.raising_id);
   });
 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
 
-    await servicerSign();
+    await contract.servicerSign();
   });
 
   const renderAction = () => {

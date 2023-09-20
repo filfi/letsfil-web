@@ -188,7 +188,7 @@ export function transformModel(data: API.Base) {
   };
 }
 
-export function transformRaiseres(list: API.Equity[]) {
+export function transformSponsors(list: API.Equity[]) {
   return list
     .filter((item) => item.role === 1)
     .map((i) => ({
@@ -291,4 +291,23 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
     spOldRewardShare: 0,
     sponsorOldRewardShare: 0,
   };
+}
+
+/**
+ * 定向计划投资者
+ * @param data
+ */
+export function parseWhitelist<D extends { raise_white_list: string }>(
+  data: D,
+): {
+  address: string;
+  can_pledge_amount: string;
+}[] {
+  if (data.raise_white_list) {
+    try {
+      return JSON.parse(data.raise_white_list);
+    } catch (e) {}
+  }
+
+  return [];
 }
