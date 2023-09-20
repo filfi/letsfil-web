@@ -143,7 +143,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { data: pack } = usePackInfo(data);
   const provider = useSProvider(data?.service_id);
   const { actual, isProcessed } = useRaiseBase(data);
-  const { investRate, opsRatio } = useRaiseRate(data);
+  const { investRate, opsRate } = useRaiseRate(data);
   const { fines, interest } = useDepositServicer(data);
   const { opsAmount, progress } = useAssetPack(data, pack);
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
@@ -292,7 +292,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </div>
           {renderExtra()}
           <p className="mb-0">
-            <span>与建设者等比投入，保持占比{opsRatio}%。做为劣后质押封装到扇区，当发生网络罚金时，该保证金首先承担。</span>
+            <span>与建设者等比投入，保持占比{opsRate}%。做为劣后质押封装到扇区，当发生网络罚金时，该保证金首先承担。</span>
             {/* <a className="text-underline" href="#sp-deposit" data-bs-toggle="modal">
               更多信息
             </a> */}
@@ -321,11 +321,11 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   prefix={
                     <div className="d-flex algin-items-center">
                       <Avatar address={provider?.wallet_address} src={provider?.logo_url} size={24} />
-                      <span className="ms-2">{provider?.short_name}</span>
+                      <span className="ms-2">{provider?.short_name || F.formatAddr(provider?.wallet_address)}</span>
                     </div>
                   }
                   suffix="%"
-                  value={opsRatio}
+                  value={opsRate}
                 />
               </div>
               <div className="col ffi-item">
