@@ -33,9 +33,9 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
   const { data: pack } = usePackInfo(data);
   const contract = useContract(data?.raise_address);
-  const { power, pledge } = useAssetPack(data, pack);
   const { sponsors } = useRaiseEquity(data);
-  const { isRaiser, isServicer, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
+  const { power, pledge } = useAssetPack(data, pack);
+  const { isRaiser, isServicer, isSigned } = useRaiseRole(data);
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
@@ -99,12 +99,6 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     await contract.createPlan(raise, node, _sponsors, sponsorsRates, data.begin_time);
   });
 
-  const [starting, handleStart] = useProcessify(async () => {
-    if (!data) return;
-
-    await contract.startRaisePlan(data.raising_id);
-  });
-
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
 
@@ -112,9 +106,10 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   });
 
   const renderAction = () => {
-    // 准备中
-    if (isPending) {
-      if (isRaiser) {
+    // 主办人
+    if (isRaiser) {
+      // 准备中
+      if (isPending) {
         return (
           <>
             <div>
@@ -123,81 +118,41 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </SpinBtn>
             </div>
 
-            <p className="mb-0">与相关方共识后签名，链上部署后不可修改，但您依然可以创建新的节点计划。</p>
+            <p className="mb-0">与相关方共识后签名，链上部署后不可修改。到达开放时间仍未签名，计划自动关闭。</p>
           </>
         );
       }
+    }
 
-      if (isServicer) {
+    // 技术服务商
+    if (isServicer) {
+      // 准备中 | 待开始
+      if (isPending || (isWaiting && !isSigned)) {
         return (
           <>
             <div>
-              <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
+              <SpinBtn
+                className="btn btn-primary btn-lg w-100"
+                loading={signing}
+                disabled={isPending || processing}
+                data-bs-toggle="modal"
+                data-bs-target="#signer-confirm"
+              >
                 技术服务商签名
               </SpinBtn>
             </div>
 
-            <p className="mb-0">等待主办人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
+            {isPending ? (
+              <p className="mb-0">等待主办人签名上链，上链后不可更改。之后技术服务商的签名按钮可用。</p>
+            ) : (
+              <p className="mb-0">签名即同意计划的内容，到达开放时间仍未签名，计划自动关闭。</p>
+            )}
           </>
         );
       }
-
-      return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
     }
 
-    // 待开始
-    if (isWaiting) {
-      // 主办人
-      if (isRaiser) {
-        // 可启动（主办人保证金已缴 且 运维保证金已缴纳 且 已签名）
-        const disabled = !(isRaisePaid && isOpsPaid && isSigned);
-        return (
-          <>
-            <div>
-              <SpinBtn className="btn btn-primary btn-lg w-100" disabled={disabled} loading={starting} onClick={handleStart}>
-                启动质押
-              </SpinBtn>
-            </div>
-
-            <p className="mb-0">查看页面上的红色提示，满足启动条件后启动按钮生效。启动后建设者即可存入FIL。</p>
-          </>
-        );
-      }
-
-      // 技术服务商
-      if (isServicer && !isSigned) {
-        return (
-          <>
-            <div>
-              <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={processing} data-bs-toggle="modal" data-bs-target="#signer-confirm">
-                技术服务商签名
-              </SpinBtn>
-            </div>
-
-            <p className="mb-0">签名即同意节点计划中的约定，您签名后节点计划方可启动。</p>
-          </>
-        );
-      }
-
-      return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
-    }
-
-    // 待封装
-    // if (isWaitSeal && isRaiser) {
-    //   return (
-    //     <>
-    //       <div>
-    //         <SpinBtn className="btn btn-danger btn-lg w-100" loading={sealing} onClick={handleSeal}>
-    //           提前启动封装
-    //         </SpinBtn>
-    //       </div>
-
-    //       <p className="mb-0">质押已成功，可提前开始封装。质押金额将转入节点并开始计时。协调技术服务商，避免封装期违约。</p>
-    //     </>
-    //   );
-    // }
-
-    return null;
+    return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
   };
 
   // 封装结束
@@ -255,7 +210,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   ? '质押成功'
                   : isSealing || isDelayed
                   ? '封装截止时间'
-                  : '质押时间'}
+                  : '开放时间'}
               </h4>
               <div className="ms-auto">
                 {isFailed ? <span className="badge badge-danger">质押未成功</span> : isSuccess ? <span className="badge badge-success">质押成功</span> : null}
@@ -267,8 +222,10 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </div>
             </div>
 
-            {isSuccess && (isDelayed || isSealing) ? (
-              <p className="countdown-text">{formatUnixDate(data.end_seal_time)}</p>
+            {isPending || isWaiting ? (
+              <p className="countdown-text mb-0">{formatUnixDate(data.begin_time)}</p>
+            ) : isSuccess && (isDelayed || isSealing) ? (
+              <p className="countdown-text mb-0">{formatUnixDate(data.end_seal_time)}</p>
             ) : (
               <div
                 className={classNames('d-flex justify-content-between text-center lh-1', {

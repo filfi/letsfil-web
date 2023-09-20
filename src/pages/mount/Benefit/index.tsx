@@ -15,7 +15,6 @@ import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import { accAdd, accSub, isEqual, sleep } from '@/utils/utils';
 import { formatAmount, formatNum, toFixed, toNumber } from '@/utils/format';
-// import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
@@ -131,6 +130,7 @@ export default function MountBenefit() {
   useEffect(() => {
     form.setFieldValue('hisInitialPledge', parseEther(`${balance}`).toString());
   }, [balance]);
+
   useEffect(() => {
     if (provider) {
       form.setFieldValue('opsSecurityFundAddr', provider?.wallet_address);
@@ -271,6 +271,7 @@ export default function MountBenefit() {
 
   const [loading, handleSubmit] = useLoadingify(async (data: API.Base) => {
     let raiseId = data.raisingId;
+    const isEdit = !!raiseId;
     const params = H.transformParams(data);
     const { sponsors, investors, ...body } = Object.keys(params).reduce(
       (d, key) => ({
@@ -279,6 +280,10 @@ export default function MountBenefit() {
       }),
       {} as API.Base,
     );
+
+    if (!isEdit) {
+      raiseId = H.genRaiseID(data.minerId).toString();
+    }
 
     const _sponsors = sponsors.filter(Boolean).map((i: API.Base) => ({
       ...H.transformRaiser(i),
@@ -290,8 +295,10 @@ export default function MountBenefit() {
       raise_id: raiseId,
     }));
 
+    delete body.raiseWhiteList;
+
     const [e] = await catchify(async () => {
-      if (raiseId) {
+      if (isEdit) {
         await A.update(raiseId, body);
         await A.updateEquity(raiseId, { sponsor_equities: _sponsors, investor_equities: _investors });
       } else {

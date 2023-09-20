@@ -204,46 +204,43 @@ export default function CreateProgram() {
             </div>
           </div>
 
-          {isTargeted ? (
-            <div className="ffi-item border-bottom">
-              <h4 className="ffi-label">时间计划</h4>
-              <p className="text-gray">到达开放时间，如果满足所有开放条件计划自动启动，如果不满足开放条件计划自动关闭。</p>
+          <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">时间计划</h4>
+            <p className="text-gray">到达开放时间，如果满足所有开放条件计划自动启动，如果不满足开放条件计划自动关闭。</p>
 
-              <div className="row row-cols-1 row-cols-lg-2 g-3">
-                <div className="col">
-                  <p className="mb-1 fw-500">开放时间</p>
+            <div className="row row-cols-1 row-cols-lg-2 g-3">
+              <div className="col">
+                <p className="mb-1 fw-500">开放时间</p>
 
-                  <Form.Item name="beginTime" rules={[{ required: true, message: '请选择开放时间' }]}>
-                    <DateTimePicker placeholder="开放时间" />
-                  </Form.Item>
-                </div>
-                <div className="col">
-                  <p className="mb-1 fw-500">持续时间</p>
+                <Form.Item name="beginTime" rules={[{ required: true, message: '请选择开放时间' }]}>
+                  <DateTimePicker placeholder="开放时间" />
+                </Form.Item>
+              </div>
+              <div className="col">
+                <p className="mb-1 fw-500">持续时间</p>
 
-                  <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入持续时间' }, { validator: validators.integer }]}>
-                    <Input type="number" placeholder="输入天数" />
-                  </Form.Item>
-                </div>
+                <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入持续时间' }, { validator: validators.integer }]}>
+                  <Input type="number" placeholder="输入天数" />
+                </Form.Item>
               </div>
             </div>
-          ) : (
-            <div className="ffi-item border-bottom">
-              <h4 className="ffi-label">质押时间</h4>
-              <p className="text-gray">节点计划保持开放的持续时间。启动时间由主办人决定。</p>
+          </div>
+          {/* <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">质押时间</h4>
+            <p className="text-gray">节点计划保持开放的持续时间。启动时间由主办人决定。</p>
 
-              <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
-                <DaysInput
-                  options={[
-                    { label: '7天', value: 7 },
-                    { label: '15天', value: 15 },
-                    { label: '20天', value: 20 },
-                    { label: '30天', value: 30 },
-                    { label: '45天', value: 45 },
-                  ]}
-                />
-              </Form.Item>
-            </div>
-          )}
+            <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
+              <DaysInput
+                options={[
+                  { label: '7天', value: 7 },
+                  { label: '15天', value: 15 },
+                  { label: '20天', value: 20 },
+                  { label: '30天', value: 30 },
+                  { label: '45天', value: 45 },
+                ]}
+              />
+            </Form.Item>
+          </div> */}
 
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">封装时间</h4>
