@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { parseEther } from 'viem';
 import { snakeCase } from 'lodash';
 import { Form, Input } from 'antd';
@@ -21,8 +22,8 @@ import StepsModal from './components/StepsModal';
 import AssetsModal from './components/AssetsModal';
 import useLoadingify from '@/hooks/useLoadingify';
 import { createNumRangeValidator } from '@/utils/validators';
-import { accDiv, accMul, accSub, isEqual } from '@/utils/utils';
 import { formatEther, formatNum, toFixed } from '@/utils/format';
+import { accAdd, accDiv, accMul, accSub, isEqual } from '@/utils/utils';
 import RaiserList, { RaiserListActions } from './components/RaiserList';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
@@ -100,10 +101,10 @@ export default function CreateBenefit() {
   const modal = useRef<ModalAttrs>(null);
   const raiser = useRef<RaiserListActions>(null);
 
+  const [form] = Form.useForm();
   const [model, setModel] = useModel('stepform');
   const provider = useSProvider(model?.serviceId);
 
-  const [form] = Form.useForm();
   const _raiseres = Form.useWatch('raiseres', form);
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
@@ -146,6 +147,24 @@ export default function CreateBenefit() {
     });
   };
 
+  const handleValidate = (data: API.Base) => {
+    const { raiseres } = data;
+
+    if (Array.isArray(raiseres)) {
+      const sum = raiseres.reduce((s, c) => {
+        if (!c) return s;
+        return accAdd(s, c.rate);
+      }, 0);
+
+      if (Number(raserRate) !== sum) {
+        Dialog.alert(`主办人算力分配比例累加要精确等于${raserRate}%`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const [loading, handleSubmit] = useLoadingify(async (vals?: API.Base) => {
     const data = vals ?? model;
 
@@ -153,8 +172,8 @@ export default function CreateBenefit() {
 
     let raiseId = data.raisingId;
     const isEdit = !!raiseId;
-    const params = H.transformParams(data);
-    const { raiseres, raiseWhiteList, ...body } = Object.keys(params).reduce(
+    const { beginTime, raiseWhiteList, ...params }: API.Base = H.transformParams(data);
+    const { raiseres, ...body } = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
         [snakeCase(key)]: params[key as keyof typeof params],
@@ -166,12 +185,16 @@ export default function CreateBenefit() {
       raiseId = H.genRaiseID(data.minerId).toString();
     }
 
+    if (beginTime) {
+      body.begin_time = dayjs(beginTime).unix();
+    }
+
     if (Array.isArray(raiseWhiteList)) {
-      body.raiseWhiteList = JSON.stringify(
-        raiseWhiteList.map((item) => ({
-          ...item,
+      body.raise_white_list = JSON.stringify(
+        raiseWhiteList.map(({ address, limit }) => ({
+          address,
           raise_id: raiseId,
-          can_pledge_amount: item.limit ? parseEther(item.limit).toString() : '0',
+          can_pledge_amount: limit ? parseEther(limit).toString() : '0',
         })),
       );
     }
@@ -212,7 +235,9 @@ export default function CreateBenefit() {
       return;
     }
 
-    handleSubmit(data);
+    if (handleValidate(data)) {
+      handleSubmit(data);
+    }
   };
 
   const renderTreeContent = (data: any) => {
@@ -470,7 +495,7 @@ export default function CreateBenefit() {
               </button>
             </div>
 
-            <RaiserList ref={raiser} form={form} name="raiseres" />
+            <RaiserList ref={raiser} form={form} max={raserRate} name="raiseres" />
 
             <p>
               <span className="me-1">共 {raiseres.length} 地址</span>

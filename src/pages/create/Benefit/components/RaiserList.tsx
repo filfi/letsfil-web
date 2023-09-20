@@ -1,13 +1,14 @@
 import { useModel } from '@umijs/max';
-import { Form, FormInstance, Input } from 'antd';
-import { forwardRef, useImperativeHandle } from 'react';
-import { useDebounceEffect, useDynamicList } from 'ahooks';
+import { Form, type FormInstance, Input, type InputProps } from 'antd';
+import { useDebounceEffect, useDebounceFn, useDynamicList } from 'ahooks';
+import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
 
 import * as V from '@/utils/validators';
+import useAccount from '@/hooks/useAccount';
+import { accAdd, accSub, isEqual } from '@/utils/utils';
 
 export type RaiserItem = {
   address: string;
-  disabled?: boolean;
   rate: string;
 };
 
@@ -31,13 +32,43 @@ function normalizeList(val?: RaiserItem[]) {
     if (items.length) return items;
   }
 
-  return [{ address: '', rate: '' }];
+  return [];
 }
 
+type RateInputProps = InputProps & {
+  onChangeText?: (val: string) => void;
+};
+const RateInput: React.FC<RateInputProps> = ({ onChange, onChangeText, ...props }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange?.(e);
+    onChangeText?.(e.target.value);
+  };
+
+  return <Input {...props} onChange={handleChange} />;
+};
+
 const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, RaiserListProps> = ({ max = 100, precision = 2, name = 'raiseList', form }, ref) => {
+  const { address } = useAccount();
+
   const items = Form.useWatch(name, form);
   const [model, setModel] = useModel('stepform');
+
+  const raiser = useMemo(() => model?.raiser ?? address, [model?.raiser, address]);
   const { list, getKey, ...actions } = useDynamicList(normalizeList(model?.[name]));
+
+  const isRaiser = (addr: string) => isEqual(addr, raiser);
+
+  useEffect(() => {
+    if (raiser) {
+      const item = list.find((i) => isRaiser(i.address));
+
+      if (!item) {
+        const items = [{ address: raiser, rate: max }, ...list];
+        actions.insert(0, { address: raiser, rate: '' });
+        form?.setFieldValue(name, items);
+      }
+    }
+  }, [raiser, list]);
 
   const handleAdd = () => {
     actions.push({ address: '', rate: '' });
@@ -50,6 +81,32 @@ const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, Raiser
   const handleReset = (items?: RaiserItem[]) => {
     actions.resetList(items ?? []);
   };
+
+  const { run: handleRateChange } = useDebounceFn(
+    () => {
+      const list: RaiserItem[] = form?.getFieldValue(name) ?? [];
+
+      const sum = list.filter(Boolean).reduce((sum, item) => {
+        if (isRaiser(item.address)) return sum;
+
+        const val = Number(item.rate);
+
+        if (!Number.isNaN(val)) {
+          return accAdd(sum, val);
+        }
+
+        return sum;
+      }, 0);
+
+      const sub = Math.max(accSub(max, sum), 0);
+      const index = list.findIndex((i) => isRaiser(i.address));
+      const newItem = { address: raiser, rate: `${sub}` };
+
+      actions.replace(index, newItem);
+      form?.setFieldValue([name, getKey(index)], newItem);
+    },
+    { wait: 200 },
+  );
 
   useImperativeHandle(
     ref,
@@ -84,16 +141,11 @@ const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, Raiser
     <ul className="list-unstyled">
       {list.map((item, idx) => (
         <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative" style={{ paddingBottom: '0.01px' }}>
-          <Form.Item
-            name={[name, getKey(idx), 'address']}
-            initialValue={item.address}
-            rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.address }]}
-          >
-            <Input disabled={item.disabled} placeholder="输入主办人地址" />
+          <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.address }]}>
+            <Input disabled={isRaiser(item.address)} placeholder="输入主办人地址" />
           </Form.Item>
           <Form.Item
             name={[name, getKey(idx), 'rate']}
-            initialValue={item.rate}
             rules={[
               { required: true, message: '请输入算力分配比例' },
               {
@@ -105,10 +157,12 @@ const RaiserListRender: React.ForwardRefRenderFunction<RaiserListActions, Raiser
               },
             ]}
           >
-            <Input disabled={item.disabled} placeholder="输入算力分配比例" suffix="%" />
+            <RateInput type="number" disabled={isRaiser(item.address)} placeholder="输入算力分配比例" suffix="%" onChangeText={handleRateChange} />
           </Form.Item>
 
-          {list.length > 1 && <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => actions.remove(idx)}></button>}
+          {list.length > 1 && !isRaiser(item.address) && (
+            <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => actions.remove(idx)}></button>
+          )}
         </li>
       ))}
     </ul>

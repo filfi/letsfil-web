@@ -188,6 +188,15 @@ export function transformModel(data: API.Base) {
   };
 }
 
+export function transformRaiseres(list: API.Equity[]) {
+  return list
+    .filter((item) => item.role === 1)
+    .map((i) => ({
+      address: i.address,
+      rate: toNumber(i.power_proportion, 5).toString(),
+    }));
+}
+
 export function transformInvestors(list: API.Equity[]) {
   return list
     .filter((item) => item.role === 2)
@@ -196,6 +205,21 @@ export function transformInvestors(list: API.Equity[]) {
       amount: toNumber(i.pledge_amount).toString(),
       rate: toNumber(i.power_proportion, 5).toString(),
     }));
+}
+
+export function transformWhiteList(val: string) {
+  try {
+    const items = JSON.parse(val);
+
+    if (Array.isArray(items)) {
+      return items.map((i: API.Base) => ({
+        address: i.address,
+        limit: toNumber(i.can_pledge_amount).toString(),
+      }));
+    }
+  } catch (e) {}
+
+  return [];
 }
 
 /**

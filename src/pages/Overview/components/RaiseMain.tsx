@@ -16,6 +16,8 @@ import SectionDeposit from './SectionDeposit';
 import SectionContract from './SectionContract';
 import SectionTimeline from './SectionTimeline';
 import SectionProvider from './SectionProvider';
+import SectionWhitelist from './SectionWhitelist';
+import { isTargeted } from '@/helpers/raise';
 import useRaiseState from '@/hooks/useRaiseState';
 
 const RaiseMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
@@ -45,6 +47,16 @@ const RaiseMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           )}
         </div>
       </section>
+      {isTargeted(data) && (
+        <section id="seals" className="section">
+          <div className="section-header">
+            <h4 className="section-title">定向地址</h4>
+            <p className="mb-0">可参与定向计划的钱包地址和参与情况。</p>
+          </div>
+
+          <SectionWhitelist data={data} />
+        </section>
+      )}
       {(isSealing || isDelayed || isFinished) && (
         <section id="seals" className="section">
           <div className="section-header">

@@ -298,6 +298,17 @@ svg[fill='currentColor'] path {
     appearance: none;
   }
 
+  input.ant-input:disabled,
+  input.ant-input-disabled,
+  .ant-input-affix-wrapper > input.ant-input:disabled,
+  .ant-input-affix-wrapper > input.ant-input-disabled {
+    background-color: var(--bs-gray-100);
+
+    ~ .ant-input-suffix {
+      background-color: var(--bs-gray-100);
+    }
+  }
+
   .avatar-input.ant-upload-wrapper.ant-upload-picture-circle-wrapper .ant-upload.ant-upload-select {
     width: 64px;
     height: 64px;

@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useDynamicList } from 'ahooks';
 import { Button, Col, Form, Input, Row, Space } from 'antd';
 import type { FormItemProps } from 'antd';
@@ -23,10 +22,8 @@ function normalizeList(val?: WhiteItem[]) {
   return [{ address: '', limit: '' }];
 }
 
-const WhiteList: React.FC<WhiteListProps> = ({ name, value }) => {
+const WhiteList: React.FC<WhiteListProps> = ({ value, name = 'whitelist' }) => {
   const { list, getKey, ...actions } = useDynamicList<WhiteItem>(normalizeList(value));
-
-  const fieldName = useMemo(() => name ?? 'whiteList', [name]);
 
   const handleAdd = (idx: number) => {
     actions.insert(idx, { address: '', limit: '' });
@@ -41,13 +38,13 @@ const WhiteList: React.FC<WhiteListProps> = ({ name, value }) => {
       {list.map((item, idx) => (
         <Row key={getKey(idx)} gutter={16}>
           <Col flex={1}>
-            <Form.Item name={[fieldName, getKey(idx), 'address']} rules={[{ required: true, message: '请输入钱包地址' }, { validator: V.address }]}>
+            <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入钱包地址' }, { validator: V.address }]}>
               <Input placeholder="输入钱包地址" />
             </Form.Item>
           </Col>
           <Col span={24} sm={18} lg={5}>
             <Form.Item
-              name={[fieldName, getKey(idx), 'limit']}
+              name={[name, getKey(idx), 'limit']}
               rules={[
                 {
                   validator: V.Queue.create().add(V.number).add(V.createGtValidator(0, '必须大于0')).build(),

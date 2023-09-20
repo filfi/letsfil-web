@@ -5,14 +5,14 @@ import usePackInfo from './usePackInfo';
 import { toNumber } from '@/utils/format';
 import useRaiseRate from './useRaiseRate';
 import useMountState from './useMountState';
-import useMountEquity from './useMountEquity';
+import useRaiseEquity from './useRaiseEquity';
 import { accDiv, accMul, isEqual } from '@/utils/utils';
 
 export default function useMountAssets(data?: API.Plan | null) {
   const { address } = useAccount();
   const { isWorking } = useMountState(data);
   const { data: pack } = usePackInfo(data);
-  const { data: investors } = useMountEquity(data);
+  const { data: investors } = useRaiseEquity(data);
   const { servicerRate, raiserRate } = useRaiseRate(data);
 
   const power = useMemo(() => +((isWorking ? pack?.total_power : data?.his_power) ?? 0), [data, pack, isWorking]);

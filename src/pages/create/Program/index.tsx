@@ -148,9 +148,7 @@ export default function CreateProgram() {
                   号删除。“定向计划”不会在公开列表中显示。主办人需要在私域中将计划的页面链接发给建设者。
                 </p>
 
-                <Form.Item name="raiseWhiteList">
-                  <WhiteList />
-                </Form.Item>
+                <WhiteList name="raiseWhiteList" />
               </>
             )}
           </div>
