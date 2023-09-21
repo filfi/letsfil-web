@@ -9,6 +9,7 @@ import { accAdd, accSub, isEqual } from '@/utils/utils';
 
 export type SponsorItem = {
   address: string;
+  level?: number;
   rate: string;
 };
 
@@ -21,6 +22,7 @@ export type SponsorListProps = {
 
 export type SponsorListActions = {
   add: () => void;
+  sub: (index: number) => void;
   reset: (items?: SponsorItem[]) => void;
   insert: (index: number, item?: SponsorItem) => void;
 };
@@ -66,19 +68,23 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
       const item = list.find((i) => isRaiser(i.address));
 
       if (!item) {
-        const items = [{ address: raiser, rate: max }, ...list];
-        actions.insert(0, { address: raiser, rate: '' });
+        const items = [{ address: raiser, level: 1, rate: max }, ...list];
+        actions.insert(0, { address: raiser, level: 1, rate: '' });
         form?.setFieldValue(name, items);
       }
     }
   }, [raiser, list]);
 
   const handleAdd = () => {
-    actions.push({ address: '', rate: '' });
+    actions.push({ address: '', level: 2, rate: '' });
+  };
+
+  const handleSub = (index: number) => {
+    actions.remove(index);
   };
 
   const handleInsert = (index: number, item?: SponsorItem) => {
-    actions.insert(index, { address: '', rate: '', ...item });
+    actions.insert(index, { address: '', level: 2, rate: '', ...item });
   };
 
   const handleReset = (items?: SponsorItem[]) => {
@@ -103,7 +109,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
 
       const sub = Math.max(accSub(max, sum), 0);
       const index = list.findIndex((i) => isRaiser(i.address));
-      const newItem = { address: raiser, rate: `${sub}` };
+      const newItem = { address: raiser, level: 1, rate: `${sub}` };
 
       actions.replace(index, newItem);
       form?.setFieldValue([name, getKey(index)], newItem);
@@ -115,6 +121,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
     ref,
     () => ({
       add: handleAdd,
+      sub: handleSub,
       reset: handleReset,
       insert: handleInsert,
     }),
@@ -128,7 +135,11 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
           if (data) {
             return {
               ...data,
-              [name]: items.filter(Boolean),
+              [name]: items.filter(Boolean).map(({ address = '', level = 2, rate = '' }) => ({
+                address,
+                level,
+                rate,
+              })),
             };
           }
 
@@ -144,11 +155,19 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
     <ul className="list-unstyled">
       {list.map((item, idx) => (
         <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative" style={{ paddingBottom: '0.01px' }}>
-          <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.address }]}>
+          <Form.Item
+            name={[name, getKey(idx), 'address']}
+            initialValue={item.address}
+            rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.address }]}
+          >
             <Input disabled={isRaiser(item.address)} placeholder="输入主办人地址" />
+          </Form.Item>
+          <Form.Item hidden name={[name, getKey(idx), 'level']} initialValue={item.level}>
+            <Input />
           </Form.Item>
           <Form.Item
             name={[name, getKey(idx), 'rate']}
+            initialValue={item.rate}
             rules={[
               { required: true, message: '请输入算力分配比例' },
               {

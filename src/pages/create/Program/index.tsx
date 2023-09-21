@@ -4,7 +4,7 @@ import { Form, Input, Skeleton } from 'antd';
 import { history, useModel } from '@umijs/max';
 
 import { isMainnet } from '@/constants';
-// import Modal from '@/components/Modal';
+import Dialog from '@/components/Dialog';
 import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
 import WhiteList from './components/WhiteList';
@@ -108,7 +108,41 @@ export default function CreateProgram() {
     }
   }, [amount, amountType, perPledge]);
 
+  const showErr = (content: string, title: string) => {
+    Dialog.error({ content, title });
+  };
+
+  const validateWhitelist = (list: API.Base[]) => {
+    const title = '定向计划';
+
+    if (!Array.isArray(list)) {
+      showErr('请指定可参与计划的钱包地址和每个地址的质押限额', title);
+      return false;
+    }
+
+    const items = list.filter(Boolean).reduce((prev, { address }) => {
+      const key = `${address}`.toLowerCase();
+
+      if (prev[key]) {
+        prev[key] += 1;
+      } else {
+        prev[key] = 1;
+      }
+
+      return prev;
+    }, {});
+
+    if (Object.keys(items).some((key) => items[key] > 1)) {
+      showErr('可参与计划的钱包地址不能重复', title);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = (vals: API.Base) => {
+    if (isTargeted && !validateWhitelist(vals.raiseWhiteList)) return;
+
     setData((d) => ({ ...d, ...vals }));
 
     history.push('/create/benefit');
@@ -148,7 +182,7 @@ export default function CreateProgram() {
                   号删除。“定向计划”不会在公开列表中显示。主办人需要在私域中将计划的页面链接发给建设者。
                 </p>
 
-                <WhiteList name="raiseWhiteList" />
+                <WhiteList form={form} name="raiseWhiteList" />
               </>
             )}
           </div>

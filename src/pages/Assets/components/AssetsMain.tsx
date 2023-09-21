@@ -54,9 +54,9 @@ const MountAssets: React.FC<{
   plan?: API.Plan | null;
   role: number;
 }> = ({ plan, role }) => {
-  const { investorPledge, investorPower, raiserPower, servicerPower } = useMountAssets(plan);
+  const { investorPledge, investorPower, sponsorPower, servicerPower } = useMountAssets(plan);
 
-  const power = useMemo(() => [investorPower, raiserPower, servicerPower, 0][role] ?? 0, [role, investorPower, raiserPower, servicerPower]);
+  const power = useMemo(() => [investorPower, sponsorPower, servicerPower, 0][role] ?? 0, [role, investorPower, sponsorPower, servicerPower]);
   const pledge = useMemo(() => [investorPledge, 0, 0, 0][role] ?? 0, [role, investorPledge]);
 
   return (

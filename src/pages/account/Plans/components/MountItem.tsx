@@ -8,7 +8,6 @@ import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useMountState from '@/hooks/useMountState';
@@ -54,12 +53,10 @@ const MountItem: React.FC<{
   const provider = useSProvider(data.service_id);
   const { data: counter } = useInvestorCount(data);
   const { isInactive, isActive, isWorking } = useMountState(data);
-  const { isRaiser, isServicer, isSigned: isSpSigned } = useRaiseRole(data);
 
-  const { power, pledge, investor, raiserPower, investorPower, servicerPower, investorPledge } = useMountAssets(data);
+  const { power, pledge, investor, sponsor, servicer, sponsorPower, investorPower, servicerPower, investorPledge } = useMountAssets(data);
 
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
-  const isInvestorSigned = useMemo(() => investor?.sign_status === 1, [investor]);
 
   const [deleting, deleteAction] = useLoadingify(async () => {
     await onDelete?.();
@@ -69,7 +66,7 @@ const MountItem: React.FC<{
 
   const renderAssets = () => {
     if (!isClosed(data) && isWorking) {
-      const power = isRaiser ? raiserPower : isServicer ? servicerPower : investorPower;
+      const power = sponsor ? sponsorPower : servicer ? servicerPower : investorPower;
 
       return (
         <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
@@ -100,7 +97,7 @@ const MountItem: React.FC<{
     }
 
     if (isInactive) {
-      if (role === 1 && isRaiser) {
+      if (role === 1 && sponsor && sponsor.role_level === 1) {
         return <span className="badge">可编辑</span>;
       }
 
@@ -108,11 +105,13 @@ const MountItem: React.FC<{
     }
 
     if (isActive) {
+      const isSponsor = !!sponsor;
+      const isServicer = !!servicer;
       const isInvestor = !!investor;
       const steps = [
-        { role: isRaiser, signed: true },
-        { role: isServicer, signed: isSpSigned },
-        { role: isInvestor, signed: isInvestorSigned },
+        { role: isSponsor, signed: Boolean(sponsor?.sign_status) },
+        { role: isServicer, signed: Boolean(servicer?.sign_status) },
+        { role: isInvestor, signed: Boolean(investor?.sign_status) },
       ];
 
       const step = steps[(role ?? 0) - 1];
@@ -132,7 +131,7 @@ const MountItem: React.FC<{
   };
 
   const renderActions = () => {
-    if (isRaiser && isInactive) {
+    if (isInactive && sponsor && sponsor.role_level === 1) {
       return (
         <>
           <SpinBtn

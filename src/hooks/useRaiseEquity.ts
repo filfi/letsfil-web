@@ -5,6 +5,7 @@ import { getEquity } from '@/apis/raise';
 
 const isSponsor = <D extends { role: number }>(data: D) => data.role === 1;
 const isInvestor = <D extends { role: number }>(data: D) => data.role === 2;
+const isServicers = <D extends { role: number }>(data: D) => data.role === 3;
 
 export default function useRaiseEquity(plan?: API.Plan | null) {
   const queryFn = async () => {
@@ -18,11 +19,13 @@ export default function useRaiseEquity(plan?: API.Plan | null) {
 
   const sponsors = useMemo(() => data?.filter(isSponsor), [data]);
   const investors = useMemo(() => data?.filter(isInvestor), [data]);
+  const servicers = useMemo(() => data?.filter(isServicers), [data]);
 
   return {
     data,
     sponsors,
     investors,
+    servicers,
     isError,
     isLoading,
     refetch,

@@ -1,43 +1,18 @@
 import { Table } from 'antd';
 import { useMemo } from 'react';
-import { parseUnits } from 'viem';
 import classNames from 'classnames';
 import type { TableColumnsType } from 'antd';
 
 import { accDiv, accMul } from '@/utils/utils';
-import useRaiseRole from '@/hooks/useRaiseRole';
-import useMountState from '@/hooks/useMountState';
 import useMountAssets from '@/hooks/useMountAssets';
 import { formatAddr, formatAmount, formatPower, toNumber } from '@/utils/format';
 
 const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isStarted } = useMountState(data);
-  const { raiser, servicer, isSigned: isSPSigned } = useRaiseRole(data);
-  const { investors, raiserRate, servicerRate, power } = useMountAssets(data);
+  const { sponsors, servicers, investors, power } = useMountAssets(data);
 
-  const items = useMemo(() => {
-    return [
-      {
-        ID: -1,
-        role: 1,
-        address: raiser,
-        pledge_amount: '0',
-        power_proportion: parseUnits(`${raiserRate}`, 5).toString(),
-        sign_status: isStarted ? 1 : 0,
-      },
-      {
-        ID: 0,
-        role: 3,
-        address: servicer,
-        pledge_amount: '0',
-        power_proportion: parseUnits(`${servicerRate}`, 5).toString(),
-        sign_status: isSPSigned ? 1 : 0,
-      },
-      ...(investors ?? []),
-    ];
-  }, [investors, raiser, servicer, raiserRate, servicerRate, isStarted, isSPSigned]);
+  const items = useMemo(() => [...(sponsors ?? []), ...(servicers ?? []), ...(investors ?? [])], [sponsors, servicers, investors]);
 
-  const columns: TableColumnsType<API.Base> = [
+  const columns: TableColumnsType<API.Equity> = [
     {
       title: '地址',
       dataIndex: 'address',
@@ -66,7 +41,13 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     {
       title: '持有质押',
       dataIndex: 'pledge_amount',
-      render: (v) => <span>{formatAmount(toNumber(v))} FIL</span>,
+      render: (v, row) => {
+        if (row.role === 1) {
+          return <span className="text-gray">-</span>;
+        }
+
+        return <span>{formatAmount(toNumber(v))} FIL</span>;
+      },
     },
     {
       title: '签名',
@@ -77,7 +58,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <Table<API.Base> rowKey="ID" columns={columns} dataSource={items} pagination={false} />
+      <Table<API.Equity> rowKey="ID" columns={columns} dataSource={items} pagination={false} />
     </>
   );
 };

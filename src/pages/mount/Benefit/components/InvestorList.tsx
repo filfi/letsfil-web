@@ -23,6 +23,7 @@ export type InvestorListProps = {
 
 export type InvestorListActions = {
   add: () => void;
+  sub: (index: number) => void;
   reset: (items?: InvestorItem[]) => void;
   insert: (index: number, item?: InvestorItem) => void;
 };
@@ -49,6 +50,10 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
     actions.push({ address: '', rate: '' });
   };
 
+  const handleSub = (index: number) => {
+    actions.remove(index);
+  };
+
   const handleInsert = (index: number, item?: InvestorItem) => {
     actions.insert(index, { address: '', rate: '', ...item });
   };
@@ -61,6 +66,7 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
     ref,
     () => ({
       add: handleAdd,
+      sub: handleSub,
       reset: handleReset,
       insert: handleInsert,
     }),
@@ -74,7 +80,11 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
           if (data) {
             return {
               ...data,
-              [name]: items.filter(Boolean),
+              [name]: items.filter(Boolean).map(({ address = '', amount = '', rate = '' }) => ({
+                address,
+                amount,
+                rate,
+              })),
             };
           }
 

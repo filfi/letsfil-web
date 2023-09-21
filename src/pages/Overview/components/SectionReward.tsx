@@ -1,13 +1,12 @@
 import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
-// import { formatNum } from '@/utils/format';
-// import { accDiv, accMul } from '@/utils/utils';
-// import useChainInfo from '@/hooks/useChainInfo';
-// import useRaiseBase from '@/hooks/useRaiseBase';
+import { isEqual } from '@/utils/utils';
+import useAccount from '@/hooks/useAccount';
 import { isMountPlan } from '@/helpers/mount';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
+import useRaiseEquity from '@/hooks/useRaiseEquity';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const config: PieConfig = {
@@ -41,21 +40,21 @@ const config: PieConfig = {
 };
 
 const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  // const { perFil, perPledge } = useChainInfo();
-  // const { period, target } = useRaiseBase(data);
+  const { address } = useAccount();
+  const { sponsors } = useRaiseEquity(data);
+  const { isServicer } = useRaiseRole(data);
   const { isInvestor } = useDepositInvestor(data);
-  const { isRaiser, isServicer } = useRaiseRole(data);
   const { priorityRate, raiserRate, servicerRate, ffiRate } = useRaiseRate(data);
 
-  // 预估节点激励 = 24小时产出效率 * 封装天数 * 总算力(质押目标 / 当前扇区质押量)
-  // const reward = useMemo(() => accMul(perFil, period, accDiv(target, perPledge)), [perFil, period, perPledge, target]);
+  const isSponsor = useMemo(() => sponsors?.some((i) => isEqual(i.address, address)), [address, sponsors]);
+
   const roles = useMemo(() => {
     return [
-      { role: isRaiser, color: '#7FC4FD', name: '主办人' },
+      { role: isSponsor, color: '#7FC4FD', name: '主办人' },
       { role: isServicer, color: '#9FD3FD', name: '技术服务商' },
       { role: isInvestor, color: '#2699FB', name: '建设者' },
     ].filter((i) => i.role);
-  }, [isRaiser, isServicer, isInvestor]);
+  }, [isSponsor, isServicer, isInvestor]);
   const isMount = useMemo(() => isMountPlan(data), [data]);
   const pieData = useMemo(
     () => [
@@ -77,16 +76,6 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
         <div className="col-12 col-md-8 col-xxl-9">
           <div className="row g-2">
-            {/* <div className="col-6 col-md-4">
-              <div className="reward-item mb-3">
-                <span className="reward-dot reward-dot-circle"></span>
-                <p className="reward-label">{period}天总激励(估)</p>
-                <p className="reward-text">
-                  <span className="text-decimal text-uppercase">{formatNum(reward, '0.0a')}</span>
-                  <span className="ms-2 text-neutral">FIL</span>
-                </p>
-              </div>
-            </div> */}
             <div className="col-6 col-md-12 col-lg-6 col-xxl-12">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>

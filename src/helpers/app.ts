@@ -154,19 +154,22 @@ export function transformParams(data: API.Base) {
 }
 
 export function transformRaiser(data: API.Base) {
-  const { rate = 0, ...props } = data;
+  const { level = 2, rate = 0, ...props } = data;
 
   return {
     ...props,
+    role: 1,
+    role_level: level,
     power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
   };
 }
 
 export function transformInvestor(data: API.Base) {
-  const { rate = 0, amount = 0, ...props } = data;
+  const { amount = 0, rate = 0, ...props } = data;
 
   return {
     ...props,
+    role: 2,
     pledge_amount: ethers.utils.parseEther(`${amount}`).toString(),
     power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
   };

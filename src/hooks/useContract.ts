@@ -454,6 +454,13 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 主办人签名(非第一主办人)
+   */
+  const sponsorSign = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('sponsorSign', [id], opts);
+  });
+
+  /**
    * 建设者签名
    */
   const investorSign = toastify(async (id: string, opts?: WriteOptions) => {
@@ -713,6 +720,7 @@ export default function useContract(address?: API.Address) {
     depositOpsFund,
     addDepositOpsFund,
     depositRaiserFund,
+    sponsorSign,
     investorSign,
     servicerSign,
     raiserWithdraw,
