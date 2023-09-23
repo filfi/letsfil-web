@@ -161,6 +161,7 @@ declare namespace API {
     DeletedAt: string;
     raise_id: string;
     address: string;
+    fil_address: string;
     role: number;
     role_level: number;
     pledge_amount: string;

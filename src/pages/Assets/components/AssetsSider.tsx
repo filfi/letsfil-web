@@ -8,6 +8,7 @@ import RewardChart from './RewardChart';
 import Avatar from '@/components/Avatar';
 import useSProvider from '@/hooks/useSProvider';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
+import useRaiseState from '@/hooks/useRaiseState';
 import { ReactComponent as IconStar } from '../imgs/icon-star.svg';
 
 const AssetsSider: React.FC<{ pack?: API.Pack | null; plan?: API.Plan | null }> = ({ pack, plan }) => {
@@ -16,19 +17,20 @@ const AssetsSider: React.FC<{ pack?: API.Pack | null; plan?: API.Plan | null }> 
   const provider = useSProvider(plan?.service_id);
 
   const { remainsDays } = useRaiseSeals(plan, pack);
+  const { isClosed, isFailed, isStarted } = useRaiseState(plan);
 
   const renderStatus = () => {
     if (!plan) return null;
 
-    if (R.isClosed(plan)) {
+    if (isClosed || R.isClosed(plan)) {
       return <span className="badge">已关闭</span>;
     }
 
-    if (M.isMountPlan(plan) ? M.isStarted(plan) : R.isStarted(plan)) {
+    if (M.isMountPlan(plan) ? M.isStarted(plan) : isStarted) {
       return <span>{F.formatUnixDate(plan?.begin_time)}启动</span>;
     }
 
-    if (R.isFailed(plan)) {
+    if (isFailed) {
       return <span className="badge badge-danger">质押失败</span>;
     }
 
@@ -46,7 +48,7 @@ const AssetsSider: React.FC<{ pack?: API.Pack | null; plan?: API.Plan | null }> 
           </div>
 
           <div className="flex-grow-1">
-            <p className="mb-0 fw-500">{provider?.full_name}</p>
+            <p className="mb-0 fw-500">{provider?.full_name || F.formatAddr(provider?.wallet_address)}</p>
           </div>
 
           <div className="flex-shrink-0">

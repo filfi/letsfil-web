@@ -1,5 +1,6 @@
 import { Input } from 'antd';
 import { useMemo } from 'react';
+import { parseEther } from 'viem';
 import classNames from 'classnames';
 
 import * as F from '@/utils/format';
@@ -30,13 +31,13 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [processing] = useProcessing();
   const { actual } = useRaiseBase(data);
   const { data: count } = useRaiseSyncCount(data);
-  const { raiser, isRaiser, isRaisePaid } = useRaiseRole(data);
+  const { raiser, isSuper, isRaisePaid } = useRaiseRole(data);
   const { amount, fines, total, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
   const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = useRaiseState(data);
 
   const fee = useMemo(() => accMul(actual, 0.003), [actual]); // 手续费
-  const payable = useMemo(() => isRaiser && isWaiting, [isRaiser, isWaiting]);
-  const withdrawable = useMemo(() => isRaiser && (isClosed || isFailed || isWorking), [isRaiser, isClosed, isFailed, isWorking]);
+  const payable = useMemo(() => isSuper && isWaiting, [isSuper, isWaiting]);
+  const withdrawable = useMemo(() => isSuper && (isClosed || isFailed || isWorking), [isSuper, isClosed, isFailed, isWorking]);
   const show = useMemo(() => isClosed || isFailed || (count?.seal_delay_sync_count ?? 0) > 0, [isClosed, isFailed, count?.seal_delay_sync_count]);
 
   const renderExtra = () => {
@@ -83,7 +84,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <div className={classNames('card mb-4', { 'card-danger': isRaiser && isWaiting && !isRaisePaid })}>
+      <div className={classNames('card mb-4', { 'card-danger': isSuper && isWaiting && !isRaisePaid })}>
         <div className="card-header d-flex align-items-center">
           <div className="d-flex align-items-center me-auto">
             <div className="flex-shrink-0">{isRaisePaid ? <IconSuccess /> : <IconDander />}</div>
@@ -169,7 +170,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     if (!isServicer || !data?.raising_id) return;
 
     await addDepositOpsFund(data?.raising_id, {
-      value: need as bigint,
+      value: parseEther(`${need}`),
     });
   });
 
@@ -300,7 +301,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
       </div>
 
-      <ModalDeposit id="deposit-add" amount={F.toNumber(need)} onConfirm={handleAddDeposit} />
+      <ModalDeposit id="deposit-add" amount={need} onConfirm={handleAddDeposit} />
 
       <Modal.Confirm id="deposit-confirm" title="预存运维保证金" confirmText="存入" confirmLoading={paying} onConfirm={payAction}>
         <div className="p-3">

@@ -5,7 +5,7 @@ import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
-import { isSuccess } from '@/helpers/raise';
+import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
 import { accSub, sleep } from '@/utils/utils';
 
@@ -20,12 +20,12 @@ export default function useRewardOps(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getOpsFundReward = async () => {
-    if (data && isSuccess(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getOpsFundReward(data.raising_id);
     }
   };
   const getOpsRewardFines = async () => {
-    if (data && isSuccess(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getOpsRewardFines(data.raising_id);
     }
   };

@@ -5,8 +5,8 @@ import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
+import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
-import { isPending, isSuccess } from '@/helpers/raise';
 
 /**
  * 建设者节点激励
@@ -23,12 +23,12 @@ export default function useRewardInvestor(data?: API.Plan | null) {
     }
   };
   const getInvestorAvailableReward = async () => {
-    if (address && data && isSuccess(data)) {
+    if (address && data && !isPending(data)) {
       return await contract.getInvestorAvailableReward(data.raising_id, address);
     }
   };
   const getInvestorPendingReward = async () => {
-    if (address && data && isSuccess(data)) {
+    if (address && data && !isPending(data)) {
       return await contract.getInvestorPendingReward(data.raising_id, address);
     }
   };

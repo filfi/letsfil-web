@@ -1,8 +1,9 @@
 import 'dayjs/locale/zh-cn';
 import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
+import { isAddress } from 'ethers/lib/utils';
 import RelativeTime from 'dayjs/plugin/relativeTime';
-import { newActorAddress, newDelegatedEthAddress, newIDAddress } from '@glif/filecoin-address';
+import { delegatedFromEthAddress, ethAddressFromDelegated, newActorAddress, newIDAddress } from '@glif/filecoin-address';
 
 dayjs.extend(RelativeTime);
 dayjs.locale('zh-cn');
@@ -143,10 +144,25 @@ export function toF2Address(minerId?: string) {
   return '';
 }
 
-export function toF4Address(addr?: string) {
+export function toEthAddr(addr?: string) {
   if (addr) {
-    return newDelegatedEthAddress(addr).toString();
+    if (isAddress(addr)) return addr;
+
+    return ethAddressFromDelegated(addr);
   }
 
   return '';
+}
+
+export function toF4Address(addr?: string) {
+  if (addr && isAddress(addr)) {
+    return delegatedFromEthAddress(addr);
+  }
+
+  return '';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function getRowKey<R>(row: R) {
+  return (~~(Math.random() * 10000000)).toString(16);
 }

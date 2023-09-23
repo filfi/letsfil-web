@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
-import { parseEther, parseUnits } from 'viem';
+import { parseEther } from 'viem';
 
 import * as H from '@/helpers/app';
 import MountBack from './MountBack';
@@ -30,18 +30,18 @@ const SponsorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const isSigned = useMemo(() => Boolean(sponsor?.sign_status), [sponsor]);
 
   const handleCreate = async () => {
-    if (!data || !Array.isArray(investors)) return;
+    if (!data || !Array.isArray(sponsors) || !Array.isArray(investors)) return;
 
     const raise = H.transformRaiseInfo(data);
     const node = H.transformNodeInfo(data);
-    const sponsors = [address] as string[];
-    const sponsorRates = [Number(parseUnits(`${sponsorRate}`, 5))];
+    const _sponsors = sponsors.map((i) => i.address);
+    const sponsorRates = sponsors.map((i) => Number(i.power_proportion));
     const _investors = investors.map((i) => i.address);
     const investorPledges = investors.map((i) => i.pledge_amount);
     const investorRates = investors.map((i) => +i.power_proportion);
     const _pledge = parseEther(`${pledge}`).toString();
 
-    await mountNode(raise, node, sponsors, sponsorRates, _investors, investorPledges, investorRates, _pledge);
+    await mountNode(raise, node, _sponsors, sponsorRates, _investors, investorPledges, investorRates, _pledge);
   };
 
   const [signing, handleSign] = useProcessify(async () => {
@@ -254,7 +254,7 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { runningDays } = useRaiseSeals(data);
   const { data: counter } = useInvestorCount(data);
   const { isInactive, isWorking } = useMountState(data);
-  const { sponsor, servicer, investor } = useMountAssets();
+  const { sponsor, servicer, investor } = useMountAssets(data);
 
   if (!data) return null;
 
@@ -317,7 +317,7 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   }
 
   if (isInactive) {
-    if (sponsor) {
+    if (sponsor && sponsor.role_level === 1) {
       return <SponsorCard data={data} />;
     }
 

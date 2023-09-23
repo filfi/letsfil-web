@@ -1,6 +1,6 @@
 import { useModel } from '@umijs/max';
 import { Form, type FormInstance, Input, type InputProps } from 'antd';
-import { useDebounceEffect, useDebounceFn, useDynamicList } from 'ahooks';
+import { useDebounceEffect, useDebounceFn, useDynamicList, useMemoizedFn } from 'ahooks';
 import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
 
 import * as V from '@/utils/validators';
@@ -63,17 +63,35 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
 
   const isRaiser = (addr: string) => isEqual(addr, raiser);
 
-  useEffect(() => {
-    if (raiser) {
-      const item = list.find((i) => isRaiser(i.address));
+  const calcItemRate = useMemoizedFn(() => {
+    const list: SponsorItem[] = form?.getFieldValue(name) ?? [];
+    const sum = list.filter(Boolean).reduce((sum, item) => {
+      if (isRaiser(item.address)) return sum;
 
-      if (!item) {
-        const items = [{ address: raiser, level: 1, rate: max }, ...list];
-        actions.insert(0, { address: raiser, level: 1, rate: '' });
-        form?.setFieldValue(name, items);
+      const val = Number(item.rate);
+
+      if (!Number.isNaN(val)) {
+        return accAdd(sum, val);
       }
-    }
-  }, [raiser, list]);
+
+      return sum;
+    }, 0);
+    return Math.max(accSub(max, sum), 0);
+  });
+
+  const updateItem = useMemoizedFn(() => {
+    if (!form || !raiser || !name) return;
+
+    const rate = calcItemRate();
+
+    const item = { address: raiser, level: 1, rate: `${rate}` };
+
+    actions.replace(0, item);
+
+    form.setFieldValue([name, 0], item);
+  });
+
+  useEffect(updateItem, [max, name, raiser]);
 
   const handleAdd = () => {
     actions.push({ address: '', level: 2, rate: '' });
@@ -81,6 +99,14 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
 
   const handleSub = (index: number) => {
     actions.remove(index);
+
+    const list = form?.getFieldValue(name);
+
+    if (list) {
+      list.splice(index, 1);
+      form?.setFieldValue(name, list);
+      setTimeout(updateItem, 200);
+    }
   };
 
   const handleInsert = (index: number, item?: SponsorItem) => {
@@ -88,34 +114,10 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
   };
 
   const handleReset = (items?: SponsorItem[]) => {
-    actions.resetList(items ?? []);
+    actions.resetList(items ?? [{ address: raiser, level: 1, rate: `${max}` }]);
   };
 
-  const { run: handleRateChange } = useDebounceFn(
-    () => {
-      const list: SponsorItem[] = form?.getFieldValue(name) ?? [];
-
-      const sum = list.filter(Boolean).reduce((sum, item) => {
-        if (isRaiser(item.address)) return sum;
-
-        const val = Number(item.rate);
-
-        if (!Number.isNaN(val)) {
-          return accAdd(sum, val);
-        }
-
-        return sum;
-      }, 0);
-
-      const sub = Math.max(accSub(max, sum), 0);
-      const index = list.findIndex((i) => isRaiser(i.address));
-      const newItem = { address: raiser, level: 1, rate: `${sub}` };
-
-      actions.replace(index, newItem);
-      form?.setFieldValue([name, getKey(index)], newItem);
-    },
-    { wait: 200 },
-  );
+  const { run: handleRateChange } = useDebounceFn(updateItem, { wait: 200 });
 
   useImperativeHandle(
     ref,
@@ -130,7 +132,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
 
   useDebounceEffect(
     () => {
-      if (items) {
+      if (Array.isArray(items)) {
         setModel((data) => {
           if (data) {
             return {
@@ -158,7 +160,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
           <Form.Item
             name={[name, getKey(idx), 'address']}
             initialValue={item.address}
-            rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.address }]}
+            rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.combineAddr }]}
           >
             <Input disabled={isRaiser(item.address)} placeholder="输入主办人地址" />
           </Form.Item>

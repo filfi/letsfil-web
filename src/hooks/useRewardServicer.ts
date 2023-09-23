@@ -5,8 +5,8 @@ import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
+import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
-import { isSuccess } from '@/helpers/raise';
 import { accAdd, accSub, sleep } from '@/utils/utils';
 
 /**
@@ -20,27 +20,27 @@ export default function useRewardServicer(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getServicerFinesReward = async () => {
-    if (data && isSuccess(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerFinesReward(data.raising_id);
     }
   };
   const getServicerLockedReward = async () => {
-    if (data && isSuccess(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerLockedReward(data.raising_id);
     }
   };
   const getServicerAvailableReward = async () => {
-    if (data && isSuccess(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerAvailableReward(data.raising_id);
     }
   };
   const getServicerPendingReward = async () => {
-    if (data && isSuccess(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerPendingReward(data.raising_id);
     }
   };
   const getServicerWithdrawnReward = async () => {
-    if (data && isSuccess(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerWithdrawnReward(data.raising_id);
     }
   };

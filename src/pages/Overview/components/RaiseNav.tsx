@@ -1,8 +1,11 @@
 import classNames from 'classnames';
 
+import { isTargeted } from '@/helpers/raise';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
 
 const RaiseNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { isRaiser } = useRaiseRole(data);
   const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
   return (
@@ -12,6 +15,13 @@ const RaiseNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           质押目标
         </a>
       </li>
+      {isTargeted(data) && isRaiser && (
+        <li className="nav-item">
+          <a className="nav-link" href="#targeted">
+            定向地址
+          </a>
+        </li>
+      )}
       {(isSealing || isDelayed || isFinished) && (
         <li className="nav-item">
           <a className="nav-link" href="#seals">

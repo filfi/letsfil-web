@@ -8,15 +8,15 @@ import useMountAssets from '@/hooks/useMountAssets';
 import { formatAddr, formatAmount, formatPower, toNumber } from '@/utils/format';
 
 const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { sponsors, servicers, investors, power } = useMountAssets(data);
+  const { sponsors = [], servicers = [], investors = [], servicerRate, servicerPower, power } = useMountAssets(data);
 
-  const items = useMemo(() => [...(sponsors ?? []), ...(servicers ?? []), ...(investors ?? [])], [sponsors, servicers, investors]);
+  const items = useMemo(() => [...sponsors, ...investors, ...servicers], [sponsors, servicers, investors]);
 
   const columns: TableColumnsType<API.Equity> = [
     {
       title: '地址',
       dataIndex: 'address',
-      render: formatAddr,
+      render: (v, row) => formatAddr(row.fil_address || v),
     },
     {
       title: '角色',
@@ -26,12 +26,22 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     {
       title: '分配比例',
       dataIndex: 'power_proportion',
-      render: (v) => <span>{toNumber(v, 5)}%</span>,
+      render: (v, row) => {
+        if (row.role === 3) {
+          return <span>{servicerRate}%</span>;
+        }
+
+        return <span>{toNumber(v, 5)}%</span>;
+      },
     },
     {
       title: '持有算力',
       dataIndex: 'power_proportion',
-      render: (v) => {
+      render: (v, row) => {
+        if (row.role === 3) {
+          return <span>{formatPower(servicerPower)}</span>;
+        }
+
         const rate = toNumber(v, 5);
         const _power = accMul(power, accDiv(rate, 100));
 
@@ -42,11 +52,11 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       title: '持有质押',
       dataIndex: 'pledge_amount',
       render: (v, row) => {
-        if (row.role === 1) {
-          return <span className="text-gray">-</span>;
+        if (row.role === 2) {
+          return <span>{formatAmount(toNumber(v))} FIL</span>;
         }
 
-        return <span>{formatAmount(toNumber(v))} FIL</span>;
+        return <span className="text-gray">-</span>;
       },
     },
     {

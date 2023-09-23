@@ -1,13 +1,14 @@
+import dayjs from 'dayjs';
 import { camelCase } from 'lodash';
 import { useUnmount } from 'ahooks';
 import { useMemo, useRef } from 'react';
 import { Link, history, useModel, useParams } from '@umijs/max';
 
 import * as A from '@/apis/raise';
+import * as H from '@/helpers/app';
 import Result from '@/components/Result';
 import { toastify } from '@/utils/hackify';
 import SpinBtn from '@/components/SpinBtn';
-import { transformModel } from '@/helpers/app';
 import useLoadingify from '@/hooks/useLoadingify';
 import { ReactComponent as IconEdit } from '@/assets/step-edit.svg';
 import { ReactComponent as IconSafe } from '@/assets/step-safe.svg';
@@ -29,10 +30,22 @@ export default function CreateResult() {
           ...d,
           [camelCase(key)]: data[key as keyof typeof data],
         }),
-        {},
+        {} as API.Base,
       );
 
-      setModel(transformModel(model));
+      if (model.beginTime > 0) {
+        model.beginTime = dayjs.unix(model.beginTime).format('YYYY-MM-DD HH:mm:ss');
+      } else {
+        model.beginTime = '';
+      }
+
+      const res = await A.getEquity(data.raising_id, { page: 1, page_size: 1000 });
+
+      setModel({
+        ...H.transformModel(model),
+        sponsors: H.parseSponsors(res.list),
+        raiseWhiteList: H.parseWhitelist(model.raiseWhiteList),
+      });
 
       clearable.current = false;
 

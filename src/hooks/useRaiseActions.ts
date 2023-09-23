@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { camelCase } from 'lodash';
 import { history, useModel } from '@umijs/max';
 
@@ -36,10 +37,16 @@ export default function useRaiseActions(data?: API.Plan | null) {
     }
 
     Object.assign(model, {
-      sponsors: H.transformSponsors(res.list),
-      investors: H.transformInvestors(res.list),
-      raiseWhiteList: H.transformWhiteList(model.raiseWhiteList),
+      sponsors: H.parseSponsors(res.list),
+      investors: H.parseInvestors(res.list),
+      raiseWhiteList: H.parseWhitelist(model.raiseWhiteList),
     });
+
+    if (model.beginTime > 0) {
+      model.beginTime = dayjs.unix(model.beginTime).format('YYYY-MM-DD HH:mm:ss');
+    } else {
+      model.beginTime = '';
+    }
 
     setModel(H.transformModel(model));
 

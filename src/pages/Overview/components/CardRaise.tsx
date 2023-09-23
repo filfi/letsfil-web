@@ -1,3 +1,4 @@
+import { parseEther } from 'viem';
 import classNames from 'classnames';
 import { useCountDown } from 'ahooks';
 import { useEffect, useMemo, useState } from 'react';
@@ -79,23 +80,23 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [creating, handleCreate] = useProcessify(async () => {
     if (!data) return;
 
-    const raise = H.transformRaiseInfo(data);
     const node = H.transformNodeInfo(data);
-    // const extra = H.transformExtraInfo(data);
+    const raise = H.transformRaiseInfo(data);
 
     const _sponsors = sponsors?.map((i) => i.address) ?? [];
     const sponsorsRates = sponsors?.map((i) => i.power_proportion) ?? [];
 
     // 定向计划
     if (isTargeted(data)) {
-      const whitelist = H.parseWhitelist(data);
+      const whitelist = H.parseWhitelist(data.raise_white_list);
       const _investors = whitelist.map((i) => i.address);
-      const investorPledges = whitelist.map((i) => i.can_pledge_amount);
+      const investorPledges = whitelist.map((i) => parseEther(`${Number(i.limit)}`));
 
       await contract.createPrivatePlan(raise, node, _sponsors, sponsorsRates, _investors, investorPledges, data.begin_time);
       return;
     }
 
+    // 公开计划
     await contract.createPlan(raise, node, _sponsors, sponsorsRates, data.begin_time);
   });
 
@@ -213,7 +214,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   : '开放时间'}
               </h4>
               <div className="ms-auto">
-                {isFailed ? <span className="badge badge-danger">质押未成功</span> : isSuccess ? <span className="badge badge-success">质押成功</span> : null}
+                {isFailed ? <span className="badge badge-danger">计划启动失败</span> : isSuccess ? <span className="badge badge-success">质押成功</span> : null}
                 {isDelayed ? (
                   <span className="badge badge-warning ms-2">封装延期</span>
                 ) : isSealing ? (

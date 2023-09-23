@@ -105,18 +105,15 @@ const MountItem: React.FC<{
     }
 
     if (isActive) {
-      const isSponsor = !!sponsor;
-      const isServicer = !!servicer;
-      const isInvestor = !!investor;
       const steps = [
-        { role: isSponsor, signed: Boolean(sponsor?.sign_status) },
-        { role: isServicer, signed: Boolean(servicer?.sign_status) },
-        { role: isInvestor, signed: Boolean(investor?.sign_status) },
+        { role: Boolean(sponsor), signed: Boolean(sponsor?.sign_status) },
+        { role: Boolean(investor), signed: Boolean(investor?.sign_status) },
+        { role: Boolean(servicer), signed: Boolean(servicer?.sign_status) },
       ];
 
       const step = steps[(role ?? 0) - 1];
 
-      if (step.signed) {
+      if (step && step.signed) {
         return <span className="badge badge-success">已签名</span>;
       }
 

@@ -54,7 +54,7 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
   };
 }
 
-export function withNull<R = any, P extends unknown[] = any>(service: (...args: P) => Promise<R | undefined>) {
+export function withNull<R = any, P extends unknown[] = any>(service: (...args: P) => Promise<R | null>) {
   return async (...args: P) => {
     const res = await service(...args);
 

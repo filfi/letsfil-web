@@ -11,15 +11,15 @@ import WhiteList from './components/WhiteList';
 import useChainInfo from '@/hooks/useChainInfo';
 import * as validators from '@/utils/validators';
 import { calcRaiseDepost } from '@/helpers/app';
-import { accDiv, accMul, pb2byte } from '@/utils/utils';
 import DateTimePicker from '@/components/DateTimePicker';
 import { formatAmount, formatNum, toFixed } from '@/utils/format';
+import { accDiv, accMul, disabledDate, pb2byte, toEthAddr } from '@/utils/utils';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
 
 export default function CreateProgram() {
   const [form] = Form.useForm();
-  const [data, setData] = useModel('stepform');
+  const [model, setModel] = useModel('stepform');
 
   const amount = Form.useWatch('amount', form);
   const planOpen = Form.useWatch('planOpen', form);
@@ -115,24 +115,14 @@ export default function CreateProgram() {
   const validateWhitelist = (list: API.Base[]) => {
     const title = '定向计划';
 
-    if (!Array.isArray(list)) {
+    if (!Array.isArray(list) || !list.length) {
       showErr('请指定可参与计划的钱包地址和每个地址的质押限额', title);
       return false;
     }
 
-    const items = list.filter(Boolean).reduce((prev, { address }) => {
-      const key = `${address}`.toLowerCase();
+    const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
 
-      if (prev[key]) {
-        prev[key] += 1;
-      } else {
-        prev[key] = 1;
-      }
-
-      return prev;
-    }, {});
-
-    if (Object.keys(items).some((key) => items[key] > 1)) {
+    if (new Set(items).size !== items.length) {
       showErr('可参与计划的钱包地址不能重复', title);
       return false;
     }
@@ -143,7 +133,7 @@ export default function CreateProgram() {
   const handleSubmit = (vals: API.Base) => {
     if (isTargeted && !validateWhitelist(vals.raiseWhiteList)) return;
 
-    setData((d) => ({ ...d, ...vals }));
+    setModel((d) => ({ ...d, ...vals }));
 
     history.push('/create/benefit');
   };
@@ -160,7 +150,7 @@ export default function CreateProgram() {
           sealDays: 14,
           raiseDays: 30,
           ffiProtocolFeePayMeth: 1,
-          ...data,
+          ...model,
         }}
         onFinish={handleSubmit}
       >
@@ -171,7 +161,7 @@ export default function CreateProgram() {
                 grid
                 items={[
                   { label: '公开计划', desc: '对所有人公开', value: 1 },
-                  { label: '定向计划', desc: '定向质押，即将上线。', value: 2 },
+                  { label: '定向计划', desc: '非公开，仅指定钱包地址可参与', value: 2 },
                 ]}
               />
             </Form.Item>
@@ -222,7 +212,7 @@ export default function CreateProgram() {
                     <Skeleton active loading={isLoading} paragraph={{ rows: 1 }}>
                       <div className="d-flex text-neutral mb-3">
                         <span className="fw-600">{['估算存储算力(QAP)', '需要质押FIL'][amountType]}</span>
-                        <span className="ms-auto">{data?.sectorSize}G扇区</span>
+                        <span className="ms-auto">{model?.sectorSize}G扇区</span>
                       </div>
 
                       <p className="mb-0 fw-600 lh-base">
@@ -246,8 +236,8 @@ export default function CreateProgram() {
               <div className="col">
                 <p className="mb-1 fw-500">开放时间</p>
 
-                <Form.Item name="beginTime" rules={[{ required: true, message: '请选择开放时间' }]}>
-                  <DateTimePicker placeholder="开放时间" />
+                <Form.Item name="beginTime" initialValue={new Date()} rules={[{ required: true, message: '请选择开放时间' }]}>
+                  <DateTimePicker disabledDate={disabledDate} timeFormat="HH:mm:ss" placeholder="开放时间" />
                 </Form.Item>
               </div>
               <div className="col">

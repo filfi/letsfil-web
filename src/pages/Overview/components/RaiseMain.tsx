@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import classNames from 'classnames';
 import { useResponsive } from 'ahooks';
 
@@ -18,19 +17,14 @@ import SectionContract from './SectionContract';
 import SectionTimeline from './SectionTimeline';
 import SectionProvider from './SectionProvider';
 import SectionWhitelist from './SectionWhitelist';
-import { isEqual } from '@/utils/utils';
-import useAccount from '@/hooks/useAccount';
 import { isTargeted } from '@/helpers/raise';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
-import useRaiseEquity from '@/hooks/useRaiseEquity';
 
 const RaiseMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
-  const { address } = useAccount();
-  const { sponsors } = useRaiseEquity(data);
+  const { isRaiser } = useRaiseRole(data);
   const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
-
-  const isSponsor = useMemo(() => sponsors?.some((i) => isEqual(i.address, address)), [address, sponsors]);
 
   return (
     <>
@@ -55,8 +49,8 @@ const RaiseMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           )}
         </div>
       </section>
-      {isTargeted(data) && isSponsor && (
-        <section id="seals" className="section">
+      {isTargeted(data) && isRaiser && (
+        <section id="targeted" className="section">
           <div className="section-header">
             <h4 className="section-title">定向地址</h4>
             <p className="mb-0">可参与定向计划的钱包地址和参与情况。</p>

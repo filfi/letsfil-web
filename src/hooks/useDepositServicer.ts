@@ -3,7 +3,7 @@ import { useQueries } from '@tanstack/react-query';
 
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
-import { isStarted } from '@/helpers/raise';
+import { isPending } from '@/helpers/raise';
 
 /**
  * 服务商的投资信息
@@ -14,12 +14,12 @@ export default function useDepositServicer(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getServicerFines = async () => {
-    if (data && isStarted(data)) {
+    if (data && !isPending(data)) {
       return await contract.getServicerFines(data.raising_id);
     }
   };
   const getTotalInterest = async () => {
-    if (data && isStarted(data)) {
+    if (data && !isPending(data)) {
       return await contract.getTotalInterest(data.raising_id);
     }
   };

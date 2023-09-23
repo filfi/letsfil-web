@@ -1,12 +1,16 @@
 import { useMemo } from 'react';
 import { Form, Input } from 'antd';
 
+import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
+import useAccount from '@/hooks/useAccount';
 import { integer } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
-import { accSub, sleep } from '@/utils/utils';
+import { isTargeted } from '@/helpers/raise';
+import { parseWhitelist } from '@/helpers/app';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseState from '@/hooks/useRaiseState';
+import { accSub, isEqual, sleep } from '@/utils/utils';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 // 投资额限制
@@ -14,11 +18,14 @@ const limit = 5_000_000;
 
 const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const [form] = Form.useForm();
+  const { address } = useAccount();
   const { actual, target } = useRaiseBase(data);
   const { isDelayed, isRaising, isSuccess, isSealing } = useRaiseState(data);
   const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
 
   const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
+  const whitelist = useMemo(() => data && parseWhitelist(data?.raise_white_list), [data?.raise_white_list]);
+  const investor = useMemo(() => whitelist?.find((i) => isEqual(i.address, address)), [address, whitelist]);
 
   const amountValidator = async (rule: unknown, value: string) => {
     await integer(rule, value);
@@ -34,7 +41,29 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     }
   };
 
+  const validateAmount = (amount: string) => {
+    const val = Number(amount);
+
+    if (Number.isNaN(val) || !investor) return false;
+
+    const limit = Number(investor.limit);
+
+    if (limit > 0 && val > limit) {
+      Dialog.error({
+        title: '质押超过限额',
+        content: `当前登录钱包地址最高可质押 ${formatAmount(limit)} FIL`,
+        confirmText: '知道了',
+      });
+
+      return false;
+    }
+
+    return true;
+  };
+
   const handleStake = async ({ amount }: { amount: string }) => {
+    if (isTargeted(data) && !validateAmount(amount)) return;
+
     await stakeAction(amount);
 
     await sleep(1_000);
@@ -56,7 +85,17 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </p>
           </div>
           <div className="card-body">
-            {isSuccess && (isDelayed || isSealing) ? (
+            {isTargeted(data) && !investor ? (
+              <>
+                <p className="mb-3">
+                  <SpinBtn className="btn btn-light btn-lg w-100" disabled>
+                    质押
+                  </SpinBtn>
+                </p>
+
+                <p className="mb-0 text-gray">这是一个 “定向计划”，您当前登录的钱包地址不能参与，请更换登录钱包，或咨询计划的主办人。</p>
+              </>
+            ) : isSuccess && (isDelayed || isSealing) ? (
               <SpinBtn className="btn btn-light btn-lg w-100" disabled>
                 {isDelayed || isSealing ? '正在封装' : '准备封装'}
               </SpinBtn>

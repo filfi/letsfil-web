@@ -14,11 +14,11 @@ import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
 import { isMountPlan } from '@/helpers/mount';
 import { isEqual, sleep } from '@/utils/utils';
+import { formatSponsor } from '@/utils/format';
 import useProcessify from '@/hooks/useProcessify';
 import LoadingView from '@/components/LoadingView';
 import useRaiseActions from '@/hooks/useRaiseActions';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
-import { formatSponsor } from '@/utils/format';
 
 const isArrs = function <V>(v: V | undefined): v is V {
   return Array.isArray(v) && v.length > 0;
@@ -135,7 +135,7 @@ export default function AccountPlans() {
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
-                        role={3}
+                        role={2}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}
@@ -155,7 +155,7 @@ export default function AccountPlans() {
                     <div className="col" key={item.raising_id}>
                       <Item
                         data={item}
-                        role={2}
+                        role={3}
                         onEdit={() => handleEdit(item)}
                         onHide={() => handleDelete(item)}
                         onDelete={() => handleDelete(item)}

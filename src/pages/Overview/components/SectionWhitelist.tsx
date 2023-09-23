@@ -1,6 +1,7 @@
 import { useRequest } from 'ahooks';
 import { Table, type TableColumnsType } from 'antd';
 
+import { getRowKey } from '@/utils/utils';
 import { getPrivateList } from '@/apis/raise';
 import { formatAddr, formatAmount, toNumber } from '@/utils/format';
 
@@ -21,7 +22,7 @@ const SectionWhitelist: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     {
       title: '地址',
       dataIndex: 'address',
-      render: formatAddr,
+      render: (v, row) => formatAddr(row.fil_address || v),
     },
     {
       title: '已质押',
@@ -37,7 +38,7 @@ const SectionWhitelist: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <Table size="middle" columns={columns} loading={loading} pagination={false} dataSource={dataSource} />
+      <Table size="middle" columns={columns} loading={loading} pagination={false} dataSource={dataSource} rowKey={getRowKey} />
     </>
   );
 };

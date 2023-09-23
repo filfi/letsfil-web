@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Modal } from 'bootstrap';
 import { parseEther } from 'viem';
 import { snakeCase } from 'lodash';
@@ -13,7 +14,7 @@ import { catchify } from '@/utils/hackify';
 import useMinerInfo from '@/hooks/useMinerInfo';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
-import { accAdd, accSub, isEqual, sleep } from '@/utils/utils';
+import { accAdd, accSub, isEqual, sleep, toEthAddr } from '@/utils/utils';
 import { formatAmount, formatNum, toFixed, toNumber } from '@/utils/format';
 import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
@@ -159,15 +160,22 @@ export default function MountBenefit() {
 
   const handleReset = withWarning(() => {
     form.setFieldsValue({
+      sponsors: [],
       investors: [],
       opServerShare: 5,
       raiserCoinShare: 70,
     });
+    sponsor?.current?.reset();
     investor.current?.reset(getInitInvestors());
   }, true);
 
   const handleEdit = withWarning(async () => {
-    form.setFieldValue('investors', []);
+    form.setFieldsValue({
+      sponsors: [],
+      investors: [],
+    });
+
+    sponsor.current?.reset();
     investor.current?.reset(getInitInvestors());
 
     await sleep(300);
@@ -188,83 +196,35 @@ export default function MountBenefit() {
     Dialog.error({ content, title });
   };
 
-  const validateSponsors = (list: API.Base) => {
-    const title = '主办人详细分配';
+  const validateEquity = (list: API.Base[], isInvestor = false) => {
+    const role = isInvestor ? '建设者' : '主办人';
+    const title = `${role}详细分配`;
 
-    if (!Array.isArray(list)) {
-      showErr('请添加主办人', title);
+    if (!Array.isArray(list) || !list.length) {
+      showErr(`请添加${role}`, title);
       return false;
     }
 
-    const items = list.filter(Boolean).reduce((prev, { address }) => {
-      const key = `${address}`.toLowerCase();
+    const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
 
-      if (prev[key]) {
-        prev[key] += 1;
-      } else {
-        prev[key] = 1;
+    if (new Set(items).size !== items.length) {
+      showErr(`${role}钱包地址不能重复`, title);
+      return false;
+    }
+
+    if (isInvestor) {
+      const sum = list.filter(Boolean).reduce((s, { amount }) => accAdd(s, amount), 0);
+      if (sum !== balance) {
+        showErr(`${role}持有质押币累加必须精确等于${formatAmount(balance, 7)}`, title);
+        return false;
       }
-
-      return prev;
-    }, {});
-
-    if (Object.keys(items).some((key) => items[key] > 1)) {
-      showErr('主办人钱包地址不能重复', title);
-      return false;
     }
 
-    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(raserRate)) {
-      showErr(`主办人算力分配比例累加要精确等于${raserRate}%`, title);
+    const rate = isInvestor ? priority : raserRate;
+    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(rate)) {
+      showErr(`${role}分成比例累加必须精确等于${rate}%`, title);
       return false;
     }
-
-    return true;
-  };
-
-  const validateInvestors = (list: API.Base[]) => {
-    const title = '建设者详细分配';
-
-    if (!Array.isArray(list)) {
-      showErr('请添加建设者', title);
-      return false;
-    }
-
-    const items = list.filter(Boolean).reduce((prev, { address }) => {
-      const key = `${address}`.toLowerCase();
-
-      if (prev[key]) {
-        prev[key] += 1;
-      } else {
-        prev[key] = 1;
-      }
-
-      return prev;
-    }, {});
-
-    if (Object.keys(items).some((key) => items[key] > 1)) {
-      showErr('建设者钱包地址不能重复', title);
-      return false;
-    }
-
-    if (list.filter(Boolean).reduce((sum, { amount }) => accAdd(sum, amount), 0) !== balance) {
-      showErr(`建设者持有质押币累加必须精确等于${formatAmount(balance, 7)}`, title);
-      return false;
-    }
-
-    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(priority)) {
-      showErr(`建设者分成比例累加必须精确等于${priority}%`, title);
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleValidate = (data: API.Base) => {
-    const { sponsors, investors } = data;
-
-    if (!validateSponsors(sponsors)) return false;
-
-    if (!validateInvestors(investors)) return false;
 
     return true;
   };
@@ -272,7 +232,7 @@ export default function MountBenefit() {
   const [loading, handleSubmit] = useLoadingify(async (data: API.Base) => {
     let raiseId = data.raisingId;
     const isEdit = !!raiseId;
-    const params = H.transformParams(data);
+    const { beginTime, ...params }: API.Base = H.transformParams(data);
     const { sponsors, investors, ...body } = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
@@ -285,8 +245,12 @@ export default function MountBenefit() {
       raiseId = H.genRaiseID(data.minerId).toString();
     }
 
+    if (beginTime) {
+      body.begin_time = dayjs(beginTime).unix();
+    }
+
     const _sponsors = sponsors.filter(Boolean).map((i: API.Base) => ({
-      ...H.transformRaiser(i),
+      ...H.transformSponsor(i),
       raise_id: raiseId,
     }));
 
@@ -302,7 +266,6 @@ export default function MountBenefit() {
         await A.update(raiseId, body);
         await A.updateEquity(raiseId, { sponsor_equities: _sponsors, investor_equities: _investors });
       } else {
-        raiseId = H.genRaiseID(data.minerId).toString();
         await A.add({ ...body, raising_id: raiseId });
         await A.addEquity(raiseId, { sponsor_equities: _sponsors, investor_equities: _investors });
       }
@@ -329,9 +292,13 @@ export default function MountBenefit() {
       return;
     }
 
-    if (handleValidate(data)) {
-      handleSubmit(data);
-    }
+    const { sponsors, investors } = data;
+
+    if (!validateEquity(sponsors)) return;
+
+    if (!validateEquity(investors, true)) return;
+
+    handleSubmit(data);
   };
 
   const renderTreeContent = (data: any) => {

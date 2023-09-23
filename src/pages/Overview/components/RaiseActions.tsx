@@ -17,7 +17,7 @@ import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
 
 const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const actions = useRaiseActions(data);
-  const { isRaiser } = useRaiseRole(data);
+  const { isSuper } = useRaiseRole(data);
   const { actual, minTarget } = useRaiseBase(data);
   const { isActive, isInactive } = useMountState(data);
   const { isPending, isWaiting, isRaising } = useRaiseState(data);
@@ -108,7 +108,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      {isRaiser && (isMount ? isInactive : isPending) && (
+      {isSuper && (isMount ? isInactive : isPending) && (
         <>
           <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
             修改{name}
@@ -132,7 +132,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </a>
       )}
 
-      {isRaiser && (isMount ? isActive : isWaiting || isRaising) && (
+      {isSuper && (isMount ? isActive : isWaiting || isRaising) && (
         <div className="dropdown">
           <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
             <span className="bi bi-three-dots-vertical fs-3"></span>

@@ -103,7 +103,7 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
           <Form.Item
             name={[name, getKey(idx), 'address']}
             initialValue={item.address}
-            rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: V.address }]}
+            rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: V.combineAddr }]}
           >
             <Input placeholder="输入建设者地址" />
           </Form.Item>

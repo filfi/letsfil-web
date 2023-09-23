@@ -3,21 +3,21 @@ import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { useEffect, useMemo } from 'react';
 import { history, useModel } from '@umijs/max';
-import { useDebounceFn, useUpdateEffect } from 'ahooks';
+import { useMount, useUpdateEffect } from 'ahooks';
 
 import useUser from '@/hooks/useUser';
+import * as V from '@/utils/validators';
 import { minerInfo } from '@/apis/raise';
 import { catchify } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
-import { accAdd, isDef } from '@/utils/utils';
-import useProviders from '@/hooks/useSProviders';
-import * as validators from '@/utils/validators';
-import useLoadingify from '@/hooks/useLoadingify';
-import { formatAddr, toFixed, toNumber } from '@/utils/format';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import AvatarInput from '@/components/AvatarInput';
 import ProviderSelect from '@/components/ProviderRadio';
+import useProviders from '@/hooks/useSProviders';
+import useLoadingify from '@/hooks/useLoadingify';
+import { accAdd, isDef, sleep } from '@/utils/utils';
+import { formatAddr, toFixed, toNumber } from '@/utils/format';
 
 const minerIgnores = ['f02220886'];
 
@@ -98,11 +98,9 @@ export default function MountStorage() {
 
   const [fetching, fetchMiner] = useLoadingify(catchify(minerInfo));
 
-  const { run: getMinerInfo } = useDebounceFn(fetchMiner, { wait: 500 });
-
   const minerValidator = async (rule: unknown, value: string) => {
     if (value) {
-      const [e, res] = (await getMinerInfo(value)) ?? [];
+      const [e, res] = await fetchMiner(value);
 
       if (e) {
         return Promise.reject((e as any).code === 3000002 ? '节点不存在' : '检测失败');
@@ -118,11 +116,21 @@ export default function MountStorage() {
     }
   };
 
-  const handleMiner = async (ev: React.KeyboardEvent | React.MouseEvent) => {
-    ev.preventDefault();
+  const handleMiner = async (ev?: React.KeyboardEvent | React.MouseEvent) => {
+    ev?.preventDefault();
 
     await form.validateFields(['minerId']);
   };
+
+  useMount(async () => {
+    await sleep(300);
+
+    const minerId = model?.minerId ?? '';
+
+    if (minerId && /^(f0|t0)[0-9]+$/i.test(minerId)) {
+      handleMiner();
+    }
+  });
 
   const [loading, handleSubmit] = useLoadingify(async (vals: API.Base) => {
     const name = user?.name ?? address;
@@ -222,7 +230,7 @@ export default function MountStorage() {
                   rules={[
                     { required: true, message: '请输入节点号' },
                     {
-                      validator: validators.Queue.create().add(validators.minerID).add(minerValidator).build(),
+                      validator: V.Queue.create().add(V.minerID).add(minerValidator).build(),
                     },
                   ]}
                 >
@@ -280,8 +288,8 @@ export default function MountStorage() {
 
         <div className="ffi-form">
           <div className="ffi-form-actions">
-            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
-              下一步
+            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={fetching} loading={fetching || loading}>
+              {fetching ? '正在检测节点' : '下一步'}
             </SpinBtn>
           </div>
         </div>

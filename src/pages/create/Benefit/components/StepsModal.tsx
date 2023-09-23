@@ -89,8 +89,6 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
   const ffiRate = useMemo(() => values?.ffiRate ?? accMul(inferior, 0.08), [values?.ffiRate, inferior]);
   const opsMax = useMemo(() => Math.max(accSub(inferior, ffiRate), 0), [inferior, ffiRate]);
 
-  console.log(opsMax);
-
   useUpdateEffect(() => {
     const { priority = 70, ratio = 5 } = values ?? {};
     const spRate = Number.isNaN(+amount) ? 0 : +amount;

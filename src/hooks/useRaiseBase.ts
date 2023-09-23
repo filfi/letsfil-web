@@ -4,8 +4,8 @@ import { useQueries } from '@tanstack/react-query';
 import useContract from './useContract';
 import { toNumber } from '@/utils/format';
 import { withNull } from '@/utils/hackify';
+import { isPending } from '@/helpers/raise';
 import { accDiv, accMul } from '@/utils/utils';
-import { isPending, isStarted, isSuccess } from '@/helpers/raise';
 
 /**
  * 节点计划信息
@@ -26,12 +26,12 @@ export default function useRaiseBase(data?: API.Plan | null) {
     }
   };
   const getTotalPledge = async () => {
-    if (data && isStarted(data)) {
+    if (data && !isPending(data)) {
       return await contract.getTotalPledge(data.raising_id);
     }
   };
   const getTotalSealed = async () => {
-    if (data && isSuccess(data)) {
+    if (data && !isPending(data)) {
       return await contract.getTotalSealed(data.raising_id);
     }
   };

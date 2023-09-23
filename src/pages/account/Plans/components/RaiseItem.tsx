@@ -4,7 +4,6 @@ import { Link } from '@umijs/max';
 import * as F from '@/utils/format';
 import { catchify } from '@/utils/hackify';
 import { accSub, sec2day } from '@/utils/utils';
-import { isDelayed, isSealing } from '@/helpers/raise';
 import Countdown from './Countdown';
 import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
@@ -49,26 +48,6 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
   };
 }
 
-function calcSealDays(data: API.Plan) {
-  const r: string[] = [];
-
-  let res = `< ${data.seal_days} 天`;
-
-  if (data.end_seal_time) {
-    res = F.formatUnixDate(data.end_seal_time);
-  }
-
-  r.push(res);
-
-  // 封装中
-  if (isSealing(data) || isDelayed(data)) {
-    const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time));
-    r.push(`已进行${sec2day(sec)}天`);
-  }
-
-  return r;
-}
-
 const RaiseItem: React.FC<{
   data: API.Plan;
   role?: number;
@@ -81,12 +60,33 @@ const RaiseItem: React.FC<{
   const { data: pack } = usePackInfo(data);
   const { amount } = useDepositInvestor(data);
   const provider = useSProvider(data.service_id);
+  const { isSealing, isDelayed } = useRaiseState(data);
   const { priorityRate, opsRatio } = useRaiseRate(data);
   const { actual, progress, target } = useRaiseBase(data);
   const { progress: sealPercent } = useAssetPack(data, pack);
-  const { isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
+  const { isSuper, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
 
-  const sealDays = useMemo(() => calcSealDays(data), [data]);
+  const calcSealDays = () => {
+    const r: string[] = [];
+
+    let res = `< ${data.seal_days} 天`;
+
+    if (data.end_seal_time) {
+      res = F.formatUnixDate(data.end_seal_time);
+    }
+
+    r.push(res);
+
+    // 封装中
+    if (isSealing || isDelayed) {
+      const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time));
+      r.push(`已进行${sec2day(sec)}天`);
+    }
+
+    return r;
+  };
+
+  const sealDays = useMemo(() => calcSealDays(), [data, isDelayed, isSealing]);
   const power = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
 
@@ -132,7 +132,7 @@ const RaiseItem: React.FC<{
 
   const renderStatus = () => {
     if (state.isPending) {
-      if (role === 1 && isRaiser) {
+      if (role === 1 && isSuper) {
         return <span className="badge">可编辑</span>;
       }
 
@@ -300,7 +300,7 @@ const RaiseItem: React.FC<{
         <div className="card-footer d-flex align-items-center gap-3">
           <div className="flex-shrink-0 me-auto">{renderStatus()}</div>
           <div className="d-flex flex-shrink-0 justify-content-between gap-2">
-            {isRaiser && renderActions()}
+            {isSuper && renderActions()}
             <Link className="btn btn-primary" to={`/overview/${data.raising_id}`}>
               <span className="bi bi-eye"></span>
               <span className="ms-1">查看</span>

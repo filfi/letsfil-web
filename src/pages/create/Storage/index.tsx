@@ -2,19 +2,19 @@ import { useEffect } from 'react';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
-import { useDebounceFn, useUpdateEffect } from 'ahooks';
+import { useMount, useUpdateEffect } from 'ahooks';
 
-import { isDef } from '@/utils/utils';
 import useUser from '@/hooks/useUser';
+import * as V from '@/utils/validators';
 import { minerInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
 import useAccount from '@/hooks/useAccount';
+import { isDef, sleep } from '@/utils/utils';
 import useProviders from '@/hooks/useSProviders';
 import FormRadio from '@/components/FormRadio';
-import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
 import AvatarInput from '@/components/AvatarInput';
 import ProviderSelect from '@/components/ProviderRadio';
@@ -27,9 +27,6 @@ export default function CreateStorage() {
   const { user, createOrUpdate } = useUser();
   const { data: list, isLoading: pFetching } = useProviders();
 
-  // useUpdateEffect(() => {
-  //   form.setFieldValue('raiser', address);
-  // }, [address]);
   useUpdateEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -49,7 +46,7 @@ export default function CreateStorage() {
     }
   }, [list, model?.serviceId]);
 
-  const [mining, getMiner] = useLoadingify(catchify(minerInfo));
+  const [fetching, fetchMiner] = useLoadingify(catchify(minerInfo));
 
   const onMinerChange = async (data: API.MinerAsset) => {
     const isOld = data.sector_count > 0;
@@ -65,17 +62,9 @@ export default function CreateStorage() {
     });
   };
 
-  const { run: validateMiner } = useDebounceFn(getMiner, { wait: 500 });
-
   const minerValidator = async (rule: unknown, value: string) => {
-    const [e] = await catchify(validators.minerID)(rule, value);
-
-    if (e) {
-      return e;
-    }
-
     if (value) {
-      const [e, res] = (await validateMiner(value)) ?? [];
+      const [e, res] = await fetchMiner(value);
 
       if (e) {
         return Promise.reject((e as any).code === 3000002 ? '节点不存在' : '检测失败');
@@ -91,11 +80,21 @@ export default function CreateStorage() {
     form.setFieldValue('serviceProviderAddress', item.wallet_address);
   };
 
-  const handleMiner = async (ev: React.KeyboardEvent | React.MouseEvent) => {
-    ev.preventDefault();
+  const handleMiner = async (ev?: React.KeyboardEvent | React.MouseEvent) => {
+    ev?.preventDefault();
 
     await form.validateFields(['minerId']);
   };
+
+  useMount(async () => {
+    await sleep(300);
+
+    const minerId = model?.minerId ?? '';
+
+    if (minerId && /^(f0|t0)[0-9]+$/i.test(minerId)) {
+      handleMiner();
+    }
+  });
 
   const [loading, handleSubmit] = useLoadingify(async (vals: API.Base) => {
     const name = user?.name ?? address;
@@ -219,7 +218,7 @@ export default function CreateStorage() {
                   rules={[
                     { required: true, message: '请输入节点号' },
                     {
-                      validator: validators.Queue.create().add(validators.minerID).add(minerValidator).build(),
+                      validator: V.Queue.create().add(V.minerID).add(minerValidator).build(),
                     },
                   ]}
                 >
@@ -229,7 +228,7 @@ export default function CreateStorage() {
               <div>
                 <SpinBtn
                   className="btn btn-outline-light btn-lg text-nowrap"
-                  loading={mining}
+                  loading={fetching}
                   icon={<i className="bi bi-arrow-repeat"></i>}
                   onClick={handleMiner}
                 >
@@ -294,8 +293,8 @@ export default function CreateStorage() {
 
         <div className="ffi-form">
           <div className="ffi-form-actions">
-            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
-              下一步
+            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={fetching} loading={fetching || loading}>
+              {fetching ? '正在检测节点' : '下一步'}
             </SpinBtn>
           </div>
         </div>

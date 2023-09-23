@@ -6,6 +6,7 @@ import { ethers, BigNumber } from 'ethers';
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
 import { toFixed, toNumber } from '@/utils/format';
+import { isAddress } from 'ethers/lib/utils';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
@@ -153,28 +154,6 @@ export function transformParams(data: API.Base) {
   };
 }
 
-export function transformRaiser(data: API.Base) {
-  const { level = 2, rate = 0, ...props } = data;
-
-  return {
-    ...props,
-    role: 1,
-    role_level: level,
-    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
-  };
-}
-
-export function transformInvestor(data: API.Base) {
-  const { amount = 0, rate = 0, ...props } = data;
-
-  return {
-    ...props,
-    role: 2,
-    pledge_amount: ethers.utils.parseEther(`${amount}`).toString(),
-    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
-  };
-}
-
 export function transformModel(data: API.Base) {
   const { sectorSize, targetAmount, raiseSecurityFund, opsSecurityFund, ffiProtocolFee, ...props } = data;
 
@@ -189,40 +168,6 @@ export function transformModel(data: API.Base) {
     opsSecurityFund: +ethers.utils.formatEther(opsSecurityFund),
     raiseSecurityFund: +ethers.utils.formatEther(raiseSecurityFund),
   };
-}
-
-export function transformSponsors(list: API.Equity[]) {
-  return list
-    .filter((item) => item.role === 1)
-    .map((i) => ({
-      address: i.address,
-      rate: toNumber(i.power_proportion, 5).toString(),
-    }));
-}
-
-export function transformInvestors(list: API.Equity[]) {
-  return list
-    .filter((item) => item.role === 2)
-    .map((i) => ({
-      address: i.address,
-      amount: toNumber(i.pledge_amount).toString(),
-      rate: toNumber(i.power_proportion, 5).toString(),
-    }));
-}
-
-export function transformWhiteList(val: string) {
-  try {
-    const items = JSON.parse(val);
-
-    if (Array.isArray(items)) {
-      return items.map((i: API.Base) => ({
-        address: i.address,
-        limit: toNumber(i.can_pledge_amount).toString(),
-      }));
-    }
-  } catch (e) {}
-
-  return [];
 }
 
 /**
@@ -296,21 +241,65 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
   };
 }
 
-/**
- * 定向计划投资者
- * @param data
- */
-export function parseWhitelist<D extends { raise_white_list: string }>(
-  data: D,
-): {
-  address: string;
-  can_pledge_amount: string;
-}[] {
-  if (data.raise_white_list) {
-    try {
-      return JSON.parse(data.raise_white_list);
-    } catch (e) {}
-  }
+export function parseSponsors(list: API.Equity[]) {
+  return list
+    .filter((item) => item.role === 1)
+    .map((i) => ({
+      address: i.fil_address || i.address,
+      rate: toNumber(i.power_proportion, 5).toString(),
+    }));
+}
+
+export function parseInvestors(list: API.Equity[]) {
+  return list
+    .filter((item) => item.role === 2)
+    .map((i) => ({
+      address: i.fil_address || i.address,
+      amount: toNumber(i.pledge_amount).toString(),
+      rate: toNumber(i.power_proportion, 5).toString(),
+    }));
+}
+
+export function parseWhitelist(val: string) {
+  try {
+    const items = JSON.parse(val);
+
+    if (Array.isArray(items)) {
+      return items.map((i: API.Base) => ({
+        address: U.toEthAddr(i.address || i.fil_address),
+        filAddress: i.fil_address,
+        limit: toNumber(i.can_pledge_amount).toString(),
+      }));
+    }
+  } catch (e) {}
 
   return [];
+}
+
+export function transformSponsor({ address, level = 2, rate = 0 }: API.Base) {
+  return {
+    role: 1,
+    role_level: level,
+    address: isAddress(address) ? address : '',
+    fil_address: isAddress(address) ? '' : address,
+    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
+  };
+}
+
+export function transformInvestor({ address, amount = 0, rate = 0 }: API.Base) {
+  return {
+    role: 2,
+    address: isAddress(address) ? address : '',
+    fil_address: isAddress(address) ? '' : address,
+    pledge_amount: ethers.utils.parseEther(`${amount}`).toString(),
+    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
+  };
+}
+
+export function transformWhitelist({ address, limit = '0' }: API.Base) {
+  return {
+    address: isAddress(address) ? address : '',
+    fil_address: isAddress(address) ? '' : address,
+    can_pledge_amount: ethers.utils.parseEther(`${limit}`).toString(),
+  };
 }

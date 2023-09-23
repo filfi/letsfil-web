@@ -80,6 +80,7 @@ export function getPrivateList(id: string) {
   return A.get<
     {
       address: string;
+      fil_address: string;
       count: number;
       total_amt: string;
     }[]

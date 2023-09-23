@@ -26,7 +26,7 @@ export default function useDepositInvestor(data?: API.Plan | null) {
     if (!address || !data) return;
 
     const isMount = M.isMountPlan(data);
-    if (R.isClosed(data) || (isMount ? M.isWorking(data) : R.isFailed(data) || R.isWorking(data))) {
+    if (isMount ? M.isWorking(data) : !R.isPending(data)) {
       return await contract.getBackAssets(data.raising_id, address);
     }
   };

@@ -12,8 +12,8 @@ import { formatAmount, formatPower, formatUnixDate } from '@/utils/format';
 const CardAssets: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { data: pack } = usePackInfo(data);
   const { isWorking } = useRaiseState(data);
-  const { isRaiser, isServicer } = useRaiseRole(data);
   const { amount: opsBalance } = useDepositOps(data);
+  const { isRaiser, isServicer } = useRaiseRole(data);
   const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
   const { investorAmount, investorPledge, investorPower, raiserPower } = useAssetPack(data, pack);
 

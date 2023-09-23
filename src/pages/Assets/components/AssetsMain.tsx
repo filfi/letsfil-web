@@ -12,8 +12,8 @@ const RaiseAssets: React.FC<{
 }> = ({ pack, plan, role }) => {
   const { investorAmount, investorPower, opsAmount, opsPower, raiserPower, servicerPower } = useAssetPack(plan, pack);
 
-  const power = useMemo(() => [investorPower, raiserPower, servicerPower, opsPower][role] ?? 0, [role, investorPower, raiserPower, servicerPower, opsPower]);
   const pledge = useMemo(() => [investorAmount, 0, 0, opsAmount][role] ?? 0, [role, investorAmount, opsAmount]);
+  const power = useMemo(() => [investorPower, raiserPower, servicerPower, opsPower][role] ?? 0, [role, investorPower, raiserPower, servicerPower, opsPower]);
 
   return (
     <>

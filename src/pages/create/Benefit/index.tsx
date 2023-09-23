@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { parseEther } from 'viem';
+import { Modal } from 'bootstrap';
 import { snakeCase } from 'lodash';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
@@ -22,9 +22,9 @@ import StepsModal from './components/StepsModal';
 import AssetsModal from './components/AssetsModal';
 import useLoadingify from '@/hooks/useLoadingify';
 import { createNumRangeValidator } from '@/utils/validators';
-import { formatEther, formatNum, toFixed } from '@/utils/format';
-import { accAdd, accDiv, accMul, accSub, isEqual } from '@/utils/utils';
 import SponsorList, { SponsorListActions } from './components/SponsorList';
+import { formatAddr, formatEther, formatNum, toFixed } from '@/utils/format';
+import { accAdd, accDiv, accMul, accSub, isEqual, sleep, toEthAddr } from '@/utils/utils';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 
@@ -119,6 +119,7 @@ export default function CreateBenefit() {
   const raserRate = useMemo(() => H.calcEachEarn(priority, spRate, ratio).raiserRate, [priority, spRate, ratio]);
   const servicerPowerRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0), [powerRate]);
   const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);
+  const spName = useMemo(() => provider?.full_name || formatAddr(provider?.wallet_address), [provider]);
 
   useEffect(() => {
     const target = model?.targetAmount ?? 0;
@@ -134,12 +135,48 @@ export default function CreateBenefit() {
     }
   }, [provider]);
 
-  const handleReset = () => {
+  function withWarning<P extends unknown[] = any>(handle: (...args: P) => void, isReset?: boolean) {
+    return (...args: P) => {
+      const action = isReset ? '重置' : '修改';
+
+      const hide = Dialog.confirm({
+        icon: 'error',
+        title: `${action}分配方案会清空已填写详细分配比例`,
+        summary: `建设者和主办人的详细分配比例，依赖“分配方案”中定义的比例。${action}“分配方案”中的任何比例，会自动清空已填写的详细分配比例。`,
+        content: '是否继续？',
+        confirmText: isReset ? '确认重置' : '继续修改',
+        confirmBtnVariant: 'danger',
+        onConfirm: () => {
+          hide();
+
+          handle(...args);
+        },
+      });
+    };
+  }
+
+  const handleReset = withWarning(() => {
     form.setFieldsValue({
+      sponsors: [],
       opServerShare: 5,
       raiserCoinShare: 70,
     });
-  };
+    sponsor.current?.reset();
+  }, true);
+
+  const handleEdit = withWarning(async () => {
+    form.setFieldsValue({
+      sponsors: [],
+    });
+
+    sponsor.current?.reset();
+
+    await sleep(300);
+
+    const modal = Modal.getOrCreateInstance('#benefit-modal');
+
+    modal && modal.show();
+  });
 
   const handleSteps = ({ priority, spRate }: Values) => {
     form.setFieldsValue({
@@ -152,27 +189,17 @@ export default function CreateBenefit() {
     Dialog.error({ content, title });
   };
 
-  const validateSponsors = (list: API.Base) => {
+  const validateEquity = (list: API.Base[]) => {
     const title = '主办人详细分配';
 
-    if (!Array.isArray(list)) {
+    if (!Array.isArray(list) || !list.length) {
       showErr('请添加主办人', title);
       return false;
     }
 
-    const items = list.filter(Boolean).reduce((prev, { address }) => {
-      const key = `${address}`.toLowerCase();
+    const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
 
-      if (prev[key]) {
-        prev[key] += 1;
-      } else {
-        prev[key] = 1;
-      }
-
-      return prev;
-    }, {});
-
-    if (Object.keys(items).some((key) => items[key] > 1)) {
+    if (new Set(items).size !== items.length) {
       showErr('主办人钱包地址不能重复', title);
       return false;
     }
@@ -181,14 +208,6 @@ export default function CreateBenefit() {
       showErr(`主办人算力分配比例累加要精确等于${raserRate}%`, title);
       return false;
     }
-
-    return true;
-  };
-
-  const handleValidate = (data: API.Base) => {
-    const { sponsors } = data;
-
-    if (!validateSponsors(sponsors)) return false;
 
     return true;
   };
@@ -219,16 +238,15 @@ export default function CreateBenefit() {
 
     if (Array.isArray(raiseWhiteList)) {
       body.raise_white_list = JSON.stringify(
-        raiseWhiteList.map(({ address, limit }) => ({
-          address,
+        raiseWhiteList.filter(Boolean).map((i: API.Base) => ({
+          ...H.transformWhitelist(i),
           raise_id: raiseId,
-          can_pledge_amount: limit ? parseEther(limit).toString() : '0',
         })),
       );
     }
 
     const _sponsors = sponsors.filter(Boolean).map((i: API.Base) => ({
-      ...H.transformRaiser(i),
+      ...H.transformSponsor(i),
       raise_id: raiseId,
     }));
 
@@ -265,9 +283,11 @@ export default function CreateBenefit() {
       return;
     }
 
-    if (handleValidate(data)) {
-      handleSubmit(data);
-    }
+    const { sponsors } = data;
+
+    if (!validateEquity(sponsors)) return;
+
+    handleSubmit(data);
   };
 
   const renderTreeContent = (data: any) => {
@@ -335,7 +355,7 @@ export default function CreateBenefit() {
                     prefix={
                       <div className="d-flex">
                         <Avatar address={provider?.wallet_address} size={24} src={provider?.logo_url} />
-                        <span className="ms-1 text-gray-dark">{provider?.full_name}</span>
+                        <span className="ms-1 text-gray-dark">{spName}</span>
                       </div>
                     }
                     suffix="%"
@@ -360,7 +380,7 @@ export default function CreateBenefit() {
                 </Form.Item>
               </div>
               <div className="col pt-3">
-                <BenefitPie name={provider?.full_name} value={pieVal} />
+                <BenefitPie name={spName} value={pieVal} />
               </div>
             </div>
           </div>
@@ -402,9 +422,9 @@ export default function CreateBenefit() {
                       <button className="btn btn-light btn-lg" type="button" onClick={handleReset}>
                         重置
                       </button>
-                      <a className="btn btn-primary btn-lg flex-fill" href="#benefit-modal" data-bs-toggle="modal" role="button">
+                      <button className="btn btn-primary btn-lg flex-fill" type="button" onClick={handleEdit}>
                         修改
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
