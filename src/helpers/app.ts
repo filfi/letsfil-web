@@ -241,23 +241,22 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
   };
 }
 
+const isSponsor = <D extends { role: number }>(data: D) => data.role === 1;
+const isInvestor = <D extends { role: number }>(data: D) => data.role === 2;
+
 export function parseSponsors(list: API.Equity[]) {
-  return list
-    .filter((item) => item.role === 1)
-    .map((i) => ({
-      address: i.fil_address || i.address,
-      rate: toNumber(i.power_proportion, 5).toString(),
-    }));
+  return list.filter(isSponsor).map((i) => ({
+    address: i.fil_address || i.address,
+    rate: toNumber(i.power_proportion, 5).toString(),
+  }));
 }
 
 export function parseInvestors(list: API.Equity[]) {
-  return list
-    .filter((item) => item.role === 2)
-    .map((i) => ({
-      address: i.fil_address || i.address,
-      amount: toNumber(i.pledge_amount).toString(),
-      rate: toNumber(i.power_proportion, 5).toString(),
-    }));
+  return list.filter(isInvestor).map((i) => ({
+    address: i.fil_address || i.address,
+    amount: toNumber(i.pledge_amount).toString(),
+    rate: toNumber(i.power_proportion, 5).toString(),
+  }));
 }
 
 export function parseWhitelist(val: string) {

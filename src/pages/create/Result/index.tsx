@@ -39,7 +39,7 @@ export default function CreateResult() {
         model.beginTime = '';
       }
 
-      const res = await A.getEquity(data.raising_id, { page: 1, page_size: 1000 });
+      const res = await A.getEquity(raiseId, { page: 1, page_size: 1000 });
 
       setModel({
         ...H.transformModel(model),
