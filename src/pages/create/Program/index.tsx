@@ -150,6 +150,7 @@ export default function CreateProgram() {
           sealDays: 14,
           raiseDays: 30,
           ffiProtocolFeePayMeth: 1,
+          beginTime: new Date(),
           ...model,
         }}
         onFinish={handleSubmit}
@@ -236,7 +237,7 @@ export default function CreateProgram() {
               <div className="col">
                 <p className="mb-1 fw-500">开放时间</p>
 
-                <Form.Item name="beginTime" initialValue={new Date()} rules={[{ required: true, message: '请选择开放时间' }]}>
+                <Form.Item name="beginTime" rules={[{ required: true, message: '请选择开放时间' }]}>
                   <DateTimePicker disabledDate={disabledDate} timeFormat="HH:mm:ss" placeholder="开放时间" />
                 </Form.Item>
               </div>

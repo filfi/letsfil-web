@@ -5,6 +5,7 @@ import useAccount from './useAccount';
 import { getEquity } from '@/apis/raise';
 import { isEqual } from '@/utils/utils';
 import { toNumber } from '@/utils/format';
+import { withNull } from '@/utils/hackify';
 
 const isSponsor = <D extends { role: number }>(data: D) => data.role === 1;
 const isInvestor = <D extends { role: number }>(data: D) => data.role === 2;
@@ -19,7 +20,7 @@ export default function useRaiseEquity(plan?: API.Plan | null) {
   };
 
   const { address } = useAccount();
-  const { data, isError, isLoading, refetch } = useQuery(['getRaiseEquity', plan?.raising_id], queryFn);
+  const { data, isError, isLoading, refetch } = useQuery(['getRaiseEquity', plan?.raising_id], withNull(queryFn));
 
   const sponsors = useMemo(() => data?.filter(isSponsor), [data]);
   const investors = useMemo(() => data?.filter(isInvestor), [data]);

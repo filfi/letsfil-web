@@ -88,7 +88,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
 
     actions.replace(0, item);
 
-    form.setFieldValue([name, 0], item);
+    form.setFieldValue([name, 0], { ...item });
   });
 
   useEffect(updateItem, [max, name, raiser]);
@@ -100,13 +100,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
   const handleSub = (index: number) => {
     actions.remove(index);
 
-    const list = form?.getFieldValue(name);
-
-    if (list) {
-      list.splice(index, 1);
-      form?.setFieldValue(name, list);
-      setTimeout(updateItem, 200);
-    }
+    setTimeout(updateItem, 200);
   };
 
   const handleInsert = (index: number, item?: SponsorItem) => {
@@ -157,19 +151,14 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
     <ul className="list-unstyled">
       {list.map((item, idx) => (
         <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative" style={{ paddingBottom: '0.01px' }}>
-          <Form.Item
-            name={[name, getKey(idx), 'address']}
-            initialValue={item.address}
-            rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.combineAddr }]}
-          >
+          <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.combineAddr }]}>
             <Input disabled={isRaiser(item.address)} placeholder="输入主办人地址" />
           </Form.Item>
-          <Form.Item hidden name={[name, getKey(idx), 'level']} initialValue={item.level}>
+          <Form.Item hidden name={[name, getKey(idx), 'level']}>
             <Input />
           </Form.Item>
           <Form.Item
             name={[name, getKey(idx), 'rate']}
-            initialValue={item.rate}
             rules={[
               { required: true, message: '请输入算力分配比例' },
               {

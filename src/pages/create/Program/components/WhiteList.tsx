@@ -90,21 +90,16 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
 
   return (
     <>
-      {list.map((item, idx) => (
+      {list.map((_, idx) => (
         <Row key={getKey(idx)} gutter={16}>
           <Col flex={1}>
-            <Form.Item
-              name={[name, getKey(idx), 'address']}
-              initialValue={item.address}
-              rules={[{ required: true, message: '请输入钱包地址' }, { validator: V.combineAddr }]}
-            >
+            <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入钱包地址' }, { validator: V.combineAddr }]}>
               <Input placeholder="输入钱包地址" />
             </Form.Item>
           </Col>
           <Col span={24} sm={18} lg={5}>
             <Form.Item
               name={[name, getKey(idx), 'limit']}
-              initialValue={item.limit}
               rules={[
                 {
                   validator: V.Queue.create().add(V.number).add(V.createGtValidator(0, '必须大于0')).build(),

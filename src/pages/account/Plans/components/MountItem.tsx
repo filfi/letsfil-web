@@ -45,10 +45,8 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 const MountItem: React.FC<{
   data: API.Plan;
   role?: number;
-  onEdit?: () => void;
-  onHide?: () => Promise<any>;
+  onEdit?: () => Promise<any>;
   onDelete?: () => Promise<any>;
-  onStart?: () => Promise<any>;
 }> = ({ data, role, onEdit, onDelete }) => {
   const provider = useSProvider(data.service_id);
   const { data: counter } = useInvestorCount(data);
@@ -56,7 +54,12 @@ const MountItem: React.FC<{
 
   const { power, pledge, investor, sponsor, servicer, sponsorPower, investorPower, servicerPower, investorPledge } = useMountAssets(data);
 
+  const isSuper = useMemo(() => sponsor && sponsor.role_level === 1, [sponsor]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
+
+  const [editing, handleEdit] = useLoadingify(async () => {
+    await onEdit?.();
+  });
 
   const [deleting, deleteAction] = useLoadingify(async () => {
     await onDelete?.();
@@ -127,30 +130,6 @@ const MountItem: React.FC<{
     return null;
   };
 
-  const renderActions = () => {
-    if (isInactive && sponsor && sponsor.role_level === 1) {
-      return (
-        <>
-          <SpinBtn
-            className="btn btn-outline-danger border-0 shadow-none"
-            loading={deleting}
-            icon={<span className="bi bi-trash3"></span>}
-            onClick={handleDelete}
-          >
-            删除
-          </SpinBtn>
-
-          <button className="btn btn-outline-light" type="button" onClick={onEdit}>
-            <span className="bi bi-pencil"></span>
-            <span className="ms-1">编辑</span>
-          </button>
-        </>
-      );
-    }
-
-    return null;
-  };
-
   return (
     <>
       <div className="card">
@@ -197,7 +176,23 @@ const MountItem: React.FC<{
         <div className="card-footer d-flex align-items-center gap-3">
           <div className="flex-shrink-0 me-auto">{renderStatus()}</div>
           <div className="d-flex flex-shrink-0 justify-content-between gap-2">
-            {renderActions()}
+            {isInactive && isSuper && (
+              <>
+                <SpinBtn
+                  className="btn btn-outline-danger border-0 shadow-none"
+                  icon={<span className="bi bi-trash3"></span>}
+                  loading={deleting}
+                  disabled={editing}
+                  onClick={handleDelete}
+                >
+                  删除
+                </SpinBtn>
+
+                <SpinBtn className="btn btn-light" icon={<span className="bi bi-pencil"></span>} loading={editing} disabled={deleting} onClick={handleEdit}>
+                  编辑
+                </SpinBtn>
+              </>
+            )}
             <Link className="btn btn-success" to={`/overview/${data.raising_id}`}>
               <span className="bi bi-eye"></span>
               <span className="ms-1">查看</span>

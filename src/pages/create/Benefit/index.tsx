@@ -135,6 +135,8 @@ export default function CreateBenefit() {
     }
   }, [provider]);
 
+  if (!(window as any).form) Object.defineProperty(window, 'form', { value: form });
+
   function withWarning<P extends unknown[] = any>(handle: (...args: P) => void, isReset?: boolean) {
     return (...args: P) => {
       const action = isReset ? '重置' : '修改';

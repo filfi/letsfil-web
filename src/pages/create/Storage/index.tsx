@@ -62,7 +62,7 @@ export default function CreateStorage() {
     });
   };
 
-  const minerValidator = async (rule: unknown, value: string) => {
+  const minerValidator = async (_: unknown, value: string) => {
     if (value) {
       const [e, res] = await fetchMiner(value);
 
@@ -126,7 +126,7 @@ export default function CreateStorage() {
         initialValues={{
           planType: 1,
           minerType: 1,
-          raiser: address,
+          // raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
@@ -138,6 +138,7 @@ export default function CreateStorage() {
           raiseHisPowerRate: 0,
           raiseHisInitialPledgeRate: 0,
           ...model,
+          raiser: address ?? model?.raiser,
         }}
         onFinish={handleSubmit}
       >

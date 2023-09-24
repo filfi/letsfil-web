@@ -44,7 +44,7 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
 ) => {
   const items = Form.useWatch(name, form);
   const [model, setModel] = useModel('stepform');
-  const { list, getKey, ...actions } = useDynamicList<API.Base>(normalizeList(model?.investors));
+  const { list, getKey, ...actions } = useDynamicList(normalizeList(model?.investors));
 
   const handleAdd = () => {
     actions.push({ address: '', rate: '' });
@@ -98,20 +98,15 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
 
   return (
     <ul className="list-unstyled">
-      {list.map((item, idx) => (
+      {list.map((_, idx) => (
         <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative">
-          <Form.Item
-            name={[name, getKey(idx), 'address']}
-            initialValue={item.address}
-            rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: V.combineAddr }]}
-          >
+          <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: V.combineAddr }]}>
             <Input placeholder="输入建设者地址" />
           </Form.Item>
           <div className="row g-3">
             <div className="col-12 col-md-8 pe-lg-3">
               <Form.Item
                 name={[name, getKey(idx), 'amount']}
-                initialValue={item.amount}
                 rules={[
                   { required: true, message: '请输入持有质押数量' },
                   {
@@ -128,7 +123,6 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
             <div className="col-12 col-md-4">
               <Form.Item
                 name={['investors', getKey(idx), 'rate']}
-                initialValue={item.rate}
                 rules={[
                   { required: true, message: '请输入算力分配比例' },
                   {
