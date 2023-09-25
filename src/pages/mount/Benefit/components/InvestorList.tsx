@@ -1,15 +1,17 @@
 import { useModel } from '@umijs/max';
+import { useDebounceEffect } from 'ahooks';
 import { Form, Input, type FormInstance } from 'antd';
 import { forwardRef, useImperativeHandle } from 'react';
-import { useDebounceEffect, useDynamicList } from 'ahooks';
 
 import * as V from '@/utils/validators';
+import useDynamicList from '@/hooks/useDynamicList';
 
-export type InvestorItem = API.Base & {
+export type InvestorItem = {
   amount: string;
   address: string;
   disabled?: boolean;
   rate: string;
+  key?: React.Key;
 };
 
 export type InvestorListProps = {
@@ -23,19 +25,19 @@ export type InvestorListProps = {
 
 export type InvestorListActions = {
   add: () => void;
-  sub: (index: number) => void;
+  sub: (key: React.Key) => void;
   reset: (items?: InvestorItem[]) => void;
   insert: (index: number, item?: InvestorItem) => void;
 };
 
 function normalizeList(val?: InvestorItem[]) {
   if (Array.isArray(val)) {
-    const items = val?.filter(Boolean);
+    const items = val.filter(Boolean);
 
     if (items.length) return items;
   }
 
-  return [{ address: '', rate: '' }];
+  return [{ address: '', rate: '' }] as InvestorItem[];
 }
 
 const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, InvestorListProps> = (
@@ -44,22 +46,29 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
 ) => {
   const items = Form.useWatch(name, form);
   const [model, setModel] = useModel('stepform');
-  const { list, getKey, ...actions } = useDynamicList(normalizeList(model?.investors));
+  const { list, ...actions } = useDynamicList(normalizeList(model?.[name]));
 
   const handleAdd = () => {
-    actions.push({ address: '', rate: '' });
+    actions.push({ address: '', amount: '', rate: '' });
   };
 
-  const handleSub = (index: number) => {
+  const handleSub = (key: React.Key) => {
+    const items = form?.getFieldValue(name);
+    const index = list.findIndex((i) => i.key === key);
+
+    if (Array.isArray(items)) {
+      items.splice(index, 1);
+    }
+
     actions.remove(index);
   };
 
   const handleInsert = (index: number, item?: InvestorItem) => {
-    actions.insert(index, { address: '', rate: '', ...item });
+    actions.insert(index, { address: '', amount: '', rate: '', ...item });
   };
 
   const handleReset = (items?: InvestorItem[]) => {
-    actions.resetList(items ?? []);
+    actions.reset(items ?? []);
   };
 
   useImperativeHandle(
@@ -75,7 +84,7 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
 
   useDebounceEffect(
     () => {
-      if (items) {
+      if (Array.isArray(items)) {
         setModel((data) => {
           if (data) {
             return {
@@ -98,15 +107,15 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
 
   return (
     <ul className="list-unstyled">
-      {list.map((_, idx) => (
-        <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative">
-          <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: V.combineAddr }]}>
+      {list.map((item, idx) => (
+        <li key={item.key} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative">
+          <Form.Item name={[name, idx, 'address']} rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: V.combineAddr }]}>
             <Input placeholder="输入建设者地址" />
           </Form.Item>
           <div className="row g-3">
             <div className="col-12 col-md-8 pe-lg-3">
               <Form.Item
-                name={[name, getKey(idx), 'amount']}
+                name={[name, idx, 'amount']}
                 rules={[
                   { required: true, message: '请输入持有质押数量' },
                   {
@@ -122,7 +131,7 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
             </div>
             <div className="col-12 col-md-4">
               <Form.Item
-                name={['investors', getKey(idx), 'rate']}
+                name={['investors', idx, 'rate']}
                 rules={[
                   { required: true, message: '请输入算力分配比例' },
                   {
@@ -139,7 +148,7 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
             </div>
           </div>
 
-          {list.length > 1 && <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => actions.remove(idx)}></button>}
+          {list.length > 1 && <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => handleSub(item.key)}></button>}
         </li>
       ))}
     </ul>

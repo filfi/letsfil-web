@@ -1,14 +1,16 @@
 import { useModel } from '@umijs/max';
+import { useDebounceEffect } from 'ahooks';
 import { forwardRef, useImperativeHandle } from 'react';
-import { useDebounceEffect, useDynamicList } from 'ahooks';
 import { Button, Col, Form, Input, Row, Space } from 'antd';
 import type { FormInstance, FormItemProps } from 'antd';
 
 import * as V from '@/utils/validators';
+import useDynamicList from '@/hooks/useDynamicList';
 
 export type WhiteItem = {
   address: string;
   limit: string;
+  key?: React.Key;
 };
 
 export type WhiteListProps = Omit<FormItemProps, 'label' | 'name'> & {
@@ -37,14 +39,21 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
   const items = Form.useWatch(name, form);
   const [model, setModel] = useModel('stepform');
 
-  const { list, getKey, ...actions } = useDynamicList<WhiteItem>(normalizeList(model?.[name]));
+  const { list, ...actions } = useDynamicList(normalizeList(model?.[name]));
 
   const handleAdd = () => {
     actions.push({ address: '', limit: '' });
   };
 
-  const handleSub = (idx: number) => {
-    actions.remove(idx);
+  const handleSub = (key: React.Key) => {
+    const items = form?.getFieldValue(name);
+    const index = list.findIndex((i) => i.key === key);
+
+    if (Array.isArray(items)) {
+      items.splice(index, 1);
+    }
+
+    actions.remove(index);
   };
 
   const handleInsert = (index: number, item?: WhiteItem) => {
@@ -52,7 +61,7 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
   };
 
   const handleReset = (items?: WhiteItem[]) => {
-    actions.resetList(items ?? []);
+    actions.reset(items ?? []);
   };
 
   useImperativeHandle(
@@ -68,7 +77,7 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
 
   useDebounceEffect(
     () => {
-      if (items) {
+      if (Array.isArray(items)) {
         setModel((data) => {
           if (data) {
             return {
@@ -90,16 +99,16 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
 
   return (
     <>
-      {list.map((_, idx) => (
-        <Row key={getKey(idx)} gutter={16}>
+      {list.map((item, idx) => (
+        <Row key={item.key} gutter={16}>
           <Col flex={1}>
-            <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入钱包地址' }, { validator: V.combineAddr }]}>
+            <Form.Item name={[name, idx, 'address']} rules={[{ required: true, message: '请输入钱包地址' }, { validator: V.combineAddr }]}>
               <Input placeholder="输入钱包地址" />
             </Form.Item>
           </Col>
           <Col span={24} sm={18} lg={5}>
             <Form.Item
-              name={[name, getKey(idx), 'limit']}
+              name={[name, idx, 'limit']}
               rules={[
                 {
                   validator: V.Queue.create().add(V.number).add(V.createGtValidator(0, '必须大于0')).build(),
@@ -114,7 +123,7 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
               <Button size="large" style={{ height: 42 }} onClick={() => handleInsert(idx + 1)}>
                 <span className="bi bi-plus-lg fw-bold"></span>
               </Button>
-              <Button size="large" disabled={list.length <= 1} style={{ height: 42 }} onClick={() => handleSub(idx)}>
+              <Button size="large" disabled={list.length <= 1} style={{ height: 42 }} onClick={() => handleSub(item.key)}>
                 <span className="bi bi-dash-lg fw-bold"></span>
               </Button>
             </Space>

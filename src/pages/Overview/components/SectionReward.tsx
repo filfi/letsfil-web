@@ -1,12 +1,9 @@
 import { useMemo } from 'react';
 import { Pie, PieConfig } from '@ant-design/plots';
 
-import { isEqual } from '@/utils/utils';
-import useAccount from '@/hooks/useAccount';
 import { isMountPlan } from '@/helpers/mount';
 import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseRole from '@/hooks/useRaiseRole';
-import useRaiseEquity from '@/hooks/useRaiseEquity';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const config: PieConfig = {
@@ -40,30 +37,26 @@ const config: PieConfig = {
 };
 
 const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { address } = useAccount();
-  const { sponsors } = useRaiseEquity(data);
-  const { isServicer } = useRaiseRole(data);
   const { isInvestor } = useDepositInvestor(data);
-  const { priorityRate, raiserRate, servicerRate, ffiRate } = useRaiseRate(data);
-
-  const isSponsor = useMemo(() => sponsors?.some((i) => isEqual(i.address, address)), [address, sponsors]);
+  const { isRaiser, isServicer } = useRaiseRole(data);
+  const { priorityRate, superRate, servicerRate, ffiRate } = useRaiseRate(data);
 
   const roles = useMemo(() => {
     return [
-      { role: isSponsor, color: '#7FC4FD', name: '主办人' },
+      { role: isRaiser, color: '#7FC4FD', name: '主办人' },
       { role: isServicer, color: '#9FD3FD', name: '技术服务商' },
       { role: isInvestor, color: '#2699FB', name: '建设者' },
     ].filter((i) => i.role);
-  }, [isSponsor, isServicer, isInvestor]);
+  }, [isRaiser, isServicer, isInvestor]);
   const isMount = useMemo(() => isMountPlan(data), [data]);
   const pieData = useMemo(
     () => [
       { name: '建设者权益', value: priorityRate },
-      { name: '主办人权益', value: raiserRate },
+      { name: '主办人权益', value: superRate },
       { name: '技术运维服务费', value: servicerRate },
       { name: 'FilFi协议费用', value: ffiRate },
     ],
-    [priorityRate, raiserRate, servicerRate, ffiRate],
+    [priorityRate, superRate, servicerRate, ffiRate],
   );
 
   return (
@@ -91,7 +84,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <span className="reward-dot"></span>
                 <p className="reward-label">主办人</p>
                 <p className="reward-text">
-                  <span className="text-decimal">{raiserRate}</span>
+                  <span className="text-decimal">{superRate}</span>
                   <span className="ms-2 text-neutral">%</span>
                 </p>
               </div>

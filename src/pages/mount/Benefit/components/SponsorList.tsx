@@ -1,16 +1,18 @@
 import { useModel } from '@umijs/max';
+import { forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Form, type FormInstance, Input, type InputProps } from 'antd';
-import { useDebounceEffect, useDebounceFn, useDynamicList, useMemoizedFn } from 'ahooks';
-import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
+import { useDebounceEffect, useDebounceFn, useMemoizedFn } from 'ahooks';
 
 import * as V from '@/utils/validators';
 import useAccount from '@/hooks/useAccount';
+import useDynamicList from '@/hooks/useDynamicList';
 import { accAdd, accSub, isEqual } from '@/utils/utils';
 
 export type SponsorItem = {
   address: string;
   level?: number;
   rate: string;
+  key?: React.Key;
 };
 
 export type SponsorListProps = {
@@ -22,7 +24,7 @@ export type SponsorListProps = {
 
 export type SponsorListActions = {
   add: () => void;
-  sub: (index: number) => void;
+  sub: (key: React.Key) => void;
   reset: (items?: SponsorItem[]) => void;
   insert: (index: number, item?: SponsorItem) => void;
 };
@@ -59,24 +61,30 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
   const [model, setModel] = useModel('stepform');
 
   const raiser = useMemo(() => model?.raiser ?? address, [model?.raiser, address]);
-  const { list, getKey, ...actions } = useDynamicList(normalizeList(model?.[name]));
+  const { list, ...actions } = useDynamicList(normalizeList(model?.[name]));
 
   const isRaiser = (addr: string) => isEqual(addr, raiser);
 
   const calcItemRate = useMemoizedFn(() => {
-    const list: SponsorItem[] = form?.getFieldValue(name) ?? [];
-    const sum = list.filter(Boolean).reduce((sum, item) => {
-      if (isRaiser(item.address)) return sum;
+    const list: SponsorItem[] = form?.getFieldValue(name);
 
-      const val = Number(item.rate);
+    if (Array.isArray(list)) {
+      const sum = list.filter(Boolean).reduce((sum, item) => {
+        if (isRaiser(item.address)) return sum;
 
-      if (!Number.isNaN(val)) {
-        return accAdd(sum, val);
-      }
+        const val = Number(item.rate);
 
-      return sum;
-    }, 0);
-    return Math.max(accSub(max, sum), 0);
+        if (!Number.isNaN(val)) {
+          return accAdd(sum, val);
+        }
+
+        return sum;
+      }, 0);
+
+      return Math.max(accSub(max, sum), 0);
+    }
+
+    return max;
   });
 
   const updateItem = useMemoizedFn(() => {
@@ -91,13 +99,20 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
     form.setFieldValue([name, 0], { ...item });
   });
 
-  useEffect(updateItem, [max, name, raiser]);
+  useDebounceEffect(updateItem, [max, name, raiser], { wait: 200 });
 
   const handleAdd = () => {
     actions.push({ address: '', level: 2, rate: '' });
   };
 
-  const handleSub = (index: number) => {
+  const handleSub = (key: React.Key) => {
+    const items = form?.getFieldValue(name);
+    const index = list.findIndex((i) => i.key === key);
+
+    if (Array.isArray(items)) {
+      items.splice(index, 1);
+    }
+
     actions.remove(index);
 
     setTimeout(updateItem, 200);
@@ -108,7 +123,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
   };
 
   const handleReset = (items?: SponsorItem[]) => {
-    actions.resetList(items ?? [{ address: raiser, level: 1, rate: `${max}` }]);
+    actions.reset(items ?? [{ address: raiser, level: 1, rate: `${max}` }]);
   };
 
   const { run: handleRateChange } = useDebounceFn(updateItem, { wait: 200 });
@@ -150,15 +165,15 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
   return (
     <ul className="list-unstyled">
       {list.map((item, idx) => (
-        <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative" style={{ paddingBottom: '0.01px' }}>
-          <Form.Item name={[name, getKey(idx), 'address']} rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.combineAddr }]}>
+        <li key={item.key} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative" style={{ paddingBottom: '0.01px' }}>
+          <Form.Item name={[name, idx, 'address']} rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.combineAddr }]}>
             <Input disabled={isRaiser(item.address)} placeholder="输入主办人地址" />
           </Form.Item>
-          <Form.Item hidden name={[name, getKey(idx), 'level']}>
+          <Form.Item hidden name={[name, idx, 'level']}>
             <Input />
           </Form.Item>
           <Form.Item
-            name={[name, getKey(idx), 'rate']}
+            name={[name, idx, 'rate']}
             rules={[
               { required: true, message: '请输入算力分配比例' },
               {
@@ -174,7 +189,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
           </Form.Item>
 
           {list.length > 1 && !isRaiser(item.address) && (
-            <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => actions.remove(idx)}></button>
+            <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => handleSub(item.key)}></button>
           )}
         </li>
       ))}

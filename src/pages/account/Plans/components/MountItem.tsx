@@ -108,9 +108,17 @@ const MountItem: React.FC<{
     }
 
     if (isActive) {
+      const isSuper = sponsor?.role_level === 1;
+      const isSponsor = sponsor?.role_level === 2;
+      const isInvestor = Boolean(investor);
+      const sponsorSigned = Boolean(sponsor?.sign_status);
+      const investorSigned = Boolean(investor?.sign_status);
+
+      const status = isSponsor && isInvestor ? sponsorSigned && investorSigned : isSponsor ? sponsorSigned : investorSigned;
+
       const steps = [
-        { role: Boolean(sponsor), signed: Boolean(sponsor?.sign_status) },
-        { role: Boolean(investor), signed: Boolean(investor?.sign_status) },
+        { role: isSuper, signed: isSuper && sponsorSigned },
+        { role: isSponsor || isInvestor, signed: status },
         { role: Boolean(servicer), signed: Boolean(servicer?.sign_status) },
       ];
 
