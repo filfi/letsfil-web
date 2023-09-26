@@ -96,9 +96,15 @@ export default function useRewardRaiser(data?: API.Plan | null) {
 
   const [withdrawing, withdrawAction] = useProcessify(
     withConnect(async () => {
-      if (!data || !sponsor) return;
+      if (!data) return;
 
-      const res = await contract.sponsorWithdraw(data.raising_id, sponsor.address);
+      let res;
+
+      if (Array.isArray(sponsors) && sponsor) {
+        res = await contract.sponsorWithdraw(data.raising_id, sponsor.address);
+      } else if (isSuper) {
+        res = await contract.raiserWithdraw(data.raising_id);
+      }
 
       await sleep(200);
 
