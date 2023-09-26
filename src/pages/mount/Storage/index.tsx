@@ -19,7 +19,7 @@ import useLoadingify from '@/hooks/useLoadingify';
 import { accAdd, isDef, sleep } from '@/utils/utils';
 import { formatAddr, toFixed, toNumber } from '@/utils/format';
 
-const minerIgnores = ['f02220886'];
+const minerIgnores = ['f02220886', 'f01964215'];
 
 function checkMiner(data: API.MinerAsset, minerId: string) {
   const {
