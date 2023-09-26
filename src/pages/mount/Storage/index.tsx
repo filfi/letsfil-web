@@ -19,7 +19,7 @@ import SpinBtn from '@/components/SpinBtn';
 import AvatarInput from '@/components/AvatarInput';
 import ProviderSelect from '@/components/ProviderRadio';
 
-const minerIgnores = ['f02220886'];
+const minerIgnores = ['f02220886', 'f01964215'];
 
 function checkMiner(data: API.MinerAsset, minerId: string) {
   const {
