@@ -120,7 +120,7 @@ export default function MountBenefit() {
   const ratio = Form.useWatch('opsSecurityFundRate', form);
 
   const { data } = useMinerInfo(model?.minerId);
-  const balance = useMemo(() => +toFixed(toNumber(data?.initial_pledge), 7), [data]);
+  const balance = useMemo(() => +toFixed(toNumber(data?.initial_pledge), 5), [data]);
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
@@ -215,7 +215,7 @@ export default function MountBenefit() {
     if (isInvestor) {
       const sum = list.filter(Boolean).reduce((s, { amount }) => accAdd(s, amount), 0);
       if (sum !== balance) {
-        showErr(`${role}持有质押币累加必须精确等于${formatAmount(balance, 7)}`, title);
+        showErr(`${role}持有质押币累加必须精确等于${formatAmount(balance, 5)}`, title);
         return false;
       }
     }
@@ -452,7 +452,7 @@ export default function MountBenefit() {
             </p>
 
             <p className="fw-500">
-              将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(balance, 7)} FIL</span> 质押分配给以下地址
+              将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(balance, 5)} FIL</span> 质押分配给以下地址
             </p>
             <p className="text-end">
               <button className="btn btn-light" type="button" disabled={investors.length >= 50} onClick={() => investor.current?.add()}>
