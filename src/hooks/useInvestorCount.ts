@@ -2,12 +2,12 @@ import { useUpdateEffect } from 'ahooks';
 import { useQuery } from '@tanstack/react-query';
 
 import { count } from '@/apis/raise';
-import { isWorking } from '@/helpers/raise';
+import { isPending } from '@/helpers/raise';
 import { isMountPlan } from '@/helpers/mount';
 
 export default function useInvestorCount(plan?: API.Plan | null) {
   const queryFn = async () => {
-    if (plan && (isMountPlan(plan) || isWorking(plan))) {
+    if (plan && (isMountPlan(plan) || !isPending(plan))) {
       return await count(plan.raising_id);
     }
   };

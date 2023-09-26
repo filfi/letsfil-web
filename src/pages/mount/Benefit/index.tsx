@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Modal } from 'bootstrap';
 import { parseEther } from 'viem';
 import { snakeCase } from 'lodash';
@@ -5,7 +6,6 @@ import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
 import { useEffect, useMemo, useRef } from 'react';
-import { useDebounceEffect, useDynamicList } from 'ahooks';
 
 import * as A from '@/apis/raise';
 import * as H from '@/helpers/app';
@@ -13,15 +13,17 @@ import styles from './styles.less';
 import { catchify } from '@/utils/hackify';
 import useMinerInfo from '@/hooks/useMinerInfo';
 import useSProvider from '@/hooks/useSProvider';
-import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
-import { accAdd, accSub, isEqual, sleep } from '@/utils/utils';
+import { accAdd, accSub, isEqual, sleep, toEthAddr } from '@/utils/utils';
 import { formatAmount, formatNum, toFixed, toNumber } from '@/utils/format';
-// import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import OrgTree from '@/components/OrgTree';
 import SpinBtn from '@/components/SpinBtn';
 import StepsModal from './components/StepsModal';
+import SponsorList from './components/SponsorList';
+import InvestorList from './components/InvestorList';
+import type { SponsorListActions } from './components/SponsorList';
+import type { InvestorListActions, InvestorItem } from './components/InvestorList';
 import { ReactComponent as IconLock } from '@/assets/icons/icon-lock.svg';
 import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 
@@ -94,7 +96,7 @@ const getTreeData = (priority: number = 70, spRate = 5, ratio = 5) => {
   return data;
 };
 
-const getInitInvestors = (items?: API.Base[]) => {
+const getInitInvestors = (items?: InvestorItem[]) => {
   if (Array.isArray(items)) {
     return items.filter(Boolean);
   }
@@ -104,11 +106,14 @@ const getInitInvestors = (items?: API.Base[]) => {
 
 export default function MountBenefit() {
   const modal = useRef<ModalAttrs>(null);
+  const sponsor = useRef<SponsorListActions>(null);
+  const investor = useRef<InvestorListActions>(null);
 
   const [model, setModel] = useModel('stepform');
   const provider = useSProvider(model?.serviceId);
 
   const [form] = Form.useForm();
+  const _sponsors = Form.useWatch('sponsors', form);
   const _investors = Form.useWatch('investors', form);
   const spRate = Form.useWatch('opServerShare', form);
   const priority = Form.useWatch('raiserCoinShare', form);
@@ -119,36 +124,19 @@ export default function MountBenefit() {
   const pieVal = useMemo(() => (Number.isNaN(+ratio) ? 0 : +ratio), [ratio]);
   const priorityRate = useMemo(() => Math.max(accSub(100, pieVal), 0), [pieVal]);
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
-
-  const { list: investors, getKey, ...handles } = useDynamicList<API.Base>(getInitInvestors(model?.investors));
+  const sponsors = useMemo(() => (Array.isArray(_sponsors) ? _sponsors.filter(Boolean) : []), [_sponsors]);
+  const investors = useMemo(() => (Array.isArray(_investors) ? _investors.filter(Boolean) : []), [_investors]);
+  const raserRate = useMemo(() => H.calcEachEarn(priority, spRate, ratio).raiserRate, [priority, spRate, ratio]);
 
   useEffect(() => {
     form.setFieldValue('hisInitialPledge', parseEther(`${balance}`).toString());
   }, [balance]);
+
   useEffect(() => {
     if (provider) {
       form.setFieldValue('opsSecurityFundAddr', provider?.wallet_address);
     }
   }, [provider]);
-
-  useDebounceEffect(
-    () => {
-      if (_investors) {
-        setModel((data) => {
-          if (data) {
-            return {
-              ...data,
-              investors: _investors.filter(Boolean),
-            };
-          }
-
-          return data;
-        });
-      }
-    },
-    [_investors],
-    { wait: 300 },
-  );
 
   function withWarning<P extends unknown[] = any>(handle: (...args: P) => void, isReset?: boolean) {
     return (...args: P) => {
@@ -172,16 +160,23 @@ export default function MountBenefit() {
 
   const handleReset = withWarning(() => {
     form.setFieldsValue({
+      sponsors: [],
       investors: [],
       opServerShare: 5,
       raiserCoinShare: 70,
     });
-    handles.resetList(getInitInvestors());
+    sponsor?.current?.reset();
+    investor.current?.reset(getInitInvestors());
   }, true);
 
   const handleEdit = withWarning(async () => {
-    form.setFieldValue('investors', []);
-    handles.resetList(getInitInvestors());
+    form.setFieldsValue({
+      sponsors: [],
+      investors: [],
+    });
+
+    sponsor.current?.reset();
+    investor.current?.reset(getInitInvestors());
 
     await sleep(300);
 
@@ -197,54 +192,48 @@ export default function MountBenefit() {
     });
   };
 
-  const showErr = (content: string, title = '建设者详细分配') => {
+  const showErr = (content: string, title: string) => {
     Dialog.error({ content, title });
   };
 
-  const validateInvestors = (list: API.Base[]) => {
-    if (!Array.isArray(list)) {
-      showErr('请添加建设者');
+  const validateEquity = (list: API.Base[], isInvestor = false) => {
+    const role = isInvestor ? '建设者' : '主办人';
+    const title = `${role}详细分配`;
+
+    if (!Array.isArray(list) || !list.length) {
+      showErr(`请添加${role}`, title);
       return false;
     }
 
-    const items = list.filter(Boolean).reduce((prev, { address }) => {
-      const key = `${address}`.toLowerCase();
+    const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
 
-      if (prev[key]) {
-        prev[key] += 1;
-      } else {
-        prev[key] = 1;
+    if (new Set(items).size !== items.length) {
+      showErr(`${role}钱包地址不能重复`, title);
+      return false;
+    }
+
+    if (isInvestor) {
+      const sum = list.filter(Boolean).reduce((s, { amount }) => accAdd(s, amount), 0);
+      if (sum !== balance) {
+        showErr(`${role}持有质押币累加必须精确等于${formatAmount(balance, 7)}`, title);
+        return false;
       }
-
-      return prev;
-    }, {});
-
-    if (Object.keys(items).some((key) => items[key] > 1)) {
-      showErr('钱包地址不能重复');
-      return false;
     }
 
-    if (list.filter(Boolean).reduce((sum, { amount }) => accAdd(sum, amount), 0) !== balance) {
-      showErr(`建设者持有质押币累加必须精确等于${formatAmount(balance, 7)}`);
-      return false;
-    }
-
-    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== +priority) {
-      showErr(`建设者分成比例累加必须精确等于${priority}%`);
+    const rate = isInvestor ? priority : raserRate;
+    if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(rate)) {
+      showErr(`${role}分成比例累加必须精确等于${rate}%`, title);
       return false;
     }
 
     return true;
   };
 
-  const [loading, handleSubmit] = useLoadingify(async (vals?: API.Base) => {
-    const data = vals ?? model;
-
-    if (!data || !validateInvestors(data.investors)) return;
-
+  const [loading, handleSubmit] = useLoadingify(async (data: API.Base) => {
     let raiseId = data.raisingId;
-    const params = H.transformParams(data);
-    const { investors, ...body } = Object.keys(params).reduce(
+    const isEdit = !!raiseId;
+    const { beginTime, ...params }: API.Base = H.transformParams(data);
+    const { sponsors, investors, ...body } = Object.keys(params).reduce(
       (d, key) => ({
         ...d,
         [snakeCase(key)]: params[key as keyof typeof params],
@@ -252,26 +241,33 @@ export default function MountBenefit() {
       {} as API.Base,
     );
 
+    if (!isEdit) {
+      raiseId = H.genRaiseID(data.minerId).toString();
+    }
+
+    if (beginTime) {
+      body.begin_time = dayjs(beginTime).unix();
+    }
+
+    const _sponsors = sponsors.filter(Boolean).map((i: API.Base) => ({
+      ...H.transformSponsor(i),
+      raise_id: raiseId,
+    }));
+
+    const _investors = investors.filter(Boolean).map((i: API.Base) => ({
+      ...H.transformInvestor(i),
+      raise_id: raiseId,
+    }));
+
+    delete body.raiseWhiteList;
+
     const [e] = await catchify(async () => {
-      if (raiseId) {
+      if (isEdit) {
         await A.update(raiseId, body);
-        await A.updateEquity(raiseId, {
-          sponsor_equities: [],
-          investor_equities: investors.filter(Boolean).map((i: API.Base) => ({
-            ...H.transformInvestor(i),
-            raise_id: raiseId,
-          })),
-        });
+        await A.updateEquity(raiseId, { sponsor_equities: _sponsors, investor_equities: _investors });
       } else {
-        raiseId = H.genRaiseID(data.minerId).toString();
         await A.add({ ...body, raising_id: raiseId });
-        await A.addEquity(raiseId, {
-          sponsor_equities: [],
-          investor_equities: investors.filter(Boolean).map((i: API.Base) => ({
-            ...H.transformInvestor(i),
-            raise_id: raiseId,
-          })),
-        });
+        await A.addEquity(raiseId, { sponsor_equities: _sponsors, investor_equities: _investors });
       }
     })();
 
@@ -295,6 +291,12 @@ export default function MountBenefit() {
       modal.current?.show();
       return;
     }
+
+    const { sponsors, investors } = data;
+
+    if (!validateEquity(sponsors)) return;
+
+    if (!validateEquity(investors, true)) return;
 
     handleSubmit(data);
   };
@@ -373,7 +375,7 @@ export default function MountBenefit() {
             </div>
           </div>
 
-          <div className="ffi-item">
+          <div className="ffi-item border-bottom">
             <h4 className="ffi-label">分配方案</h4>
             <p className="text-gray">
               主办人根据历史节点原来的利益结构，在FilFi协议上定义分配方案。（算力分配即收益分配，质押的分配已在前一项确定）
@@ -420,6 +422,29 @@ export default function MountBenefit() {
             </div>
           </div>
 
+          <div className="ffi-form border-bottom">
+            <div className="ffi-item">
+              <h4 className="ffi-label">主办人详细分配</h4>
+              <p className="mb-3 text-gray">主办人的权益可再分配给多个地址。点击+号增加地址。第一个地址为第一主办人，不可删减，其分配比例自动计算。</p>
+
+              <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3">
+                <p className="mb-0 me-sm-auto">将 {raserRate}% 分配给以下地址</p>
+
+                <button className="btn btn-light btn-lg" type="button" disabled={sponsors.length >= 20} onClick={() => sponsor.current?.add()}>
+                  <span className="bi bi-plus-lg"></span>
+                  <span className="ms-2">添加主办人</span>
+                </button>
+              </div>
+
+              <SponsorList ref={sponsor} form={form} max={raserRate} name="sponsors" />
+
+              <p>
+                <span className="me-1">共 {sponsors.length} 地址</span>
+                <span className="text-danger">算力分配比例累加要精确等于{raserRate}%</span>
+              </p>
+            </div>
+          </div>
+
           <div className="ffi-item">
             <h4 className="ffi-label">建设者详细分配</h4>
             <p className="text-gray">
@@ -430,71 +455,13 @@ export default function MountBenefit() {
               将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(balance, 7)} FIL</span> 质押分配给以下地址
             </p>
             <p className="text-end">
-              <button
-                className="btn btn-light"
-                type="button"
-                disabled={investors.length >= 50}
-                onClick={() => handles.push({ address: '', amount: '', rate: '' })}
-              >
+              <button className="btn btn-light" type="button" disabled={investors.length >= 50} onClick={() => investor.current?.add()}>
                 <span className="bi bi-plus-lg"></span>
                 <span className="ms-1">添加建设者</span>
               </button>
             </p>
 
-            <ul className="list-unstyled">
-              {investors.map((item, idx) => (
-                <li key={getKey(idx)} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative">
-                  <Form.Item
-                    name={['investors', getKey(idx), 'address']}
-                    initialValue={item.address}
-                    rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: validators.address }]}
-                  >
-                    <Input placeholder="输入建设者地址" />
-                  </Form.Item>
-                  <div className="row g-0">
-                    <div className="col-12 col-md-8 pe-lg-3">
-                      <Form.Item
-                        name={['investors', getKey(idx), 'amount']}
-                        initialValue={item.amount}
-                        rules={[
-                          { required: true, message: '请输入持有质押数量' },
-                          {
-                            validator: validators.Queue.create()
-                              .add(validators.createNumRangeValidator([1, balance], `请输入1-${balance}之间的数`))
-                              .add(validators.createDecimalValidator(7, `最多支持7位小数`))
-                              .build(),
-                          },
-                        ]}
-                      >
-                        <Input placeholder="输入持有质押数量" suffix="FIL" />
-                      </Form.Item>
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <Form.Item
-                        name={['investors', getKey(idx), 'rate']}
-                        initialValue={item.rate}
-                        rules={[
-                          { required: true, message: '请输入算力分配比例' },
-                          {
-                            validator: validators.Queue.create()
-                              .add(validators.createGtValidator(0))
-                              .add(validators.createNumRangeValidator([0, priority], `请输入0-${priority}之间的数`))
-                              .add(validators.createDecimalValidator(2, '最多支持2小数'))
-                              .build(),
-                          },
-                        ]}
-                      >
-                        <Input placeholder="输入算力分配比例" suffix="%" />
-                      </Form.Item>
-                    </div>
-                  </div>
-
-                  {investors.length > 1 && (
-                    <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => handles.remove(idx)}></button>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <InvestorList ref={investor} name="investors" max={balance} rateMax={priority} />
 
             <p>
               <span className="me-1">共 {investors.length} 地址</span>

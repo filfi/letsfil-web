@@ -1,5 +1,8 @@
 import { ethers } from 'ethers';
+import { validateAddressString } from '@glif/filecoin-address';
+
 import { isFn } from './utils';
+import { isAddress } from 'ethers/lib/utils';
 
 export type Validator<R = unknown> = (rule: R, value: string) => Promise<any>;
 
@@ -44,7 +47,15 @@ export const number = createValidator(/^\d+(\.\d+)?$/, '请输入数字');
 
 export const integer = createValidator(/^[1-9]([0-9]+)?$/, '请输入正整数');
 
-export const minerID = createValidator(/^(f0|t0)[0-9]+$/i, '无效的节点号');
+export const minerID = createValidator(/^(f0|t0)[0-9]{5,}$/i, '无效的节点号');
+
+export const f4Address = createValidator((address) => {
+  return /^(t4|f4)/i.test(address) && validateAddressString(address);
+}, '无效的地址');
+
+export const combineAddr = createValidator((addr) => {
+  return isAddress(addr) || (/^(t4|f4)/i.test(addr) && validateAddressString(addr));
+}, '无效的地址');
 
 export function createGtValidator(min: number, message?: string) {
   return async function validator(rule: unknown, value: string) {

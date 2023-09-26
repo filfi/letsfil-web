@@ -4,7 +4,6 @@ import { Link } from '@umijs/max';
 import * as F from '@/utils/format';
 import { catchify } from '@/utils/hackify';
 import { accSub, sec2day } from '@/utils/utils';
-import { isDelayed, isSealing } from '@/helpers/raise';
 import Countdown from './Countdown';
 import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
@@ -49,53 +48,52 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
   };
 }
 
-function calcSealDays(data: API.Plan) {
-  const r: string[] = [];
-
-  let res = `< ${data.seal_days} 天`;
-
-  if (data.end_seal_time) {
-    res = F.formatUnixDate(data.end_seal_time);
-  }
-
-  r.push(res);
-
-  // 封装中
-  if (isSealing(data) || isDelayed(data)) {
-    const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time));
-    r.push(`已进行${sec2day(sec)}天`);
-  }
-
-  return r;
-}
-
 const RaiseItem: React.FC<{
   data: API.Plan;
   role?: number;
-  onEdit?: () => void;
-  onHide?: () => Promise<any>;
+  onEdit?: () => Promise<any>;
   onDelete?: () => Promise<any>;
-  onStart?: () => Promise<any>;
-}> = ({ data, role, onEdit, onDelete, onStart }) => {
+}> = ({ data, role, onEdit, onDelete }) => {
   const state = useRaiseState(data);
   const { data: pack } = usePackInfo(data);
   const { amount } = useDepositInvestor(data);
   const provider = useSProvider(data.service_id);
+  const { isSealing, isDelayed } = useRaiseState(data);
   const { priorityRate, opsRatio } = useRaiseRate(data);
   const { actual, progress, target } = useRaiseBase(data);
   const { progress: sealPercent } = useAssetPack(data, pack);
-  const { isRaiser, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
+  const { isSuper, isSigned, isOpsPaid, isRaisePaid } = useRaiseRole(data);
 
-  const sealDays = useMemo(() => calcSealDays(data), [data]);
+  const calcSealDays = () => {
+    const r: string[] = [];
+
+    let res = `< ${data.seal_days} 天`;
+
+    if (data.end_seal_time) {
+      res = F.formatUnixDate(data.end_seal_time);
+    }
+
+    r.push(res);
+
+    // 封装中
+    if (isSealing || isDelayed) {
+      const sec = Math.max(accSub(Date.now() / 1000, data.begin_seal_time));
+      r.push(`已进行${sec2day(sec)}天`);
+    }
+
+    return r;
+  };
+
+  const sealDays = useMemo(() => calcSealDays(), [data, isDelayed, isSealing]);
   const power = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
 
-  const [deleting, deleteAction] = useLoadingify(async () => {
-    await onDelete?.();
+  const [editing, handleEdit] = useProcessify(async () => {
+    await onEdit?.();
   });
 
-  const [starting, handleStart] = useProcessify(async () => {
-    await onStart?.();
+  const [deleting, deleteAction] = useLoadingify(async () => {
+    await onDelete?.();
   });
 
   const handleDelete = withConfirm(data, deleteAction);
@@ -132,7 +130,7 @@ const RaiseItem: React.FC<{
 
   const renderStatus = () => {
     if (state.isPending) {
-      if (role === 1 && isRaiser) {
+      if (role === 1 && isSuper) {
         return <span className="badge">可编辑</span>;
       }
 
@@ -147,7 +145,7 @@ const RaiseItem: React.FC<{
         return <span className="badge badge-danger">待服务商签名</span>;
       }
 
-      return <span className="badge">待启动</span>;
+      return <span className="badge">待开放</span>;
     }
     if (state.isRaising) {
       return (
@@ -205,40 +203,6 @@ const RaiseItem: React.FC<{
     }
 
     return null;
-  };
-
-  const renderActions = () => {
-    const editable = state.isPending;
-    const deletable = state.isPending;
-    const startable = state.isWaiting && isRaisePaid && isOpsPaid && isSigned;
-
-    return (
-      <>
-        {deletable && (
-          <SpinBtn
-            className="btn btn-outline-danger border-0 shadow-none"
-            loading={deleting}
-            icon={<span className="bi bi-trash3"></span>}
-            onClick={handleDelete}
-          >
-            删除
-          </SpinBtn>
-        )}
-
-        {editable && (
-          <button className="btn btn-outline-light" type="button" onClick={onEdit}>
-            <span className="bi bi-pencil"></span>
-            <span className="ms-1">编辑</span>
-          </button>
-        )}
-
-        {startable && (
-          <SpinBtn className="btn btn-light" loading={starting} icon={<span className="bi bi-play"></span>} onClick={handleStart}>
-            启动
-          </SpinBtn>
-        )}
-      </>
-    );
   };
 
   return (
@@ -300,7 +264,23 @@ const RaiseItem: React.FC<{
         <div className="card-footer d-flex align-items-center gap-3">
           <div className="flex-shrink-0 me-auto">{renderStatus()}</div>
           <div className="d-flex flex-shrink-0 justify-content-between gap-2">
-            {isRaiser && renderActions()}
+            {state.isPending && isSuper && (
+              <>
+                <SpinBtn
+                  className="btn btn-outline-danger border-0 shadow-none"
+                  icon={<span className="bi bi-trash3"></span>}
+                  loading={deleting}
+                  disabled={editing}
+                  onClick={handleDelete}
+                >
+                  删除
+                </SpinBtn>
+
+                <SpinBtn className="btn btn-light" icon={<span className="bi bi-pencil"></span>} loading={editing} disabled={deleting} onClick={handleEdit}>
+                  编辑
+                </SpinBtn>
+              </>
+            )}
             <Link className="btn btn-primary" to={`/overview/${data.raising_id}`}>
               <span className="bi bi-eye"></span>
               <span className="ms-1">查看</span>

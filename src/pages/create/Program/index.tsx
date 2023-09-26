@@ -4,28 +4,32 @@ import { Form, Input, Skeleton } from 'antd';
 import { history, useModel } from '@umijs/max';
 
 import { isMainnet } from '@/constants';
-// import Modal from '@/components/Modal';
+import Dialog from '@/components/Dialog';
 import FormRadio from '@/components/FormRadio';
 import DaysInput from '@/components/DaysInput';
+import WhiteList from './components/WhiteList';
 import useChainInfo from '@/hooks/useChainInfo';
 import * as validators from '@/utils/validators';
 import { calcRaiseDepost } from '@/helpers/app';
-import { accDiv, accMul, pb2byte } from '@/utils/utils';
+import DateTimePicker from '@/components/DateTimePicker';
 import { formatAmount, formatNum, toFixed } from '@/utils/format';
+import { accDiv, accMul, disabledDate, pb2byte, toEthAddr } from '@/utils/utils';
 import { ReactComponent as IconFIL } from '@/assets/paytype-fil.svg';
 import { ReactComponent as IconFFI } from '@/assets/paytype-ffi.svg';
 
 export default function CreateProgram() {
   const [form] = Form.useForm();
-  const [data, setData] = useModel('stepform');
+  const [model, setModel] = useModel('stepform');
 
   const amount = Form.useWatch('amount', form);
+  const planOpen = Form.useWatch('planOpen', form);
   const target = Form.useWatch('targetAmount', form);
   const minRate = Form.useWatch('minRaiseRate', form);
   const amountType = Form.useWatch('amountType', form);
 
   const { perPledge, isLoading } = useChainInfo();
 
+  const isTargeted = useMemo(() => `${planOpen}` === '2', [planOpen]);
   const rate = useMemo(() => (Number.isNaN(+minRate) ? 0 : accDiv(minRate, 100)), [minRate]);
   const minAmount = useMemo(() => (Number.isNaN(+amount) ? 0 : accMul(amount, rate)), [amount, rate]);
 
@@ -104,8 +108,32 @@ export default function CreateProgram() {
     }
   }, [amount, amountType, perPledge]);
 
+  const showErr = (content: string, title: string) => {
+    Dialog.error({ content, title });
+  };
+
+  const validateWhitelist = (list: API.Base[]) => {
+    const title = '定向计划';
+
+    if (!Array.isArray(list) || !list.length) {
+      showErr('请指定可参与计划的钱包地址和每个地址的质押限额', title);
+      return false;
+    }
+
+    const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
+
+    if (new Set(items).size !== items.length) {
+      showErr('可参与计划的钱包地址不能重复', title);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = (vals: API.Base) => {
-    setData((d) => ({ ...d, ...vals }));
+    if (isTargeted && !validateWhitelist(vals.raiseWhiteList)) return;
+
+    setModel((d) => ({ ...d, ...vals }));
 
     history.push('/create/benefit');
   };
@@ -122,7 +150,8 @@ export default function CreateProgram() {
           sealDays: 14,
           raiseDays: 30,
           ffiProtocolFeePayMeth: 1,
-          ...data,
+          beginTime: new Date(),
+          ...model,
         }}
         onFinish={handleSubmit}
       >
@@ -133,10 +162,20 @@ export default function CreateProgram() {
                 grid
                 items={[
                   { label: '公开计划', desc: '对所有人公开', value: 1 },
-                  { label: '定向计划', desc: '定向质押，即将上线。', disabled: true, value: 2 },
+                  { label: '定向计划', desc: '非公开，仅指定钱包地址可参与', value: 2 },
                 ]}
               />
             </Form.Item>
+            {isTargeted && (
+              <>
+                <p className="text-gray">
+                  请在下面指定可参与计划的钱包地址和每个地址的质押限额（未填即无限额）。点击 + 号增加，点击 -
+                  号删除。“定向计划”不会在公开列表中显示。主办人需要在私域中将计划的页面链接发给建设者。
+                </p>
+
+                <WhiteList form={form} name="raiseWhiteList" />
+              </>
+            )}
           </div>
 
           <div className="ffi-item border-bottom">
@@ -174,7 +213,7 @@ export default function CreateProgram() {
                     <Skeleton active loading={isLoading} paragraph={{ rows: 1 }}>
                       <div className="d-flex text-neutral mb-3">
                         <span className="fw-600">{['估算存储算力(QAP)', '需要质押FIL'][amountType]}</span>
-                        <span className="ms-auto">{data?.sectorSize}G扇区</span>
+                        <span className="ms-auto">{model?.sectorSize}G扇区</span>
                       </div>
 
                       <p className="mb-0 fw-600 lh-base">
@@ -191,6 +230,27 @@ export default function CreateProgram() {
           </div>
 
           <div className="ffi-item border-bottom">
+            <h4 className="ffi-label">时间计划</h4>
+            <p className="text-gray">到达开放时间，如果满足所有开放条件计划自动启动，如果不满足开放条件计划自动关闭。</p>
+
+            <div className="row row-cols-1 row-cols-lg-2 g-3">
+              <div className="col">
+                <p className="mb-1 fw-500">开放时间</p>
+
+                <Form.Item name="beginTime" rules={[{ required: true, message: '请选择开放时间' }]}>
+                  <DateTimePicker disabledDate={disabledDate} timeFormat="HH:mm:ss" placeholder="开放时间" />
+                </Form.Item>
+              </div>
+              <div className="col">
+                <p className="mb-1 fw-500">持续时间</p>
+
+                <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入持续时间' }, { validator: validators.integer }]}>
+                  <Input type="number" placeholder="输入天数" />
+                </Form.Item>
+              </div>
+            </div>
+          </div>
+          {/* <div className="ffi-item border-bottom">
             <h4 className="ffi-label">质押时间</h4>
             <p className="text-gray">节点计划保持开放的持续时间。启动时间由主办人决定。</p>
 
@@ -205,7 +265,7 @@ export default function CreateProgram() {
                 ]}
               />
             </Form.Item>
-          </div>
+          </div> */}
 
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">封装时间</h4>

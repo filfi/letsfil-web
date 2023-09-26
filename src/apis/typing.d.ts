@@ -74,6 +74,7 @@ declare namespace API {
     raise_his_power_rate: number;
     raise_margin_status: number;
     raise_security_fund: string;
+    raise_white_list: string;
     raiser: string;
     raiser_coin_share: number;
     raising_id: string;
@@ -160,6 +161,7 @@ declare namespace API {
     DeletedAt: string;
     raise_id: string;
     address: string;
+    fil_address: string;
     role: number;
     role_level: number;
     pledge_amount: string;

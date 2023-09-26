@@ -8,7 +8,6 @@ import Avatar from '@/components/Avatar';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
-import useRaiseRole from '@/hooks/useRaiseRole';
 import useSProvider from '@/hooks/useSProvider';
 import useLoadingify from '@/hooks/useLoadingify';
 import useMountState from '@/hooks/useMountState';
@@ -46,20 +45,21 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 const MountItem: React.FC<{
   data: API.Plan;
   role?: number;
-  onEdit?: () => void;
-  onHide?: () => Promise<any>;
+  onEdit?: () => Promise<any>;
   onDelete?: () => Promise<any>;
-  onStart?: () => Promise<any>;
 }> = ({ data, role, onEdit, onDelete }) => {
   const provider = useSProvider(data.service_id);
   const { data: counter } = useInvestorCount(data);
   const { isInactive, isActive, isWorking } = useMountState(data);
-  const { isRaiser, isServicer, isSigned: isSpSigned } = useRaiseRole(data);
 
-  const { power, pledge, investor, raiserPower, investorPower, servicerPower, investorPledge } = useMountAssets(data);
+  const { power, pledge, investor, sponsor, servicer, sponsorPower, investorPower, servicerPower, investorPledge } = useMountAssets(data);
 
+  const isSuper = useMemo(() => sponsor && sponsor.role_level === 1, [sponsor]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
-  const isInvestorSigned = useMemo(() => investor?.sign_status === 1, [investor]);
+
+  const [editing, handleEdit] = useLoadingify(async () => {
+    await onEdit?.();
+  });
 
   const [deleting, deleteAction] = useLoadingify(async () => {
     await onDelete?.();
@@ -69,7 +69,7 @@ const MountItem: React.FC<{
 
   const renderAssets = () => {
     if (!isClosed(data) && isWorking) {
-      const power = isRaiser ? raiserPower : isServicer ? servicerPower : investorPower;
+      const power = sponsor ? sponsorPower : servicer ? servicerPower : investorPower;
 
       return (
         <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
@@ -100,7 +100,7 @@ const MountItem: React.FC<{
     }
 
     if (isInactive) {
-      if (role === 1 && isRaiser) {
+      if (role === 1 && sponsor && sponsor.role_level === 1) {
         return <span className="badge">可编辑</span>;
       }
 
@@ -108,16 +108,23 @@ const MountItem: React.FC<{
     }
 
     if (isActive) {
-      const isInvestor = !!investor;
+      const isSuper = sponsor?.role_level === 1;
+      const isSponsor = sponsor?.role_level === 2;
+      const isInvestor = Boolean(investor);
+      const sponsorSigned = Boolean(sponsor?.sign_status);
+      const investorSigned = Boolean(investor?.sign_status);
+
+      const status = isSponsor && isInvestor ? sponsorSigned && investorSigned : isSponsor ? sponsorSigned : investorSigned;
+
       const steps = [
-        { role: isRaiser, signed: true },
-        { role: isServicer, signed: isSpSigned },
-        { role: isInvestor, signed: isInvestorSigned },
+        { role: isSuper, signed: isSuper && sponsorSigned },
+        { role: isSponsor || isInvestor, signed: status },
+        { role: Boolean(servicer), signed: Boolean(servicer?.sign_status) },
       ];
 
       const step = steps[(role ?? 0) - 1];
 
-      if (step.signed) {
+      if (step && step.signed) {
         return <span className="badge badge-success">已签名</span>;
       }
 
@@ -126,30 +133,6 @@ const MountItem: React.FC<{
 
     if (isWorking) {
       return <span className="badge badge-success">运维中</span>;
-    }
-
-    return null;
-  };
-
-  const renderActions = () => {
-    if (isRaiser && isInactive) {
-      return (
-        <>
-          <SpinBtn
-            className="btn btn-outline-danger border-0 shadow-none"
-            loading={deleting}
-            icon={<span className="bi bi-trash3"></span>}
-            onClick={handleDelete}
-          >
-            删除
-          </SpinBtn>
-
-          <button className="btn btn-outline-light" type="button" onClick={onEdit}>
-            <span className="bi bi-pencil"></span>
-            <span className="ms-1">编辑</span>
-          </button>
-        </>
-      );
     }
 
     return null;
@@ -201,7 +184,23 @@ const MountItem: React.FC<{
         <div className="card-footer d-flex align-items-center gap-3">
           <div className="flex-shrink-0 me-auto">{renderStatus()}</div>
           <div className="d-flex flex-shrink-0 justify-content-between gap-2">
-            {renderActions()}
+            {isInactive && isSuper && (
+              <>
+                <SpinBtn
+                  className="btn btn-outline-danger border-0 shadow-none"
+                  icon={<span className="bi bi-trash3"></span>}
+                  loading={deleting}
+                  disabled={editing}
+                  onClick={handleDelete}
+                >
+                  删除
+                </SpinBtn>
+
+                <SpinBtn className="btn btn-light" icon={<span className="bi bi-pencil"></span>} loading={editing} disabled={deleting} onClick={handleEdit}>
+                  编辑
+                </SpinBtn>
+              </>
+            )}
             <Link className="btn btn-success" to={`/overview/${data.raising_id}`}>
               <span className="bi bi-eye"></span>
               <span className="ms-1">查看</span>

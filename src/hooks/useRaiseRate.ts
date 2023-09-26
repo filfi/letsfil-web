@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import * as U from '@/utils/utils';
 import { toFixed } from '@/utils/format';
+import useRaiseEquity from './useRaiseEquity';
 // import { isMountPlan } from '@/helpers/mount';
 
 /**
@@ -10,6 +11,8 @@ import { toFixed } from '@/utils/format';
  * @returns
  */
 export default function useRaiseRate(data?: API.Plan | null) {
+  const { sponsorRate: raiserRate } = useRaiseEquity(data);
+
   // 精度
   const precision = 2; // useMemo(() => (isMountPlan(data) ? 5 : 2), [data]);
   // 优先部分
@@ -26,8 +29,8 @@ export default function useRaiseRate(data?: API.Plan | null) {
   const servicerRate = useMemo(() => U.accSub(data?.op_server_share ?? 5, 0), [data?.op_server_share]);
   // filfi 协议权益
   const ffiRate = useMemo(() => +toFixed(U.accMul(inferiorityRate, 0.08), precision, 2), [inferiorityRate, precision]);
-  // 主办人权益
-  const raiserRate = useMemo(() => U.accSub(inferiorityRate, ffiRate, servicerRate), [inferiorityRate, ffiRate, servicerRate]);
+  // 所有主办人权益
+  const superRate = useMemo(() => U.accSub(inferiorityRate, ffiRate, servicerRate), [inferiorityRate, ffiRate, servicerRate]);
 
   return {
     priorityRate,
@@ -38,5 +41,6 @@ export default function useRaiseRate(data?: API.Plan | null) {
     servicerRate,
     ffiRate,
     raiserRate,
+    superRate,
   };
 }

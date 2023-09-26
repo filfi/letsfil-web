@@ -1,48 +1,63 @@
 import { useMemo } from 'react';
 import { Link } from '@umijs/max';
-import { parseEther, parseUnits } from 'viem';
+import { parseEther } from 'viem';
 
 import * as H from '@/helpers/app';
 import MountBack from './MountBack';
 import Modal from '@/components/Modal';
 import { isClosed } from '@/helpers/raise';
-import { toF4Address } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useAccount from '@/hooks/useAccount';
 import useContract from '@/hooks/useContract';
-import useRaiseRole from '@/hooks/useRaiseRole';
 import useProcessify from '@/hooks/useProcessify';
 import useMountState from '@/hooks/useMountState';
 import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useMountAssets from '@/hooks/useMountAssets';
 import useRaiseReward from '@/hooks/useRaiseReward';
 import useInvestorCount from '@/hooks/useInvestorCount';
-import useDepositInvestor from '@/hooks/useDepositInvestor';
+import { isEqual, toF4Address } from '@/utils/utils';
 import { formatAmount, formatPower } from '@/utils/format';
 import { ReactComponent as IconCopy } from '@/assets/icons/copy-light.svg';
 
-const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const SponsorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { address } = useAccount();
-  const { isStarted } = useMountState(data);
-  const { mountNode } = useContract(data?.raise_address);
+  const { mountNode, sponsorSign } = useContract(data?.raise_address);
 
-  const { investors, pledge, raiserRate, raiserPower } = useMountAssets(data);
+  const { sponsors, investors, pledge, sponsorRate, sponsorPower } = useMountAssets(data);
+  const sponsor = useMemo(() => sponsors?.find((i) => isEqual(i.address, address)), [address]);
 
-  const [creating, handleCreate] = useProcessify(async () => {
-    if (!data || !Array.isArray(investors)) return;
+  const isSigned = useMemo(() => Boolean(sponsor?.sign_status), [sponsor]);
+
+  const handleCreate = async () => {
+    if (!data || !Array.isArray(sponsors) || !Array.isArray(investors)) return;
 
     const raise = H.transformRaiseInfo(data);
     const node = H.transformNodeInfo(data);
-    const sponsors = [address] as string[];
-    const sponsorRates = [Number(parseUnits(`${raiserRate}`, 5))];
+    const _sponsors = sponsors.map((i) => i.address);
+    const sponsorRates = sponsors.map((i) => Number(i.power_proportion));
     const _investors = investors.map((i) => i.address);
     const investorPledges = investors.map((i) => i.pledge_amount);
     const investorRates = investors.map((i) => +i.power_proportion);
     const _pledge = parseEther(`${pledge}`).toString();
 
-    await mountNode(raise, node, sponsors, sponsorRates, _investors, investorPledges, investorRates, _pledge);
+    await mountNode(raise, node, _sponsors, sponsorRates, _investors, investorPledges, investorRates, _pledge);
+  };
+
+  const [signing, handleSign] = useProcessify(async () => {
+    if (!data || !sponsor) return;
+
+    if (sponsor.role_level === 1) {
+      await handleCreate();
+      return;
+    }
+
+    if (sponsor.role_level === 2) {
+      await sponsorSign(data.raising_id);
+    }
   });
+
+  if (!sponsor) return null;
 
   return (
     <>
@@ -50,17 +65,17 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="card-body pt-4">
           <h4 className="card-title fw-normal mb-0">我的分配比例</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold text-main">{raiserRate}</span>
+            <span className="fs-30 fw-bold text-main">{sponsorRate}</span>
             <span className="ms-1">%</span>
           </p>
 
           <h4 className="card-title fw-normal mb-0">我的算力</h4>
           <p className="mb-3">
-            <span className="fs-30 fw-bold text-main">{formatPower(raiserPower)?.[0]}</span>
-            <span className="ms-1">{formatPower(raiserPower)?.[1]}</span>
+            <span className="fs-30 fw-bold text-main">{formatPower(sponsorPower)?.[0]}</span>
+            <span className="ms-1">{formatPower(sponsorPower)?.[1]}</span>
           </p>
 
-          {isStarted ? (
+          {isSigned ? (
             <>
               <p className="mb-3">
                 <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
@@ -72,7 +87,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           ) : (
             <>
               <p className="mb-3">
-                <SpinBtn className="btn btn-primary btn-lg w-100" loading={creating} onClick={handleCreate}>
+                <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} onClick={handleSign}>
                   主办人签名
                 </SpinBtn>
               </p>
@@ -86,11 +101,12 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 };
 
 const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isSigned } = useRaiseRole(data);
-  const { isStarted } = useMountState(data);
   const { servicerSign } = useContract(data?.raise_address);
 
-  const { servicerRate, servicerPower } = useMountAssets(data);
+  const { servicer, sponsors, servicerRate, servicerPower } = useMountAssets(data);
+
+  const isSigned = useMemo(() => Boolean(servicer?.sign_status), [servicer]);
+  const isSponsorSigned = useMemo(() => sponsors?.every((i) => Boolean(i.sign_status)), [sponsors]);
 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
@@ -131,14 +147,14 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <SpinBtn
                   className="btn btn-primary btn-lg w-100"
                   loading={signing}
-                  disabled={!isStarted}
+                  disabled={!isSponsorSigned}
                   data-bs-toggle="modal"
                   data-bs-target="#signer-confirm"
                 >
                   技术服务商签名
                 </SpinBtn>
               </p>
-              <p>{isStarted ? '确认计划内容，移交节点Owner权限给FilFi智能合约' : '等待所有主办人完成签名'}</p>
+              <p>{isSponsorSigned ? '确认计划内容，移交节点Owner权限给FilFi智能合约' : '等待所有主办人完成签名'}</p>
             </>
           )}
         </div>
@@ -173,13 +189,12 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 };
 
 const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isStarted } = useMountState(data);
-  const { isSigned: isSpSigned } = useRaiseRole(data);
   const { investorSign } = useContract(data?.raise_address);
 
-  const { investor, investorRate, investorPledge, investorPower } = useMountAssets(data);
+  const { sponsors = [], servicers = [], investor, investorRate, investorPledge, investorPower } = useMountAssets(data);
 
-  const isSigned = useMemo(() => !!investor?.sign_status, [investor]);
+  const isSigned = useMemo(() => Boolean(investor?.sign_status), [investor]);
+  const isOtherSigned = useMemo(() => [...sponsors, ...servicers].every((i) => Boolean(i.sign_status)), [sponsors]);
 
   const [signing, handleSign] = useProcessify(async () => {
     if (!data) return;
@@ -221,11 +236,11 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           ) : (
             <>
               <p className="mb-3">
-                <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={!isStarted || !isSpSigned} onClick={handleSign}>
+                <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={!isOtherSigned} onClick={handleSign}>
                   签名
                 </SpinBtn>
               </p>
-              <p>{isStarted && isSpSigned ? '确认自己的权益后签名，签名后上链不可更改。' : '等待主办人和技术服务商签名'}</p>
+              <p>{isOtherSigned ? '确认自己的权益后签名，签名后上链不可更改。' : '等待主办人和技术服务商签名'}</p>
             </>
           )}
         </div>
@@ -237,10 +252,9 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { reward } = useRaiseReward(data);
   const { runningDays } = useRaiseSeals(data);
-  const { isInvestor } = useDepositInvestor(data);
   const { data: counter } = useInvestorCount(data);
-  const { isRaiser, isServicer } = useRaiseRole(data);
   const { isInactive, isWorking } = useMountState(data);
+  const { sponsor, servicer, investor } = useMountAssets(data);
 
   if (!data) return null;
 
@@ -287,7 +301,7 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </span>
             </p>
 
-            {(isRaiser || isServicer || isInvestor) && (
+            {!!(sponsor || servicer || investor) && (
               <p className="mt-3">
                 <Link className="btn btn-primary btn-lg w-100" to={`/assets/${data?.raising_id ?? ''}`}>
                   查看我的算力资产
@@ -302,24 +316,30 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     );
   }
 
+  if (isInactive) {
+    if (sponsor && sponsor.role_level === 1) {
+      return <SponsorCard data={data} />;
+    }
+
+    return (
+      <div className="card section-card">
+        <div className="card-header border-0">
+          <h4 className="card-title fw-bold mb-0">分配计划还未上链</h4>
+        </div>
+        <div className="card-body">
+          <p className="mb-0">正在共识中，等待主办人签名上链。</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      {isInactive && (
-        <div className="card section-card">
-          <div className="card-header border-0">
-            <h4 className="card-title fw-bold mb-0">分配计划还未上链</h4>
-          </div>
-          <div className="card-body">
-            <p className="mb-0">正在共识中，等待主办人签名上链。</p>
-          </div>
-        </div>
-      )}
+      {!!sponsor && <SponsorCard data={data} />}
 
-      {isRaiser && <RaiserCard data={data} />}
+      {!!servicer && <ServicerCard data={data} />}
 
-      {isServicer && <ServicerCard data={data} />}
-
-      {isInvestor && <InvestorCard data={data} />}
+      {!!investor && <InvestorCard data={data} />}
     </>
   );
 };

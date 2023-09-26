@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { Skeleton } from 'antd';
 import { history } from '@umijs/max';
 
-import RaiserCard from './RaiserCard';
 import OpsFundCard from './OpsFundCard';
+import SponsorCard from './SponsorCard';
 import InvestorCard from './InvestorCard';
 import ServicerCard from './ServicerCard';
 import { formatID } from '@/utils/format';
@@ -37,7 +37,7 @@ const AssetCard: React.FC<{ pack: API.Pack; plan?: API.Plan | null; type: number
   const renderContent = () => {
     switch (type) {
       case 1:
-        return <RaiserCard pack={pack} plan={plan} />;
+        return <SponsorCard pack={pack} plan={plan} />;
       case 2:
         return <ServicerCard pack={pack} plan={plan} />;
       case 3:

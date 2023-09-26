@@ -1,25 +1,23 @@
 import { useMemo } from 'react';
 import classNames from 'classnames';
 import { useDebounceEffect } from 'ahooks';
+import { history, useModel } from '@umijs/max';
 import { useQuery } from '@tanstack/react-query';
-import { /* Link, */ history, useModel } from '@umijs/max';
 
 import * as A from '@/apis/raise';
 import styles from './styles.less';
 import Item from './components/Item';
 import useUser from '@/hooks/useUser';
+import { isEqual } from '@/utils/utils';
 import Result from '@/components/Result';
 import { withNull } from '@/utils/hackify';
 import useAccount from '@/hooks/useAccount';
-import useContract from '@/hooks/useContract';
 import { isMountPlan } from '@/helpers/mount';
-import { isEqual, sleep } from '@/utils/utils';
 import { filterRaises } from '@/helpers/raise';
-import useProcessify from '@/hooks/useProcessify';
+import { formatSponsor } from '@/utils/format';
 import LoadingView from '@/components/LoadingView';
 import useRaiseActions from '@/hooks/useRaiseActions';
 import { ReactComponent as IconSearch } from './imgs/icon-search.svg';
-import { formatSponsor } from '@/utils/format';
 
 const isArrs = function <V>(v: V | undefined): v is V {
   return Array.isArray(v) && v.length > 0;
@@ -27,7 +25,6 @@ const isArrs = function <V>(v: V | undefined): v is V {
 
 export default function AccountPlans() {
   const { user } = useUser();
-  const contract = useContract();
   const actions = useRaiseActions();
   const [, setModel] = useModel('stepform');
   const { address, withAccount, withConnect } = useAccount();
@@ -59,7 +56,7 @@ export default function AccountPlans() {
   });
 
   const handleEdit = async (data: API.Plan) => {
-    actions.edit(data);
+    await actions.edit(data);
   };
 
   const handleDelete = async (data: API.Plan) => {
@@ -67,14 +64,6 @@ export default function AccountPlans() {
 
     refetch();
   };
-
-  const [, handleStart] = useProcessify(async (data: API.Plan) => {
-    await contract.startRaisePlan(data.raising_id, { address: data.raise_address });
-
-    await sleep(2_000);
-
-    refetch();
-  });
 
   return (
     <>
@@ -114,14 +103,7 @@ export default function AccountPlans() {
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {raises.map((item) => (
                     <div className="col" key={item.raising_id}>
-                      <Item
-                        data={item}
-                        role={1}
-                        onEdit={() => handleEdit(item)}
-                        onHide={() => handleDelete(item)}
-                        onDelete={() => handleDelete(item)}
-                        onStart={() => handleStart(item)}
-                      />
+                      <Item role={1} data={item} onEdit={() => handleEdit(item)} onDelete={() => handleDelete(item)} />
                     </div>
                   ))}
                 </div>
@@ -134,14 +116,7 @@ export default function AccountPlans() {
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {invests.map((item) => (
                     <div className="col" key={item.raising_id}>
-                      <Item
-                        data={item}
-                        role={3}
-                        onEdit={() => handleEdit(item)}
-                        onHide={() => handleDelete(item)}
-                        onDelete={() => handleDelete(item)}
-                        onStart={() => handleStart(item)}
-                      />
+                      <Item role={2} data={item} onEdit={() => handleEdit(item)} onDelete={() => handleDelete(item)} />
                     </div>
                   ))}
                 </div>
@@ -154,14 +129,7 @@ export default function AccountPlans() {
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {services.map((item) => (
                     <div className="col" key={item.raising_id}>
-                      <Item
-                        data={item}
-                        role={2}
-                        onEdit={() => handleEdit(item)}
-                        onHide={() => handleDelete(item)}
-                        onDelete={() => handleDelete(item)}
-                        onStart={() => handleStart(item)}
-                      />
+                      <Item role={3} data={item} onEdit={() => handleEdit(item)} onDelete={() => handleDelete(item)} />
                     </div>
                   ))}
                 </div>

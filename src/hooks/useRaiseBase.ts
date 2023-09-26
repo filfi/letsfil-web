@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import useContract from './useContract';
 import { toNumber } from '@/utils/format';
 import { withNull } from '@/utils/hackify';
+import { isPending } from '@/helpers/raise';
 import { accDiv, accMul } from '@/utils/utils';
-import { isPending, isStarted, isSuccess } from '@/helpers/raise';
 
 /**
  * 节点计划信息
@@ -13,6 +14,7 @@ import { isPending, isStarted, isSuccess } from '@/helpers/raise';
  * @returns
  */
 export default function useRaiseBase(data?: API.Plan | null) {
+  const client = useQueryClient();
   const contract = useContract(data?.raise_address);
 
   const getOwner = async () => {
@@ -26,12 +28,12 @@ export default function useRaiseBase(data?: API.Plan | null) {
     }
   };
   const getTotalPledge = async () => {
-    if (data && isStarted(data)) {
+    if (data && !isPending(data)) {
       return await contract.getTotalPledge(data.raising_id);
     }
   };
   const getTotalSealed = async () => {
-    if (data && isSuccess(data)) {
+    if (data && !isPending(data)) {
       return await contract.getTotalSealed(data.raising_id);
     }
   };
@@ -41,22 +43,18 @@ export default function useRaiseBase(data?: API.Plan | null) {
       {
         queryKey: ['getOwner', data?.raising_id],
         queryFn: withNull(getOwner),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getProgressEnd', data?.raising_id],
         queryFn: withNull(getProgressEnd),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getTotalPledge', data?.raising_id],
         queryFn: withNull(getTotalPledge),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getTotalSealed', data?.raising_id],
         queryFn: withNull(getTotalSealed),
-        staleTime: 60_000,
       },
     ],
   });
@@ -78,6 +76,13 @@ export default function useRaiseBase(data?: API.Plan | null) {
   const refetch = async () => {
     return await Promise.all([oRes.refetch(), eRes.refetch(), pRes.refetch(), sRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getOwner', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getProgressEnd', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getTotalPledge', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getTotalSealed', data?.raising_id] });
+  });
 
   return {
     actual,

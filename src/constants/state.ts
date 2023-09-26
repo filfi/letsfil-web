@@ -28,6 +28,11 @@ export enum RaiseState {
   Failure = 4,
 
   /**
+   * 已销毁
+   */
+  Destroyed = 9,
+
+  /**
    * 准备中
    */
   Pending = 10,

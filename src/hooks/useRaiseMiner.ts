@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
@@ -11,6 +12,7 @@ import { isPending } from '@/helpers/raise';
  * @returns
  */
 export default function useRaiseMiner(data?: API.Plan | null) {
+  const client = useQueryClient();
   const contract = useContract(data?.raise_address);
 
   const getPledgeAmount = async () => {
@@ -39,22 +41,18 @@ export default function useRaiseMiner(data?: API.Plan | null) {
       {
         queryKey: ['getPledgeAmount', data?.raising_id],
         queryFn: withNull(getPledgeAmount),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getSealedAmount', data?.raising_id],
         queryFn: withNull(getSealedAmount),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getOpsFundCalc', data?.raising_id],
         queryFn: withNull(getOpsFundCalc),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getOpsFundSeal', data?.raising_id],
         queryFn: withNull(getOpsFundSeal),
-        staleTime: 60_000,
       },
     ],
   });
@@ -71,6 +69,13 @@ export default function useRaiseMiner(data?: API.Plan | null) {
   const refetch = () => {
     return Promise.all([pRes.refetch(), sRes.refetch(), fRes.refetch(), oRes.isLoading]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getPledgeAmount', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getSealedAmount', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundCalc', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundSeal', data?.raising_id] });
+  });
 
   return {
     safe,

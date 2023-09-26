@@ -1,16 +1,12 @@
 import { useMemo } from 'react';
 
+import { blocks } from '../constants';
 import { accSub } from '@/utils/utils';
 import SpinBtn from '@/components/SpinBtn';
 import useMountAssets from '@/hooks/useMountAssets';
 import { formatAmount, toNumber } from '@/utils/format';
 import useReleasedPledge from '@/hooks/useReleasedPledge';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
-
-const blocks = [
-  { id: '22517091689516974', released: '194654768813898639' },
-  { id: '23091121690598746', released: '181500663088116717336' },
-];
 
 const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { released } = useReleasedPledge(data);

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { parseEther } from 'viem';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
@@ -16,6 +17,7 @@ import { isRaiserPaied } from '@/helpers/raise';
  * @returns
  */
 export default function useDepositRaiser(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
@@ -35,12 +37,10 @@ export default function useDepositRaiser(data?: API.Plan | null) {
       {
         queryKey: ['getRaiserFund', data?.raising_id],
         queryFn: withNull(getRaiserFund),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getTotalInterest', data?.raising_id],
         queryFn: withNull(getTotalInterest),
-        staleTime: 60_000,
       },
     ],
   });
@@ -53,6 +53,11 @@ export default function useDepositRaiser(data?: API.Plan | null) {
   const refetch = async () => {
     return Promise.all([fRes.refetch(), interest.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getRaiserFund', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getTotalInterest', data?.raising_id] });
+  });
 
   const [paying, payAction] = useProcessify(
     withConnect(async () => {

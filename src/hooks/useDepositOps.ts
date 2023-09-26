@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { parseEther } from 'viem';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import useAccount from './useAccount';
 import useContract from './useContract';
@@ -17,6 +18,7 @@ import { isServicerPaied } from '@/helpers/raise';
  * @returns
  */
 export default function useDepositOps(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
@@ -46,22 +48,18 @@ export default function useDepositOps(data?: API.Plan | null) {
       {
         queryKey: ['getOpsFund', data?.raising_id],
         queryFn: withNull(getOpsFund),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getOpsFundCalc', data?.raising_id],
         queryFn: withNull(getOpsFundCalc),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getOpsFundNeed', data?.raising_id],
         queryFn: withNull(getOpsFundNeed),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getOpsFundSeal', data?.raising_id],
         queryFn: withNull(getOpsFundSeal),
-        staleTime: 60_000,
       },
     ],
   });
@@ -80,6 +78,13 @@ export default function useDepositOps(data?: API.Plan | null) {
   const refetch = async () => {
     await Promise.all([cRes.refetch(), oRes.refetch(), nRes.refetch(), sRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getOpsFund', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundCalc', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundNeed', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundSeal', data?.raising_id] });
+  });
 
   const [paying, payAction] = useProcessify(
     withConnect(async () => {

@@ -277,7 +277,7 @@ svg[fill='currentColor'] path {
   --ffi-form-max-width: 640px;
   --ffi-form-item-spacer-y: 24px;
   --ffi-form-label-font-size: 16px;
-  --ffi-form-desc-line-clamp: 3;
+  --ffi-form-desc-line-clamp: 2;
   --ffi-form-action-gap: 16px;
   --ffi-form-action-min-width: 80px;
 
@@ -296,6 +296,17 @@ svg[fill='currentColor'] path {
     margin: 0;
     appearance: none;
     appearance: none;
+  }
+
+  input.ant-input:disabled,
+  input.ant-input-disabled,
+  .ant-input-affix-wrapper > input.ant-input:disabled,
+  .ant-input-affix-wrapper > input.ant-input-disabled {
+    background-color: var(--bs-gray-100);
+
+    ~ .ant-input-suffix {
+      background-color: var(--bs-gray-100);
+    }
   }
 
   .avatar-input.ant-upload-wrapper.ant-upload-picture-circle-wrapper .ant-upload.ant-upload-select {
@@ -448,7 +459,8 @@ svg[fill='currentColor'] path {
       margin-bottom: 0;
       font-size: 12px;
       line-height: 1.5;
-      display: box;
+      /* stylelint-disable-next-line */
+      display: -webkit-box;
       overflow: hidden;
       text-overflow: ellipsis;
       -webkit-box-orient: vertical;

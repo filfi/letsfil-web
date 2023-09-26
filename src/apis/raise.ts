@@ -76,6 +76,17 @@ export function countSync(raising_id: string) {
   return A.get<{ seal_delay_sync_count: number }>('/raising-plan/v2/raise-sync-count', { raising_id });
 }
 
+export function getPrivateList(id: string) {
+  return A.get<
+    {
+      address: string;
+      fil_address: string;
+      count: number;
+      total_amt: string;
+    }[]
+  >(`/raising-plan/v2/plan/private/list/${id}`);
+}
+
 export function getEquity(id: string, params: API.PagingParams) {
   return A.get<API.PagingRes<API.Equity>>(`/raising-plan/v2/plan/get/raise-equity/${id}`, params);
 }

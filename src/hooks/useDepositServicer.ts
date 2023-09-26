@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
-import { isStarted } from '@/helpers/raise';
+import { isPending } from '@/helpers/raise';
 
 /**
  * 服务商的投资信息
@@ -11,15 +12,16 @@ import { isStarted } from '@/helpers/raise';
  * @returns
  */
 export default function useDepositServicer(data?: API.Plan | null) {
+  const client = useQueryClient();
   const contract = useContract(data?.raise_address);
 
   const getServicerFines = async () => {
-    if (data && isStarted(data)) {
+    if (data && !isPending(data)) {
       return await contract.getServicerFines(data.raising_id);
     }
   };
   const getTotalInterest = async () => {
-    if (data && isStarted(data)) {
+    if (data && !isPending(data)) {
       return await contract.getTotalInterest(data.raising_id);
     }
   };
@@ -29,12 +31,10 @@ export default function useDepositServicer(data?: API.Plan | null) {
       {
         queryKey: ['getServicerFines', data?.raising_id],
         queryFn: withNull(getServicerFines),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getTotalInterest', data?.raising_id],
         queryFn: withNull(getTotalInterest),
-        staleTime: 60_000,
       },
     ],
   });
@@ -47,6 +47,11 @@ export default function useDepositServicer(data?: API.Plan | null) {
   const refetch = async () => {
     await Promise.all([fRes.refetch(), tRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getServicerFines', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getTotalInterest', data?.raising_id] });
+  });
 
   return {
     fines,

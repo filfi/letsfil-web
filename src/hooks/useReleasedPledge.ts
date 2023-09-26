@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import * as M from '@/helpers/mount';
 import * as R from '@/helpers/raise';
@@ -7,6 +8,7 @@ import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
 
 export default function useReleasedPledge(data?: API.Plan | null) {
+  const client = useQueryClient();
   const contract = useContract(data?.raise_address);
 
   const getReleasedPledge = async () => {
@@ -20,7 +22,6 @@ export default function useReleasedPledge(data?: API.Plan | null) {
       {
         queryKey: ['getReleasedPledge', data?.raising_id],
         queryFn: withNull(getReleasedPledge),
-        staleTime: 60_000,
       },
     ],
   });
@@ -31,6 +32,10 @@ export default function useReleasedPledge(data?: API.Plan | null) {
   const refetch = async () => {
     return Promise.all([pRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getReleasedPledge', data?.raising_id] });
+  });
 
   return {
     released,

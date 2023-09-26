@@ -4,6 +4,7 @@ import { SCAN_URL } from '@/constants';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import { toastify } from '@/utils/hackify';
 import { isMountPlan } from '@/helpers/mount';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
@@ -17,7 +18,7 @@ import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
 
 const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const actions = useRaiseActions(data);
-  const { isRaiser } = useRaiseRole(data);
+  const { isSuper } = useRaiseRole(data);
   const { actual, minTarget } = useRaiseBase(data);
   const { isActive, isInactive } = useMountState(data);
   const { isPending, isWaiting, isRaising } = useRaiseState(data);
@@ -25,8 +26,8 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const isMount = useMemo(() => isMountPlan(data), [data]);
   const name = useMemo(() => (isMount ? '分配计划' : '节点计划'), [isMount]);
 
-  const handleEdit = () => {
-    actions.edit();
+  const handleEdit = async () => {
+    await toastify(actions.edit)();
   };
 
   const handleDelete = () => {
@@ -35,10 +36,10 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       title: `删除${name}`,
       summary: `未签名的${name}可以永久删除。`,
       confirmLoading: actions.removing,
-      onConfirm: () => {
+      onConfirm: async () => {
         hide();
 
-        actions.remove();
+        await toastify(actions.remove)();
       },
     });
   };
@@ -77,7 +78,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       onConfirm: async () => {
         hide();
 
-        await actions.close();
+        await toastify(actions.close)();
       },
     });
   };
@@ -93,7 +94,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       onConfirm: async () => {
         hide();
 
-        await actions.close();
+        await toastify(actions.close)();
       },
     });
   };
@@ -108,7 +109,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      {isRaiser && (isMount ? isInactive : isPending) && (
+      {isSuper && (isMount ? isInactive : isPending) && (
         <>
           <SpinBtn className="btn btn-primary" icon={<IconEdit />} disabled={actions.removing} onClick={handleEdit}>
             修改{name}
@@ -132,7 +133,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </a>
       )}
 
-      {isRaiser && (isMount ? isActive : isWaiting || isRaising) && (
+      {isSuper && (isMount ? isActive : isWaiting || isRaising) && (
         <div className="dropdown">
           <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
             <span className="bi bi-three-dots-vertical fs-3"></span>

@@ -8,7 +8,6 @@ import { toastify } from '@/utils/hackify';
 import { RAISE_ADDRESS } from '@/constants';
 import raiseAbi from '@/abis/raise.abi.json';
 import factoryAbi from '@/abis/factory.abi.json';
-import { NodeState, RaiseState } from '@/constants/state';
 // import { RevertedError } from '@/core/errors/RevertedError';
 import { writeContract as ethersContract } from '@/core/contract/write';
 import type { WriteContractOptions } from '@/core/contract/write';
@@ -21,6 +20,12 @@ export type WriteOptions = TxOptions & {
 function toEther(v: unknown) {
   if (isDef(v)) {
     return toNumber(v as number);
+  }
+}
+
+function bigToNum(v: bigint | undefined) {
+  if (isDef(v)) {
+    return Number(v);
   }
 }
 
@@ -182,7 +187,7 @@ export default function useContract(address?: API.Address) {
    * 获需追加的保证金
    */
   const getOpsFundNeed = async (id: string, _address = address) => {
-    return await readContract<bigint>('securityNeed', [id], _address);
+    return toEther(await readContract<bigint>('securityNeed', [id], _address));
   };
 
   /**
@@ -210,14 +215,21 @@ export default function useContract(address?: API.Address) {
    * 获取节点状态
    */
   const getNodeState = async (id: string, _address = address) => {
-    return await readContract<NodeState>('nodeState', [id], _address);
+    return bigToNum(await readContract<bigint>('nodeState', [id], _address));
   };
 
   /**
    * 获取节点计划状态
    */
   const getRaiseState = async (id: string, _address = address) => {
-    return await readContract<RaiseState>('raiseState', [id], _address);
+    return bigToNum(await readContract<bigint>('raiseState', [id], _address));
+  };
+
+  /**
+   * 获取节点计划状态
+   */
+  const getPlanState = async (id: string, _address = address) => {
+    return bigToNum(await readContract<bigint>('timedPlanState', [id], _address));
   };
 
   /**
@@ -325,6 +337,27 @@ export default function useContract(address?: API.Address) {
    */
   const getInvestorWithdrawnRecord = async (id: string, account: string, _address = address) => {
     return toEther(await readContract<bigint>('withdrawRecord', [id, account], _address));
+  };
+
+  /**
+   * 获取主办人待释放的节点激励
+   */
+  const getSponsorPendingReward = async (id: string, sponsor: string, _address = address) => {
+    return toEther(await readContract<bigint>('sponsorWillReleaseReward', [id, sponsor], _address));
+  };
+
+  /**
+   * 获取主办人可领取的节点激励
+   */
+  const getSponsorAvailableReward = async (id: string, sponsor: string, _address = address) => {
+    return toEther(await readContract<bigint>('sponsorRewardAvailableLeft', [id, sponsor], _address));
+  };
+
+  /**
+   * 获取主办人已领取的节点激励
+   */
+  const getSponsorWithdrawnReward = async (id: string, sponsor: string, _address = address) => {
+    return toEther(await readContract<bigint>('gotSponsorReward', [id, sponsor], _address));
   };
 
   /**
@@ -454,6 +487,13 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 主办人签名(非第一主办人)
+   */
+  const sponsorSign = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('sponsorSign', [id], opts);
+  });
+
+  /**
    * 建设者签名
    */
   const investorSign = toastify(async (id: string, opts?: WriteOptions) => {
@@ -492,6 +532,86 @@ export default function useContract(address?: API.Address) {
       address: RAISE_ADDRESS,
     });
   });
+
+  /**
+   * 创建节点计划（做个主办人）
+   */
+  const createPlan = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 定时启动时间
+       */
+      startTime: BigNumberish,
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, startTime);
+      return await writeContract('createPlan', [raise, node, sponsors, sponsorRates, startTime], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
+
+  /**
+   * 创建定向计划
+   */
+  const createPrivatePlan = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 建设者地址列表
+       */
+      investors: string[],
+      /**
+       * 建设者最大质押列表
+       */
+      investorPledges: BigNumberish[],
+      /**
+       * 定时启动时间
+       */
+      startTime: BigNumberish,
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, startTime);
+      return await writeContract('createPrivatePlan', [raise, node, sponsors, sponsorRates, investors, investorPledges, startTime], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
 
   /**
    * 挂载历史节点
@@ -556,6 +676,13 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 主办人提取节点激励
+   */
+  const sponsorWithdraw = toastify(async (id: string, address: string, opts?: WriteOptions) => {
+    return await writeContract('sponsorWithdraw', [id, address], opts);
+  });
+
+  /**
    * 建设者提取节点激励
    */
   const investorWithdraw = toastify(async (id: string, opts?: WriteOptions) => {
@@ -593,6 +720,7 @@ export default function useContract(address?: API.Address) {
     getOpsFundSealed,
     getRaiserFund,
     getNodeState,
+    getPlanState,
     getRaiseState,
     getBackAssets,
     getInvestorInfo,
@@ -611,6 +739,9 @@ export default function useContract(address?: API.Address) {
     getInvestorPendingReward,
     getInvestorAvailableReward,
     getInvestorWithdrawnRecord,
+    getSponsorPendingReward,
+    getSponsorAvailableReward,
+    getSponsorWithdrawnReward,
     getOpsFines,
     getOpsFundReward,
     getOpsRewardFines,
@@ -625,16 +756,20 @@ export default function useContract(address?: API.Address) {
     mountNode,
     unStaking,
     startPreSeal,
+    createPlan,
     closeRaisePlan,
     startRaisePlan,
     createRaisePlan,
+    createPrivatePlan,
     depositOpsFund,
     addDepositOpsFund,
     depositRaiserFund,
+    sponsorSign,
     investorSign,
     servicerSign,
     raiserWithdraw,
     investorWithdraw,
+    sponsorWithdraw,
     servicerWithdraw,
     withdrawOpsFund,
     withdrawRaiserFund,

@@ -1,47 +1,46 @@
 import { Table } from 'antd';
 import { useMemo } from 'react';
-import { parseUnits } from 'viem';
 import classNames from 'classnames';
 import type { TableColumnsType } from 'antd';
 
+import { parseUnits } from 'viem';
 import { accDiv, accMul } from '@/utils/utils';
-import useRaiseRole from '@/hooks/useRaiseRole';
 import useMountState from '@/hooks/useMountState';
 import useMountAssets from '@/hooks/useMountAssets';
 import { formatAddr, formatAmount, formatPower, toNumber } from '@/utils/format';
 
 const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isStarted } = useMountState(data);
-  const { raiser, servicer, isSigned: isSPSigned } = useRaiseRole(data);
-  const { investors, raiserRate, servicerRate, power } = useMountAssets(data);
+  const { sponsors = [], servicers = [], investors = [], superRate, servicerRate, servicerPower, power } = useMountAssets(data);
 
   const items = useMemo(() => {
+    if (sponsors.length && servicers.length) {
+      return [...sponsors, ...investors, ...servicers];
+    }
+
     return [
       {
-        ID: -1,
+        address: data?.raiser,
         role: 1,
-        address: raiser,
-        pledge_amount: '0',
-        power_proportion: parseUnits(`${raiserRate}`, 5).toString(),
+        role_level: 1,
         sign_status: isStarted ? 1 : 0,
+        power_proportion: parseUnits(`${superRate}`, 5),
       },
+      ...investors,
       {
-        ID: 0,
+        address: data?.service_provider_address,
         role: 3,
-        address: servicer,
-        pledge_amount: '0',
-        power_proportion: parseUnits(`${servicerRate}`, 5).toString(),
-        sign_status: isSPSigned ? 1 : 0,
+        power_proportion: '0',
+        sign_status: data?.sp_sign_status,
       },
-      ...(investors ?? []),
-    ];
-  }, [investors, raiser, servicer, raiserRate, servicerRate, isStarted, isSPSigned]);
+    ] as API.Equity[];
+  }, [data, sponsors, servicers, investors, superRate, isStarted]);
 
-  const columns: TableColumnsType<API.Base> = [
+  const columns: TableColumnsType<API.Equity> = [
     {
       title: '地址',
       dataIndex: 'address',
-      render: formatAddr,
+      render: (v, row) => formatAddr(row.fil_address || v),
     },
     {
       title: '角色',
@@ -51,12 +50,22 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     {
       title: '分配比例',
       dataIndex: 'power_proportion',
-      render: (v) => <span>{toNumber(v, 5)}%</span>,
+      render: (v, row) => {
+        if (row.role === 3) {
+          return <span>{servicerRate}%</span>;
+        }
+
+        return <span>{toNumber(v, 5)}%</span>;
+      },
     },
     {
       title: '持有算力',
       dataIndex: 'power_proportion',
-      render: (v) => {
+      render: (v, row) => {
+        if (row.role === 3) {
+          return <span>{formatPower(servicerPower)}</span>;
+        }
+
         const rate = toNumber(v, 5);
         const _power = accMul(power, accDiv(rate, 100));
 
@@ -66,7 +75,13 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     {
       title: '持有质押',
       dataIndex: 'pledge_amount',
-      render: (v) => <span>{formatAmount(toNumber(v))} FIL</span>,
+      render: (v, row) => {
+        if (row.role === 2) {
+          return <span>{formatAmount(toNumber(v))} FIL</span>;
+        }
+
+        return <span className="text-gray">-</span>;
+      },
     },
     {
       title: '签名',
@@ -77,7 +92,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <Table<API.Base> rowKey="ID" columns={columns} dataSource={items} pagination={false} />
+      <Table<API.Equity> rowKey="ID" columns={columns} dataSource={items} pagination={false} />
     </>
   );
 };

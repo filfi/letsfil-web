@@ -60,6 +60,10 @@ export function isWorking<T extends { status: number; sealed_status: number }>(d
   return isSuccess(data) && [NodeState.End, NodeState.Destroy].includes(data.sealed_status);
 }
 
+export function isTargeted<T extends { plan_open: number }>(data?: T | null) {
+  return `${data?.plan_open ?? 1}` === '2';
+}
+
 export function isRaiserPaied<T extends { raise_margin_status: number }>(data: T) {
   return data.raise_margin_status === 1;
 }

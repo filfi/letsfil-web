@@ -8,7 +8,13 @@ import { isMainnet } from '@/constants';
 // const _chains: Chain[] = [filecoin];
 const _chains: Chain[] = isMainnet ? [filecoin] : [filecoinCalibration];
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+    },
+  },
+});
 
 export const safeAmount = isMainnet ? 300 : 3;
 
