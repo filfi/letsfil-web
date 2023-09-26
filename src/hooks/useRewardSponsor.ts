@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useUnmount, useUpdateEffect } from 'ahooks';
+import { useUnmount } from 'ahooks';
+import { useEffect, useMemo } from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { sleep } from '@/utils/utils';
@@ -84,7 +84,7 @@ export default function useRewardRaiser(data?: API.Plan | null) {
     return Promise.all([aRes.refetch(), pRes.refetch(), wRes.refetch()]);
   };
 
-  useUpdateEffect(() => {
+  useEffect(() => {
     refetch();
   }, [sponsor]);
 

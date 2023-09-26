@@ -11,13 +11,13 @@ const proxies: Options = {
     '/api': {
       // target: 'http://10.100.244.100:9999',
       // target: 'http://10.100.244.100:7777',
-      target: 'http://10.100.244.100:8888', // miner
+      target: 'http://10.100.244.100:3000', // miner
       // target: 'https://job.mining.filfi.io', // prod;
       secure: false,
       changeOrigin: true,
-      pathRewrite: {
-        '^/api': '',
-      },
+      // pathRewrite: {
+      //   '^/api': '',
+      // },
     },
     '/rpc': {
       target: 'https://api.hyperspace.node.glif.io',

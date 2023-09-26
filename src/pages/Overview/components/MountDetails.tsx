@@ -15,7 +15,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const items = useMemo(() => {
     if (sponsors.length && servicers.length) {
-      [...sponsors, ...investors, ...servicers];
+      return [...sponsors, ...investors, ...servicers];
     }
 
     return [
