@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
@@ -14,6 +15,7 @@ import useProcessify from './useProcessify';
  * @returns
  */
 export default function useRewardInvestor(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { address, withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
@@ -38,17 +40,14 @@ export default function useRewardInvestor(data?: API.Plan | null) {
       {
         queryKey: ['getInvestInfo', address, data?.raising_id],
         queryFn: withNull(getInvestInfo),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getInvestorAvailableReward', address, data?.raising_id],
         queryFn: withNull(getInvestorAvailableReward),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getInvestorPendingReward', address, data?.raising_id],
         queryFn: withNull(getInvestorPendingReward),
-        staleTime: 60_000,
       },
     ],
   });
@@ -62,6 +61,12 @@ export default function useRewardInvestor(data?: API.Plan | null) {
   const refetch = () => {
     return Promise.all([aRes.refetch(), iRes.refetch(), pRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getInvestInfo', address, data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getInvestorAvailableReward', address, data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getInvestorPendingReward', address, data?.raising_id] });
+  });
 
   const [withdrawing, withdrawAction] = useProcessify(
     withConnect(async () => {

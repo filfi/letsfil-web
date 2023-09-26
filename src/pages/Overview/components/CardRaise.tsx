@@ -36,7 +36,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const contract = useContract(data?.raise_address);
   const { sponsors } = useRaiseEquity(data);
   const { power, pledge } = useAssetPack(data, pack);
-  const { isRaiser, isServicer, isSigned } = useRaiseRole(data);
+  const { isSuper, isServicer, isSigned } = useRaiseRole(data);
   const { isPending, isWaiting, isRaising, isSuccess, isClosed, isFailed, isWaitSeal, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const [targetDate, setTargetDate] = useState(0);
@@ -108,7 +108,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const renderAction = () => {
     // 主办人
-    if (isRaiser) {
+    if (isSuper) {
       // 准备中
       if (isPending) {
         return (

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import useAccount from './useAccount';
 import useContract from './useContract';
@@ -15,6 +16,7 @@ import { accSub, sleep } from '@/utils/utils';
  * @returns
  */
 export default function useRewardOps(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { withConnect } = useAccount();
   const { isServicer } = useRaiseRole(data);
   const contract = useContract(data?.raise_address);
@@ -35,12 +37,10 @@ export default function useRewardOps(data?: API.Plan | null) {
       {
         queryKey: ['getOpsFundReward', data?.raising_id],
         queryFn: withNull(getOpsFundReward),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getOpsRewardFines', data?.raising_id],
         queryFn: withNull(getOpsRewardFines),
-        staleTime: 60_000,
       },
     ],
   });
@@ -54,6 +54,11 @@ export default function useRewardOps(data?: API.Plan | null) {
   const refetch = () => {
     return Promise.all([rRes.refetch(), fRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getOpsFundReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsRewardFines', data?.raising_id] });
+  });
 
   const [withdarwing, withdrawAction] = useProcessify(
     withConnect(async () => {

@@ -23,7 +23,7 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   const { isRaiser, isServicer } = useRaiseRole(plan);
   const { record, isInvestor } = useDepositInvestor(plan);
   const { actual, progress: _progress, target } = useRaiseBase(plan);
-  const { priorityRate, raiserRate, opsRatio: ratio, servicerRate } = useRaiseRate(plan);
+  const { priorityRate, raiserRate, superRate, opsRatio: ratio, servicerRate } = useRaiseRate(plan);
   // 已封装的缓冲金
   const { data: opsSealed, isLoading } = useQuery(['getOpsFundSealed', plan?.raising_id], withNull(getOpsFundSealed));
 
@@ -55,7 +55,7 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   const investorPower = useMemo(() => (isInvestor ? accMul(investorSealsPower, accDiv(priorityRate, 100)) : 0), [investorSealsPower, priorityRate, isInvestor]);
 
   // 主办人持有算力 = 总算力 * 主办人权益
-  const raiserPower = useMemo(() => (isRaiser ? accMul(power, accDiv(raiserRate, 100)) : 0), [power, raiserRate, isRaiser]);
+  const raiserPower = useMemo(() => (isRaiser ? accMul(power, accDiv(raiserRate || superRate, 100)) : 0), [power, raiserRate, superRate, isRaiser]);
 
   // 运维保证金封装算力 = 总算力 * 运维保证金占比
   const opsSealsPower = useMemo(() => (isServicer ? accMul(power, opsRatio) : 0), [power, opsRatio, isServicer]);

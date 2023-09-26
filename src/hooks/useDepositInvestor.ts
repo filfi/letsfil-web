@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { parseEther } from 'viem';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import * as M from '@/helpers/mount';
 import * as R from '@/helpers/raise';
@@ -17,6 +18,7 @@ import { accDiv, sleep } from '@/utils/utils';
  * @returns
  */
 export default function useDepositInvestor(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { address, withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
@@ -45,12 +47,10 @@ export default function useDepositInvestor(data?: API.Plan | null) {
       {
         queryKey: ['getBackAssets', address, data?.raising_id],
         queryFn: withNull(getBackAssets),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getInvestInfo', address, data?.raising_id],
         queryFn: withNull(getInvestInfo),
-        staleTime: 60_000,
       },
     ],
   });
@@ -69,6 +69,11 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   const refetch = async () => {
     return await investorInfo.refetch();
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getBackAssets', address, data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getInvestInfo', address, data?.raising_id] });
+  });
 
   const [staking, stakeAction] = useProcessify(
     withConnect(async (amount: number | string) => {

@@ -36,6 +36,7 @@ export default function useRaiseEquity(plan?: API.Plan | null) {
 
   return {
     data,
+    address,
     sponsor,
     servicer,
     investor,

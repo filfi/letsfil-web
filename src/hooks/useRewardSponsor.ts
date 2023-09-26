@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { useUpdateEffect } from 'ahooks';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount, useUpdateEffect } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
+import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
@@ -16,23 +17,43 @@ import useRaiseEquity from './useRaiseEquity';
  * @returns
  */
 export default function useRewardRaiser(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { withConnect } = useAccount();
-  const { sponsor } = useRaiseEquity(data);
+  const { isSuper } = useRaiseRole(data);
+  const { sponsors, sponsor } = useRaiseEquity(data);
   const contract = useContract(data?.raise_address);
 
   const getSponsorAvailableReward = async () => {
-    if (data && !isPending(data) && sponsor) {
-      return await contract.getSponsorAvailableReward(data.raising_id, sponsor.address);
+    if (data && !isPending(data)) {
+      if (Array.isArray(sponsors) && sponsors.length && sponsor) {
+        return await contract.getSponsorAvailableReward(data.raising_id, sponsor.address);
+      }
+
+      if (isSuper) {
+        return await contract.getRaiserAvailableReward(data.raising_id);
+      }
     }
   };
   const getSponsorPendingReward = async () => {
-    if (data && !isPending(data) && sponsor) {
-      return await contract.getSponsorPendingReward(data.raising_id, sponsor.address);
+    if (data && !isPending(data)) {
+      if (Array.isArray(sponsors) && sponsors.length && sponsor) {
+        return await contract.getSponsorPendingReward(data.raising_id, sponsor.address);
+      }
+
+      if (isSuper) {
+        return await contract.getRaiserPendingReward(data.raising_id);
+      }
     }
   };
   const getSponsorWithdrawnReward = async () => {
-    if (data && !isPending(data) && sponsor) {
-      return await contract.getSponsorWithdrawnReward(data.raising_id, sponsor.address);
+    if (data && !isPending(data)) {
+      if (Array.isArray(sponsors) && sponsors.length && sponsor) {
+        return await contract.getSponsorWithdrawnReward(data.raising_id, sponsor.address);
+      }
+
+      if (isSuper) {
+        return await contract.getRaiserWithdrawnReward(data.raising_id);
+      }
     }
   };
 
@@ -41,17 +62,14 @@ export default function useRewardRaiser(data?: API.Plan | null) {
       {
         queryKey: ['getSponsorAvailableReward', data?.raising_id],
         queryFn: withNull(getSponsorAvailableReward),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getSponsorPendingReward', data?.raising_id],
         queryFn: withNull(getSponsorPendingReward),
-        staleTime: 60_000,
       },
       {
         queryKey: ['getSponsorWithdrawnReward', data?.raising_id],
         queryFn: withNull(getSponsorWithdrawnReward),
-        staleTime: 60_000,
       },
     ],
   });
@@ -66,6 +84,16 @@ export default function useRewardRaiser(data?: API.Plan | null) {
     return Promise.all([aRes.refetch(), pRes.refetch(), wRes.refetch()]);
   };
 
+  useUpdateEffect(() => {
+    refetch();
+  }, [sponsor]);
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getSponsorAvailableReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getSponsorPendingReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getSponsorWithdrawnReward', data?.raising_id] });
+  });
+
   const [withdrawing, withdrawAction] = useProcessify(
     withConnect(async () => {
       if (!data || !sponsor) return;
@@ -79,10 +107,6 @@ export default function useRewardRaiser(data?: API.Plan | null) {
       return res;
     }),
   );
-
-  useUpdateEffect(() => {
-    refetch();
-  }, [sponsor]);
 
   return {
     record,

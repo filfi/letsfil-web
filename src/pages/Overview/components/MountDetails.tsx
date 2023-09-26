@@ -3,14 +3,38 @@ import { useMemo } from 'react';
 import classNames from 'classnames';
 import type { TableColumnsType } from 'antd';
 
+import { parseUnits } from 'viem';
 import { accDiv, accMul } from '@/utils/utils';
+import useMountState from '@/hooks/useMountState';
 import useMountAssets from '@/hooks/useMountAssets';
 import { formatAddr, formatAmount, formatPower, toNumber } from '@/utils/format';
 
 const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { sponsors = [], servicers = [], investors = [], servicerRate, servicerPower, power } = useMountAssets(data);
+  const { isStarted } = useMountState(data);
+  const { sponsors = [], servicers = [], investors = [], superRate, servicerRate, servicerPower, power } = useMountAssets(data);
 
-  const items = useMemo(() => [...sponsors, ...investors, ...servicers], [sponsors, servicers, investors]);
+  const items = useMemo(() => {
+    if (sponsors.length && servicers.length) {
+      [...sponsors, ...investors, ...servicers];
+    }
+
+    return [
+      {
+        address: data?.raiser,
+        role: 1,
+        role_level: 1,
+        sign_status: isStarted ? 1 : 0,
+        power_proportion: parseUnits(`${superRate}`, 5),
+      },
+      ...investors,
+      {
+        address: data?.service_provider_address,
+        role: 3,
+        power_proportion: '0',
+        sign_status: data?.sp_sign_status,
+      },
+    ] as API.Equity[];
+  }, [data, sponsors, servicers, investors, superRate, isStarted]);
 
   const columns: TableColumnsType<API.Equity> = [
     {

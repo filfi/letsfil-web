@@ -14,7 +14,7 @@ const CardAssets: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isWorking } = useRaiseState(data);
   const { amount: opsBalance } = useDepositOps(data);
   const { isRaiser, isServicer } = useRaiseRole(data);
-  const { raiserRate, opsRate, servicerRate } = useRaiseRate(data);
+  const { raiserRate, opsRate, superRate, servicerRate } = useRaiseRate(data);
   const { investorAmount, investorPledge, investorPower, raiserPower } = useAssetPack(data, pack);
 
   const isInvestor = useMemo(() => investorAmount > 0, [investorAmount]);
@@ -90,7 +90,7 @@ const CardAssets: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 <p className="d-flex align-items-center gap-3 my-3">
                   <span>分配比例</span>
                   <span className="ms-auto">
-                    <span className="fs-20 fw-600">{raiserRate}</span>
+                    <span className="fs-20 fw-600">{raiserRate || superRate}</span>
                     <span className="ms-1 text-neutral">%</span>
                   </span>
                 </p>
