@@ -4,6 +4,7 @@ import { SCAN_URL } from '@/constants';
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
+import { toastify } from '@/utils/hackify';
 import { isMountPlan } from '@/helpers/mount';
 import useRaiseBase from '@/hooks/useRaiseBase';
 import useRaiseRole from '@/hooks/useRaiseRole';
@@ -25,8 +26,8 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const isMount = useMemo(() => isMountPlan(data), [data]);
   const name = useMemo(() => (isMount ? '分配计划' : '节点计划'), [isMount]);
 
-  const handleEdit = () => {
-    actions.edit();
+  const handleEdit = async () => {
+    await toastify(actions.edit)();
   };
 
   const handleDelete = () => {
@@ -35,10 +36,10 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       title: `删除${name}`,
       summary: `未签名的${name}可以永久删除。`,
       confirmLoading: actions.removing,
-      onConfirm: () => {
+      onConfirm: async () => {
         hide();
 
-        actions.remove();
+        await toastify(actions.remove)();
       },
     });
   };
@@ -77,7 +78,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       onConfirm: async () => {
         hide();
 
-        await actions.close();
+        await toastify(actions.close)();
       },
     });
   };
@@ -93,7 +94,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       onConfirm: async () => {
         hide();
 
-        await actions.close();
+        await toastify(actions.close)();
       },
     });
   };

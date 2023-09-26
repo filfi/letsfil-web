@@ -46,9 +46,10 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     if (!data) return 0;
 
     if (isClosed) {
-      if (data.begin_time && data.closing_time) {
-        return data.closing_time - data.begin_time;
-      }
+      return data.closing_time;
+      // if (data.begin_time && data.closing_time) {
+      //   return data.closing_time - data.begin_time;
+      // }
     }
 
     if (isRaising || isWaitSeal) {
@@ -223,7 +224,7 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               </div>
             </div>
 
-            {isPending || isWaiting ? (
+            {isPending || isWaiting || isClosed ? (
               <p className="countdown-text mb-0">{formatUnixDate(data.begin_time)}</p>
             ) : isSuccess && (isDelayed || isSealing) ? (
               <p className="countdown-text mb-0">{formatUnixDate(data.end_seal_time)}</p>
