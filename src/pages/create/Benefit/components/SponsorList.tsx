@@ -179,7 +179,7 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
               { required: true, message: '请输入算力分配比例' },
               {
                 validator: V.Queue.create()
-                  .add(V.createGtValidator(0))
+                  // .add(V.createGtValidator(0))
                   .add(V.createNumRangeValidator([0, max], `请输入0-${max}之间的数`))
                   .add(V.createDecimalValidator(precision, `最多支持${precision}位小数`))
                   .build(),
