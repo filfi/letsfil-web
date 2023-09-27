@@ -445,6 +445,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取主办人数量
+   */
+  const getSponsorNo = async (id: string, _address = address) => {
+    return bigToNum(await readContract<bigint>('sponsorNo', [id], _address));
+  };
+
+  /**
    * 取回Owner权限
    */
   const backOwner = toastify(async (opts?: WriteOptions) => {
@@ -751,6 +758,7 @@ export default function useContract(address?: API.Address) {
     getServicerPendingReward,
     getServicerAvailableReward,
     getServicerWithdrawnReward,
+    getSponsorNo,
     backOwner,
     staking,
     mountNode,

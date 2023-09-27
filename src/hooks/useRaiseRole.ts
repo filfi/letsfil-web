@@ -10,16 +10,17 @@ import useRaiseEquity from './useRaiseEquity';
  */
 export default function useRaiseRole(data?: API.Plan | null) {
   const { address, sponsor, servicer: _servicer } = useRaiseEquity(data);
-  const raiser = useMemo(() => sponsor?.address, [sponsor]); // 主办人
+  const raiser = useMemo(() => sponsor?.address ?? data?.raiser, [data, sponsor]); // 主办人
   const servicer = useMemo(() => _servicer?.address ?? data?.service_provider_address, [data, _servicer]); // 服务商
-  const isRaiser = useMemo(() => Boolean(sponsor) || isEqual(address, data?.raiser), [address, data, sponsor]); // 主办人
-  const isSuper = useMemo(() => sponsor?.role_level === 1 || isEqual(address, data?.raiser), [address, data, sponsor]); // 第一主办人
-  const isServicer = useMemo(() => Boolean(_servicer) || isEqual(address, data?.service_provider_address), [address, data, _servicer]);
+  const isRaiser = useMemo(() => isEqual(address, raiser), [address, raiser]); // 是否主办人
+  const isServicer = useMemo(() => isEqual(address, servicer), [address, servicer]); // 是否服务商
+  const isSuper = useMemo(() => sponsor?.role_level === 1 || isEqual(address, data?.raiser), [address, data, sponsor]); // 是否第一主办人
   const isSigned = useMemo(() => data?.sp_sign_status === 1, [data?.sp_sign_status]);
   const isOpsPaid = useMemo(() => data?.sp_margin_status === 1, [data?.sp_margin_status]);
   const isRaisePaid = useMemo(() => data?.raise_margin_status === 1, [data?.raise_margin_status]);
 
   return {
+    address,
     raiser,
     servicer,
     isSuper,
