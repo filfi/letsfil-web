@@ -9,7 +9,6 @@ import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
-import useRaiseEquity from './useRaiseEquity';
 
 /**
  * 主办人节点激励
@@ -19,41 +18,41 @@ import useRaiseEquity from './useRaiseEquity';
 export default function useRewardRaiser(data?: API.Plan | null) {
   const client = useQueryClient();
   const { withConnect } = useAccount();
-  const { isSuper } = useRaiseRole(data);
-  const { sponsors, sponsor } = useRaiseEquity(data);
   const contract = useContract(data?.raise_address);
+  // const { sponsor } = useRaiseEquity(data);
+  const { address, isRaiser } = useRaiseRole(data);
 
   const getSponsorAvailableReward = async () => {
-    if (data && !isPending(data)) {
-      if (Array.isArray(sponsors) && sponsors.length && sponsor) {
-        return await contract.getSponsorAvailableReward(data.raising_id, sponsor.address);
+    if (address && data && !isPending(data) && isRaiser) {
+      const count = await contract.getSponsorNo(data.raising_id);
+
+      if (count > 0) {
+        return await contract.getSponsorAvailableReward(data.raising_id, address);
       }
 
-      if (isSuper) {
-        return await contract.getRaiserAvailableReward(data.raising_id);
-      }
+      return await contract.getRaiserAvailableReward(data.raising_id);
     }
   };
   const getSponsorPendingReward = async () => {
-    if (data && !isPending(data)) {
-      if (Array.isArray(sponsors) && sponsors.length && sponsor) {
-        return await contract.getSponsorPendingReward(data.raising_id, sponsor.address);
+    if (address && data && !isPending(data) && isRaiser) {
+      const count = await contract.getSponsorNo(data.raising_id);
+
+      if (count > 0) {
+        return await contract.getSponsorPendingReward(data.raising_id, address);
       }
 
-      if (isSuper) {
-        return await contract.getRaiserPendingReward(data.raising_id);
-      }
+      return await contract.getRaiserPendingReward(data.raising_id);
     }
   };
   const getSponsorWithdrawnReward = async () => {
-    if (data && !isPending(data)) {
-      if (Array.isArray(sponsors) && sponsors.length && sponsor) {
-        return await contract.getSponsorWithdrawnReward(data.raising_id, sponsor.address);
+    if (address && data && !isPending(data) && isRaiser) {
+      const count = await contract.getSponsorNo(data.raising_id);
+
+      if (count > 0) {
+        return await contract.getSponsorWithdrawnReward(data.raising_id, address);
       }
 
-      if (isSuper) {
-        return await contract.getRaiserWithdrawnReward(data.raising_id);
-      }
+      return await contract.getRaiserWithdrawnReward(data.raising_id);
     }
   };
 
@@ -86,7 +85,7 @@ export default function useRewardRaiser(data?: API.Plan | null) {
 
   useEffect(() => {
     refetch();
-  }, [sponsor]);
+  }, [address]);
 
   useUnmount(() => {
     client.invalidateQueries({ queryKey: ['getSponsorAvailableReward', data?.raising_id] });
@@ -96,13 +95,15 @@ export default function useRewardRaiser(data?: API.Plan | null) {
 
   const [withdrawing, withdrawAction] = useProcessify(
     withConnect(async () => {
-      if (!data) return;
+      if (!data || !address) return;
 
       let res;
 
-      if (Array.isArray(sponsors) && sponsor) {
-        res = await contract.sponsorWithdraw(data.raising_id, sponsor.address);
-      } else if (isSuper) {
+      const count = await contract.getSponsorNo(data.raising_id);
+
+      if (count > 0) {
+        res = await contract.sponsorWithdraw(data.raising_id, address);
+      } else {
         res = await contract.raiserWithdraw(data.raising_id);
       }
 
