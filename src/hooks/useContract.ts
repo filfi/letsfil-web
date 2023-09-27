@@ -448,7 +448,7 @@ export default function useContract(address?: API.Address) {
    * 获取主办人数量
    */
   const getSponsorNo = async (id: string, _address = address) => {
-    return toNumber(await readContract<bigint>('sponsorNo', [id], _address));
+    return bigToNum(await readContract<bigint>('sponsorNo', [id], _address));
   };
 
   /**

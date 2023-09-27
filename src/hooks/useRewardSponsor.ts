@@ -2,13 +2,15 @@ import { useUnmount } from 'ahooks';
 import { useEffect, useMemo } from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 
-import { sleep } from '@/utils/utils';
+import { isDef, sleep } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
 import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
+
+const sponsorLimit = 0;
 
 /**
  * 主办人节点激励
@@ -26,7 +28,9 @@ export default function useRewardRaiser(data?: API.Plan | null) {
     if (address && data && !isPending(data) && isRaiser) {
       const count = await contract.getSponsorNo(data.raising_id);
 
-      if (count > 0) {
+      if (!isDef(count)) return;
+
+      if (count > sponsorLimit) {
         return await contract.getSponsorAvailableReward(data.raising_id, address);
       }
 
@@ -37,7 +41,9 @@ export default function useRewardRaiser(data?: API.Plan | null) {
     if (address && data && !isPending(data) && isRaiser) {
       const count = await contract.getSponsorNo(data.raising_id);
 
-      if (count > 0) {
+      if (!isDef(count)) return;
+
+      if (count > sponsorLimit) {
         return await contract.getSponsorPendingReward(data.raising_id, address);
       }
 
@@ -48,7 +54,9 @@ export default function useRewardRaiser(data?: API.Plan | null) {
     if (address && data && !isPending(data) && isRaiser) {
       const count = await contract.getSponsorNo(data.raising_id);
 
-      if (count > 0) {
+      if (!isDef(count)) return;
+
+      if (count > sponsorLimit) {
         return await contract.getSponsorWithdrawnReward(data.raising_id, address);
       }
 
@@ -85,7 +93,7 @@ export default function useRewardRaiser(data?: API.Plan | null) {
 
   useEffect(() => {
     refetch();
-  }, [address]);
+  }, [address, data]);
 
   useUnmount(() => {
     client.invalidateQueries({ queryKey: ['getSponsorAvailableReward', data?.raising_id] });
@@ -101,7 +109,9 @@ export default function useRewardRaiser(data?: API.Plan | null) {
 
       const count = await contract.getSponsorNo(data.raising_id);
 
-      if (count > 0) {
+      if (!isDef(count)) return;
+
+      if (count > sponsorLimit) {
         res = await contract.sponsorWithdraw(data.raising_id, address);
       } else {
         res = await contract.raiserWithdraw(data.raising_id);
