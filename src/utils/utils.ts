@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import BigNumber from 'bignumber.js';
 import { isAddress } from 'ethers/lib/utils';
 import RelativeTime from 'dayjs/plugin/relativeTime';
-import { delegatedFromEthAddress, ethAddressFromDelegated, newActorAddress, newIDAddress } from '@glif/filecoin-address';
+import { ethAddressFromDelegated, newActorAddress, newDelegatedEthAddress, newIDAddress } from '@glif/filecoin-address';
 
 dayjs.extend(RelativeTime);
 dayjs.locale('zh-cn');
@@ -156,7 +156,7 @@ export function toEthAddr(addr?: string) {
 
 export function toF4Address(addr?: string) {
   if (addr && isAddress(addr)) {
-    return delegatedFromEthAddress(addr);
+    return newDelegatedEthAddress(addr).toString();
   }
 
   return '';
