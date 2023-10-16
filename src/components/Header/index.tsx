@@ -192,11 +192,11 @@ const Header: React.FC = () => {
                     </div>
                   </div>
                 </li>
-                {/* <li className="nav-item">
-                  <a className="nav-link" href="https://docs.filfi.io/en/introduction.html" target="_blank" rel="noreferrer">
+                <li className="nav-item">
+                  <a className="nav-link" href="https://docs.filfi.io/en/introduction/" target="_blank" rel="noreferrer">
                     <FormattedMessage id="menu.docs" />
                   </a>
-                </li> */}
+                </li>
               </ul>
             </div>
           </div>
