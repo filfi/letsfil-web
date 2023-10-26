@@ -5,6 +5,7 @@ import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useRewardOps from '@/hooks/useRewardOps';
 import useLoadingify from '@/hooks/useLoadingify';
+import useRaiseState from '@/hooks/useRaiseState';
 import useRewardSponsor from '@/hooks/useRewardSponsor';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import useRewardServicer from '@/hooks/useRewardServicer';
@@ -15,16 +16,23 @@ const AssetsReward: React.FC<{
   role: number;
   refetch?: () => void;
 }> = ({ plan, role, refetch }) => {
+  const { isDestroyed } = useRaiseState(plan);
   const ops = useRewardOps(plan); // 运维保证金的节点激励
   const sponsor = useRewardSponsor(plan); // 主办人的节点激励
   const investor = useRewardInvestor(plan); // 建设者的节点激励
   const servicer = useRewardServicer(plan); // 服务商的节点激励
 
-  const reward = useMemo(() => [investor.reward, sponsor.reward, servicer.reward, 0][role] ?? 0, [role, investor.reward, sponsor.reward, servicer.reward]);
-  const record = useMemo(() => [investor.record, sponsor.record, servicer.record, 0][role] ?? 0, [role, investor.record, sponsor.record, servicer.record]);
+  const reward = useMemo(
+    () => [investor.reward, sponsor.reward, servicer.reward, isDestroyed ? ops.pending : 0][role] ?? 0,
+    [role, investor.reward, sponsor.reward, servicer.reward, ops.pending, isDestroyed],
+  );
+  const record = useMemo(
+    () => [investor.record, sponsor.record, servicer.record, ops.fundReward][role] ?? 0,
+    [role, investor.record, sponsor.record, servicer.record, ops.fundReward],
+  );
   const pending = useMemo(
-    () => [investor.pending, sponsor.pending, servicer.pending, ops.pending][role] ?? 0,
-    [role, investor.pending, sponsor.pending, servicer.pending, ops.pending],
+    () => [investor.pending, sponsor.pending, servicer.pending, isDestroyed ? 0 : ops.pending][role] ?? 0,
+    [role, investor.pending, sponsor.pending, servicer.pending, ops.pending, isDestroyed],
   );
 
   const [withdrawing, handleWithdraw] = useLoadingify(async () => {
@@ -34,6 +42,8 @@ const AssetsReward: React.FC<{
       await sponsor.withdrawAction();
     } else if (role === 2) {
       await servicer.withdrawAction();
+    } else if (role === 3) {
+      await ops.withdrawRewardAction();
     }
 
     refetch?.();
