@@ -410,6 +410,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取运维保证金收益
+   */
+  const getServicerFundReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('gotSpFundReward', [id], _address));
+  };
+
+  /**
    * 获取服务商收益罚金
    */
   const getServicerFinesReward = async (id: string, _address = address) => {
@@ -704,6 +711,13 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 提取运维保证金收益
+   */
+  const withdrawOpsReward = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('withdrawFundReward', [id], opts);
+  });
+
+  /**
    * 提取运维保证金
    */
   const withdrawOpsFund = toastify(async (id: string, opts?: WriteOptions) => {
@@ -753,6 +767,7 @@ export default function useContract(address?: API.Address) {
     getOpsFundReward,
     getOpsRewardFines,
     getServicerFines,
+    getServicerFundReward,
     getServicerFinesReward,
     getServicerLockedReward,
     getServicerPendingReward,
@@ -779,6 +794,7 @@ export default function useContract(address?: API.Address) {
     investorWithdraw,
     sponsorWithdraw,
     servicerWithdraw,
+    withdrawOpsReward,
     withdrawOpsFund,
     withdrawRaiserFund,
   };

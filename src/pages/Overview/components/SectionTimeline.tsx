@@ -27,10 +27,10 @@ const StepStart: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 };
 
 const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { nodeState, isClosed, isFailed, isRaising, isSuccess, isWaitSeal } = useRaiseState(data);
+  const { nodeState, isClosed, isFailed, isRaising, isSuccess, isDestroyed, isWaitSeal } = useRaiseState(data);
 
-  const isRaiseEnd = useMemo(() => isSuccess && nodeState >= NodeState.Started, [nodeState, isSuccess]);
   const isProgress = useMemo(() => !isSuccess && (isRaising || isWaitSeal), [isRaising, isSuccess, isWaitSeal]);
+  const isRaiseEnd = useMemo(() => (isDestroyed || isSuccess) && nodeState >= NodeState.Started, [nodeState, isDestroyed, isSuccess]);
 
   if (isClosed || isFailed) {
     return (

@@ -52,7 +52,7 @@ export default function useRaiseState(data?: API.Plan | null) {
   // 封装完成
   const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
   // 已销毁（节点运行结束）
-  const isDestroyed = useMemo(() => isSuccess && nodeState === NodeState.Destroy, [isSuccess, nodeState]);
+  const isDestroyed = useMemo(() => planState === RaiseState.Destroyed || (isSuccess && nodeState === NodeState.Destroy), [isSuccess, nodeState, planState]);
   // 工作中（产生节点激励）
   const isWorking = useMemo(() => isDestroyed || isFinished, [isDestroyed, isFinished]);
 

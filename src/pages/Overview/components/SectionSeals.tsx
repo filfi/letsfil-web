@@ -8,6 +8,20 @@ import useRaiseSeals from '@/hooks/useRaiseSeals';
 import useRaiseState from '@/hooks/useRaiseState';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 
+function fmtWidth(val: number) {
+  if (val >= 0.9) return Math.ceil(val) * 100;
+
+  return val * 100;
+}
+
+function fmtProgress(progress: number) {
+  if (progress >= 0.9) {
+    return F.formatRate(Math.ceil(progress));
+  }
+
+  return F.formatRate(progress);
+}
+
 const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { baseFee } = useChainInfo();
   const { data: pack } = usePackInfo(data);
@@ -29,11 +43,11 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             aria-valuemax={100}
           >
             <div
-              style={{ width: `${Math.min(progress * 100, 100)}%` }}
+              style={{ width: `${fmtWidth(progress)}%` }}
               className={classNames('progress-bar', { 'progress-bar-striped progress-bar-animated': isSealing || isDelayed })}
             ></div>
             <span className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
-              <span className="text-white fw-bold">封装进度 {F.formatRate(progress)}</span>
+              <span className="text-white fw-bold">封装进度 {fmtProgress(progress)}</span>
               {isRaising && <span className="text-white fw-bold">（质押还在进行，进度可能抖动）</span>}
             </span>
           </div>

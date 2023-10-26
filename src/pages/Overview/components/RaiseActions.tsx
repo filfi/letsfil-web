@@ -21,7 +21,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isSuper } = useRaiseRole(data);
   const { actual, minTarget } = useRaiseBase(data);
   const { isActive, isInactive } = useMountState(data);
-  const { isPending, isWaiting, isRaising } = useRaiseState(data);
+  const { isPending, isStarted, isWaiting, isRaising } = useRaiseState(data);
 
   const isMount = useMemo(() => isMountPlan(data), [data]);
   const name = useMemo(() => (isMount ? '分配计划' : '节点计划'), [isMount]);
@@ -45,34 +45,51 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   };
 
   const closeRaise = () => {
-    const isSafe = actual >= minTarget;
+    if (isStarted) {
+      const isSafe = actual >= minTarget;
+
+      const hide = Dialog.confirm({
+        icon: 'error',
+        title: isSafe ? '提前关闭节点计划' : '关闭节点计划',
+        summary: isSafe
+          ? '达到最低目标，即可正常结束节点计划。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示'
+          : '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
+        content: isSafe ? (
+          <div className="text-gray">
+            <ul>
+              <li>提前沟通技术服务商，与封装排期计划保持同步</li>
+              <li>检查{name}承诺的封装时间，封装延期将产生罚金</li>
+            </ul>
+          </div>
+        ) : (
+          <div className="text-gray">
+            <ul>
+              <li>需要向建设者支付投资额的利息</li>
+              <li>需要向技术服务商支付保证金利息</li>
+            </ul>
+            <p>
+              <span>智能合约按照规则会产生罚金，罚金从主办人保证金中扣除。 </span>
+              <a href="#">如何计算罚金？</a>
+            </p>
+          </div>
+        ),
+        confirmText: isSafe ? '提前关闭计划' : '关闭并支付罚金',
+        confirmBtnVariant: 'danger',
+        confirmLoading: actions.closing,
+        onConfirm: async () => {
+          hide();
+
+          await toastify(actions.close)();
+        },
+      });
+      return;
+    }
 
     const hide = Dialog.confirm({
       icon: 'error',
-      title: isSafe ? '提前关闭节点计划' : '关闭节点计划',
-      summary: isSafe
-        ? '达到最低目标，即可正常结束节点计划。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示'
-        : '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
-      content: isSafe ? (
-        <div className="text-gray">
-          <ul>
-            <li>提前沟通技术服务商，与封装排期计划保持同步</li>
-            <li>检查{name}承诺的封装时间，封装延期将产生罚金</li>
-          </ul>
-        </div>
-      ) : (
-        <div className="text-gray">
-          <ul>
-            <li>需要向建设者支付投资额的利息</li>
-            <li>需要向技术服务商支付保证金利息</li>
-          </ul>
-          <p>
-            <span>智能合约按照规则会产生罚金，罚金从主办人保证金中扣除。 </span>
-            <a href="#">如何计算罚金？</a>
-          </p>
-        </div>
-      ),
-      confirmText: isSafe ? '提前关闭计划' : '关闭并支付罚金',
+      title: '关闭节点计划',
+      summary: '节点计划已经部署在链上，确定关闭吗？',
+      confirmText: '关闭计划',
       confirmBtnVariant: 'danger',
       confirmLoading: actions.closing,
       onConfirm: async () => {
