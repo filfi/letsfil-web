@@ -11,6 +11,7 @@ import AssetsSider from './components/AssetsSider';
 import AssetsEvents from './components/AssetsEvents';
 import AssetsHeader from './components/AssetsHeader';
 import AssetsReward from './components/AssetsReward';
+import RecordReward from './components/RecordReward';
 
 export default function Assets() {
   const param = useParams();
@@ -52,6 +53,8 @@ export default function Assets() {
               <AssetsMain pack={pack} plan={plan} role={role} />
 
               <AssetsEvents />
+
+              <RecordReward data={plan} />
             </div>
           </div>
         </LoadingView>
