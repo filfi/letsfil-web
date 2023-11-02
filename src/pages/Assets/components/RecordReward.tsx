@@ -4,7 +4,7 @@ import { Modal } from 'bootstrap';
 import type { ColumnsType } from 'antd/es/table';
 
 import { isDef } from '@/utils/utils';
-import { SCAN_URL } from '@/constants';
+import { SCAN_URL, isMainnet } from '@/constants';
 import { listReward } from '@/apis/miner';
 import RecordRelease from './RecordRelease';
 import usePagination from '@/hooks/usePagination';
@@ -19,6 +19,10 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 
     return <span className="text-gray">-</span>;
   };
+}
+
+function patchUrl(cid: string) {
+  return isMainnet ? `${SCAN_URL}/block/${cid}` : `${SCAN_URL}/cid/${cid}`;
 }
 
 const RecordReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
@@ -55,7 +59,7 @@ const RecordReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       title: '区块Cid',
       dataIndex: 'block_cid',
       render: withEmpty((v, row) => (
-        <a href={`${SCAN_URL}/cid/${row.block_cid}`} target="_blank" rel="noreferrer">
+        <a href={patchUrl(row.block_cid)} target="_blank" rel="noreferrer">
           <span>{formatAddr(v)}</span>
         </a>
       )),
