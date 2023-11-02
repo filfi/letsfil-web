@@ -18,6 +18,8 @@ export const queryClient = new QueryClient({
 
 export const safeAmount = isMainnet ? 300 : 3;
 
+export const CREATION_TIME = isMainnet ? 1598306400 : 1667326380;
+
 export const { chains, publicClient, webSocketPublicClient } = configureChains(_chains, [publicProvider()], {
   retryCount: 50,
   retryDelay: 3_000,
