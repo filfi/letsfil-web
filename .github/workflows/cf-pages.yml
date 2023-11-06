@@ -22,7 +22,7 @@ jobs:
       - name: Install Pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 5
           run_install: true
 
       - run: cross-env RUN_ENV=main API_URL="${{ vars.API_URL }}" ADDRESS="${{ vars.CONTRACT_ADDRESS }}" max build
