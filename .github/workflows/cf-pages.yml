@@ -30,7 +30,7 @@ jobs:
           RUN_ENV: main
           API_URL: ${{ vars.API_URL }}
           ADDRESS: ${{ vars.CONTRACT_ADDRESS }}
-        run: pnpm max build
+        run: node_modules/.bin/max build
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
