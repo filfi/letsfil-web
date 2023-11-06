@@ -25,7 +25,12 @@ jobs:
           version: 5
           run_install: true
 
-      - run: cross-env RUN_ENV=main API_URL="${{ vars.API_URL }}" ADDRESS="${{ vars.CONTRACT_ADDRESS }}" max build
+      - name: Build
+        env:
+          RUN_ENV: main
+          API_URL: ${{ vars.API_URL }}
+          ADDRESS: ${{ vars.CONTRACT_ADDRESS }}
+        run: max build
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
