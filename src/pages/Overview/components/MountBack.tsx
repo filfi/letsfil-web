@@ -7,8 +7,10 @@ import useMountAssets from '@/hooks/useMountAssets';
 import { formatAmount, toNumber } from '@/utils/format';
 import useReleasedPledge from '@/hooks/useReleasedPledge';
 import useDepositInvestor from '@/hooks/useDepositInvestor';
+import useMountState from '@/hooks/useMountState';
 
 const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+  const { isOver } = useMountState(data);
   const { released } = useReleasedPledge(data);
   const { investor, investorPledge } = useMountAssets(data);
   const { amount, record, backAmount, unstaking, unStakeAction } = useDepositInvestor(data);
@@ -31,7 +33,7 @@ const MountBack: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           <div className="card-header d-flex gap-3 border-0">
             <h4 className="card-title fw-bold mb-0 me-2">退回质押</h4>
 
-            <span className="badge badge-primary ms-auto">节点已到期</span>
+            {isOver && <span className="badge badge-primary ms-auto">节点已到期</span>}
           </div>
           <div className="card-body py-2 fs-16 text-main">
             <p className="d-flex align-items-center gap-3 mb-2">

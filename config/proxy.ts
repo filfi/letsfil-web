@@ -20,7 +20,10 @@ const proxies: Options = {
       },
     },
     '/rpc': {
-      target: 'https://api.hyperspace.node.glif.io',
+      // target: 'https://api.hyperspace.node.glif.io',
+      target: 'https://api.calibration.node.glif.io',
+      // target: 'http://10.62.72.20:1234',
+      secure: false,
       changeOrigin: true,
     },
   },

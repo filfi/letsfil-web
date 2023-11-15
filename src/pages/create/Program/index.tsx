@@ -145,6 +145,7 @@ export default function CreateProgram() {
         size="large"
         layout="vertical"
         initialValues={{
+          isShow: 1,
           planOpen: 1,
           amountType: 0,
           sealDays: 14,
@@ -168,15 +169,36 @@ export default function CreateProgram() {
             </Form.Item>
             {isTargeted && (
               <>
-                <p className="text-gray">
-                  请在下面指定可参与计划的钱包地址和每个地址的质押限额（未填即无限额）。点击 + 号增加，点击 -
-                  号删除。“定向计划”不会在公开列表中显示。主办人需要在私域中将计划的页面链接发给建设者。
-                </p>
+                <p className="text-gray">请在下面指定可参与计划的钱包地址和每个地址的质押限额（未填即无限额）。点击 + 号增加，点击 - 号删除。</p>
 
                 <WhiteList form={form} name="raiseWhiteList" />
               </>
             )}
           </div>
+
+          {isTargeted && (
+            <div className="ffi-item border-bottom">
+              <Form.Item name="isShow">
+                <FormRadio
+                  grid
+                  items={[
+                    {
+                      label: '公开显示',
+                      icon: <span className="bi bi-eye fs-lg"></span>,
+                      desc: '计划将会在公开列表中显示，所有建设者都可查看',
+                      value: 1,
+                    },
+                    {
+                      label: '不公开显示',
+                      icon: <span className="bi bi-eye-slash fs-lg"></span>,
+                      desc: '计划将不会在公开列表中显示，主办人需要将计划链接发给建设者',
+                      value: 2,
+                    },
+                  ]}
+                />
+              </Form.Item>
+            </div>
+          )}
 
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">质押目标</h4>

@@ -280,7 +280,8 @@ export default function useContract(address?: API.Address) {
    * @returns
    */
   const getReleasedPledge = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('pledgeReleased', [id], _address));
+    // return toEther(await readContract<bigint>('pledgeReleased', [id], _address));
+    return toEther(await readContract<bigint>('releasedPledge', [id], _address));
   };
 
   /**
@@ -294,7 +295,8 @@ export default function useContract(address?: API.Address) {
    * 获取节点总节点激励
    */
   const getTotalReward = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('totalRewardAmount', [id], _address));
+    // return toEther(await readContract<bigint>('totalRewardAmount', [id], _address));
+    return toEther(await readContract<bigint>('allReward', [id], _address));
   };
 
   /**
@@ -427,7 +429,8 @@ export default function useContract(address?: API.Address) {
    * 获取服务商锁定节点激励
    */
   const getServicerLockedReward = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('spRewardLock', [id], _address));
+    // return toEther(await readContract<bigint>('spRewardLock', [id], _address));
+    return toEther(await readContract<bigint>('spLockedReward', [id], _address));
   };
 
   /**

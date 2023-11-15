@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import classNames from 'classnames';
 
 import * as F from '@/utils/format';
+import { accSub, sec2day } from '@/utils/utils';
 import usePackInfo from '@/hooks/usePackInfo';
 import useAssetPack from '@/hooks/useAssetPack';
 import useChainInfo from '@/hooks/useChainInfo';
@@ -29,6 +31,9 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { pledge, sector, progress } = useAssetPack(data, pack);
   const { sealsDays, delayedDays, sealedDays, runningDays } = useRaiseSeals(data, pack);
   const { isRaising, isSuccess, isWaitSeal, isWorking, isSealing, isDelayed, isFinished } = useRaiseState(data);
+
+  const days = useMemo(() => sec2day(accSub(data?.end_seal_time ?? 0, data?.begin_seal_time ?? 0)), [data]);
+  const aheadDays = useMemo(() => accSub(days, sealsDays), [days, sealsDays]);
 
   if (isSuccess || isSealing || isDelayed || isWorking) {
     return (
@@ -75,7 +80,19 @@ const SectionSeals: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               <div className="col-8 table-cell">
                 {isWorking ? <span>{sealedDays}天</span> : isDelayed || isSealing ? <span>第{Math.ceil(runningDays)}天</span> : <span>准备封装</span>}
                 <span className="mx-1">/</span>
-                <span>承诺{sealsDays}天</span>
+                {isDelayed || isSealing ? (
+                  <>
+                    <span className="me-1">{days}天</span>
+                    <span>
+                      <span>(</span>
+                      {aheadDays > 0 && <span>提前{aheadDays} + </span>}
+                      <span>承诺{sealsDays}</span>
+                      <span>)</span>
+                    </span>
+                  </>
+                ) : (
+                  <span>承诺{sealsDays}天</span>
+                )}
               </div>
             </div>
           </div>

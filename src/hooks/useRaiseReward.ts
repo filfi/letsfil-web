@@ -27,7 +27,7 @@ export default function useRaiseReward(data?: API.Plan | null) {
     }
   };
 
-  const [rewardRes, finesRes] = useQueries({
+  const [rRes, fRes] = useQueries({
     queries: [
       {
         queryKey: ['getTotalReward', data?.raising_id],
@@ -40,12 +40,12 @@ export default function useRaiseReward(data?: API.Plan | null) {
     ],
   });
 
-  const fines = useMemo(() => finesRes.data ?? 0, [finesRes.data]);
-  const reward = useMemo(() => rewardRes.data ?? 0, [rewardRes.data]);
-  const isLoading = useMemo(() => finesRes.isLoading || rewardRes.isLoading, [finesRes.isLoading, rewardRes.isLoading]);
+  const fines = useMemo(() => fRes.data ?? 0, [fRes.data]);
+  const reward = useMemo(() => rRes.data ?? 0, [rRes.data]);
+  const isLoading = useMemo(() => fRes.isLoading || rRes.isLoading, [fRes.isLoading, rRes.isLoading]);
 
   const refetch = () => {
-    return Promise.all([rewardRes.refetch(), finesRes.refetch()]);
+    return Promise.all([rRes.refetch(), fRes.refetch()]);
   };
 
   useUnmount(() => {
