@@ -154,7 +154,11 @@ const CardRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       }
     }
 
-    return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
+    if (isPending || isWaiting) {
+      return <p className="mb-0">节点计划尚未开放，收藏页面密切关注投资机会。</p>;
+    }
+
+    return null;
   };
 
   // 封装结束
