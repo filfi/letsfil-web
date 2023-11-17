@@ -45,7 +45,7 @@ const RecordReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     };
   };
 
-  const { data: dataSource, loading } = usePagination(service, { pageSize: 100, refreshDeps: [data?.miner_id] });
+  const { loading, page, pageSize, total, change, data: dataSource } = usePagination(service, { pageSize: 10, refreshDeps: [data?.miner_id] });
 
   const handleModal = (row: API.Base) => {
     setRow(row);
@@ -98,7 +98,19 @@ const RecordReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           </h4>
           <div id="blocks" className="accordion-collapse collapse show" aria-labelledby="blocks">
             <div className="accordion-body p-0">
-              <Table rowKey="ID" columns={columns} dataSource={dataSource} loading={loading} pagination={false} />
+              <Table
+                rowKey="ID"
+                columns={columns}
+                dataSource={dataSource}
+                loading={loading}
+                pagination={{
+                  total,
+                  pageSize,
+                  current: page,
+                  onChange: change,
+                  rootClassName: 'px-3 px-xl-4',
+                }}
+              />
             </div>
           </div>
         </div>

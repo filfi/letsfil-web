@@ -177,18 +177,14 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const renderExtra = () => {
     if ((isClosed || isFailed) && opsInterest) {
       return (
-        <div className="bg-light my-2 px-3 py-2 rounded-3">
-          {(isClosed || isFailed) && (
-            <p className="d-flex gap-3 my-2">
-              <span className="text-gray-dark">
-                <span>利息补偿</span>
-                <span className="ms-2 fw-bold text-success">+{F.formatAmount(opsInterest)}</span>
-                <span className="ms-1">FIL</span>
-              </span>
-              {/* <a className="ms-auto text-underline" href="#">补偿明细</a> */}
-            </p>
-          )}
-        </div>
+        <p className="d-flex gap-3 my-2">
+          <span className="text-gray-dark">
+            <span>利息补偿</span>
+            <span className="ms-2 fw-bold text-success">+{F.formatAmount(opsInterest)}</span>
+            <span className="ms-1">FIL</span>
+          </span>
+          {/* <a className="ms-auto text-underline" href="#">补偿明细</a> */}
+        </p>
       );
     }
 
@@ -199,7 +195,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
       if ((isProcessed && (hasOver || hasRemain)) || hasFines) {
         return (
-          <div className="bg-light my-2 px-3 py-2 rounded-3">
+          <>
             {hasOver && isProcessed && (
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
@@ -230,7 +226,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
               </p>
             )}
-          </div>
+          </>
         );
       }
     }
@@ -291,9 +287,32 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </p>
             {isOpsPaid && <span className="ms-auto badge badge-success">来自{F.formatAddr(servicer)}</span>}
           </div>
-          {renderExtra()}
+
+          <div className="bg-light my-2 px-3 py-2 rounded-3">
+            <p className="d-flex gap-3 my-2">
+              <span className="text-gray-dark">
+                <span>运维保证金</span>
+                <span className="ms-2 fw-bold">{F.formatAmount(isOpsPaid ? amount : total)}</span>
+                <span className="ms-1">FIL</span>
+              </span>
+              <span className="ms-auto text-gray">跟随节点生命周期</span>
+            </p>
+            <p className="d-flex gap-3 my-2">
+              <span className="text-gray-dark">
+                <span>封装缓冲金</span>
+                <span className="ms-2 fw-bold">{F.formatAmount(isOpsPaid ? safe : safeAmount)}</span>
+                <span className="ms-1">FIL</span>
+              </span>
+              <span className="ms-auto text-gray">封装完毕退还未使用部分</span>
+            </p>
+            {renderExtra()}
+          </div>
+
           <p className="mb-0">
-            <span>与建设者等比投入，保持占比{opsRatio}%。做为劣后质押封装到扇区，当发生网络罚金时，该保证金首先承担。</span>
+            <span>
+              运维保证金与建设者等比投入，保持占比{opsRatio}%，做为劣后质押封装到扇区，当发生网络罚金时，该保证金首先承担。封装缓冲金固定为{safeAmount}
+              FIL，用以补充封装最后一个节点扇区。
+            </span>
             {/* <a className="text-underline" href="#sp-deposit" data-bs-toggle="modal">
               更多信息
             </a> */}
