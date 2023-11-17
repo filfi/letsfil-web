@@ -11,14 +11,14 @@ import useRaiseState from '@/hooks/useRaiseState';
 import useDepositRaiser from '@/hooks/useDepositRaiser';
 
 function fmtWidth(val: number) {
-  if (val >= 0.9 && val < 1) return Math.ceil(val * 100);
+  if (val >= 0.99 && val <= 1) return 100;
 
   return val * 100;
 }
 
 function fmtProgress(progress: number) {
-  if (progress >= 0.9 && progress < 1) {
-    return F.formatRate(Math.ceil(progress * 100) / 100);
+  if (progress >= 0.99 && progress <= 1) {
+    return F.formatRate(1);
   }
 
   return F.formatRate(progress);
