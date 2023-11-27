@@ -32,8 +32,8 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { actual } = useRaiseBase(data);
   const { data: count } = useRaiseSyncCount(data);
   const { raiser, isSuper, isRaisePaid } = useRaiseRole(data);
-  const { amount, fines, total, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
   const { isPending, isClosed, isFailed, isWaiting, isRaising, isSuccess, isWorking } = useRaiseState(data);
+  const { amount, gas, fines, total, paying, withdrawing, payAction, withdrawAction } = useDepositRaiser(data);
 
   const fee = useMemo(() => accMul(actual, 0.003), [actual]); // 手续费
   const payable = useMemo(() => isSuper && isWaiting, [isSuper, isWaiting]);
@@ -41,6 +41,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const show = useMemo(() => isClosed || isFailed || (count?.seal_delay_sync_count ?? 0) > 0, [isClosed, isFailed, count?.seal_delay_sync_count]);
 
   const renderExtra = () => {
+    console.log('[gas]: ', gas);
     if (isClosed || isFailed) {
       return (
         <div className="bg-light my-2 px-3 py-2 rounded-3">
@@ -67,11 +68,21 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             </span>
             {/* <a className="ms-auto text-underline" href="#">了解更多</a> */}
           </p>
-          {isWorking && fines > 0 && (
+          {fines > 0 && (
             <p className="d-flex gap-3 my-2">
               <span className="text-gray-dark">
                 <span>累计罚金</span>
                 <span className="ms-2 fw-bold text-danger">-{F.formatAmount(fines, 2, 2)}</span>
+                <span className="ms-1">FIL</span>
+              </span>
+              {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
+            </p>
+          )}
+          {gas > 0 && (
+            <p className="d-flex gap-3 my-2">
+              <span className="text-gray-dark">
+                <span>聚合消息Gas费</span>
+                <span className="ms-2 fw-bold text-danger">-{F.formatAmount(gas, 2, 2)}</span>
                 <span className="ms-1">FIL</span>
               </span>
               {/* <a className="ms-auto text-underline" href="#">罚金明细</a> */}
