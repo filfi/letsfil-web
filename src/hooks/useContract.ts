@@ -205,6 +205,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取主办人罚金
+   */
+  const getRaiserFine = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('raiserFine', [id], _address));
+  };
+
+  /**
    * 获取主办人保证金
    */
   const getRaiserFund = async (id: string, _address = address) => {
@@ -742,6 +749,7 @@ export default function useContract(address?: API.Address) {
     getOpsFundNeed,
     getOpsFundSeal,
     getOpsFundSealed,
+    getRaiserFine,
     getRaiserFund,
     getNodeState,
     getPlanState,
