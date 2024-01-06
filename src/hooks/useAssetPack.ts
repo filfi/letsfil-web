@@ -1,31 +1,19 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 
-import useContract from './useContract';
 import useRaiseBase from './useRaiseBase';
 import useRaiseRate from './useRaiseRate';
 import useRaiseRole from './useRaiseRole';
-import { withNull } from '@/utils/hackify';
-import { isServicerPaied } from '@/helpers/raise';
+import useDepositOps from './useDepositOps';
 import { toFixed, toNumber } from '@/utils/format';
 import useDepositInvestor from './useDepositInvestor';
 import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
 export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | null) {
-  const contract = useContract(plan?.raise_address);
-
-  const getOpsFundSealed = async () => {
-    if (plan && isServicerPaied(plan)) {
-      return await contract.getOpsFundSealed(plan.raising_id);
-    }
-  };
-
   const { isRaiser, isServicer } = useRaiseRole(plan);
   const { record, isInvestor } = useDepositInvestor(plan);
+  const { opsBack, opsSealed, safeSealed } = useDepositOps(plan);
   const { actual, progress: _progress, target } = useRaiseBase(plan);
   const { priorityRate, raiserRate, superRate, opsRatio: ratio, servicerRate } = useRaiseRate(plan);
-  // 已封装的缓冲金
-  const { data: opsSealed, isLoading } = useQuery(['getOpsFundSealed', plan?.raising_id], withNull(getOpsFundSealed));
 
   // 总算力
   const power = useMemo(() => +`${pack?.total_power || 0}`, [pack?.total_power]);
@@ -39,7 +27,7 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
   // 实际配比运维保证金 = 已缴纳运维保证金 * 募集比例
   const opsCurrent = useMemo(() => accMul(opsActual, _progress), [opsActual, _progress]);
   // 总运维保证金 = 实际配比运维保证金 + 已封装缓冲金
-  const opsAmount = useMemo(() => accAdd(opsCurrent, opsSealed ?? 0), [opsCurrent, opsSealed]);
+  const opsAmount = useMemo(() => accAdd(opsCurrent, safeSealed ?? 0), [opsCurrent, safeSealed]);
   // 总质押 = 实际募集 + 总运维保证金
   const total = useMemo(() => accAdd(actual, opsAmount), [actual, opsAmount]);
   // 运维保证金占比 = 总运维保证金 / 总质押
@@ -93,11 +81,12 @@ export default function useAssetPack(plan?: API.Plan | null, pack?: API.Pack | n
     investorAmount: record,
     servicerPower,
     opsPledge,
+    opsBack,
+    opsSealed,
     raiserPledge,
     investorPledge,
     servicerPledge,
     holdPower,
     holdPledge,
-    isLoading,
   };
 }

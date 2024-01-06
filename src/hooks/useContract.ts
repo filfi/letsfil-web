@@ -191,16 +191,30 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取已退回的保证金
+   */
+  const getOpsFundBack = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('fundBack', [id], _address));
+  };
+
+  /**
+   * 获取已封装的保证金
+   */
+  const getOpsFundSeald = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('fundSealed', [id], _address));
+  };
+
+  /**
    * 获取剩余封装缓冲金
    */
-  const getOpsFundSeal = async (id: string, _address = address) => {
+  const getOpsFundSafeRemain = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('safeSealFund', [id], _address));
   };
 
   /**
    * 获取已封装的封装缓冲金
    */
-  const getOpsFundSealed = async (id: string, _address = address) => {
+  const getOpsFundSafeSealed = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('safeSealedFund', [id], _address));
   };
 
@@ -747,8 +761,10 @@ export default function useContract(address?: API.Address) {
     getOpsFund,
     getOpsFundCalc,
     getOpsFundNeed,
-    getOpsFundSeal,
-    getOpsFundSealed,
+    getOpsFundBack,
+    getOpsFundSeald,
+    getOpsFundSafeSealed,
+    getOpsFundSafeRemain,
     getRaiserFine,
     getRaiserFund,
     getNodeState,

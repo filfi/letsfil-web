@@ -10,18 +10,18 @@ import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseMiner from '@/hooks/useRaiseMiner';
 import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
-import { accAdd, accSub, sleep } from '@/utils/utils';
+import { accAdd, accMul, accSub, sleep } from '@/utils/utils';
 
 const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { startPreSeal } = useContract(data?.raise_address);
 
   const { isRaiser } = useRaiseRole(data);
-  const { actual, minTarget, refetch } = useRaiseBase(data);
   const { funds, pledge, safe, sealed } = useRaiseMiner(data);
   const { isStarted, isSuccess, isWorking } = useRaiseState(data);
+  const { actual, progress, minTarget, refetch } = useRaiseBase(data);
 
-  // 可转入 = 总质押 + 运维保证金 + 缓冲金 - 已封装
-  const amount = useMemo(() => accSub(accAdd(pledge, funds, safe), sealed), [funds, pledge, safe, sealed]);
+  // 可转入 = 总质押 + 运维保证金 * 募集比例 + 缓冲金 - 已封装
+  const amount = useMemo(() => accSub(accAdd(pledge, accMul(funds, progress), safe), sealed), [funds, pledge, progress, safe, sealed]);
 
   const [sealing, sealAction] = useProcessify(async () => {
     if (!data) return;
