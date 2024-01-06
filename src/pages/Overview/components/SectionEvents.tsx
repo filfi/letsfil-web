@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useResponsive } from 'ahooks';
 import type { ColumnsType } from 'antd/es/table';
 
+import { blocks } from '../constants';
 import { isDef } from '@/utils/utils';
 import { SCAN_URL } from '@/constants';
 import { getEvents } from '@/apis/raise';
@@ -23,24 +24,35 @@ function withEmpty<D = any>(render: (value: any, row: D, index: number) => React
 const EVENTS_MAP: Record<string, string> = {
   ESealEnd: '封装结束',
   EStartSeal: '开始封装',
+  EMountNode: '主办人签名',
+  ESponsorSign: '主办人签名',
+  EInvestorSign: '建设者签名',
   ESPWithdraw: '服务商提取激励',
   ENodeDestroy: '扇区到期',
-  ERaiseFailed: '质押失败',
+  ERaiseFailed: '计划启动失败',
   ERaiseSuccess: '质押成功',
   EStartPreSeal: '准备封装',
   ESealProgress: '正在封装',
   ERaiseWithdraw: '主办人提取激励',
   CloseRaisePlan: '关闭质押',
   StartRaisePlan: '开始质押',
+  ENodeMountFailed: '节点挂载失败',
+  ENodeMountSuccess: '节点挂载成功',
   SpSignWithMiner: '技术服务商签名',
+  ECreatePlan: '主办人签名',
   ECreateAssetPack: '主办人签名',
+  ECreatePrivatePlan: '主办人签名',
+  EClosePlanToSeal: '关闭计划并进入封装',
   ESpecifyOpsPayer: '指定运维付款人',
+  ESponsorWithdraw: '主办人提取激励',
   ERaiseSecurityFund: '存入主办人保证金',
   EStackFromInvestor: '建设者质押',
+  EAddOpsSecurityFund: '追加运维保证金',
   EStartPreSealTransfer: '质押转入Miner地址',
   EUnstackFromInverstor: '建设者赎回',
   EDepositOPSSecurityFund: '存入运维保证金',
   EInverstorWithdrawProfit: '建设者提取激励',
+  EWithdrawFundReward: '技术服务商运维保证金激励',
   EWithdrawOPSSecurityFund: '技术服务商取回保证金',
   EWithdrawRaiseSecurityFund: '主办人取回保证金',
 };
@@ -49,18 +61,17 @@ function renderName(event: string) {
   return EVENTS_MAP[event];
 }
 
-// function sortEvents(a: API.Event, b: API.Event) {
-//   if (
-//     (a.event_sign === 'EStartSeal' && b.event_sign === 'ERaiseSuccess') ||
-//     (a.event_sign === 'ERaiseSuccess' && b.event_sign === 'EStackFromInvestor') ||
-//     (a.event_sign === 'ESealEnd' && b.event_sign === 'ESealProgress') ||
-//     (a.event_sign === 'EStartPreSeal' && b.event_sign === 'EStartPreSealTransfer')
-//   ) {
-//     return -1;
-//   }
+function createEventsFilter(data?: API.Plan | null) {
+  return function eventsFilter({ event_sign }: API.Event) {
+    if (`${event_sign}`.toLowerCase().includes('push')) return false;
 
-//   return 0;
-// }
+    if (data && blocks.some(({ id }) => id === data.raising_id)) {
+      return !['EUnstackFromInverstor'].includes(event_sign);
+    }
+
+    return true;
+  };
+}
 
 const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
@@ -75,7 +86,9 @@ const SectionEvents: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const { data: list, page, noMore, loading, changePage } = useInfiniteLoad(service, { pageSize: 20, refreshDeps: [data?.raising_id] });
 
-  const dataSource = useMemo(() => list?.filter((i) => !`${i.event_sign}`.toLowerCase().includes('push')), [list]); //.sort(sortEvents), [list]);
+  const eventsFilter = useMemo(() => createEventsFilter(data), [data]);
+
+  const dataSource = useMemo(() => list?.filter(eventsFilter), [eventsFilter, list]); //.sort(sortEvents), [list]);
 
   const handleMore = async () => {
     if (noMore) return;

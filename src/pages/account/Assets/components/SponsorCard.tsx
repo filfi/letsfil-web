@@ -1,5 +1,5 @@
 import useAssetPack from '@/hooks/useAssetPack';
-import useRewardRaiser from '@/hooks/useRewardRaiser';
+import useRewardSponsor from '@/hooks/useRewardSponsor';
 import { formatAmount, formatPower } from '@/utils/format';
 
 export type ItemProps = {
@@ -7,8 +7,8 @@ export type ItemProps = {
   plan?: API.Plan | null;
 };
 
-export default function RaiserCard({ pack, plan }: React.PropsWithChildren<ItemProps>) {
-  const { reward } = useRewardRaiser(plan);
+export default function SponsorCard({ pack, plan }: React.PropsWithChildren<ItemProps>) {
+  const { reward } = useRewardSponsor(plan);
   const { raiserPower } = useAssetPack(plan, pack);
 
   return (

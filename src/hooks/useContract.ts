@@ -1,5 +1,6 @@
 import { usePublicClient /* useWalletClient */ } from 'wagmi';
 // import type { Account } from 'viem';
+import type { BigNumberish } from 'ethers';
 
 import { isDef } from '@/utils/utils';
 import { toNumber } from '@/utils/format';
@@ -7,7 +8,6 @@ import { toastify } from '@/utils/hackify';
 import { RAISE_ADDRESS } from '@/constants';
 import raiseAbi from '@/abis/raise.abi.json';
 import factoryAbi from '@/abis/factory.abi.json';
-import { NodeState, RaiseState } from '@/constants/state';
 // import { RevertedError } from '@/core/errors/RevertedError';
 import { writeContract as ethersContract } from '@/core/contract/write';
 import type { WriteContractOptions } from '@/core/contract/write';
@@ -20,6 +20,12 @@ export type WriteOptions = TxOptions & {
 function toEther(v: unknown) {
   if (isDef(v)) {
     return toNumber(v as number);
+  }
+}
+
+function bigToNum(v: bigint | undefined) {
+  if (isDef(v)) {
+    return Number(v);
   }
 }
 
@@ -150,30 +156,79 @@ export default function useContract(address?: API.Address) {
   // };
 
   /**
-   * 获取Owner权限
+   * 获取是否有Owner权限
    */
   const getOwner = async (_address = address) => {
     return await readContract<boolean>('gotMiner', [], _address);
   };
 
   /**
+   * 获取是否已封装结束
+   */
+  const getProgressEnd = async (id: string, _address = address) => {
+    return await readContract<boolean>('progressEnd', [id], _address);
+  };
+
+  /**
    * 获取运维保证金
    */
-  const getFundOps = async (id: string, _address = address) => {
+  const getOpsFund = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('opsSecurityFundRemain', [id], _address));
   };
 
   /**
    * 获取总运维保证金
    */
-  const getFundOpsCalc = async (id: string, _address = address) => {
+  const getOpsFundCalc = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('opsCalcFund', [id], _address));
+  };
+
+  /**
+   * 获需追加的保证金
+   */
+  const getOpsFundNeed = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('securityNeed', [id], _address));
+  };
+
+  /**
+   * 获取已退回的保证金
+   */
+  const getOpsFundBack = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('fundBack', [id], _address));
+  };
+
+  /**
+   * 获取已封装的保证金
+   */
+  const getOpsFundSeald = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('fundSealed', [id], _address));
+  };
+
+  /**
+   * 获取剩余封装缓冲金
+   */
+  const getOpsFundSafeRemain = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('safeSealFund', [id], _address));
+  };
+
+  /**
+   * 获取已封装的封装缓冲金
+   */
+  const getOpsFundSafeSealed = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('safeSealedFund', [id], _address));
+  };
+
+  /**
+   * 获取主办人罚金
+   */
+  const getRaiserFine = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('raiserFine', [id], _address));
   };
 
   /**
    * 获取主办人保证金
    */
-  const getFundRaiser = async (id: string, _address = address) => {
+  const getRaiserFund = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('securityFundRemain', [id], _address));
   };
 
@@ -181,14 +236,21 @@ export default function useContract(address?: API.Address) {
    * 获取节点状态
    */
   const getNodeState = async (id: string, _address = address) => {
-    return await readContract<NodeState>('nodeState', [id], _address);
+    return bigToNum(await readContract<bigint>('nodeState', [id], _address));
   };
 
   /**
    * 获取节点计划状态
    */
   const getRaiseState = async (id: string, _address = address) => {
-    return await readContract<RaiseState>('raiseState', [id], _address);
+    return bigToNum(await readContract<bigint>('raiseState', [id], _address));
+  };
+
+  /**
+   * 获取节点计划状态
+   */
+  const getPlanState = async (id: string, _address = address) => {
+    return bigToNum(await readContract<bigint>('timedPlanState', [id], _address));
   };
 
   /**
@@ -235,6 +297,15 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取已释放的质押币
+   * @returns
+   */
+  const getReleasedPledge = async (id: string, _address = address) => {
+    // return toEther(await readContract<bigint>('pledgeReleased', [id], _address));
+    return toEther(await readContract<bigint>('releasedPledge', [id], _address));
+  };
+
+  /**
    * 获取已封装总额
    */
   const getTotalSealed = async (id: string, _address = address) => {
@@ -245,7 +316,8 @@ export default function useContract(address?: API.Address) {
    * 获取节点总节点激励
    */
   const getTotalReward = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('totalRewardAmount', [id], _address));
+    // return toEther(await readContract<bigint>('totalRewardAmount', [id], _address));
+    return toEther(await readContract<bigint>('allReward', [id], _address));
   };
 
   /**
@@ -293,6 +365,27 @@ export default function useContract(address?: API.Address) {
   /**
    * 获取主办人待释放的节点激励
    */
+  const getSponsorPendingReward = async (id: string, sponsor: string, _address = address) => {
+    return toEther(await readContract<bigint>('sponsorWillReleaseReward', [id, sponsor], _address));
+  };
+
+  /**
+   * 获取主办人可领取的节点激励
+   */
+  const getSponsorAvailableReward = async (id: string, sponsor: string, _address = address) => {
+    return toEther(await readContract<bigint>('sponsorRewardAvailableLeft', [id, sponsor], _address));
+  };
+
+  /**
+   * 获取主办人已领取的节点激励
+   */
+  const getSponsorWithdrawnReward = async (id: string, sponsor: string, _address = address) => {
+    return toEther(await readContract<bigint>('gotSponsorReward', [id, sponsor], _address));
+  };
+
+  /**
+   * 获取主办人待释放的节点激励
+   */
   const getRaiserPendingReward = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('raiserWillReleaseReward', [id], _address));
   };
@@ -319,6 +412,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取运维保证金奖励
+   */
+  const getOpsFundReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('opsFundReward', [id], _address));
+  };
+
+  /**
    * 获取运维保证金收益罚金
    */
   const getOpsRewardFines = async (id: string, _address = address) => {
@@ -333,6 +433,13 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取运维保证金收益
+   */
+  const getServicerFundReward = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('gotSpFundReward', [id], _address));
+  };
+
+  /**
    * 获取服务商收益罚金
    */
   const getServicerFinesReward = async (id: string, _address = address) => {
@@ -343,7 +450,8 @@ export default function useContract(address?: API.Address) {
    * 获取服务商锁定节点激励
    */
   const getServicerLockedReward = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('spRewardLock', [id], _address));
+    // return toEther(await readContract<bigint>('spRewardLock', [id], _address));
+    return toEther(await readContract<bigint>('spLockedReward', [id], _address));
   };
 
   /**
@@ -368,6 +476,20 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
+   * 获取主办人数量
+   */
+  const getSponsorNo = async (id: string, _address = address) => {
+    return bigToNum(await readContract<bigint>('sponsorNo', [id], _address));
+  };
+
+  /**
+   * 取回Owner权限
+   */
+  const backOwner = toastify(async (opts?: WriteOptions) => {
+    return await writeContract('backOwner', [], opts);
+  });
+
+  /**
    * 质押
    */
   const staking = toastify(async (id: string, opts?: WriteOptions) => {
@@ -389,10 +511,31 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 追加运维保证金
+   */
+  const addDepositOpsFund = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('addOpsSecurityFund', [id], opts);
+  });
+
+  /**
    * 缴纳主办人保证金
    */
   const depositRaiserFund = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('paySecurityFund', [id], opts);
+  });
+
+  /**
+   * 主办人签名(非第一主办人)
+   */
+  const sponsorSign = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('sponsorSign', [id], opts);
+  });
+
+  /**
+   * 建设者签名
+   */
+  const investorSign = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('investorSign', [id], opts);
   });
 
   /**
@@ -429,6 +572,134 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 创建节点计划（做个主办人）
+   */
+  const createPlan = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 定时启动时间
+       */
+      startTime: BigNumberish,
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, startTime);
+      return await writeContract('createPlan', [raise, node, sponsors, sponsorRates, startTime], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
+
+  /**
+   * 创建定向计划
+   */
+  const createPrivatePlan = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 建设者地址列表
+       */
+      investors: string[],
+      /**
+       * 建设者最大质押列表
+       */
+      investorPledges: BigNumberish[],
+      /**
+       * 定时启动时间
+       */
+      startTime: BigNumberish,
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, startTime);
+      return await writeContract('createPrivatePlan', [raise, node, sponsors, sponsorRates, investors, investorPledges, startTime], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
+
+  /**
+   * 挂载历史节点
+   */
+  const mountNode = toastify(
+    async (
+      /**
+       * 资产包信息
+       */
+      raise: RaiseInfo,
+      /**
+       * 节点信息
+       */
+      node: NodeInfo,
+      /**
+       * 主办人地址列表
+       */
+      sponsors: string[],
+      /**
+       * 主办人分配比例列表
+       */
+      sponsorRates: BigNumberish[],
+      /**
+       * 建设者地址列表
+       */
+      investors: string[],
+      /**
+       * 建设者质押列表
+       */
+      investorPledges: BigNumberish[],
+      /**
+       * 建设者分配比例列表
+       */
+      investorRates: BigNumberish[],
+      /**
+       * 总质押
+       */
+      totalPledge: BigNumberish,
+      opts?: Omit<TxOptions, 'abi' | 'address'>,
+    ) => {
+      console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates, totalPledge);
+      return await writeContract('mountNode', [raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates, totalPledge], {
+        ...opts,
+        abi: factoryAbi,
+        address: RAISE_ADDRESS,
+      });
+    },
+  );
+
+  /**
    * 启动节点计划
    */
   const startRaisePlan = toastify(async (id: string, opts?: WriteOptions) => {
@@ -443,6 +714,13 @@ export default function useContract(address?: API.Address) {
   });
 
   /**
+   * 主办人提取节点激励
+   */
+  const sponsorWithdraw = toastify(async (id: string, address: string, opts?: WriteOptions) => {
+    return await writeContract('sponsorWithdraw', [id, address], opts);
+  });
+
+  /**
    * 建设者提取节点激励
    */
   const investorWithdraw = toastify(async (id: string, opts?: WriteOptions) => {
@@ -454,6 +732,13 @@ export default function useContract(address?: API.Address) {
    */
   const servicerWithdraw = toastify(async (id: string, opts?: WriteOptions) => {
     return await writeContract('spWithdraw', [id], opts);
+  });
+
+  /**
+   * 提取运维保证金收益
+   */
+  const withdrawOpsReward = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('withdrawFundReward', [id], opts);
   });
 
   /**
@@ -472,15 +757,24 @@ export default function useContract(address?: API.Address) {
 
   return {
     getOwner,
-    getFundOps,
-    getFundOpsCalc,
-    getFundRaiser,
+    getProgressEnd,
+    getOpsFund,
+    getOpsFundCalc,
+    getOpsFundNeed,
+    getOpsFundBack,
+    getOpsFundSeald,
+    getOpsFundSafeSealed,
+    getOpsFundSafeRemain,
+    getRaiserFine,
+    getRaiserFund,
     getNodeState,
+    getPlanState,
     getRaiseState,
     getBackAssets,
     getInvestorInfo,
     getPledgeAmount,
     getSealedAmount,
+    getReleasedPledge,
     getTotalPledge,
     getTotalSealed,
     getTotalReward,
@@ -493,26 +787,41 @@ export default function useContract(address?: API.Address) {
     getInvestorPendingReward,
     getInvestorAvailableReward,
     getInvestorWithdrawnRecord,
+    getSponsorPendingReward,
+    getSponsorAvailableReward,
+    getSponsorWithdrawnReward,
     getOpsFines,
+    getOpsFundReward,
     getOpsRewardFines,
     getServicerFines,
+    getServicerFundReward,
     getServicerFinesReward,
     getServicerLockedReward,
     getServicerPendingReward,
     getServicerAvailableReward,
     getServicerWithdrawnReward,
+    getSponsorNo,
+    backOwner,
     staking,
+    mountNode,
     unStaking,
     startPreSeal,
+    createPlan,
     closeRaisePlan,
     startRaisePlan,
     createRaisePlan,
+    createPrivatePlan,
     depositOpsFund,
+    addDepositOpsFund,
     depositRaiserFund,
+    sponsorSign,
+    investorSign,
     servicerSign,
     raiserWithdraw,
     investorWithdraw,
+    sponsorWithdraw,
     servicerWithdraw,
+    withdrawOpsReward,
     withdrawOpsFund,
     withdrawRaiserFund,
   };

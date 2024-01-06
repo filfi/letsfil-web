@@ -57,7 +57,7 @@ export function getEvents(params: API.PagingParams & { raising_id: number | stri
 }
 
 export function getBanner() {
-  return A.get<API.Plan>('/raising-plan/v2/plan/get/banner');
+  return A.get<{ bg_url: string; result: API.Plan }>('/raising-plan/v2/plan/get/banner');
 }
 
 export function getGasFee() {
@@ -70,6 +70,41 @@ export function getIncomeRate(raising_id: string) {
 
 export function count(raising_id: string) {
   return A.get<{ investor_count: number }>('/raising-plan/v2/plan/investor/count', { raising_id });
+}
+
+export function countSync(raising_id: string) {
+  return A.get<{ seal_delay_sync_count: number }>('/raising-plan/v2/raise-sync-count', { raising_id });
+}
+
+export function getPrivateList(id: string) {
+  return A.get<
+    {
+      address: string;
+      fil_address: string;
+      count: number;
+      total_amt: string;
+    }[]
+  >(`/raising-plan/v2/plan/private/list/${id}`);
+}
+
+export function getEquity(id: string, params: API.PagingParams) {
+  return A.get<API.PagingRes<API.Equity>>(`/raising-plan/v2/plan/get/raise-equity/${id}`, params);
+}
+
+export function addEquity(id: string, data: API.Base) {
+  return A.post(`/raising-plan/v2/add/raise-equity/${id}`, data);
+}
+
+export function updateEquity(id: string, data: API.Base) {
+  return A.post(`/raising-plan/v2/modify/raise-equity/${id}`, data);
+}
+
+export function getSPInfo(address: string) {
+  return A.get<{ list: (API.Provider & API.Base)[] }>('/service-provier/info', { address });
+}
+
+export function getSPNodes(address: string) {
+  return A.get<{ list: API.Base[] }>('/service-provier/sp-node-list', { address });
 }
 
 export function statChainInfo() {

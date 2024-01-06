@@ -8,17 +8,19 @@ import useRaiseRate from '@/hooks/useRaiseRate';
 import useRaiseState from '@/hooks/useRaiseState';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseReward from '@/hooks/useRaiseReward';
+import useAssetPack from '@/hooks/useAssetPack';
 
 const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { rate } = useIncomeRate(data);
+  const { opsAmount } = useAssetPack(data);
+  const { priorityRate } = useRaiseRate(data);
+  const { rate, perFil } = useIncomeRate(data);
   const { fines, reward } = useRaiseReward(data);
-  const { opsRatio, priorityRate } = useRaiseRate(data);
   const { actual, minRate, target, progress } = useRaiseBase(data);
   const { isPending, isWaiting, isStarted, isSealing, isDelayed, isWorking } = useRaiseState(data);
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已质押金额)
-  const opsAmount = useMemo(() => U.accDiv(U.accMul(actual, U.accDiv(opsRatio, 100)), U.accSub(1, U.accDiv(opsRatio, 100))), [actual, opsRatio]);
+  // const opsAmount = useMemo(() => U.accDiv(U.accMul(actual, U.accDiv(opsRatio, 100)), U.accSub(1, U.accDiv(opsRatio, 100))), [actual, opsRatio]);
 
   return (
     <>
@@ -46,7 +48,13 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   <span className="fs-3">{priorityRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
-                <span className="badge badge-primary ms-auto">预估年化{F.formatRate(rate, '0.00%')}</span>
+                <span className="badge badge-primary ms-auto">
+                  <span className="me-1">静态年化{F.formatRate(rate, '0.00%')}</span>
+
+                  <Tooltip title={`“年化收益率” 按照节点计划创建时刻全网产出（${F.formatAmount(perFil, 6)}FIL/TiB）静态估算`}>
+                    <span className="bi bi-question-circle"></span>
+                  </Tooltip>
+                </span>
                 {/* <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
                   <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>

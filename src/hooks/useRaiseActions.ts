@@ -1,13 +1,15 @@
+import dayjs from 'dayjs';
 import { camelCase } from 'lodash';
 import { history, useModel } from '@umijs/max';
 
-import { del } from '@/apis/raise';
+import * as H from '@/helpers/app';
 import useContract from './useContract';
 import Dialog from '@/components/Dialog';
-import { catchify } from '@/utils/hackify';
 import useLoadingify from './useLoadingify';
 import useProcessify from './useProcessify';
-import { transformModel } from '@/helpers/app';
+import { del, getEquity } from '@/apis/raise';
+import { isMountPlan } from '@/helpers/mount';
+import { catchify, toastify } from '@/utils/hackify';
 import type { WriteOptions } from './useContract';
 
 export default function useRaiseActions(data?: API.Plan | null) {
@@ -21,14 +23,34 @@ export default function useRaiseActions(data?: API.Plan | null) {
     const model = Object.keys(_data).reduce(
       (d, key) => ({
         ...d,
-        [camelCase(key)]: _data[key as keyof typeof data],
+        [camelCase(key)]: _data[key as keyof typeof _data],
       }),
-      {},
+      {} as API.Base,
     );
 
-    setModel(transformModel(model));
+    const isMount = isMountPlan(_data);
+    const [e, res] = await catchify(toastify(getEquity))(_data.raising_id, { page: 1, page_size: 1000 });
 
-    history.replace('/create');
+    if (e) {
+      Dialog.error(e.message);
+      throw e;
+    }
+
+    Object.assign(model, {
+      sponsors: H.parseSponsors(res.list),
+      investors: H.parseInvestors(res.list),
+      raiseWhiteList: H.parseWhitelist(model.raiseWhiteList),
+    });
+
+    if (model.beginTime > 0) {
+      model.beginTime = dayjs.unix(model.beginTime).format('YYYY-MM-DD HH:mm:ss');
+    } else {
+      model.beginTime = '';
+    }
+
+    setModel(H.transformModel(model));
+
+    history.replace(isMount ? '/mount' : '/create');
   };
 
   const [closing, close] = useProcessify(async (id = data?.raising_id, opts?: WriteOptions) => {

@@ -22,8 +22,8 @@ const partners = [
   { img: require('./imgs/partners/opengate.png'), title: 'opengate', url: 'https://fil.opengatenft.com/#/' },
   { img: require('./imgs/partners/SPex.png'), title: 'SPex', url: 'https://www.spex.website' },
   { img: require('./imgs/partners/vedao.png'), title: 'veDAO', url: 'https://www.vedao.com' },
-  { img: require('./imgs/partners/MetaPath.png'), title: 'MetaPath', url: 'https://dapp.path.finance/#/swap?source=path-dapp' },
-  { img: require('./imgs/partners/SWFT-Bridge.png'), title: 'SWFT Bridge', url: 'https://defi.swft.pro/#/' },
+  { img: require('./imgs/partners/MetaPath.png'), title: 'MetaPath', url: 'https://dapp.path.finance/?source=filfim' },
+  { img: require('./imgs/partners/SWFT-Bridge.png'), title: 'SWFT Bridge', url: 'https://defi.swft.pro?sourceFlag=filfis' },
   { img: require('./imgs/partners/Filedoge.png'), title: 'Filedoge', url: 'https://filedoge.io' },
   { img: require('./imgs/partners/FileDrive.png'), title: 'FileDrive', url: 'https://filedrive.io' },
   { img: require('./imgs/partners/Filutils.png'), title: 'Filutils', url: 'https://www.filutils.com/zh' },
@@ -149,15 +149,17 @@ export default function Home() {
           <div className="mb-5 text-center">
             <p className={classNames('text-gray-dark', styles.summary)}>合作伙伴及媒体支持</p>
           </div>
-          <ul className="list-inline text-center">
-            {partners.map((item, i) => (
-              <li key={i} className="list-inline-item m-3 m-lg-4">
-                <a className="text-reset" title={item.title} href={item.url} target="_blank" rel="noreferrer">
-                  <img src={item.img} height="48" alt={item.title} />
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div className="mx-n3 text-center">
+            <ul className="list-inline">
+              {partners.map((item, i) => (
+                <li key={i} className="list-inline-item m-3 m-xl-4">
+                  <a className="text-reset" title={item.title} href={item.url} target="_blank" rel="noreferrer">
+                    <img src={item.img} height="48" alt={item.title} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
     </>

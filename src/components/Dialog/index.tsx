@@ -25,6 +25,7 @@ export type DialogStatic = React.ForwardRefExoticComponent<DialogProps & React.R
   show: (msgOrOpts: string | DialogOptions) => ModalAttrs['hide'];
   alert: (msgOrOpts: string | AlertOptions) => ModalAttrs['hide'];
   confirm: (msgOrOpts: string | ConfirmOptions) => ModalAttrs['hide'];
+  error: (msgOrOpts: string | Omit<AlertOptions, 'icon'>) => ModalAttrs['hide'];
 };
 
 const DialogRender: React.ForwardRefRenderFunction<ModalAttrs, DialogProps> = (
@@ -195,11 +196,18 @@ const confirm: DialogStatic['confirm'] = (msgOrOpts) => {
   return show({ ...opts, showCancel: true });
 };
 
+const error: DialogStatic['error'] = (msgOrOpts) => {
+  const ops = isStr(msgOrOpts) ? ({ content: msgOrOpts } as AlertOptions) : msgOrOpts;
+
+  return show({ ...ops, icon: 'error', showCancel: false });
+};
+
 Dialog.Alert = Alert;
 Dialog.Confirm = Confirm;
 
 Dialog.show = show;
 Dialog.alert = alert;
+Dialog.error = error;
 Dialog.confirm = confirm;
 
 export default Dialog;

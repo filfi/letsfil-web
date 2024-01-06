@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
+import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
-import { isRaiseOperating } from '@/helpers/raise';
 
 /**
  * 主办人节点激励
@@ -15,22 +16,23 @@ import { isRaiseOperating } from '@/helpers/raise';
  * @returns
  */
 export default function useRewardRaiser(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { withConnect } = useAccount();
   const { isRaiser } = useRaiseRole(data);
   const contract = useContract(data?.raise_address);
 
   const getRaiserAvailableReward = async () => {
-    if (data && isRaiseOperating(data) && isRaiser) {
+    if (data && !isPending(data) && isRaiser) {
       return await contract.getRaiserAvailableReward(data.raising_id);
     }
   };
   const getRaiserPendingReward = async () => {
-    if (data && isRaiseOperating(data) && isRaiser) {
+    if (data && !isPending(data) && isRaiser) {
       return await contract.getRaiserPendingReward(data.raising_id);
     }
   };
   const getRaiserWithdrawnReward = async () => {
-    if (data && isRaiseOperating(data) && isRaiser) {
+    if (data && !isPending(data) && isRaiser) {
       return await contract.getRaiserWithdrawnReward(data.raising_id);
     }
   };
@@ -38,19 +40,16 @@ export default function useRewardRaiser(data?: API.Plan | null) {
   const [aRes, pRes, wRes] = useQueries({
     queries: [
       {
-        queryKey: ['raiserAvailableReward', data?.raising_id],
+        queryKey: ['getRaiserAvailableReward', data?.raising_id],
         queryFn: withNull(getRaiserAvailableReward),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['raiserPendingReward', data?.raising_id],
+        queryKey: ['getRaiserPendingReward', data?.raising_id],
         queryFn: withNull(getRaiserPendingReward),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['raiserWithdrawnReward', data?.raising_id],
+        queryKey: ['getRaiserWithdrawnReward', data?.raising_id],
         queryFn: withNull(getRaiserWithdrawnReward),
-        staleTime: 60_000,
       },
     ],
   });
@@ -64,6 +63,12 @@ export default function useRewardRaiser(data?: API.Plan | null) {
   const refetch = () => {
     return Promise.all([aRes.refetch(), pRes.refetch(), wRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getRaiserAvailableReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getRaiserPendingReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getRaiserWithdrawnReward', data?.raising_id] });
+  });
 
   const [withdrawing, withdrawAction] = useProcessify(
     withConnect(async () => {

@@ -1,20 +1,20 @@
+import { useEffect } from 'react';
 import { Form, Input } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
-import { useDebounceFn, useLockFn, useUpdateEffect } from 'ahooks';
+import { useMount, useUpdateEffect } from 'ahooks';
 
-import { isDef } from '@/utils/utils';
 import useUser from '@/hooks/useUser';
+import * as V from '@/utils/validators';
 import { minerInfo } from '@/apis/raise';
 import Dialog from '@/components/Dialog';
-// import Modal from '@/components/Modal';
 import SpinBtn from '@/components/SpinBtn';
 import { catchify } from '@/utils/hackify';
 import { formatAddr } from '@/utils/format';
 import useAccount from '@/hooks/useAccount';
+import { isDef, sleep } from '@/utils/utils';
 import useProviders from '@/hooks/useSProviders';
 import FormRadio from '@/components/FormRadio';
-import * as validators from '@/utils/validators';
 import useLoadingify from '@/hooks/useLoadingify';
 import AvatarInput from '@/components/AvatarInput';
 import ProviderSelect from '@/components/ProviderRadio';
@@ -27,9 +27,6 @@ export default function CreateStorage() {
   const { user, createOrUpdate } = useUser();
   const { data: list, isLoading: pFetching } = useProviders();
 
-  // useUpdateEffect(() => {
-  //   form.setFieldValue('raiser', address);
-  // }, [address]);
   useUpdateEffect(() => {
     if (user) {
       form.setFieldsValue({
@@ -38,7 +35,7 @@ export default function CreateStorage() {
       });
     }
   }, [user]);
-  useUpdateEffect(() => {
+  useEffect(() => {
     const item = list?.find((i) => i.is_default);
 
     if (item && !isDef(model?.serviceId)) {
@@ -49,38 +46,32 @@ export default function CreateStorage() {
     }
   }, [list, model?.serviceId]);
 
-  const [mining, getMiner] = useLoadingify(async (id: string) => {
-    const r = await catchify(minerInfo)(id);
-    const [, res] = r;
-    const isOld = res && res?.sector_count > 0;
+  const [fetching, fetchMiner] = useLoadingify(catchify(minerInfo));
+
+  const onMinerChange = async (data: API.MinerAsset) => {
+    const isOld = data.sector_count > 0;
 
     form.setFieldsValue({
       minerType: isOld ? 2 : 1,
-      hisBlance: isOld ? res.balance : '0',
-      hisPower: isOld ? res.miner_power : '0',
-      hisInitialPledge: isOld ? res.initial_pledge : '0',
-      hisSectorCount: isOld ? res.sector_count : 0,
+      hisBlance: isOld ? data.balance : '0',
+      hisPower: isOld ? data.miner_power : '0',
+      hisSectorCount: isOld ? data.sector_count : 0,
+      hisInitialPledge: isOld ? data.initial_pledge : '0',
       raiseHisPowerRate: isOld ? 90 : 0,
       raiseHisInitialPledgeRate: isOld ? 100 : 0,
     });
+  };
 
-    return r;
-  });
-
-  const { run: validateMiner } = useDebounceFn(useLockFn(getMiner), { wait: 500, trailing: true });
-
-  const minerValidator = async (rule: unknown, value: string) => {
-    const [e] = await catchify(validators.minerID)(rule, value);
-
-    if (e) {
-      return e;
-    }
-
+  const minerValidator = async (_: unknown, value: string) => {
     if (value) {
-      const res = await validateMiner(value);
+      const [e, res] = await fetchMiner(value);
 
-      if (res?.[0]) {
-        return Promise.reject('无效的节点，请重新输入');
+      if (e) {
+        return Promise.reject((e as any).code === 3000002 ? '节点不存在' : '检测失败');
+      }
+
+      if (res) {
+        onMinerChange(res);
       }
     }
   };
@@ -89,11 +80,21 @@ export default function CreateStorage() {
     form.setFieldValue('serviceProviderAddress', item.wallet_address);
   };
 
-  const handleMiner = async (ev: React.KeyboardEvent | React.MouseEvent) => {
-    ev.preventDefault();
+  const handleMiner = async (ev?: React.KeyboardEvent | React.MouseEvent) => {
+    ev?.preventDefault();
 
     await form.validateFields(['minerId']);
   };
+
+  useMount(async () => {
+    await sleep(300);
+
+    const minerId = model?.minerId ?? '';
+
+    if (minerId && /^(f0|t0)[0-9]+$/i.test(minerId)) {
+      handleMiner();
+    }
+  });
 
   const [loading, handleSubmit] = useLoadingify(async (vals: API.Base) => {
     const name = user?.name ?? address;
@@ -123,12 +124,13 @@ export default function CreateStorage() {
         size="large"
         layout="vertical"
         initialValues={{
+          planType: 1,
           minerType: 1,
-          raiser: address,
+          // raiser: address,
           sectorSize: 32,
           sectorPeriod: 540,
           sponsorLogo: user?.url,
-          sponsorCompany: address,
+          sponsorCompany: user?.name ?? address,
           hisBlance: '0',
           hisPower: '0',
           hisInitialPledge: '0',
@@ -136,10 +138,14 @@ export default function CreateStorage() {
           raiseHisPowerRate: 0,
           raiseHisInitialPledgeRate: 0,
           ...model,
+          raiser: address ?? model?.raiser,
         }}
         onFinish={handleSubmit}
       >
         <Form.Item hidden name="raiser">
+          <Input />
+        </Form.Item>
+        <Form.Item hidden name="planType">
           <Input />
         </Form.Item>
         <Form.Item hidden name="hisBlance">
@@ -213,7 +219,7 @@ export default function CreateStorage() {
                   rules={[
                     { required: true, message: '请输入节点号' },
                     {
-                      validator: minerValidator,
+                      validator: V.Queue.create().add(V.minerID).add(minerValidator).build(),
                     },
                   ]}
                 >
@@ -221,9 +227,13 @@ export default function CreateStorage() {
                 </Form.Item>
               </div>
               <div>
-                <SpinBtn className="btn btn-outline-light btn-lg text-nowrap" loading={mining} onClick={handleMiner}>
-                  <i className="bi bi-arrow-repeat"></i>
-                  <span className="ms-2">检测</span>
+                <SpinBtn
+                  className="btn btn-outline-light btn-lg text-nowrap"
+                  loading={fetching}
+                  icon={<i className="bi bi-arrow-repeat"></i>}
+                  onClick={handleMiner}
+                >
+                  检测
                 </SpinBtn>
               </div>
             </div>
@@ -284,32 +294,12 @@ export default function CreateStorage() {
 
         <div className="ffi-form">
           <div className="ffi-form-actions">
-            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={loading}>
-              下一步
+            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={fetching} loading={fetching || loading}>
+              {fetching ? '正在检测节点' : '下一步'}
             </SpinBtn>
           </div>
         </div>
       </Form>
-
-      {/* <Modal.Alert id="minerId-modal" title="什么是存储节点号？" confirmText="我知道了">
-        <div className="card bg-transparent border-0">
-          <div className="card-body">
-            <p>节点号解释</p>
-            <p>节点号解释</p>
-            <p className="mb-0">节点号解释</p>
-          </div>
-        </div>
-      </Modal.Alert>
-
-      <Modal.Alert id="provider-modal" title="如何成为技术服务商(SP Foundry)？" confirmText="我知道了">
-        <div className="card bg-transparent border-0">
-          <div className="card-body">
-            <p>技术服务商</p>
-            <p>技术服务商</p>
-            <p className="mb-0">技术服务商</p>
-          </div>
-        </div>
-      </Modal.Alert> */}
     </>
   );
 }

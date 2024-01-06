@@ -1,14 +1,16 @@
 import { useMemo } from 'react';
 import { parseEther } from 'viem';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
+import * as M from '@/helpers/mount';
+import * as R from '@/helpers/raise';
 import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseBase from './useRaiseBase';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
 import { accDiv, sleep } from '@/utils/utils';
-import { isClosed, isFailed, isPending, isWorking } from '@/helpers/raise';
 
 /**
  * 建设者的投资信息
@@ -16,33 +18,39 @@ import { isClosed, isFailed, isPending, isWorking } from '@/helpers/raise';
  * @returns
  */
 export default function useDepositInvestor(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { address, withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
   const { actual } = useRaiseBase(data);
 
   const getBackAssets = async () => {
-    if (address && data && (isClosed(data) || isFailed(data) || isWorking(data))) {
+    if (!address || !data) return;
+
+    const isMount = M.isMountPlan(data);
+    if (isMount ? M.isWorking(data) : !R.isPending(data)) {
       return await contract.getBackAssets(data.raising_id, address);
     }
   };
   const getInvestInfo = async () => {
-    if (address && data && !isPending(data)) {
-      return await contract.getInvestorInfo(data.raising_id, address);
+    if (!address || !data) return;
+
+    const isMount = M.isMountPlan(data);
+    if (isMount ? !M.isInactive(data) : !R.isPending(data)) {
+      const res = await contract.getInvestorInfo(data.raising_id, address);
+      return res;
     }
   };
 
   const [backAsset, investorInfo] = useQueries({
     queries: [
       {
-        queryKey: ['backAsset', address, data?.raising_id],
+        queryKey: ['getBackAssets', address, data?.raising_id],
         queryFn: withNull(getBackAssets),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['investorInfo', address, data?.raising_id],
+        queryKey: ['getInvestInfo', address, data?.raising_id],
         queryFn: withNull(getInvestInfo),
-        staleTime: 60_000,
       },
     ],
   });
@@ -61,6 +69,11 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   const refetch = async () => {
     return await investorInfo.refetch();
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getBackAssets', address, data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getInvestInfo', address, data?.raising_id] });
+  });
 
   const [staking, stakeAction] = useProcessify(
     withConnect(async (amount: number | string) => {

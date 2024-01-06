@@ -112,7 +112,7 @@ const Header: React.FC = () => {
                   </button>
                 )}
                 <div className="btn-group dropdown" role="group" onMouseEnter={setTrue} onMouseLeave={setFalse}>
-                  <Link to="/account" className="btn btn-outline-light rounded-end">
+                  <Link to="/account/assets" className="btn btn-outline-light rounded-end">
                     <span className="lh-1">
                       <IconUser />
                     </span>
@@ -123,7 +123,7 @@ const Header: React.FC = () => {
                     data-bs-popper={isHover ? 'static' : undefined}
                   >
                     <li>
-                      <Link className="dropdown-item" to="/account">
+                      <Link className="dropdown-item" to="/account/assets">
                         <span className="bi bi-person"></span>
                         <span className="ms-2">个人资料</span>
                       </Link>
@@ -165,30 +165,9 @@ const Header: React.FC = () => {
                   </Link>
                 </li>
                 <li className="nav-item dropdown">
-                  <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
-                    <span className="me-2">
-                      <FormattedMessage id="menu.storage" />
-                    </span>
-
-                    <span className="bi bi-chevron-down align-middle fw-600 text-gray-dark"></span>
-                  </a>
-
-                  <div className="dropdown-menu border-0 shadow rounded-4">
-                    <div className="d-flex flex-column gap-2">
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Borrow FIL</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">Raise FIL</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                      <a className="dropdown-item d-flex px-4 py-3">
-                        <span className="me-3">SP Foundry</span>
-                        <span className="badge ms-auto">coming soon</span>
-                      </a>
-                    </div>
-                  </div>
+                  <Link className="nav-link" to="/fspa">
+                    <FormattedMessage id="menu.storage" />
+                  </Link>
                 </li>
                 <li className="nav-item dropdown">
                   <a className="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
@@ -213,11 +192,11 @@ const Header: React.FC = () => {
                     </div>
                   </div>
                 </li>
-                {/* <li className="nav-item">
-                  <a className="nav-link" href="https://docs.filfi.io/en/introduction.html" target="_blank" rel="noreferrer">
+                <li className="nav-item">
+                  <a className="nav-link" href="https://docs.filfi.io/en/introduction/" target="_blank" rel="noreferrer">
                     <FormattedMessage id="menu.docs" />
                   </a>
-                </li> */}
+                </li>
               </ul>
             </div>
           </div>

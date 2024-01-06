@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import useAccount from './useAccount';
 import useContract from './useContract';
 import useRaiseRole from './useRaiseRole';
 import { withNull } from '@/utils/hackify';
+import { isPending } from '@/helpers/raise';
 import useProcessify from './useProcessify';
-import { isRaiseOperating } from '@/helpers/raise';
 import { accAdd, accSub, sleep } from '@/utils/utils';
 
 /**
@@ -15,32 +16,33 @@ import { accAdd, accSub, sleep } from '@/utils/utils';
  * @returns
  */
 export default function useRewardServicer(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { withConnect } = useAccount();
   const { isServicer } = useRaiseRole(data);
   const contract = useContract(data?.raise_address);
 
   const getServicerFinesReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerFinesReward(data.raising_id);
     }
   };
   const getServicerLockedReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerLockedReward(data.raising_id);
     }
   };
   const getServicerAvailableReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerAvailableReward(data.raising_id);
     }
   };
   const getServicerPendingReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerPendingReward(data.raising_id);
     }
   };
   const getServicerWithdrawnReward = async () => {
-    if (data && isRaiseOperating(data) && isServicer) {
+    if (data && !isPending(data) && isServicer) {
       return await contract.getServicerWithdrawnReward(data.raising_id);
     }
   };
@@ -48,29 +50,24 @@ export default function useRewardServicer(data?: API.Plan | null) {
   const [fRes, lRes, aRes, pRes, wRes] = useQueries({
     queries: [
       {
-        queryKey: ['servicerFinesReward', data?.raising_id],
+        queryKey: ['getServicerFinesReward', data?.raising_id],
         queryFn: withNull(getServicerFinesReward),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['servicerLockedReward', data?.raising_id],
+        queryKey: ['getServicerLockedReward', data?.raising_id],
         queryFn: withNull(getServicerLockedReward),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['servicerAvailableReward', data?.raising_id],
+        queryKey: ['getServicerAvailableReward', data?.raising_id],
         queryFn: withNull(getServicerAvailableReward),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['servicerPendingReward', data?.raising_id],
+        queryKey: ['getServicerPendingReward', data?.raising_id],
         queryFn: withNull(getServicerPendingReward),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['servicerWithdrawnReward', data?.raising_id],
+        queryKey: ['getServicerWithdrawnReward', data?.raising_id],
         queryFn: withNull(getServicerWithdrawnReward),
-        staleTime: 60_000,
       },
     ],
   });
@@ -92,6 +89,14 @@ export default function useRewardServicer(data?: API.Plan | null) {
   const refetch = () => {
     return Promise.all([fRes.refetch(), lRes.refetch(), aRes.refetch(), pRes.refetch(), wRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getServicerFinesReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getServicerLockedReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getServicerAvailableReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getServicerPendingReward', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getServicerWithdrawnReward', data?.raising_id] });
+  });
 
   const [withdarwing, withdrawAction] = useProcessify(
     withConnect(async () => {

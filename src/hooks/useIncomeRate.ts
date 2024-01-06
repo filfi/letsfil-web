@@ -12,8 +12,8 @@ export default function useIncomeRate(data?: API.Plan | null) {
   const { perFil: _perFil, perPledge: _perPledge } = useChainInfo();
 
   const ratio = useMemo(() => data?.raiser_coin_share ?? 0, [data?.raiser_coin_share]);
-  const perFil = useMemo(() => accMul(data?.fil_per_tera_day ?? 0, 1024), [data?.fil_per_tera_day]);
-  const perPledge = useMemo(() => accMul(data?.pledge_per_tera_day ?? 0, 1024), [data?.pledge_per_tera_day]);
+  const perFil = useMemo(() => +`${data?.fil_per_tera_day ?? 0}`, [data?.fil_per_tera_day]);
+  const perPledge = useMemo(() => +`${data?.pledge_per_tera_day ?? 0}`, [data?.pledge_per_tera_day]);
 
   const rate = useMemo(() => {
     let r = 0;
@@ -27,5 +27,9 @@ export default function useIncomeRate(data?: API.Plan | null) {
     return Number.isNaN(r) ? 0 : r;
   }, [_perFil, _perPledge, perFil, perPledge, ratio]);
 
-  return { rate };
+  return {
+    rate,
+    perFil,
+    perPledge,
+  };
 }

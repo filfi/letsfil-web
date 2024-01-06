@@ -5,7 +5,8 @@ import { ethers, BigNumber } from 'ethers';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
-import { toFixed } from '@/utils/format';
+import { toFixed, toNumber } from '@/utils/format';
+import { isAddress } from 'ethers/lib/utils';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
@@ -80,16 +81,17 @@ export function genRaiseID(minerId: number | string) {
  * @param priority 优先部分（出币方权益）
  * @param spRate 技术运维服务费
  * @param ratio 保证金配比
+ * @param precision 精度
  */
-export function calcEachEarn(priority: number | string = 70, spRate: number | string = 5, ratio: number | string = 5) {
+export function calcEachEarn(priority: number | string = 70, spRate: number | string = 5, ratio: number | string = 5, precision: number = 2) {
   const _priority = Number.isNaN(+priority) ? 0 : +priority;
   const _spRate = Number.isNaN(+spRate) ? 0 : +spRate;
   const _ratio = Number.isNaN(+ratio) ? 0 : +ratio;
 
-  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), 2); // 建设者分成
-  const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), 2); // 保证金分成
   const inferior = U.accSub(100, _priority); // 建设方分成(劣后部分)
-  const ffiRate = +toFixed(U.accMul(inferior, 0.08), 2, 2); // FilFi协议费用（建设方 * 8%）
+  const ffiRate = +toFixed(U.accMul(inferior, 0.08), precision, 2); // FilFi协议费用（建设方 * 8%）
+  const investRate = +toFixed(U.accMul(_priority, U.accDiv(Math.max(U.accSub(100, _ratio), 0), 100)), precision); // 建设者分成
+  const opsRate = +toFixed(U.accMul(_priority, U.accDiv(_ratio, 100)), precision); // 保证金分成
   const raiserRate = Math.max(U.accSub(inferior, _spRate, ffiRate), 0); // 主办人分成
 
   return {
@@ -107,50 +109,32 @@ export function calcEachEarn(priority: number | string = 70, spRate: number | st
 /**
  * 计算主办人保证金
  * @param target 质押目标
- * @param period 质押期限
- * @param seals 封装期限
  * @returns
  */
-export function calcRaiseDepost(target: number, period: number, seals: number) {
-  // 罚息倍数
-  const pim = 3;
-  // 年利率 = 1%
-  const yRate = 0.01;
-  // 协议罚金系数 = 0.1%
-  const ratio = 0.001;
-  // 展期天数
-  const delay = U.accDiv(seals, 2);
-  // 手续费 = 质押目标 * 0.3%
-  const fee = U.accMul(target, 0.003);
-  // 本金 = 质押目标 * (1 - 可以进入展期的最低比例)
-  const cost = U.accMul(target, U.accSub(1, 0.5));
+export function calcRaiseDepost(target: number) {
+  const rate = 0.05;
+  const feeRate = 0.003;
 
-  // 质押期罚息 = (质押目标 + 运维保证金(最大=质押目标)) * 年利率 * 质押天数 / 365 + 手续费
-  const rInterest = U.accAdd(U.accMul(U.accAdd(target, target), yRate, U.accDiv(period, 365)), fee);
-  // 封装期罚息 = 质押目标 * 罚息倍数 * 年利率 * 封装天数 / 365 + 手续费
-  const sInterest = U.accAdd(U.accMul(target, pim, yRate, U.accDiv(seals, 365)), fee);
-  // 延长期罚息 = 本金 * 罚息倍数 * 年利率 * (封装天数 + 展期天数) / 365 + 本金 * 协议罚金系数 * 展期天数 + 手续费
-  const dInterest = U.accAdd(U.accMul(cost, pim, yRate, U.accDiv(U.accAdd(seals, delay), 365)), U.accMul(cost, ratio, delay), fee);
-
-  // 结果取最大值
-  const result = Math.max(rInterest, sInterest, dInterest);
+  const fund = U.accMul(target, rate);
+  const fee = U.accMul(target, feeRate);
+  const amount = U.accAdd(fund, fee);
 
   // 保留3位小数，向上舍入
-  return Number.isNaN(result) ? '0' : toFixed(result, 3, 2);
+  return Number.isNaN(amount) ? '0' : toFixed(amount, 3, 2);
 }
 
 export function transformParams(data: API.Base) {
   const {
-    sealDays,
-    raiseDays,
-    sectorSize,
-    minRaiseRate,
-    sectorPeriod,
-    targetAmount,
-    ffiProtocolFee,
-    opsSecurityFund,
-    raiseSecurityFund,
-    opsSecurityFundRate,
+    sealDays = 0,
+    raiseDays = 0,
+    sectorSize = 0,
+    minRaiseRate = 0,
+    sectorPeriod = 0,
+    targetAmount = 0,
+    ffiProtocolFee = 0,
+    opsSecurityFund = 0,
+    raiseSecurityFund = 0,
+    opsSecurityFundRate = 0,
     ...props
   } = data;
   const _params = omit(props, ['amount', 'amountType']);
@@ -254,5 +238,67 @@ export function transformExtraInfo(data: API.Plan): ExtraInfo {
     raiserOldShare: 0,
     spOldRewardShare: 0,
     sponsorOldRewardShare: 0,
+  };
+}
+
+const isSponsor = <D extends { role: number }>(data: D) => data.role === 1;
+const isInvestor = <D extends { role: number }>(data: D) => data.role === 2;
+
+export function parseSponsors(list: API.Equity[]) {
+  return list.filter(isSponsor).map((i) => ({
+    address: i.fil_address || i.address,
+    rate: toNumber(i.power_proportion, 5).toString(),
+  }));
+}
+
+export function parseInvestors(list: API.Equity[]) {
+  return list.filter(isInvestor).map((i) => ({
+    address: i.fil_address || i.address,
+    amount: toNumber(i.pledge_amount).toString(),
+    rate: toNumber(i.power_proportion, 5).toString(),
+  }));
+}
+
+export function parseWhitelist(val: string) {
+  try {
+    const items = JSON.parse(val);
+
+    if (Array.isArray(items)) {
+      return items.map((i: API.Base) => ({
+        address: U.toEthAddr(i.address || i.fil_address),
+        filAddress: i.fil_address,
+        limit: toNumber(i.can_pledge_amount).toString(),
+      }));
+    }
+  } catch (e) {}
+
+  return [];
+}
+
+export function transformSponsor({ address, level = 2, rate = 0 }: API.Base) {
+  return {
+    role: 1,
+    role_level: level,
+    address: isAddress(address) ? address : '',
+    fil_address: isAddress(address) ? '' : address,
+    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
+  };
+}
+
+export function transformInvestor({ address, amount = 0, rate = 0 }: API.Base) {
+  return {
+    role: 2,
+    address: isAddress(address) ? address : '',
+    fil_address: isAddress(address) ? '' : address,
+    pledge_amount: ethers.utils.parseEther(`${amount}`).toString(),
+    power_proportion: ethers.utils.parseUnits(`${rate}`, 5).toString(),
+  };
+}
+
+export function transformWhitelist({ address, limit = '0' }: API.Base) {
+  return {
+    address: isAddress(address) ? address : '',
+    fil_address: isAddress(address) ? '' : address,
+    can_pledge_amount: ethers.utils.parseEther(`${limit}`).toString(),
   };
 }

@@ -4,6 +4,7 @@ import { isStr } from '@/utils/utils';
 import { packInfo } from '@/apis/packs';
 import { withNull } from '@/utils/hackify';
 import { isPending } from '@/helpers/raise';
+import { isInactive, isMountPlan } from '@/helpers/mount';
 
 export default function usePackInfo(plan?: API.Plan | string | null) {
   const service = async () => {
@@ -11,7 +12,7 @@ export default function usePackInfo(plan?: API.Plan | string | null) {
       return await packInfo(plan);
     }
 
-    if (plan?.raising_id && !isPending(plan)) {
+    if (plan && (isMountPlan(plan) ? !isInactive(plan) : !isPending(plan))) {
       return await packInfo(plan.raising_id);
     }
   };

@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
+import { accAdd } from '@/utils/utils';
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
 import { isPending } from '@/helpers/raise';
@@ -11,6 +13,7 @@ import { isPending } from '@/helpers/raise';
  * @returns
  */
 export default function useRaiseMiner(data?: API.Plan | null) {
+  const client = useQueryClient();
   const contract = useContract(data?.raise_address);
 
   const getPledgeAmount = async () => {
@@ -23,28 +26,43 @@ export default function useRaiseMiner(data?: API.Plan | null) {
       return await contract.getSealedAmount(data.raising_id);
     }
   };
-  const getFundOpsCalc = async () => {
+  const getOpsFundCalc = async () => {
     if (data && !isPending(data)) {
-      return await contract.getFundOpsCalc(data.raising_id);
+      return await contract.getOpsFundCalc(data.raising_id);
+    }
+  };
+  const getOpsFundSafeRemain = async () => {
+    if (data && !isPending(data)) {
+      return await contract.getOpsFundSafeRemain(data.raising_id);
+    }
+  };
+  const getOpsFundSafeSealed = async () => {
+    if (data && !isPending(data)) {
+      return await contract.getOpsFundSafeSealed(data.raising_id);
     }
   };
 
-  const [pRes, sRes, fRes] = useQueries({
+  const [pRes, sRes, fRes, oRes, safeRes] = useQueries({
     queries: [
       {
-        queryKey: ['pledgeAmount', data?.raising_id],
+        queryKey: ['getPledgeAmount', data?.raising_id],
         queryFn: withNull(getPledgeAmount),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['sealedAmount', data?.raising_id],
+        queryKey: ['getSealedAmount', data?.raising_id],
         queryFn: withNull(getSealedAmount),
-        staleTime: 60_000,
       },
       {
-        queryKey: ['fundOpsCalc', data?.raising_id],
-        queryFn: withNull(getFundOpsCalc),
-        staleTime: 60_000,
+        queryKey: ['getOpsFundCalc', data?.raising_id],
+        queryFn: withNull(getOpsFundCalc),
+      },
+      {
+        queryKey: ['getOpsFundSafeRemain', data?.raising_id],
+        queryFn: withNull(getOpsFundSafeRemain),
+      },
+      {
+        queryKey: ['getOpsFundSafeSealed', data?.raising_id],
+        queryFn: withNull(getOpsFundSafeSealed),
       },
     ],
   });
@@ -52,16 +70,34 @@ export default function useRaiseMiner(data?: API.Plan | null) {
   const funds = useMemo(() => fRes.data ?? 0, [fRes.data]);
   const pledge = useMemo(() => pRes.data ?? 0, [pRes.data]);
   const sealed = useMemo(() => sRes.data ?? 0, [sRes.data]);
-  const isLoading = useMemo(() => fRes.isLoading || pRes.isLoading || sRes.isLoading, [fRes.isLoading, pRes.isLoading, sRes.isLoading]);
+  const safeRemain = useMemo(() => oRes.data ?? 0, [oRes.data]);
+  const safeSealed = useMemo(() => safeRes.data ?? 0, [safeRes.data]);
+  const safe = useMemo(() => accAdd(safeRemain, safeSealed), [safeRemain, safeSealed]);
+
+  const isLoading = useMemo(
+    () => fRes.isLoading || pRes.isLoading || sRes.isLoading || oRes.isLoading || safeRes.isLoading,
+    [fRes.isLoading, pRes.isLoading, sRes.isLoading, oRes.isLoading, safeRes.isLoading],
+  );
 
   const refetch = () => {
-    return Promise.all([pRes.refetch(), sRes.refetch(), fRes.refetch()]);
+    return Promise.all([pRes.refetch(), sRes.refetch(), fRes.refetch(), oRes.refetch(), safeRes.refetch()]);
   };
 
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getOpsFundCalc', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getPledgeAmount', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getSealedAmount', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundSafeRemain', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundSafeSealed', data?.raising_id] });
+  });
+
   return {
+    safe,
     funds,
     pledge,
     sealed,
+    safeRemain,
+    safeSealed,
     isLoading,
     refetch,
   };

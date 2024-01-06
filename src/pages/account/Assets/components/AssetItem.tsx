@@ -2,11 +2,12 @@ import { useMemo } from 'react';
 import { Skeleton } from 'antd';
 import { history } from '@umijs/max';
 
-import RaiserCard from './RaiserCard';
 import OpsFundCard from './OpsFundCard';
+import SponsorCard from './SponsorCard';
 import InvestorCard from './InvestorCard';
 import ServicerCard from './ServicerCard';
 import { formatID } from '@/utils/format';
+import { isMountPlan } from '@/helpers/mount';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import useRaiseInfo from '@/hooks/useRaiseInfo';
@@ -36,7 +37,7 @@ const AssetCard: React.FC<{ pack: API.Pack; plan?: API.Plan | null; type: number
   const renderContent = () => {
     switch (type) {
       case 1:
-        return <RaiserCard pack={pack} plan={plan} />;
+        return <SponsorCard pack={pack} plan={plan} />;
       case 2:
         return <ServicerCard pack={pack} plan={plan} />;
       case 3:
@@ -81,8 +82,8 @@ const AssetCard: React.FC<{ pack: API.Pack; plan?: API.Plan | null; type: number
 const AssetItem: React.FC<{ data: API.Pack }> = ({ data }) => {
   const { data: plan, isLoading } = useRaiseInfo(data.raising_id);
 
-  const { isInvestor, isLoading: isILoading } = useDepositInvestor(plan);
   const { isRaiser, isServicer } = useRaiseRole(plan);
+  const { isInvestor, isLoading: isILoading } = useDepositInvestor(plan);
 
   const roles = useMemo(() => [isInvestor, isRaiser, isServicer], [isInvestor, isRaiser, isServicer]);
 
@@ -92,7 +93,7 @@ const AssetItem: React.FC<{ data: API.Pack }> = ({ data }) => {
         return (
           <>
             <AssetCard key={`${data.miner_id}-${data.raising_id}-2`} pack={data} plan={plan} type={2} />
-            <AssetCard key={`${data.miner_id}-${data.raising_id}-3`} pack={data} plan={plan} type={3} />
+            {!isMountPlan(plan) && <AssetCard key={`${data.miner_id}-${data.raising_id}-3`} pack={data} plan={plan} type={3} />}
           </>
         );
       }

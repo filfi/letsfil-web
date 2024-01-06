@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import * as H from '@/helpers/raise';
-import { RaiseState } from '@/constants/state';
+import { isDef } from '@/utils/utils';
+import useContract from './useContract';
+import { withNull } from '@/utils/hackify';
+import { NodeState, RaiseState } from '@/constants/state';
 
 /**
  * 节点计划状态及节点状态
@@ -9,44 +13,52 @@ import { RaiseState } from '@/constants/state';
  * @returns
  */
 export default function useRaiseState(data?: API.Plan | null) {
-  const raiseState = useMemo(() => data?.status ?? -1, [data?.status]); // 质押状态
+  const { getPlanState } = useContract(data?.raise_address);
   const nodeState = useMemo(() => data?.sealed_status ?? -1, [data?.sealed_status]); // 节点状态
 
+  const queryStateFn = async () => {
+    if (data?.raising_id) {
+      return await getPlanState(data.raising_id);
+    }
+  };
+
+  const { data: planState } = useQuery(['getPlanState', data?.raising_id], withNull(queryStateFn), {
+    staleTime: 60_000,
+  });
+
   // 等待上链
-  const isPending = useMemo(() => data && H.isPending(data), [data]);
+  const isPending = useMemo(() => isDef(data) && H.isPending(data), [data]);
   // 等待开始
-  const isWaiting = useMemo(() => data && H.isWaiting(data), [data]);
+  const isWaiting = useMemo(() => !isPending && planState === RaiseState.WaitingStart, [isPending, planState]);
   // 已开始
-  const isStarted = useMemo(() => data && H.isStarted(data), [data]);
+  const isStarted = useMemo(() => !isPending && isDef(planState) && planState > RaiseState.WaitingStart, [isPending, planState]);
   // 质押中
-  const isRaising = useMemo(() => data && H.isRaising(data), [data]);
+  const isRaising = useMemo(() => !isPending && planState === RaiseState.Raising, [isPending, planState]);
   // 已关闭
-  const isClosed = useMemo(() => data && H.isClosed(data), [data]);
+  const isClosed = useMemo(() => !isPending && planState === RaiseState.Closed, [isPending, planState]);
   // 已失败
-  const isFailed = useMemo(() => data && H.isFailed(data), [data]);
+  const isFailed = useMemo(() => !isPending && planState === RaiseState.Failure, [isPending, planState]);
   // 成功
-  const isSuccess = useMemo(() => data && H.isSuccess(data), [data]);
+  const isSuccess = useMemo(() => !isPending && planState === RaiseState.Success, [isPending, planState]);
   // 处理中（封装和运行）
-  const isProcess = useMemo(() => raiseState >= RaiseState.Success && !isPending, [raiseState, isPending]);
-  const isRunning = useMemo(() => data && H.isRunning(data), [data]);
+  const isProcess = useMemo(() => !isPending && isDef(planState) && planState >= RaiseState.Success, [isPending, planState]);
+  const isRunning = useMemo(() => isSuccess && nodeState >= NodeState.WaitingStart, [isSuccess, nodeState]);
   // 等待封装
-  const isWaitSeal = useMemo(() => data && H.isWaitSeal(data), [data]);
-  // 预封装
-  const isPreSeal = useMemo(() => data && H.isPreSeal(data), [data]);
+  const isWaitSeal = useMemo(() => isSuccess && nodeState === NodeState.WaitingStart, [isSuccess, nodeState]);
   // 封装中
-  const isSealing = useMemo(() => data && H.isSealing(data), [data]);
+  const isSealing = useMemo(() => isStarted && nodeState === NodeState.Started, [isStarted, nodeState]);
   // 已延期
-  const isDelayed = useMemo(() => data && H.isDelayed(data), [data]);
+  const isDelayed = useMemo(() => isStarted && nodeState === NodeState.Delayed, [isStarted, nodeState]);
   // 封装完成
-  const isFinished = useMemo(() => data && H.isFinished(data), [data]);
-  // 工作中（产生节点激励）
-  const isWorking = useMemo(() => data && H.isWorking(data), [data]);
+  const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
   // 已销毁（节点运行结束）
-  const isDestroyed = useMemo(() => data && H.isDestroyed(data), [data]);
+  const isDestroyed = useMemo(() => planState === RaiseState.Destroyed || (isSuccess && nodeState === NodeState.Destroy), [isSuccess, nodeState, planState]);
+  // 工作中（产生节点激励）
+  const isWorking = useMemo(() => isDestroyed || isFinished, [isDestroyed, isFinished]);
 
   return {
     nodeState,
-    raiseState,
+    planState,
     isClosed,
     isFailed,
     isWaiting,
@@ -57,7 +69,6 @@ export default function useRaiseState(data?: API.Plan | null) {
     isPending,
     isRaising,
     isWaitSeal,
-    isPreSeal,
     isSealing,
     isWorking,
     isDelayed,

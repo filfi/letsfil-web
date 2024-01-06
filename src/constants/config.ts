@@ -1,3 +1,4 @@
+// import { createPublicClient, custom } from 'viem';
 import { QueryClient } from '@tanstack/react-query';
 import { publicProvider } from 'wagmi/providers/public';
 import { filecoin, filecoinCalibration } from 'viem/chains';
@@ -8,7 +9,23 @@ import { isMainnet } from '@/constants';
 // const _chains: Chain[] = [filecoin];
 const _chains: Chain[] = isMainnet ? [filecoin] : [filecoinCalibration];
 
-export const queryClient = new QueryClient();
+// console.log(filecoinCalibration);
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+    },
+  },
+});
+
+export const safeAmount = isMainnet ? 300 : 3;
+
+export const CREATION_TIME = isMainnet ? 1598306400 : 1667326380;
+
+// const transport = custom(window.ethereum as any, {
+//   name: 'Window Ethereum Provider',
+// });
 
 export const { chains, publicClient, webSocketPublicClient } = configureChains(_chains, [publicProvider()], {
   retryCount: 50,
@@ -17,10 +34,19 @@ export const { chains, publicClient, webSocketPublicClient } = configureChains(_
   batch: { multicall: true },
 });
 
+// const publicClient = createPublicClient({
+//   chain: isMainnet ? filecoin : filecoinCalibration,
+//   transport,
+// });
+
 export const config = createConfig({
-  autoConnect: true,
   publicClient,
   webSocketPublicClient,
+  autoConnect: true,
 });
 
 export const defaultWallet = 'MetaMask';
+
+export const blocklist: string[] = [];
+
+export const whitelist: { address: string; limit?: number }[] = [];

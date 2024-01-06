@@ -16,11 +16,15 @@ import SectionDeposit from './SectionDeposit';
 import SectionContract from './SectionContract';
 import SectionTimeline from './SectionTimeline';
 import SectionProvider from './SectionProvider';
+import SectionWhitelist from './SectionWhitelist';
+import { isTargeted } from '@/helpers/raise';
+import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseState from '@/hooks/useRaiseState';
 
-const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const responsive = useResponsive();
-  const { isStarted, isSuccess, isWaitSeal, isPreSeal, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
+  const { isRaiser } = useRaiseRole(data);
+  const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
 
   return (
     <>
@@ -45,6 +49,26 @@ const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
           )}
         </div>
       </section>
+      {isTargeted(data) && isRaiser && (
+        <section id="targeted" className="section">
+          <div className="section-header">
+            <h4 className="section-title">定向地址</h4>
+            <p className="mb-0">可参与定向计划的钱包地址和参与情况。</p>
+          </div>
+
+          <SectionWhitelist data={data} />
+        </section>
+      )}
+      {(isSealing || isDelayed || isFinished) && (
+        <section id="seals" className="section">
+          <div className="section-header">
+            <h4 className="section-title">封装进度</h4>
+            <p className="mb-0">封装进展一览无余</p>
+          </div>
+
+          <SectionSeals data={data} />
+        </section>
+      )}
       <section id="provider" className={classNames('section', { 'order-3': isSealing, 'order-5': isDelayed || isFinished })}>
         <div className="section-header">
           <h4 className="section-title">服务商</h4>
@@ -85,16 +109,6 @@ const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
         <SectionNode data={data} />
       </section>
-      {isSuccess && !isDestroyed && (
-        <section id="seals" className={classNames('section', { 'order-1': isSealing || isDelayed || isFinished, 'order-3': isWaitSeal || isPreSeal })}>
-          <div className="section-header">
-            <h4 className="section-title">封装进度</h4>
-            <p className="mb-0">封装进展一览无余</p>
-          </div>
-
-          <SectionSeals data={data} />
-        </section>
-      )}
       <section id="timeline" className="section order-4">
         <div className="section-header">
           <h4 className="section-title">时间进度</h4>
@@ -125,4 +139,4 @@ const ContMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   );
 };
 
-export default ContMain;
+export default RaiseMain;

@@ -27,10 +27,10 @@ const StepStart: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 };
 
 const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { nodeState, isClosed, isFailed, isRaising, isSuccess, isWaitSeal, isPreSeal } = useRaiseState(data);
+  const { nodeState, isClosed, isFailed, isRaising, isSuccess, isDestroyed, isWaitSeal } = useRaiseState(data);
 
-  const isRaiseEnd = useMemo(() => isSuccess && nodeState >= NodeState.Started && !isPreSeal, [nodeState, isSuccess, isPreSeal]);
-  const isProgress = useMemo(() => isRaising || (isSuccess && (isWaitSeal || isPreSeal)), [isRaising, isSuccess, isWaitSeal, isPreSeal]);
+  const isProgress = useMemo(() => !isSuccess && (isRaising || isWaitSeal), [isRaising, isSuccess, isWaitSeal]);
+  const isRaiseEnd = useMemo(() => (isDestroyed || isSuccess) && nodeState >= NodeState.Started, [nodeState, isDestroyed, isSuccess]);
 
   if (isClosed || isFailed) {
     return (
@@ -40,20 +40,46 @@ const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     );
   }
 
+  const formatEndTime = (time: number) => {
+    const r = [F.formatUnixDate(time)];
+
+    if (isProgress) {
+      r.push('(可能提前)');
+    }
+
+    return r.join(' ');
+  };
+
   return (
     <Steps.Item title="质押阶段截止" status={isRaiseEnd ? 'finish' : isProgress ? 'active' : undefined}>
-      {data?.closing_time ? F.formatUnixDate(data.closing_time) : `预期${data!.raise_days}天`}
+      {data?.closing_time ? formatEndTime(data.closing_time) : `预期${data!.raise_days}天`}
     </Steps.Item>
   );
 };
 
 const StepSeal: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isSealing, isDelayed, isWorking } = useRaiseState(data);
+  const { isSuccess, isSealing, isDelayed, isWorking } = useRaiseState(data);
+
+  const formatEndTime = (time: number) => {
+    const r = [F.formatUnixDate(time)];
+
+    if (isSealing || isDelayed) {
+      r.push('(可能提前)');
+    }
+
+    return r.join(' ');
+  };
 
   return (
-    <Steps.Item title="封装阶段截止" status={isWorking ? 'finish' : isSealing || isDelayed ? 'active' : undefined}>
-      {data?.delay_seal_time ? F.formatUnixDate(data.delay_seal_time) : data?.end_seal_time ? F.formatUnixDate(data.end_seal_time) : `+ ${data!.seal_days} 天`}
-    </Steps.Item>
+    <>
+      <Steps.Item title="开始分配激励" status={isWorking ? 'finish' : isSuccess && (isSealing || isDelayed) ? 'active' : undefined}>
+        质押结束即开始分配激励
+      </Steps.Item>
+
+      <Steps.Item title="封装阶段截止" status={isWorking ? 'finish' : undefined}>
+        {data?.end_seal_time ? formatEndTime(data.end_seal_time) : `+ ${data!.seal_days} 天`}
+      </Steps.Item>
+    </>
   );
 };
 

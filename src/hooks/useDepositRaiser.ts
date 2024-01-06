@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { parseEther } from 'viem';
-import { useQueries } from '@tanstack/react-query';
+import { useUnmount } from 'ahooks';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
@@ -16,12 +17,18 @@ import { isRaiserPaied } from '@/helpers/raise';
  * @returns
  */
 export default function useDepositRaiser(data?: API.Plan | null) {
+  const client = useQueryClient();
   const { withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
-  const getFundRaiser = async () => {
+  const getRaiserFund = async () => {
     if (data && isRaiserPaied(data)) {
-      return await contract.getFundRaiser(data.raising_id);
+      return await contract.getRaiserFund(data.raising_id);
+    }
+  };
+  const getRaiserFine = async () => {
+    if (data && isRaiserPaied(data)) {
+      return await contract.getRaiserFine(data.raising_id);
     }
   };
   const getTotalInterest = async () => {
@@ -30,29 +37,38 @@ export default function useDepositRaiser(data?: API.Plan | null) {
     }
   };
 
-  const [fund, interest] = useQueries({
+  const [sRes, gRes, fRes] = useQueries({
     queries: [
       {
-        queryKey: ['fundRaiser', data?.raising_id],
-        queryFn: withNull(getFundRaiser),
-        staleTime: 60_000,
+        queryKey: ['getRaiserFund', data?.raising_id],
+        queryFn: withNull(getRaiserFund),
       },
       {
-        queryKey: ['totalInterest', data?.raising_id],
+        queryKey: ['getRaiserFine', data?.raising_id],
+        queryFn: withNull(getRaiserFine),
+      },
+      {
+        queryKey: ['getTotalInterest', data?.raising_id],
         queryFn: withNull(getTotalInterest),
-        staleTime: 60_000,
       },
     ],
   });
 
-  const fines = useMemo(() => interest.data ?? 0, [interest.data]); // 罚息
-  const amount = useMemo(() => fund.data ?? toNumber(data?.raise_security_fund), [fund.data, data?.raise_security_fund]); // 当前保证金
+  const gas = useMemo(() => gRes.data ?? 0, [gRes.data]); // gas费
+  const fines = useMemo(() => fRes.data ?? 0, [fRes.data]); // 罚息
+  const amount = useMemo(() => sRes.data ?? toNumber(data?.raise_security_fund), [sRes.data, data?.raise_security_fund]); // 当前保证金
   const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]); // 总保证金
-  const isLoading = useMemo(() => fund.isLoading || interest.isLoading, [fund.isLoading, interest.isLoading]);
+  const isLoading = useMemo(() => sRes.isLoading || fRes.isLoading, [sRes.isLoading, fRes.isLoading]);
 
   const refetch = async () => {
-    return Promise.all([fund.refetch(), interest.refetch()]);
+    return Promise.all([sRes.refetch(), fRes.refetch()]);
   };
+
+  useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getRaiserFund', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getRaiserFine', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getTotalInterest', data?.raising_id] });
+  });
 
   const [paying, payAction] = useProcessify(
     withConnect(async () => {
@@ -64,7 +80,7 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(1_000);
 
-      fund.refetch();
+      sRes.refetch();
 
       return res;
     }),
@@ -78,13 +94,14 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(200);
 
-      fund.refetch();
+      sRes.refetch();
 
       return res;
     }),
   );
 
   return {
+    gas,
     fines,
     total,
     amount,
