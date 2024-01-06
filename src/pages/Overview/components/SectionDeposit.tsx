@@ -41,6 +41,7 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const show = useMemo(() => isClosed || isFailed || (count?.seal_delay_sync_count ?? 0) > 0, [isClosed, isFailed, count?.seal_delay_sync_count]);
 
   const renderExtra = () => {
+    console.log('[gas]: ', gas);
     if (isClosed || isFailed) {
       return (
         <div className="bg-light my-2 px-3 py-2 rounded-3">

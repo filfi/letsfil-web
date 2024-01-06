@@ -7,9 +7,21 @@ import { Chain, configureChains, createConfig } from 'wagmi';
 import { isMainnet } from '@/constants';
 
 // const _chains: Chain[] = [filecoin];
-const _chains: Chain[] = isMainnet ? [filecoin] : [filecoinCalibration];
-
-// console.log(filecoinCalibration);
+const _chains: Chain[] = isMainnet
+  ? [
+      {
+        ...filecoin,
+        rpcUrls: {
+          default: {
+            http: ['https://api.node.glif.io/rpc/v1', 'https://filfox.info/rpc/v1'],
+          },
+          public: {
+            http: ['https://api.node.glif.io/rpc/v1', 'https://filfox.info/rpc/v1'],
+          },
+        },
+      },
+    ]
+  : [filecoinCalibration];
 
 export const queryClient = new QueryClient({
   defaultOptions: {
