@@ -41,7 +41,6 @@ const RaiserCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const show = useMemo(() => isClosed || isFailed || (count?.seal_delay_sync_count ?? 0) > 0, [isClosed, isFailed, count?.seal_delay_sync_count]);
 
   const renderExtra = () => {
-    console.log('[gas]: ', gas);
     if (isClosed || isFailed) {
       return (
         <div className="bg-light my-2 px-3 py-2 rounded-3">
@@ -158,8 +157,8 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { opsAmount, progress } = useAssetPack(data, pack);
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
   const { addDepositOpsFund } = useContract(data?.raise_address);
-  const { amount, need, safe, total, opsBack, paying, withdrawing, payAction, withdrawAction } = useDepositOps(data);
   const { isPending, isWaiting, isStarted, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
+  const { amount, actual: opsActual, need, safe, total, opsSealed, safeSealed, paying, withdrawing, payAction, withdrawAction } = useDepositOps(data);
 
   const after = useMemo(() => accAdd(amount, safe), [amount, safe]);
   const before = useMemo(() => accAdd(total, safeAmount), [safeAmount, total]);
@@ -170,12 +169,12 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const payable = useMemo(() => isServicer && isWaiting, [isServicer, isWaiting]);
   // 可取回
   const withdrawable = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isServicer, isClosed, isFailed, isDestroyed]);
-  // 超配部分
-  // const opsOver = useMemo(() => Math.max(+F.toFixed(accSub(total, opsAmount), 2), 0), [total, opsAmount]);
   // 剩余部分
   const opsRemain = useMemo(() => Math.max(accSub(opsAmount, accMul(opsAmount, progress)), 0), [opsAmount, progress]);
   // 利息补偿
   const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]);
+  // 超配部分
+  const opsOver = useMemo(() => Math.max(+F.toFixed(accSub(opsActual, accSub(opsSealed, safeSealed)), 2), 0), [opsActual, opsSealed, safeSealed]);
 
   const [adding, handleAddDeposit] = useProcessify(async () => {
     if (!isServicer || !data?.raising_id) return;
@@ -201,7 +200,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     if (isSuccess) {
       const hasFines = fines > 0;
-      const hasOver = isWorking && opsBack > 0;
+      const hasOver = isWorking && opsOver > 0;
       const hasRemain = isWorking && opsRemain > 0;
 
       if ((isProcessed && (hasOver || hasRemain)) || hasFines) {
@@ -211,7 +210,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               <p className="d-flex gap-3 my-2">
                 <span className="text-gray-dark">
                   <span>超配部分</span>
-                  <span className="ms-2 fw-bold">{F.formatAmount(opsBack)}</span>
+                  <span className="ms-2 fw-bold">{F.formatAmount(opsOver)}</span>
                   <span className="ms-1">FIL</span>
                 </span>
                 <span className="ms-auto">已退到 {F.formatAddr(servicer)}</span>
