@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useUnmount } from 'ahooks';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 
+import { accAdd } from '@/utils/utils';
 import useContract from './useContract';
 import { withNull } from '@/utils/hackify';
 import { isPending } from '@/helpers/raise';
@@ -30,13 +31,18 @@ export default function useRaiseMiner(data?: API.Plan | null) {
       return await contract.getOpsFundCalc(data.raising_id);
     }
   };
-  const getOpsFundSeal = async () => {
+  const getOpsFundSafeRemain = async () => {
     if (data && !isPending(data)) {
-      return await contract.getOpsFundSeal(data.raising_id);
+      return await contract.getOpsFundSafeRemain(data.raising_id);
+    }
+  };
+  const getOpsFundSafeSealed = async () => {
+    if (data && !isPending(data)) {
+      return await contract.getOpsFundSafeSealed(data.raising_id);
     }
   };
 
-  const [pRes, sRes, fRes, oRes] = useQueries({
+  const [pRes, sRes, fRes, oRes, safeRes] = useQueries({
     queries: [
       {
         queryKey: ['getPledgeAmount', data?.raising_id],
@@ -51,30 +57,38 @@ export default function useRaiseMiner(data?: API.Plan | null) {
         queryFn: withNull(getOpsFundCalc),
       },
       {
-        queryKey: ['getOpsFundSeal', data?.raising_id],
-        queryFn: withNull(getOpsFundSeal),
+        queryKey: ['getOpsFundSafeRemain', data?.raising_id],
+        queryFn: withNull(getOpsFundSafeRemain),
+      },
+      {
+        queryKey: ['getOpsFundSafeSealed', data?.raising_id],
+        queryFn: withNull(getOpsFundSafeSealed),
       },
     ],
   });
 
-  const safe = useMemo(() => oRes.data ?? 0, [oRes.data]);
   const funds = useMemo(() => fRes.data ?? 0, [fRes.data]);
   const pledge = useMemo(() => pRes.data ?? 0, [pRes.data]);
   const sealed = useMemo(() => sRes.data ?? 0, [sRes.data]);
+  const safeRemain = useMemo(() => oRes.data ?? 0, [oRes.data]);
+  const safeSealed = useMemo(() => safeRes.data ?? 0, [safeRes.data]);
+  const safe = useMemo(() => accAdd(safeRemain, safeSealed), [safeRemain, safeSealed]);
+
   const isLoading = useMemo(
-    () => fRes.isLoading || pRes.isLoading || sRes.isLoading || oRes.isLoading,
-    [fRes.isLoading, pRes.isLoading, sRes.isLoading, oRes.isLoading],
+    () => fRes.isLoading || pRes.isLoading || sRes.isLoading || oRes.isLoading || safeRes.isLoading,
+    [fRes.isLoading, pRes.isLoading, sRes.isLoading, oRes.isLoading, safeRes.isLoading],
   );
 
   const refetch = () => {
-    return Promise.all([pRes.refetch(), sRes.refetch(), fRes.refetch(), oRes.isLoading]);
+    return Promise.all([pRes.refetch(), sRes.refetch(), fRes.refetch(), oRes.refetch(), safeRes.refetch()]);
   };
 
   useUnmount(() => {
+    client.invalidateQueries({ queryKey: ['getOpsFundCalc', data?.raising_id] });
     client.invalidateQueries({ queryKey: ['getPledgeAmount', data?.raising_id] });
     client.invalidateQueries({ queryKey: ['getSealedAmount', data?.raising_id] });
-    client.invalidateQueries({ queryKey: ['getOpsFundCalc', data?.raising_id] });
-    client.invalidateQueries({ queryKey: ['getOpsFundSeal', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundSafeRemain', data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getOpsFundSafeSealed', data?.raising_id] });
   });
 
   return {
@@ -82,6 +96,8 @@ export default function useRaiseMiner(data?: API.Plan | null) {
     funds,
     pledge,
     sealed,
+    safeRemain,
+    safeSealed,
     isLoading,
     refetch,
   };
