@@ -43,7 +43,11 @@ const BannerCard: React.FC<BannerCardProps> = ({ className, data, style }) => {
 
               <div className="mb-3 fs-16 fw-500">
                 <p className="mb-0">质押目标 {formatAmount(target)} FIL</p>
-                <p className="mb-1">预估年化 {formatRate(rate)}</p>
+                <p className="mb-1">
+                  <span>预估年化 {formatRate(rate)}</span>
+                  <span className="mx-1">·</span>
+                  <span>质押周期 {data.sector_period}天</span>
+                </p>
               </div>
 
               <div className="mb-3 d-flex gap-3">

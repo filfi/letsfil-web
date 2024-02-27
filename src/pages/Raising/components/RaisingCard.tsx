@@ -86,6 +86,16 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                   <span className="mx-1 fw-bold">{formatAmount(minTarget)}</span>
                   <span>FIL</span>
                 </p>
+
+                <p className="mb-0 fs-16 text-gray-dark d-none d-lg-block">
+                  <span className="">·</span>
+                </p>
+
+                <p className="mb-0 fs-16 text-gray-dark">
+                  <span>质押周期</span>
+                  <span className="mx-1 fw-bold">{data.sector_period}</span>
+                  <span>天</span>
+                </p>
               </div>
 
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-2 gap-xl-3 gap-xxl-4">
