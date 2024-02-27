@@ -136,14 +136,14 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         )}
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 col-xl-5 table-cell th">质押周期</div>
-            <div className="col-8 col-xl-7 table-cell">{data?.sector_period} 天</div>
+            <div className="col-4 table-cell th">质押周期</div>
+            <div className="col-8 table-cell">{data?.sector_period} 天</div>
           </div>
         </div>
         <div className="col table-row d-none d-md-block d-lg-none d-xl-block">
           <div className="row g-0">
-            <div className="col-4 col-xl-5 table-cell th"></div>
-            <div className="col-8 col-xl-7 table-cell"></div>
+            <div className="col-4 table-cell th"></div>
+            <div className="col-8 table-cell"></div>
           </div>
         </div>
       </div>
