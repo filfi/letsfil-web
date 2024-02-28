@@ -254,6 +254,8 @@ export default function CreateBenefit() {
 
     delete body.investors;
 
+    console.log('[post data]: ', body);
+
     const [e] = await catchify(async () => {
       if (isEdit) {
         await A.update(raiseId, body);
