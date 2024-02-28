@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Form, Input } from 'antd';
+import { Form, Input, Select } from 'antd';
 import classNames from 'classnames';
 import { history, useModel } from '@umijs/max';
 import { useMount, useUpdateEffect } from 'ahooks';
@@ -14,6 +14,7 @@ import { formatAddr } from '@/utils/format';
 import useAccount from '@/hooks/useAccount';
 import { isDef, sleep } from '@/utils/utils';
 import useProviders from '@/hooks/useSProviders';
+import DaysInput from '@/components/DaysInput';
 import FormRadio from '@/components/FormRadio';
 import useLoadingify from '@/hooks/useLoadingify';
 import AvatarInput from '@/components/AvatarInput';
@@ -251,22 +252,42 @@ export default function CreateStorage() {
 
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">Filecoin存储方案</h4>
-            <p className="text-gray">选择封装扇区的参数</p>
+            <p className="mb-3 text-gray">选择封装扇区的参数</p>
 
-            <Form.Item name="sectorSize" rules={[{ required: true, message: '请选择存储方案' }]}>
-              <FormRadio
-                items={[
-                  { label: '32GB 扇区', value: 32 },
-                  { label: '64GB 扇区', value: 64 },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item name="sectorPeriod" rules={[{ required: true, message: '请选择存储方案' }]}>
-              <FormRadio
-                items={[
-                  { label: '210 天到期', value: 210 },
-                  { label: '360 天到期', value: 360 },
-                  { label: '540 天到期', value: 540 },
+            <p className="ffi-label">扇区大小</p>
+            <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4">
+              <div className="col">
+                <Form.Item name="sectorSize" rules={[{ required: true, message: '请选择扇区大小' }]}>
+                  <Select
+                    options={[
+                      { label: '32G', value: 32 },
+                      { label: '64G', value: 64 },
+                    ]}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            <p className="ffi-label">质押周期</p>
+            <Form.Item
+              name="sectorPeriod"
+              rules={[
+                { required: true, message: '请输入质押周期' },
+                {
+                  validator: V.Queue.create()
+                    .add(V.integer)
+                    .add(V.createGteValidator(180, '不能少于180天'))
+                    .add(V.createLteValidator(540, '不能多于540天'))
+                    .build(),
+                },
+              ]}
+            >
+              <DaysInput
+                options={[
+                  { label: '180天', value: 180 },
+                  { label: '210天', value: 210 },
+                  { label: '360天', value: 360 },
+                  { label: '540天', value: 540 },
                 ]}
               />
             </Form.Item>
