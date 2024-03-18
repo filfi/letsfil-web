@@ -159,7 +159,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const { isOpsPaid, servicer, isServicer } = useRaiseRole(data);
   const { addDepositOpsFund } = useContract(data?.raise_address);
   const { isPending, isWaiting, isStarted, isClosed, isFailed, isSuccess, isWorking, isDestroyed } = useRaiseState(data);
-  const { amount, actual: opsActual, need, safe, total, opsSealed, safeSealed, paying, withdrawing, payAction, withdrawAction } = useDepositOps(data);
+  const { amount, actual: opsActual, need, safe, total, paying, withdrawing, payAction, withdrawAction } = useDepositOps(data);
 
   const after = useMemo(() => accAdd(amount, safe), [amount, safe]);
   const before = useMemo(() => accAdd(total, safeAmount), [safeAmount, total]);
@@ -170,12 +170,12 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const payable = useMemo(() => isServicer && isWaiting, [isServicer, isWaiting]);
   // 可取回
   const withdrawable = useMemo(() => isServicer && (isClosed || isFailed || isDestroyed), [isServicer, isClosed, isFailed, isDestroyed]);
-  // 剩余部分
+  // 剩余部分 = 实际配比 - 实际配比 * 封装进度
   const opsRemain = useMemo(() => Math.max(accSub(opsAmount, accMul(opsAmount, progress)), 0), [opsAmount, progress]);
+  // 超配部分 = 实际存入 - 实际配比
+  const opsOver = useMemo(() => Math.max(+F.toFixed(accSub(opsActual, opsAmount), 2), 0), [opsActual, opsAmount]);
   // 利息补偿
   const opsInterest = useMemo(() => accMul(interest, accDiv(total, accAdd(total, actual))), [total, interest, actual]);
-  // 超配部分
-  const opsOver = useMemo(() => Math.max(+F.toFixed(accSub(opsActual, accSub(opsSealed, safeSealed)), 2), 0), [opsActual, opsSealed, safeSealed]);
 
   const [adding, handleAddDeposit] = useProcessify(async () => {
     if (!isServicer || !data?.raising_id) return;
