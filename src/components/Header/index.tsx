@@ -37,7 +37,8 @@ const socials = [
     icon: IconTelegram,
     title: 'Telegram',
     desc: 'Join disscution',
-    url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+    // url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+    url: 'https://t.me/filfi_io',
   },
 ];
 

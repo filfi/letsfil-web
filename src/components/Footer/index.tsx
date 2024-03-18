@@ -14,7 +14,8 @@ const socials = [
   },
   {
     title: 'Telegram',
-    url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+    // url: 'https://t.me/+eDw3nnwV7xQwZGM9',
+    url: 'https://t.me/filfi_io',
   },
 ];
 
