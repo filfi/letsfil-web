@@ -49,15 +49,15 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   <span className="ms-1 text-neutral">%</span>
                 </span>
                 <span className="badge badge-primary ms-auto">
-                  <span className="me-1">静态年化{F.formatRate(rate, '0.00%')}</span>
+                  <span className="me-1">静态产出{F.formatRate(rate, '0.00%')}</span>
 
-                  <Tooltip title={`“年化收益率” 按照节点计划创建时刻全网产出（${F.formatAmount(perFil, 6)}FIL/TiB）静态估算`}>
+                  <Tooltip title={`“产出ROA” 按照节点计划创建时刻全网产出（${F.formatAmount(perFil, 6)}FIL/TiB）静态估算`}>
                     <span className="bi bi-question-circle"></span>
                   </Tooltip>
                 </span>
                 {/* <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
-                  <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
+                  <span className="ms-1">产出ROA{F.formatRate(rate, '0.00%')}</span>
                 </a> */}
               </p>
             </div>
