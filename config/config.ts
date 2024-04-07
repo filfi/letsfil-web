@@ -51,11 +51,5 @@ export default defineConfig({
     ],
   },
   npmClient: 'pnpm',
-  links: [
-    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Inter&display=swap',
-    },
-  ],
+  copy: ['_headers'],
 });

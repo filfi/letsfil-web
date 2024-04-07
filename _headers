@@ -1,0 +1,6 @@
+/*
+  Content-Security-Policy: default-src 'self'; form-action 'self'; img-src https://*; child-src 'none'; connect-src 'self' *.filfi.io *.mining.filfi.io api.node.glif.io filfox.info
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: origin

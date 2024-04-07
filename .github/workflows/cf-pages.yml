@@ -40,5 +40,5 @@ jobs:
           projectName: letsfil-web
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: ${{ github.ref == 'refs/heads/main' && 'main' || 'staging' }}
           wranglerVersion: "3"
