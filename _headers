@@ -1,5 +1,4 @@
 /*
-  Content-Security-Policy: default-src 'self'; form-action 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; child-src 'none'; worker-src blob:; connect-src 'self' https://*.filfi.io https://*.mining.filfi.io https://api.node.glif.io https://filfox.info
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
