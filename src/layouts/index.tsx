@@ -88,6 +88,8 @@ const BasicLayout: React.FC = () => {
       setTimeout(removeDom, 1000 / 60);
     };
 
+    document.documentElement.classList.add('has-layout');
+
     autoConnect();
   });
 

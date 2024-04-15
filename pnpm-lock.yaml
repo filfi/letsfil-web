@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@ant-design/icons': ^4.7.0
   '@ant-design/plots': ^1.2.3
+  '@fancyapps/ui': ^5.0.36
   '@glif/filecoin-address': ^2.0.43
   '@metamask/onboarding': ^1.0.1
   '@popperjs/core': ^2.11.6
@@ -46,6 +47,7 @@ specifiers:
 dependencies:
   '@ant-design/icons': 4.8.0_2q7l3o2s2f77g7novtsxtrhvne
   '@ant-design/plots': 1.2.5_2q7l3o2s2f77g7novtsxtrhvne
+  '@fancyapps/ui': 5.0.36
   '@glif/filecoin-address': 2.0.43
   '@metamask/onboarding': 1.0.1
   '@popperjs/core': 2.11.7
@@ -3164,6 +3166,10 @@ packages:
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
+    dev: false
+
+  /@fancyapps/ui/5.0.36:
+    resolution: {integrity: sha512-GMygQzp1MBTFNTT6AzpbL6pXTD6bTxwjmmpI1fe8Ozmmiseu8/g82Sudl1YhcbZmS4bJgaBOF5THDFGpXQ1fDw==}
     dev: false
 
   /@floating-ui/core/0.6.2:
