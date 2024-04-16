@@ -1,6 +1,8 @@
 import { defineConfig } from '@umijs/max';
 
-import routes from './routes';
+import { emergencyRoutes, commonRoutes } from './routes';
+
+const EMERGENCY_DRILL = ['yes', 'on', 'true', '1'].includes(process.env.EMERGENCY_DRILL ?? '');
 
 export default defineConfig({
   define: {
@@ -15,7 +17,7 @@ export default defineConfig({
   antd: {},
 
   // routes
-  routes,
+  routes: EMERGENCY_DRILL ? emergencyRoutes : commonRoutes,
 
   model: {},
   access: {},
