@@ -18,7 +18,7 @@ export default function useRaiseMiner(data?: API.Plan | null) {
 
   const getPledgeAmount = async () => {
     if (data && !isPending(data)) {
-      return await contract.getPledgeAmount(data.raising_id);
+      return await contract.getPledgeTotalAmount(data.raising_id);
     }
   };
   const getSealedAmount = async () => {

@@ -7,7 +7,6 @@ export type IBestAFSRoute = {
   title?: string;
   wrappers?: string[];
   routes?: IBestAFSRoute[];
-  layout?: boolean;
   // 更多功能查看
   // https://beta-pro.ant.design/docs/advanced-menu
   // ---
@@ -33,16 +32,7 @@ export type IBestAFSRoute = {
   flatMenu?: true;
 };
 
-export const emergencyRoutes: IBestAFSRoute[] = [
-  {
-    path: '/',
-    name: 'home',
-    component: './Notice',
-    layout: false,
-  },
-];
-
-export const commonRoutes: IBestAFSRoute[] = [
+const routes: IBestAFSRoute[] = [
   {
     path: '/',
     name: 'home',
@@ -72,6 +62,39 @@ export const commonRoutes: IBestAFSRoute[] = [
     ],
   },
   {
+    name: 'stake',
+    path: 'stake',
+    component: './Stake',
+  },
+  {
+    name: 'lending',
+    path: 'lending',
+    component: './lending/layout',
+    routes: [
+      {
+        name: 'lendingLoan',
+        path: 'loan',
+        component: './lending/Loan',
+      },
+      {
+        name: 'lendingSelect',
+        path: 'select',
+        component: './lending/Select',
+      },
+      {
+        name: 'select',
+        path: 'select',
+        component: './lending/Select',
+      },
+      {
+        name: 'lendingResult',
+        path: 'result',
+        component: './lending/Result',
+      },
+      { path: '/lending', redirect: '/lending/loan' },
+    ],
+  },
+  {
     name: 'raising',
     path: 'raising',
     component: './Raising',
@@ -97,7 +120,7 @@ export const commonRoutes: IBestAFSRoute[] = [
         component: './create/Benefit',
       },
       {
-        name: 'result',
+        name: 'createResult',
         path: 'result/:id',
         component: './create/Result',
       },
@@ -120,7 +143,7 @@ export const commonRoutes: IBestAFSRoute[] = [
         component: './mount/Benefit',
       },
       {
-        name: 'result',
+        name: 'mountResult',
         path: 'result/:id',
         component: './mount/Result',
       },
@@ -134,8 +157,21 @@ export const commonRoutes: IBestAFSRoute[] = [
   },
   {
     name: 'assets',
-    path: 'assets/:id',
-    component: './Assets',
+    path: 'assets',
+    component: './assets/layout',
+    routes: [
+      {
+        name: 'assetsOverview',
+        path: 'overview/:id',
+        component: './assets/Overview',
+      },
+      {
+        name: 'assetsLeverage',
+        path: 'leverage/:id',
+        component: './assets/Leverage',
+      },
+      { path: '/assets', redirect: '/' },
+    ],
   },
   {
     name: 'fspa',
@@ -158,3 +194,5 @@ export const commonRoutes: IBestAFSRoute[] = [
   // other 404
   { path: '*', redirect: '/' },
 ];
+
+export default routes;

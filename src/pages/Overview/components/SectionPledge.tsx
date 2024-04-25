@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
+import { useModel } from '@umijs/max';
 import { Pie, PieConfig } from '@ant-design/plots';
 
+import { accSub } from '@/utils/utils';
 import { formatAmount } from '@/utils/format';
-import useRaiseBase from '@/hooks/useRaiseBase';
-import useRaiseRate from '@/hooks/useRaiseRate';
-import useRaiseState from '@/hooks/useRaiseState';
-import { accAdd, accDiv, accMul, accSub } from '@/utils/utils';
 
 const config: PieConfig = {
   data: [],
@@ -29,20 +27,19 @@ const config: PieConfig = {
   },
 };
 
-const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { actual } = useRaiseBase(data);
-  const { opsRatio } = useRaiseRate(data);
-  const { isSuccess } = useRaiseState(data);
+const SectionPledge: React.FC = () => {
+  const {
+    assets: { total },
+    rate: { opsRatio },
+    state: { isSuccess },
+  } = useModel('Overview.overview');
 
-  // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已质押金额)
-  const ops = useMemo(() => accDiv(accMul(actual, accDiv(opsRatio, 100)), accSub(1, accDiv(opsRatio, 100))), [actual, opsRatio]);
-  const totalAmount = useMemo(() => accAdd(actual, ops), [actual, ops]);
   const investRate = useMemo(() => Math.max(accSub(100, opsRatio), 0), [opsRatio]);
 
   const pieData = useMemo(
     () => [
-      { name: '优先建设者', value: investRate },
-      { name: '运维保证金', value: opsRatio },
+      { name: '優先建設者', value: investRate },
+      { name: '運維保證金', value: opsRatio },
     ],
     [investRate, opsRatio],
   );
@@ -60,7 +57,7 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-6 col-lg-5 col-xxl-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">优先质押</p>
+                <p className="reward-label">優先質押</p>
                 <p className="reward-text">
                   <span className="text-decimal">{investRate}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -70,7 +67,7 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-6 col-lg-7 col-xxl-6">
               <div className="reward-item mb-3" style={{ '--dot-color': '#7FC4FD' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">劣后质押(运维保证金)</p>
+                <p className="reward-label">劣後質押(運維保證金)</p>
                 <p className="reward-text">
                   <span className="text-decimal">{opsRatio}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -81,9 +78,9 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               <div className="col-12">
                 <div className="reward-item mb-3">
                   <span className="reward-dot reward-dot-circle"></span>
-                  <p className="reward-label">质押总和(优先质押+劣后质押)</p>
+                  <p className="reward-label">質押總和(優先質押+劣後質押)</p>
                   <p className="reward-text">
-                    <span className="text-decimal">{formatAmount(totalAmount, 2, 2)}</span>
+                    <span className="text-decimal">{formatAmount(total, 2, 2)}</span>
                     <span className="ms-2 text-neutral">FIL</span>
                   </p>
                 </div>
@@ -96,33 +93,35 @@ const SectionPledge: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       <div className="row row-cols-1 row-cols-md-2 row-cols-lg-1 row-cols-xl-2 g-0">
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">所有权</div>
-            <div className="col-8 table-cell">永恒不变，全额返还</div>
+            <div className="col-4 table-cell th">所有權</div>
+            <div className="col-8 table-cell">永恆不變，全額返還</div>
           </div>
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">返还时间</div>
-            <div className="col-8 table-cell">扇区到期后即可提取</div>
+            <div className="col-4 table-cell th">返還時間</div>
+            <div className="col-8 table-cell">扇區到期後即可提取</div>
           </div>
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">优先质押</div>
-            <div className="col-8 table-cell">优先分配，优先返还</div>
+            <div className="col-4 table-cell th">優先質押</div>
+            <div className="col-8 table-cell">優先分配，優先返還</div>
           </div>
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">劣后质押</div>
-            <div className="col-8 table-cell">优先受罚，最后返还</div>
+            <div className="col-4 table-cell th">劣後質押</div>
+            <div className="col-8 table-cell">優先受罰，最後返還</div>
           </div>
         </div>
       </div>
       <div className="table-row w-100">
         <div className="row g-0">
           <div className="col-4 col-md-2 col-lg-4 col-xl-2 table-cell th">保证金比例</div>
-          <div className="col-8 col-md-10 col-lg-8 col-xl-10 table-cell">按质押数额等比例配比保证金，始终保持保证金占比{opsRatio}%</div>
+          <div className="col-8 col-md-10 col-lg-8 col-xl-10 table-cell">
+            以質押金額等比例配比保證金，始終保持保證金佔比{opsRatio}%
+          </div>
         </div>
       </div>
     </>

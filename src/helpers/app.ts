@@ -2,11 +2,11 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { createRef } from 'react';
 import { ethers, BigNumber } from 'ethers';
+import { isAddress } from 'ethers/lib/utils';
 
 import * as U from '@/utils/utils';
 import { RPC_URL } from '@/constants';
 import { toFixed, toNumber } from '@/utils/format';
-import { isAddress } from 'ethers/lib/utils';
 
 export const mountPortal = createRef<(node: React.ReactNode) => void>();
 export const unmountPortal = createRef<() => void>();
@@ -51,7 +51,9 @@ export function withGas<R = any, P extends unknown[] = any>(service: (gas: strin
   };
 }
 
-export function withTx<P extends unknown[] = any>(service: (...args: P) => Promise<ethers.providers.TransactionResponse | undefined>) {
+export function withTx<P extends unknown[] = any>(
+  service: (...args: P) => Promise<ethers.providers.TransactionResponse | undefined>,
+) {
   return async (...args: P) => {
     const tx = await service(...args);
 
@@ -63,7 +65,7 @@ export function withTx<P extends unknown[] = any>(service: (...args: P) => Promi
     console.log(res);
 
     if (res && res.status !== 1) {
-      throw new Error('交易失败');
+      throw new Error('交易失敗');
     }
 
     return res;
@@ -83,7 +85,12 @@ export function genRaiseID(minerId: number | string) {
  * @param ratio 保证金配比
  * @param precision 精度
  */
-export function calcEachEarn(priority: number | string = 70, spRate: number | string = 5, ratio: number | string = 5, precision: number = 2) {
+export function calcEachEarn(
+  priority: number | string = 70,
+  spRate: number | string = 5,
+  ratio: number | string = 5,
+  precision: number = 2,
+) {
   const _priority = Number.isNaN(+priority) ? 0 : +priority;
   const _spRate = Number.isNaN(+spRate) ? 0 : +spRate;
   const _ratio = Number.isNaN(+ratio) ? 0 : +ratio;
@@ -175,7 +182,11 @@ export function transformModel(data: API.Base) {
  * @param data 表单数据
  */
 export function transformRaiseInfo(data: API.Plan): RaiseInfo {
-  const { investRate, opsRate, spRate, raiserRate, ffiRate } = calcEachEarn(data.raiser_coin_share, data.op_server_share, data.ops_security_fund_rate);
+  const { investRate, opsRate, spRate, raiserRate, ffiRate } = calcEachEarn(
+    data.raiser_coin_share,
+    data.op_server_share,
+    data.ops_security_fund_rate,
+  );
 
   // 节点计划信息
   return {

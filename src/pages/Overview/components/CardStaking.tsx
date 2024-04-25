@@ -1,4 +1,5 @@
 import { Form, Input } from 'antd';
+import { useModel } from '@umijs/max';
 import { useEffect, useMemo } from 'react';
 
 import Dialog from '@/components/Dialog';
@@ -7,26 +8,26 @@ import useAccount from '@/hooks/useAccount';
 import { integer } from '@/utils/validators';
 import { formatAmount } from '@/utils/format';
 import { parseWhitelist } from '@/helpers/app';
-import useRaiseBase from '@/hooks/useRaiseBase';
-import useRaiseState from '@/hooks/useRaiseState';
+import useLoanAsset from '@/hooks/useLoanAsset';
 import { isBlock, isTargeted } from '@/helpers/raise';
 import { accSub, isEqual, sleep } from '@/utils/utils';
-import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const limit = 5_000_000;
 
-const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const CardStaking: React.FC = () => {
   const [form] = Form.useForm();
   const { address } = useAccount();
-  const { actual, target } = useRaiseBase(data);
-  const { isDelayed, isRaising, isSuccess, isSealing } = useRaiseState(data);
-  const { amount, staking, stakeAction, refetch } = useDepositInvestor(data);
+  const { assets, base, plan, state } = useModel('Overview.overview');
+  const { actual, target } = base;
+  const { investorAction } = assets;
+  const { total } = useLoanAsset(plan?.raising_id);
+  const { isDelayed, isRaising, isSuccess, isSealing } = state;
 
   const max = useMemo(() => Math.min(Math.max(accSub(target, actual), 0), limit), [actual, target]);
-  const whitelist = useMemo(() => data && parseWhitelist(data?.raise_white_list), [data?.raise_white_list]);
+  const whitelist = useMemo(() => plan && parseWhitelist(plan?.raise_white_list), [plan?.raise_white_list]);
   const investor = useMemo(() => whitelist?.find((i) => isEqual(i.address, address)), [address, whitelist]);
 
-  const isBlocked = useMemo(() => data && isBlock(data), [data]);
+  const isBlocked = useMemo(() => plan && isBlock(plan), [plan]);
   const whiteItem = useMemo(() => whitelist?.find((i) => isEqual(i.address, address)), [address]);
   const isReadonly = useMemo(() => !!(isBlocked && whiteItem && whiteItem.limit), [isBlocked, whiteItem]);
 
@@ -35,11 +36,11 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     if (value) {
       if (+value <= 0) {
-        return Promise.reject(`必须大于 0`);
+        return Promise.reject(`必須大於 0`);
       }
 
       if (max && +value > max) {
-        return Promise.reject(`不能大于 ${formatAmount(max)} FIL`);
+        return Promise.reject(`不能大於 ${formatAmount(max)} FIL`);
       }
     }
   };
@@ -53,8 +54,8 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     if (limit > 0 && val > limit) {
       Dialog.error({
-        title: '质押超过限额',
-        content: `当前登录钱包地址最高可质押 ${formatAmount(limit)} FIL`,
+        title: '質押超過限額',
+        content: `目前登入錢包地址最高可質押 ${formatAmount(limit)} FIL`,
         confirmText: '知道了',
       });
 
@@ -65,13 +66,13 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   };
 
   const handleStake = async ({ amount }: { amount: string }) => {
-    if (isTargeted(data) && !validateAmount(amount)) return;
+    if (isTargeted(plan) && !validateAmount(amount)) return;
 
-    await stakeAction(amount);
+    await investorAction.stakeAction(amount);
 
     await sleep(1_000);
 
-    refetch();
+    investorAction.refetch();
 
     form.resetFields();
   };
@@ -87,38 +88,43 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   if (isRaising || isSealing || isDelayed) {
     return (
       <>
-        <div className="card section-card">
+        <div className="card section-card sticky-card">
           <div className="card-header d-flex flex-wrap align-items-center">
-            <h4 className="card-title mb-0 me-auto pe-2">我的质押</h4>
+            <h4 className="card-title mb-0 me-auto pe-2">我的質押</h4>
             <p className="mb-0">
-              <span className="fs-5 fw-600">{formatAmount(amount)}</span>
+              <span className="fs-5 fw-600">{formatAmount(total)}</span>
               <span className="text-neutral ms-1">FIL</span>
             </p>
           </div>
           <div className="card-body">
-            {isTargeted(data) && !investor ? (
+            {isTargeted(plan) && !investor ? (
               <>
                 <p className="mb-3">
                   <SpinBtn className="btn btn-light btn-lg w-100" disabled>
-                    质押
+                    質押
                   </SpinBtn>
                 </p>
 
-                <p className="mb-0 text-gray">这是一个 “定向计划”，您当前登录的钱包地址不能参与，请更换登录钱包，或咨询计划的主办人。</p>
+                <p className="mb-0 text-gray">
+                  這是一個 “定向計劃”，您目前登入的錢包地址不能參與，請更換登入錢包，或諮詢計劃的主辦人。
+                </p>
               </>
             ) : isSuccess && (isDelayed || isSealing) ? (
               <SpinBtn className="btn btn-light btn-lg w-100" disabled>
-                {isDelayed || isSealing ? '正在封装' : '准备封装'}
+                {isDelayed || isSealing ? '正在封裝' : '準備封裝'}
               </SpinBtn>
             ) : (
               <Form className="ffi-form" form={form} onFinish={handleStake}>
-                <Form.Item name="amount" rules={[{ required: true, message: '请输入数量' }, { validator: amountValidator }]}>
+                <Form.Item
+                  name="amount"
+                  rules={[{ required: true, message: '請輸入數量' }, { validator: amountValidator }]}
+                >
                   <Input
                     type="number"
                     className="decimal lh-1 fw-500"
                     min={0}
                     step={0.01}
-                    placeholder="输入数量"
+                    placeholder="輸入數量"
                     readOnly={isReadonly}
                     max={isReadonly ? undefined : max}
                     suffix={<span className="fs-6 fw-normal text-gray-dark align-self-end">FIL</span>}
@@ -126,8 +132,8 @@ const CardStaking: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                 </Form.Item>
 
                 <p className="mb-0">
-                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={staking}>
-                    质押
+                  <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" loading={investorAction.staking}>
+                    質押
                   </SpinBtn>
                 </p>
               </Form>

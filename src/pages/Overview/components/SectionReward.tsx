@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
+import { useModel } from '@umijs/max';
 import { Pie, PieConfig } from '@ant-design/plots';
 
 import { isMountPlan } from '@/helpers/mount';
-import useRaiseRate from '@/hooks/useRaiseRate';
-import useRaiseRole from '@/hooks/useRaiseRole';
-import useDepositInvestor from '@/hooks/useDepositInvestor';
 
 const config: PieConfig = {
   data: [],
@@ -36,25 +34,25 @@ const config: PieConfig = {
   },
 };
 
-const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isInvestor } = useDepositInvestor(data);
-  const { isRaiser, isServicer } = useRaiseRole(data);
-  const { priorityRate, superRate, servicerRate, ffiRate } = useRaiseRate(data);
+const SectionReward: React.FC = () => {
+  const { assets, plan, rate } = useModel('Overview.overview');
+  const { isInvestor, isRaiser, isServicer } = assets;
+  const { priorityRate, superRate, servicerRate, ffiRate } = rate;
 
   const roles = useMemo(() => {
     return [
-      { role: isRaiser, color: '#7FC4FD', name: '主办人' },
-      { role: isServicer, color: '#9FD3FD', name: '技术服务商' },
-      { role: isInvestor, color: '#2699FB', name: '建设者' },
+      { role: isRaiser, color: '#7FC4FD', name: '主辦人' },
+      { role: isServicer, color: '#9FD3FD', name: '技術服務商' },
+      { role: isInvestor, color: '#2699FB', name: '建設者' },
     ].filter((i) => i.role);
   }, [isRaiser, isServicer, isInvestor]);
-  const isMount = useMemo(() => isMountPlan(data), [data]);
+  const isMount = useMemo(() => isMountPlan(plan), [plan]);
   const pieData = useMemo(
     () => [
-      { name: '建设者权益', value: priorityRate },
-      { name: '主办人权益', value: superRate },
-      { name: '技术运维服务费', value: servicerRate },
-      { name: 'FilFi协议费用', value: ffiRate },
+      { name: '建設者權益', value: priorityRate },
+      { name: '主辦人權益', value: superRate },
+      { name: '技術運維服務費', value: servicerRate },
+      { name: 'FilFi協議費用', value: ffiRate },
     ],
     [priorityRate, superRate, servicerRate, ffiRate],
   );
@@ -72,7 +70,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-6 col-md-12 col-lg-6 col-xxl-12">
               <div className="reward-item mb-3" style={{ '--dot-color': '#2699FB' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">建设者</p>
+                <p className="reward-label">建設者</p>
                 <p className="reward-text">
                   <span className="text-decimal">{priorityRate}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -82,7 +80,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-6 col-md-4 col-lg-6 col-xxl-4">
               <div className="reward-item mb-3" style={{ '--dot-color': '#7FC4FD' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">主办人</p>
+                <p className="reward-label">主辦人</p>
                 <p className="reward-text">
                   <span className="text-decimal">{superRate}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -92,7 +90,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-6 col-md-4 col-lg-6 col-xxl-4">
               <div className="reward-item mb-3" style={{ '--dot-color': '#9FD3FD' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">技术运维服务费</p>
+                <p className="reward-label">技術運維服務費</p>
                 <p className="reward-text">
                   <span className="text-decimal">{servicerRate}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -102,7 +100,7 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col-6 col-md-4 col-lg-6 col-xxl-4">
               <div className="reward-item mb-3" style={{ '--dot-color': '#BCE0FD' } as any}>
                 <span className="reward-dot"></span>
-                <p className="reward-label">FilFi协议费用</p>
+                <p className="reward-label">FilFi協議費用</p>
                 <p className="reward-text">
                   <span className="text-decimal">{ffiRate}</span>
                   <span className="ms-2 text-neutral">%</span>
@@ -116,28 +114,28 @@ const SectionReward: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       <div className="row row-cols-1 row-cols-md-2 row-cols-lg-1 row-cols-xl-2 g-0">
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">建设者</div>
-            <div className="col-8 table-cell">获得算力的{priorityRate}%</div>
+            <div className="col-4 table-cell th">建設者</div>
+            <div className="col-8 table-cell">獲得算力的{priorityRate}%</div>
           </div>
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">分配时间</div>
-            <div className="col-8 table-cell">实时分账随时提取</div>
+            <div className="col-4 table-cell th">分配時間</div>
+            <div className="col-8 table-cell">實時分帳隨時提領</div>
           </div>
         </div>
         {isMount ? (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">质押</div>
-              <div className="col-8 table-cell">100%建设者持有</div>
+              <div className="col-4 table-cell th">質押</div>
+              <div className="col-8 table-cell">100%建設者持有</div>
             </div>
           </div>
         ) : (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">封装Gas费</div>
-              <div className="col-8 table-cell">由主办人承担</div>
+              <div className="col-4 table-cell th">封裝Gas費</div>
+              <div className="col-8 table-cell">由主辦人承擔</div>
             </div>
           </div>
         )}

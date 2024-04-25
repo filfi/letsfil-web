@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useModel } from '@umijs/max';
 
 import { SCAN_URL } from '@/constants';
 import Dialog from '@/components/Dialog';
@@ -6,25 +7,26 @@ import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
 import { toastify } from '@/utils/hackify';
 import { isMountPlan } from '@/helpers/mount';
-import useRaiseBase from '@/hooks/useRaiseBase';
-import useRaiseRole from '@/hooks/useRaiseRole';
 import useMountState from '@/hooks/useMountState';
-import useRaiseState from '@/hooks/useRaiseState';
 import useRaiseActions from '@/hooks/useRaiseActions';
 import { ReactComponent as IconEdit } from '@/assets/icons/edit-05.svg';
 import { ReactComponent as IconTrash } from '@/assets/icons/trash-04.svg';
 import { ReactComponent as IconShare4 } from '@/assets/icons/share-04.svg';
 import { ReactComponent as IconShare6 } from '@/assets/icons/share-06.svg';
 
-const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const actions = useRaiseActions(data);
-  const { isSuper } = useRaiseRole(data);
-  const { actual, minTarget } = useRaiseBase(data);
-  const { isActive, isInactive } = useMountState(data);
-  const { isPending, isStarted, isWaiting, isRaising } = useRaiseState(data);
+const RaiseActions: React.FC = () => {
+  const { base, plan, role, state } = useModel('Overview.overview');
 
-  const isMount = useMemo(() => isMountPlan(data), [data]);
-  const name = useMemo(() => (isMount ? '分配计划' : '节点计划'), [isMount]);
+  const actions = useRaiseActions(plan);
+  const { isActive, isInactive } = useMountState(plan);
+
+  const { isSuper } = role;
+  const { actual, minTarget } = base;
+  const { isPending, isStarted, isWaiting, isRaising } = state;
+
+  const isMount = useMemo(() => isMountPlan(plan), [plan]);
+  const isSafe = useMemo(() => actual >= minTarget, [actual, minTarget]);
+  const name = useMemo(() => (isMount ? '分配計劃' : '節點計劃'), [isMount]);
 
   const handleEdit = async () => {
     await toastify(actions.edit)();
@@ -33,8 +35,8 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const handleDelete = () => {
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: `删除${name}`,
-      summary: `未签名的${name}可以永久删除。`,
+      title: `刪除${name}`,
+      summary: `未簽名的${name}可以永久刪除。`,
       confirmLoading: actions.removing,
       onConfirm: async () => {
         hide();
@@ -46,34 +48,32 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   const closeRaise = () => {
     if (isStarted) {
-      const isSafe = actual >= minTarget;
-
       const hide = Dialog.confirm({
         icon: 'error',
-        title: isSafe ? '提前关闭节点计划' : '关闭节点计划',
+        title: isSafe ? '提前關閉節點計劃' : '關閉節點計劃',
         summary: isSafe
-          ? '达到最低目标，即可正常结束节点计划。这也意味着节点提前进入封装。扇区封装通常是一项需要排期的工作，注意以下提示'
-          : '节点计划已经部署在链上，关闭已经启动的节点计划被视为违约。',
+          ? '達到最低目標，即可正常結束節點計畫。這也意味著節點提前進入封裝。扇區封裝通常是一項需要排期的工作，注意以下提示'
+          : '節點計劃已經部署在鏈上，關閉已經啟動的節點計劃被視為違約。',
         content: isSafe ? (
           <div className="text-gray">
             <ul>
-              <li>提前沟通技术服务商，与封装排期计划保持同步</li>
-              <li>检查{name}承诺的封装时间，封装延期将产生罚金</li>
+              <li>提前溝通技術服務商，與封裝排期計畫保持同步</li>
+              <li>檢查{name}承諾的封裝時間，封裝延期將產生罰款</li>
             </ul>
           </div>
         ) : (
           <div className="text-gray">
             <ul>
-              <li>需要向建设者支付投资额的利息</li>
-              <li>需要向技术服务商支付保证金利息</li>
+              <li>需要向建造者支付投資額的利息</li>
+              <li>需要向技術服務商支付保證金利息</li>
             </ul>
             <p>
-              <span>智能合约按照规则会产生罚金，罚金从主办人保证金中扣除。 </span>
-              <a href="#">如何计算罚金？</a>
+              <span>智能合約依照規則會產生罰金，罰金則從主辦人保證金中扣除。 </span>
+              <a href="#">如何計算罰金？</a>
             </p>
           </div>
         ),
-        confirmText: isSafe ? '提前关闭计划' : '关闭并支付罚金',
+        confirmText: isSafe ? '提前關閉計劃' : '關閉並支付罰金',
         confirmBtnVariant: 'danger',
         confirmLoading: actions.closing,
         onConfirm: async () => {
@@ -87,9 +87,9 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     const hide = Dialog.confirm({
       icon: 'error',
-      title: '关闭节点计划',
-      summary: '节点计划已经部署在链上，确定关闭吗？',
-      confirmText: '关闭计划',
+      title: '關閉節點計劃',
+      summary: '節點計劃已經部署在鏈上，確定關閉嗎？',
+      confirmText: '關閉計劃',
       confirmBtnVariant: 'danger',
       confirmLoading: actions.closing,
       onConfirm: async () => {
@@ -103,9 +103,9 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const closeMount = () => {
     const hide = Dialog.confirm({
       icon: 'error',
-      title: '关闭分配计划',
-      summary: '分配计划已经部署在链上，确定关闭吗？',
-      confirmText: '关闭计划',
+      title: '關閉分配計劃',
+      summary: '分配計劃已經部署在鏈上，確定關閉嗎？',
+      confirmText: '關閉計劃',
       confirmBtnVariant: 'danger',
       confirmLoading: actions.closing,
       onConfirm: async () => {
@@ -122,7 +122,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     isMount ? closeMount() : closeRaise();
   };
 
-  if (!data) return null;
+  if (!plan) return null;
 
   return (
     <>
@@ -138,21 +138,31 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </>
       )}
 
-      <ShareBtn className="btn btn-light" text={location.href} toast="链接已复制">
+      <ShareBtn className="btn btn-light" text={location.href} toast="連結已複製">
         <IconShare6 />
         <span className="align-middle ms-1">分享</span>
       </ShareBtn>
 
       {(isMount ? !isInactive : !isPending) && (
-        <a className="btn btn-light text-nowrap" href={`${SCAN_URL}/address/${data.raise_address}`} target="_blank" rel="noreferrer">
+        <a
+          className="btn btn-light text-nowrap"
+          href={`${SCAN_URL}/address/${plan.raise_address}`}
+          target="_blank"
+          rel="noreferrer"
+        >
           <IconShare4 />
-          <span className="align-middle ms-1">智能合约</span>
+          <span className="align-middle ms-1">智能合約</span>
         </a>
       )}
 
       {isSuper && (isMount ? isActive : isWaiting || isRaising) && (
         <div className="dropdown">
-          <button type="button" className="btn btn-outline-light py-0 border-0" data-bs-toggle="dropdown" aria-expanded="false">
+          <button
+            type="button"
+            className="btn btn-outline-light py-0 border-0"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
             <span className="bi bi-three-dots-vertical fs-3"></span>
           </button>
 
@@ -160,7 +170,7 @@ const RaiseActions: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <li>
               <a className="dropdown-item" href="#" onClick={handleClose}>
                 <i className="bi bi-x-circle"></i>
-                <span className="ms-2 fw-500">关闭</span>
+                {isSafe ? <span className="ms-2 fw-500">提前結束質押</span> : <span className="ms-2 fw-500">關閉</span>}
               </a>
             </li>
           </ul>

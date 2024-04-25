@@ -37,13 +37,13 @@ const Footer: React.FC = () => {
                   <dt className="mb-3">FIL Holder</dt>
                   <dd>
                     <p>
-                      <a href="#">
-                        <FormattedMessage id="menu.lending" />
-                      </a>
+                      <Link to="/stake">
+                        <FormattedMessage id="menu.stake" />
+                      </Link>
                     </p>
                     <p>
-                      <Link to="/">
-                        <FormattedMessage id="menu.miner" />
+                      <Link to="/raising">
+                        <FormattedMessage id="menu.raising" />
                       </Link>
                     </p>
                   </dd>
@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
               <div className="col">
                 <dl className="fw-semibold">
                   <dt className="mb-3">
-                    <FormattedMessage id="menu.storage" />
+                    <FormattedMessage id="menu.fspa" />
                   </dt>
                   <dd className="d-flex flex-column">
                     <p>

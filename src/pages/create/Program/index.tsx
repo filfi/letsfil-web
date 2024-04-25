@@ -64,7 +64,7 @@ export default function CreateProgram() {
       const val = amountType === 0 ? +amount : evalMax;
 
       if (val > 5000000) {
-        return Promise.reject(`不超过 5,000,000 FIL`);
+        return Promise.reject(`不超過 5,000,000 FIL`);
       }
     }
   };
@@ -78,7 +78,7 @@ export default function CreateProgram() {
       const val = amountType === 0 ? minAmount : accMul(minAmount, perPledge);
 
       if (val < 5000) {
-        return Promise.reject(`必须大于 5,000 FIL，当前计算为 ${formatAmount(val)} FIL`);
+        return Promise.reject(`必須大於 5,000 FIL，目前計算為 ${formatAmount(val)} FIL`);
       }
     }
   };
@@ -113,17 +113,17 @@ export default function CreateProgram() {
   };
 
   const validateWhitelist = (list: API.Base[]) => {
-    const title = '定向计划';
+    const title = '定向計劃';
 
     if (!Array.isArray(list) || !list.length) {
-      showErr('请指定可参与计划的钱包地址和每个地址的质押限额', title);
+      showErr('請指定可參與計劃的錢包地址和每個地址的質押限額', title);
       return false;
     }
 
     const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
 
     if (new Set(items).size !== items.length) {
-      showErr('可参与计划的钱包地址不能重复', title);
+      showErr('可參與計畫的錢包位址不能重複', title);
       return false;
     }
 
@@ -162,14 +162,16 @@ export default function CreateProgram() {
               <FormRadio
                 grid
                 items={[
-                  { label: '公开计划', desc: '对所有人公开', value: 1 },
-                  { label: '定向计划', desc: '非公开，仅指定钱包地址可参与', value: 2 },
+                  { label: '公開計劃', desc: '對所有人公開', value: 1 },
+                  { label: '定向計劃', desc: '非公开，仅指定钱包地址可参与', value: 2 },
                 ]}
               />
             </Form.Item>
             {isTargeted && (
               <>
-                <p className="text-gray">请在下面指定可参与计划的钱包地址和每个地址的质押限额（未填即无限额）。点击 + 号增加，点击 - 号删除。</p>
+                <p className="text-gray">
+                  請在下方指定可參與計畫的錢包地址和每個地址的質押限額（未填即無限額）。點選 + 號增加，點選 - 號刪除。
+                </p>
 
                 <WhiteList form={form} name="raiseWhiteList" />
               </>
@@ -183,15 +185,15 @@ export default function CreateProgram() {
                   grid
                   items={[
                     {
-                      label: '公开显示',
+                      label: '公開顯示',
                       icon: <span className="bi bi-eye fs-lg"></span>,
-                      desc: '计划将会在公开列表中显示，所有建设者都可查看',
+                      desc: '計劃將會在公開清單中顯示，所有建造者都可查看',
                       value: 1,
                     },
                     {
-                      label: '不公开显示',
+                      label: '不公開顯示',
                       icon: <span className="bi bi-eye-slash fs-lg"></span>,
-                      desc: '计划将不会在公开列表中显示，主办人需要将计划链接发给建设者',
+                      desc: '計劃將不會在公開列表中顯示，主辦人需要將計劃連結發送給建設者',
                       value: 2,
                     },
                   ]}
@@ -201,14 +203,16 @@ export default function CreateProgram() {
           )}
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">质押目标</h4>
-            <p className="text-gray">填写FIL的质押数量，过低目标不利于硬件设备的充分利用。存储算力是指QAP(Quality-Adjusted Power)</p>
+            <h4 className="ffi-label">質押目標</h4>
+            <p className="text-gray">
+              填寫FIL的質押數量，過低目標不利於硬體設備的充分利用。儲存算力是指QAP(Quality-Adjusted Power)
+            </p>
 
             <Form.Item className="mb-2" name="amountType">
               <FormRadio
                 type="button"
                 items={[
-                  { className: 'border-0', label: '按金额', value: 0 },
+                  { className: 'border-0', label: '按金額', value: 0 },
                   { className: 'border-0', label: '按算力(QAP)', value: 1 },
                 ]}
               />
@@ -216,11 +220,17 @@ export default function CreateProgram() {
 
             <div className="row row-cols-1 row-cols-lg-2 mb-4">
               <div className="col">
-                <Form.Item name="amount" rules={[{ required: true, message: '请输入质押目标' }, { validator: amountValidator }]}>
-                  <Input placeholder="质押目标" suffix={<span>{['FIL', 'PiB'][amountType]}</span>} />
+                <Form.Item
+                  name="amount"
+                  rules={[{ required: true, message: '請輸入質押目標' }, { validator: amountValidator }]}
+                >
+                  <Input placeholder="質押目標" suffix={<span>{['FIL', 'PiB'][amountType]}</span>} />
                 </Form.Item>
-                <Form.Item name="minRaiseRate" rules={[{ required: true, message: '请输入最低达成比例' }, { validator: minRateValidator }]}>
-                  <Input type="number" min={0} max={99} placeholder="最低达成比例" suffix="%" />
+                <Form.Item
+                  name="minRaiseRate"
+                  rules={[{ required: true, message: '請輸入最低達成比例' }, { validator: minRateValidator }]}
+                >
+                  <Input type="number" min={0} max={99} placeholder="最低達成比例" suffix="%" />
                 </Form.Item>
                 <Form.Item hidden name="targetPower">
                   <Input />
@@ -234,14 +244,18 @@ export default function CreateProgram() {
                   <div className="card-body">
                     <Skeleton active loading={isLoading} paragraph={{ rows: 1 }}>
                       <div className="d-flex text-neutral mb-3">
-                        <span className="fw-600">{['估算存储算力(QAP)', '需要质押FIL'][amountType]}</span>
-                        <span className="ms-auto">{model?.sectorSize}G扇区</span>
+                        <span className="fw-600">{['估算儲存算力(QAP)', '需要質押FIL'][amountType]}</span>
+                        <span className="ms-auto">{model?.sectorSize}G扇區</span>
                       </div>
 
                       <p className="mb-0 fw-600 lh-base">
-                        <span className="fs-3 text-uppercase">{amountType === 0 ? formatAmount(evalMin, 1) : formatNum(evalMin, '0.0a')}</span>
+                        <span className="fs-3 text-uppercase">
+                          {amountType === 0 ? formatAmount(evalMin, 1) : formatNum(evalMin, '0.0a')}
+                        </span>
                         <span className="mx-3 mx-lg-4 text-gray">~</span>
-                        <span className="fs-3 text-uppercase">{amountType === 0 ? formatAmount(evalMax, 1) : formatNum(evalMax, '0.0a')}</span>
+                        <span className="fs-3 text-uppercase">
+                          {amountType === 0 ? formatAmount(evalMax, 1) : formatNum(evalMax, '0.0a')}
+                        </span>
                         <span className="text-neutral ms-2">{['PiB', 'FIL'][amountType]}</span>
                       </p>
                     </Skeleton>
@@ -252,31 +266,36 @@ export default function CreateProgram() {
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">时间计划</h4>
-            <p className="text-gray">到达开放时间，如果满足所有开放条件计划自动启动，如果不满足开放条件计划自动关闭。</p>
+            <h4 className="ffi-label">時間計劃</h4>
+            <p className="text-gray">
+              到達開放時間，如果滿足所有開放條件計畫自動啟動，如果不符合開放條件計畫自動關閉。
+            </p>
 
             <div className="row row-cols-1 row-cols-lg-2 g-3">
               <div className="col">
-                <p className="mb-1 fw-500">开放时间</p>
+                <p className="mb-1 fw-500">開放時間</p>
 
-                <Form.Item name="beginTime" rules={[{ required: true, message: '请选择开放时间' }]}>
-                  <DateTimePicker disabledDate={disabledDate} timeFormat="HH:mm:ss" placeholder="开放时间" />
+                <Form.Item name="beginTime" rules={[{ required: true, message: '請選擇開放時間' }]}>
+                  <DateTimePicker disabledDate={disabledDate} timeFormat="HH:mm:ss" placeholder="開放時間" />
                 </Form.Item>
               </div>
               <div className="col">
-                <p className="mb-1 fw-500">持续时间</p>
+                <p className="mb-1 fw-500">持續時間</p>
 
-                <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入持续时间' }, { validator: validators.integer }]}>
-                  <Input type="number" placeholder="输入天数" />
+                <Form.Item
+                  name="raiseDays"
+                  rules={[{ required: true, message: '請輸入持續時間' }, { validator: validators.integer }]}
+                >
+                  <Input type="number" placeholder="輸入天數" suffix="天" />
                 </Form.Item>
               </div>
             </div>
           </div>
           {/* <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">质押时间</h4>
-            <p className="text-gray">节点计划保持开放的持续时间。启动时间由主办人决定。</p>
+            <h4 className="ffi-label">質押時間</h4>
+            <p className="text-gray">节点计划保持开放的持續時間。启动时间由主办人决定。</p>
 
-            <Form.Item name="raiseDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
+            <Form.Item name="raiseDays" rules={[{ required: true, message: '請輸入天数' }, { validator: validators.integer }]}>
               <DaysInput
                 options={[
                   { label: '7天', value: 7 },
@@ -290,15 +309,18 @@ export default function CreateProgram() {
           </div> */}
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">封装时间</h4>
+            <h4 className="ffi-label">封裝時間</h4>
             <p className="text-gray">
-              承诺的封装时间，超期会对主办人产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。
+              承諾的封裝時間，超期會對主辦人產生罰金。與您的技術服務商一起選擇合理且有競爭力的時長。
               {/* <a className="text-underline" href="#time-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
             </p>
 
-            <Form.Item name="sealDays" rules={[{ required: true, message: '请输入天数' }, { validator: validators.integer }]}>
+            <Form.Item
+              name="sealDays"
+              rules={[{ required: true, message: '請輸入天数' }, { validator: validators.integer }]}
+            >
               <DaysInput
                 options={[
                   { label: '3天', value: 3 },
@@ -312,9 +334,9 @@ export default function CreateProgram() {
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">主办人保证金</h4>
+            <h4 className="ffi-label">主辦人保證金</h4>
             <p className="text-gray">
-              保障集合质押和封装进度的保证金和FilFi协议手续费，预缴数额分别为质押目标的5%和0.3%。
+              保障集合质押和封装进度的保证金和FilFi协议手续费，预缴数额分别为質押目標的5%和0.3%。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -330,14 +352,16 @@ export default function CreateProgram() {
                   <span className="fs-4 fw-600 mb-0">{formatAmount(deposit)}</span>
                   <span className="ms-1 text-gray">FIL</span>
                 </p>
-                <p className="mb-0 text-gray">计算包括质押期和封装期的可能罚金，以及FilFi协议手续费（参见下一项）</p>
+                <p className="mb-0 text-gray">計算包括質押期和封裝期的可能罰金，以及FilFi協議手續費（請參閱下一項）</p>
               </div>
             </div>
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">协议手续费</h4>
-            <p className="text-gray">创建新的节点计划会产生“FilFi协议手续费”，费用为质押金额*0.3%，质押不成功不产生手续费。</p>
+            <h4 className="ffi-label">協議手續費</h4>
+            <p className="text-gray">
+              創建新的節點計劃會產生“FilFi協議手續費”，費用為質押金額*0.3%，質押不成功不產生手續費。
+            </p>
 
             <Form.Item name="ffiProtocolFeePayMeth">
               <FormRadio
@@ -348,7 +372,7 @@ export default function CreateProgram() {
                     value: 1,
                     icon: <IconFIL />,
                     label: '使用 FIL 支付',
-                    desc: '质押成功后从“主办人保证金”中自动扣减',
+                    desc: '質押成功後從“主辦人保證金”自動扣減',
                   },
                   {
                     value: 2,
@@ -357,9 +381,9 @@ export default function CreateProgram() {
                     label: '使用 FFI 支付',
                     desc: (
                       <span>
-                        即将上线
+                        即將上線
                         <br />
-                        （FFI是FilFi的社区治理代币）
+                        （FFI是FilFi的社群治理代幣）
                       </span>
                     ),
                   },
@@ -386,10 +410,10 @@ export default function CreateProgram() {
         </div>
       </Form>
 
-      {/* <Modal.Alert id="time-modal" title="封装时间" confirmText="我知道了">
+      {/* <Modal.Alert id="time-modal" title="封裝時間" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">承诺的封装时间，超期会对主办人产生罚金。与您的技术服务商一起选择合理且有竞争力的时长。</p>
+            <p className="mb-0">承諾的封裝時間，超期會對主辦人產生罰金。與您的技術服務商一起選擇合理且有競爭力的時長。</p>
           </div>
         </div>
       </Modal.Alert>
@@ -397,7 +421,7 @@ export default function CreateProgram() {
       <Modal.Alert id="deposit-modal" title="主办人保证金" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">根据节点计划自动计算，节点计划成功上链之后放开存入。封装工作完成后，主办人即可取回保证金。</p>
+            <p className="mb-0">根據節點計畫自動計算，節點計畫成功上鍊之後放開存入。封裝工作完成後，主辦人即可取回保證金。</p>
           </div>
         </div>
       </Modal.Alert> */}

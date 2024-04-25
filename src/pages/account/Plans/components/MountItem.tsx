@@ -23,7 +23,7 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
       if (e) {
         Dialog.alert({
           icon: 'error',
-          title: '删除失败',
+          title: '刪除失敗',
           content: e.message,
         });
       }
@@ -31,8 +31,8 @@ function withConfirm<R, P extends unknown[]>(data: API.Plan, handler: (...args: 
 
     const hide = Dialog.confirm({
       icon: 'delete',
-      title: '删除分配计划',
-      summary: '未签名的分配计划可以永久删除。',
+      title: '刪除分配計劃',
+      summary: '未簽名的分配計劃可以永久刪除。',
       onConfirm: () => {
         hide();
 
@@ -50,9 +50,10 @@ const MountItem: React.FC<{
 }> = ({ data, role, onEdit, onDelete }) => {
   const provider = useSProvider(data.service_id);
   const { data: counter } = useInvestorCount(data);
-  const { isInactive, isActive, isWorking } = useMountState(data);
+  const { isInactive, isActive, isWorking, isOver } = useMountState(data);
 
-  const { power, pledge, investor, sponsor, servicer, sponsorPower, investorPower, servicerPower, investorPledge } = useMountAssets(data);
+  const { power, pledge, investor, sponsor, servicer, sponsorPower, investorPower, servicerPower, investorPledge } =
+    useMountAssets(data);
 
   const isSuper = useMemo(() => sponsor && sponsor.role_level === 1, [sponsor]);
   const shareUrl = useMemo(() => `${location.origin}/overview/${data.raising_id}`, [data.raising_id]);
@@ -75,13 +76,13 @@ const MountItem: React.FC<{
         <div className="card-body border-top py-2" style={{ backgroundColor: '#FFFAEB' }}>
           {role === 3 && (
             <div className="d-flex justify-content-between gap-3 py-2">
-              <span className="text-gray-dark">我的质押</span>
+              <span className="text-gray-dark">我的質押</span>
               <span className="fw-500">{F.formatAmount(investorPledge)} FIL</span>
             </div>
           )}
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">我的资产</span>
-            <Link className="fw-500 text-underline" to={`/assets/${data.raising_id}`}>
+            <span className="text-gray-dark">我的資產</span>
+            <Link className="fw-500 text-underline" to={`/assets/overview/${data.raising_id}`}>
               <span>{F.formatByte(power)}</span>
               <span>@</span>
               <span>{data.miner_id}</span>
@@ -96,15 +97,15 @@ const MountItem: React.FC<{
 
   const renderStatus = () => {
     if (isClosed(data)) {
-      return <span className="badge">已关闭</span>;
+      return <span className="badge">已關閉</span>;
     }
 
     if (isInactive) {
       if (role === 1 && sponsor && sponsor.role_level === 1) {
-        return <span className="badge">可编辑</span>;
+        return <span className="badge">可編輯</span>;
       }
 
-      return <span className="badge">待主办人签名</span>;
+      return <span className="badge">待主辦人簽名</span>;
     }
 
     if (isActive) {
@@ -114,7 +115,8 @@ const MountItem: React.FC<{
       const sponsorSigned = Boolean(sponsor?.sign_status);
       const investorSigned = Boolean(investor?.sign_status);
 
-      const status = isSponsor && isInvestor ? sponsorSigned && investorSigned : isSponsor ? sponsorSigned : investorSigned;
+      const status =
+        isSponsor && isInvestor ? sponsorSigned && investorSigned : isSponsor ? sponsorSigned : investorSigned;
 
       const steps = [
         { role: isSuper, signed: isSuper && sponsorSigned },
@@ -125,14 +127,18 @@ const MountItem: React.FC<{
       const step = steps[(role ?? 0) - 1];
 
       if (step && step.signed) {
-        return <span className="badge badge-success">已签名</span>;
+        return <span className="badge badge-success">已簽名</span>;
       }
 
-      return <span className="badge badge-danger">待签名</span>;
+      return <span className="badge badge-danger">待簽名</span>;
+    }
+
+    if (isOver) {
+      return <span className="badge">已到期</span>;
     }
 
     if (isWorking) {
-      return <span className="badge badge-success">运维中</span>;
+      return <span className="badge badge-success">運維中</span>;
     }
 
     return null;
@@ -147,7 +153,7 @@ const MountItem: React.FC<{
           </div>
           <div className="mx-3 clearfix">
             <span className="badge badge-success ms-1 float-end">@{data.miner_id}</span>
-            <h4 className="card-title mb-0 text-truncate">{F.formatSponsor(data.sponsor_company)}挂载的分配计划</h4>
+            <h4 className="card-title mb-0 text-truncate">{F.formatSponsor(data.sponsor_company)}掛載的分配計劃</h4>
           </div>
           <div className="flex-shrink-0 ms-auto">
             <ShareBtn className="btn btn-light border-0 shadow-none" text={shareUrl}>
@@ -157,19 +163,19 @@ const MountItem: React.FC<{
         </div>
         <div className="card-body py-2">
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">节点算力</span>
+            <span className="text-gray-dark">節點算力</span>
             <span className="fw-500">{F.formatBytes(power)}</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">节点质押</span>
+            <span className="text-gray-dark">節點質押</span>
             <span className="fw-500">{F.formatAmount(pledge)} FIL</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">分配给</span>
+            <span className="text-gray-dark">分配給</span>
             <span className="fw-500">{counter?.investor_count ?? '-'} 地址</span>
           </div>
           <div className="d-flex justify-content-between gap-3 py-2">
-            <span className="text-gray-dark">技术服务</span>
+            <span className="text-gray-dark">技術服務</span>
             <span className="fw-500">
               <span className="d-inline-block">
                 <Avatar address={provider?.wallet_address} size={20} src={provider?.logo_url} />
@@ -193,11 +199,17 @@ const MountItem: React.FC<{
                   disabled={editing}
                   onClick={handleDelete}
                 >
-                  删除
+                  刪除
                 </SpinBtn>
 
-                <SpinBtn className="btn btn-light" icon={<span className="bi bi-pencil"></span>} loading={editing} disabled={deleting} onClick={handleEdit}>
-                  编辑
+                <SpinBtn
+                  className="btn btn-light"
+                  icon={<span className="bi bi-pencil"></span>}
+                  loading={editing}
+                  disabled={deleting}
+                  onClick={handleEdit}
+                >
+                  編輯
                 </SpinBtn>
               </>
             )}

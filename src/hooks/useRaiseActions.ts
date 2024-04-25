@@ -67,7 +67,7 @@ export default function useRaiseActions(data?: API.Plan | null) {
     if (e) {
       Dialog.alert({
         icon: 'error',
-        title: '删除失败',
+        title: '刪除失敗',
         content: e.message,
       });
     }

@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { Link } from '@umijs/max';
 import { parseEther } from 'viem';
+import { Link, useModel } from '@umijs/max';
 
 import * as H from '@/helpers/app';
 import MountBack from './MountBack';
 import Modal from '@/components/Modal';
+import CardLending from './CardLending';
 import { isClosed } from '@/helpers/raise';
 import SpinBtn from '@/components/SpinBtn';
 import ShareBtn from '@/components/ShareBtn';
@@ -61,7 +62,7 @@ const SponsorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <div id="card-action" className="card section-card">
+      <div id="card-action" className="card section-card sticky-card">
         <div className="card-body pt-4">
           <h4 className="card-title fw-normal mb-0">我的分配比例</h4>
           <p className="mb-3">
@@ -79,19 +80,19 @@ const SponsorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <>
               <p className="mb-3">
                 <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
-                  主办人已签名
+                  主辦人已簽名
                 </SpinBtn>
               </p>
-              <p>等待其他人完成签名</p>
+              <p>等待其他人完成簽名</p>
             </>
           ) : (
             <>
               <p className="mb-3">
                 <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} onClick={handleSign}>
-                  主办人签名
+                  主辦人簽名
                 </SpinBtn>
               </p>
-              <p>与相关方共识后签名，链上部署后不可修改。</p>
+              <p>與相關方共識後簽名，鏈上部署後不可修改。</p>
             </>
           )}
         </div>
@@ -118,7 +119,7 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <div id="card-action" className="card section-card">
+      <div id="card-action" className="card section-card sticky-card">
         <div className="card-body pt-4">
           <h4 className="card-title fw-normal mb-0">我的分配比例</h4>
           <p className="mb-3">
@@ -136,10 +137,10 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <>
               <p className="mb-3">
                 <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
-                  技术服务商已签名
+                  技術服務商已簽名
                 </SpinBtn>
               </p>
-              <p>等待其他人完成签名</p>
+              <p>等待其他人完成簽名</p>
             </>
           ) : (
             <>
@@ -151,19 +152,26 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
                   data-bs-toggle="modal"
                   data-bs-target="#signer-confirm"
                 >
-                  技术服务商签名
+                  技術服務商簽名
                 </SpinBtn>
               </p>
-              <p>{isSponsorSigned ? '确认计划内容，移交节点Owner权限给FilFi智能合约' : '等待所有主办人完成签名'}</p>
+              <p>{isSponsorSigned ? '確認計畫內容，移交節點Owner權限給FilFi智能合約' : '等待所有主辦人完成簽名'}</p>
             </>
           )}
         </div>
       </div>
 
-      <Modal.Alert id="signer-confirm" footerClassName="border-0" title="移交Owner地址" confirmText="签名" confirmLoading={signing} onConfirm={handleSign}>
+      <Modal.Alert
+        id="signer-confirm"
+        footerClassName="border-0"
+        title="移交Owner地址"
+        confirmText="簽名"
+        confirmLoading={signing}
+        onConfirm={handleSign}
+      >
         <div className="p-3">
           <p className="mb-0 fs-16 fw-500">
-            <span>在安全环境下执行以下命令，将Owner地址修改为智能合约地址。</span>
+            <span>在安全環境下執行以下命令，將Owner位址修改為智慧合約位址。</span>
             {/* <a className="text-underline" href="#">
               如何收回Owner地址？
             </a> */}
@@ -175,13 +183,16 @@ const ServicerCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
               <div className="flex-grow-1 mx-2 fw-600 text-wrap text-success">
                 lotus-miner actor set-owner --really-do-it {toF4Address(data.raise_address)} &lt;ownerAddress&gt;
               </div>
-              <ShareBtn className="btn p-0" text={`lotus-miner actor set-owner --really-do-it ${toF4Address(data.raise_address)} <ownerAddress>`}>
+              <ShareBtn
+                className="btn p-0"
+                text={`lotus-miner actor set-owner --really-do-it ${toF4Address(data.raise_address)} <ownerAddress>`}
+              >
                 <IconCopy />
               </ShareBtn>
             </div>
           </div>
 
-          <p className="mb-0 fs-16 fw-500">执行成功后点击“签名”按钮。</p>
+          <p className="mb-0 fs-16 fw-500">執行成功後點選“簽名”按鈕。</p>
         </div>
       </Modal.Alert>
     </>
@@ -204,7 +215,7 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <div id="card-action" className="card section-card">
+      <div id="card-action" className="card section-card sticky-card">
         <div className="card-body">
           <h4 className="card-title fw-normal mb-0">我的分配比例</h4>
           <p className="mb-3">
@@ -218,7 +229,7 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <span className="ms-1">{formatPower(investorPower)?.[1]}</span>
           </p>
 
-          <h4 className="card-title fw-normal mb-0">我的质押</h4>
+          <h4 className="card-title fw-normal mb-0">我的質押</h4>
           <p className="mb-3">
             <span className="fs-30 fw-bold text-main">{formatAmount(investorPledge)}</span>
             <span className="ms-1">FIL</span>
@@ -228,19 +239,24 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <>
               <p className="mb-3">
                 <SpinBtn className="btn btn-primary btn-lg w-100" disabled>
-                  已签名
+                  已簽名
                 </SpinBtn>
               </p>
-              <p>等待其他人完成签名</p>
+              <p>等待其他人完成簽名</p>
             </>
           ) : (
             <>
               <p className="mb-3">
-                <SpinBtn className="btn btn-primary btn-lg w-100" loading={signing} disabled={!isOtherSigned} onClick={handleSign}>
-                  签名
+                <SpinBtn
+                  className="btn btn-primary btn-lg w-100"
+                  loading={signing}
+                  disabled={!isOtherSigned}
+                  onClick={handleSign}
+                >
+                  簽名
                 </SpinBtn>
               </p>
-              <p>{isOtherSigned ? '确认自己的权益后签名，签名后上链不可更改。' : '等待主办人和技术服务商签名'}</p>
+              <p>{isOtherSigned ? '確認自己的權益後簽名，簽名後上鍊不可更改。' : '等待主辦人和技術服務商簽名'}</p>
             </>
           )}
         </div>
@@ -249,22 +265,24 @@ const InvestorCard: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   );
 };
 
-const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { reward } = useRaiseReward(data);
-  const { runningDays } = useRaiseSeals(data);
-  const { data: counter } = useInvestorCount(data);
-  const { isInactive, isWorking } = useMountState(data);
-  const { sponsor, servicer, investor } = useMountAssets(data);
+const CardMount: React.FC = () => {
+  const { plan } = useModel('Overview.overview');
 
-  if (!data) return null;
+  const { reward } = useRaiseReward(plan);
+  const { runningDays } = useRaiseSeals(plan);
+  const { data: counter } = useInvestorCount(plan);
+  const { isInactive, isWorking } = useMountState(plan);
+  const { sponsor, servicer, investor } = useMountAssets(plan);
 
-  if (isClosed(data)) {
+  if (!plan) return null;
+
+  if (isClosed(plan)) {
     return (
-      <div className="card section-card">
+      <div className="card section-card sticky-card">
         <div className="card-header d-flex align-items-center border-0">
-          <h4 className="card-title fw-bold mb-0 me-2">计划已关闭</h4>
+          <h4 className="card-title fw-bold mb-0 me-2">計劃已關閉</h4>
 
-          <span className="badge badge-danger ms-auto">分配计划已关闭</span>
+          <span className="badge badge-danger ms-auto">分配計劃已關閉</span>
         </div>
       </div>
     );
@@ -274,27 +292,27 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   if (isWorking) {
     return (
       <>
-        <div className="card section-card">
+        <div className="card section-card sticky-card">
           <div className="card-header border-0">
-            <h4 className="card-title fw-bold mb-0">{data?.miner_id}已挂载到FilFi网络</h4>
+            <h4 className="card-title fw-bold mb-0">{plan?.miner_id}已掛載到FilFi網絡</h4>
           </div>
           <div className="card-body py-2">
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>累计激励</span>
+              <span>累計激勵</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{formatAmount(reward)}</span>
                 <span className="ms-1 text-neutral">FIL</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>分配给</span>
+              <span>分配給</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{counter?.investor_count ?? '-'}</span>
                 <span className="ms-1 text-neutral">地址</span>
               </span>
             </p>
             <p className="d-flex align-items-center gap-3 mb-2">
-              <span>已运行</span>
+              <span>已運行</span>
               <span className="ms-auto">
                 <span className="fs-20 fw-600">{runningDays}</span>
                 <span className="ms-1 text-neutral">天</span>
@@ -303,31 +321,33 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
             {!!(sponsor || servicer || investor) && (
               <p className="mt-3">
-                <Link className="btn btn-primary btn-lg w-100" to={`/assets/${data?.raising_id ?? ''}`}>
-                  查看我的算力资产
+                <Link className="btn btn-primary btn-lg w-100" to={`/assets/overview/${plan?.raising_id ?? ''}`}>
+                  查看我的算力資產
                 </Link>
               </p>
             )}
           </div>
         </div>
 
-        <MountBack data={data} />
+        <MountBack />
+
+        <CardLending />
       </>
     );
   }
 
   if (isInactive) {
     if (sponsor && sponsor.role_level === 1) {
-      return <SponsorCard data={data} />;
+      return <SponsorCard data={plan} />;
     }
 
     return (
-      <div className="card section-card">
+      <div className="card section-card sticky-card">
         <div className="card-header border-0">
-          <h4 className="card-title fw-bold mb-0">分配计划还未上链</h4>
+          <h4 className="card-title fw-bold mb-0">分配計劃尚未上鏈</h4>
         </div>
         <div className="card-body">
-          <p className="mb-0">正在共识中，等待主办人签名上链。</p>
+          <p className="mb-0">正在共識中，等待主辦人簽名上鍊。</p>
         </div>
       </div>
     );
@@ -335,11 +355,13 @@ const CardMount: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      {!!sponsor && <SponsorCard data={data} />}
+      {!!sponsor && <SponsorCard data={plan} />}
 
-      {!!servicer && <ServicerCard data={data} />}
+      {!!servicer && <ServicerCard data={plan} />}
 
-      {!!investor && <InvestorCard data={data} />}
+      {!!investor && <InvestorCard data={plan} />}
+
+      <CardLending />
     </>
   );
 };

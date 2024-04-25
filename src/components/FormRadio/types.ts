@@ -1,5 +1,7 @@
 import classNames from 'classnames';
 
+export type ExtraRender = (props: { checked: boolean; disabled: boolean }) => React.ReactNode;
+
 export type RadioItemProps<V = any> = {
   className?: classNames.Argument;
   icon?: React.ReactNode;
@@ -10,10 +12,11 @@ export type RadioItemProps<V = any> = {
   disabled?: boolean;
   label?: React.ReactNode;
   value?: V;
+  extra?: React.ReactNode | ExtraRender;
   onChange?: () => void;
 };
 
-export type RadioButtonProps<V = any> = Omit<RadioItemProps<V>, 'desc'>;
+export type RadioButtonProps<V = any> = Omit<RadioItemProps<V>, 'desc' | 'extra'>;
 
 export type RadioItemOption<V = any> = Omit<RadioItemProps<V>, 'checked' | 'itemKey' | 'onClick'>;
 
@@ -26,6 +29,7 @@ export type RadioProps<V = any> = {
   type?: 'button';
   grid?: boolean;
   checkbox?: boolean;
+  extra?: React.ReactNode | ExtraRender;
   value?: V;
   onChange?: (value: V) => void;
 };

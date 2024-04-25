@@ -20,7 +20,10 @@ export function catchify<R = any, P extends unknown[] = any, E extends Error = E
   };
 }
 
-export function toastify<R = any, P extends unknown[] = any>(service: Service<R, P>, options?: Omit<AlertOptions, 'content'>) {
+export function toastify<R = any, P extends unknown[] = any>(
+  service: Service<R, P>,
+  options?: Omit<AlertOptions, 'content'>,
+) {
   return async (...args: P) => {
     try {
       return await service(...args);
@@ -36,14 +39,16 @@ export function toastify<R = any, P extends unknown[] = any>(service: Service<R,
       if (e instanceof BaseError) {
         msg = e.details || e.shortMessage;
 
-        const revertedError = e.walk((e) => e instanceof ContractFunctionRevertedError) as ContractFunctionRevertedError;
+        const revertedError = e.walk(
+          (e) => e instanceof ContractFunctionRevertedError,
+        ) as ContractFunctionRevertedError;
 
         msg = revertedError?.data?.errorName ?? msg;
       }
 
       Dialog.alert({
         icon: 'error',
-        title: '操作失败',
+        title: '操作失敗',
         summary: e.code,
         content: msg,
         ...options,

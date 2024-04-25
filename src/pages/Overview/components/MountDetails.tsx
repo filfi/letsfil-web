@@ -1,17 +1,28 @@
 import { Table } from 'antd';
 import { useMemo } from 'react';
+import { parseUnits } from 'viem';
 import classNames from 'classnames';
+import { useModel } from '@umijs/max';
 import type { TableColumnsType } from 'antd';
 
-import { parseUnits } from 'viem';
 import { accDiv, accMul } from '@/utils/utils';
 import useMountState from '@/hooks/useMountState';
 import useMountAssets from '@/hooks/useMountAssets';
 import { formatAddr, formatAmount, formatPower, toNumber } from '@/utils/format';
 
-const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isStarted } = useMountState(data);
-  const { sponsors = [], servicers = [], investors = [], superRate, servicerRate, servicerPower, power } = useMountAssets(data);
+const MountDetails: React.FC = () => {
+  const { plan } = useModel('Overview.overview');
+
+  const { isStarted } = useMountState(plan);
+  const {
+    sponsors = [],
+    servicers = [],
+    investors = [],
+    superRate,
+    servicerRate,
+    servicerPower,
+    power,
+  } = useMountAssets(plan);
 
   const items = useMemo(() => {
     if (sponsors.length && servicers.length) {
@@ -20,7 +31,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
     return [
       {
-        address: data?.raiser,
+        address: plan?.raiser,
         role: 1,
         role_level: 1,
         sign_status: isStarted ? 1 : 0,
@@ -28,13 +39,13 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       },
       ...investors,
       {
-        address: data?.service_provider_address,
+        address: plan?.service_provider_address,
         role: 3,
         power_proportion: '0',
-        sign_status: data?.sp_sign_status,
+        sign_status: plan?.sp_sign_status,
       },
     ] as API.Equity[];
-  }, [data, sponsors, servicers, investors, superRate, isStarted]);
+  }, [plan, sponsors, servicers, investors, superRate, isStarted]);
 
   const columns: TableColumnsType<API.Equity> = [
     {
@@ -45,7 +56,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
     {
       title: '角色',
       dataIndex: 'role',
-      render: (r) => <span className="badge badge-primary">{['', '主办人', '建设者', '技术服务商'][r]}</span>,
+      render: (r) => <span className="badge badge-primary">{['', '主辦人', '建設者', '技術服務商'][r]}</span>,
     },
     {
       title: '分配比例',
@@ -73,7 +84,7 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       },
     },
     {
-      title: '持有质押',
+      title: '持有質押',
       dataIndex: 'pledge_amount',
       render: (v, row) => {
         if (row.role === 2) {
@@ -84,9 +95,11 @@ const MountDetails: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       },
     },
     {
-      title: '签名',
+      title: '簽名',
       dataIndex: 'sign_status',
-      render: (s) => <span className={classNames('badge', ['badge-danger', 'badge-success'][s])}>{['待签名', '已签名'][s]}</span>,
+      render: (s) => (
+        <span className={classNames('badge', ['badge-danger', 'badge-success'][s])}>{['待簽名', '已簽名'][s]}</span>
+      ),
     },
   ];
 

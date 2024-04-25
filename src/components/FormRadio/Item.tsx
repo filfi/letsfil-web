@@ -1,9 +1,21 @@
 import classNames from 'classnames';
 
-import { isDef } from '@/utils/utils';
+import { isDef, isFn } from '@/utils/utils';
 import type { RadioItemProps } from './types';
 
-const Item: React.FC<RadioItemProps> = ({ className, checked, disabled, icon, desc, label, onChange }) => {
+const Item: React.FC<RadioItemProps> = ({ className, checked, disabled, extra, icon, desc, label, onChange }) => {
+  const renderExtra = () => {
+    if (isFn(extra)) {
+      return extra({ checked: !!checked, disabled: !!disabled });
+    }
+
+    if (isDef(extra)) {
+      return extra;
+    }
+
+    return null;
+  };
+
   return (
     <a
       className={classNames('list-group-item list-group-item-action ffi-check-item', { disabled, active: checked }, className)}
@@ -19,6 +31,8 @@ const Item: React.FC<RadioItemProps> = ({ className, checked, disabled, icon, de
           <h5 className="ffi-check-item-label">{label}</h5>
           {isDef(desc) && <p className="ffi-check-item-desc">{desc}</p>}
         </div>
+
+        {renderExtra()}
       </div>
     </a>
   );

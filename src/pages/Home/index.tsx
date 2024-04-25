@@ -23,7 +23,11 @@ const partners = [
   { img: require('./imgs/partners/SPex.png'), title: 'SPex', url: 'https://www.spex.website' },
   { img: require('./imgs/partners/vedao.png'), title: 'veDAO', url: 'https://www.vedao.com' },
   { img: require('./imgs/partners/MetaPath.png'), title: 'MetaPath', url: 'https://dapp.path.finance/?source=filfim' },
-  { img: require('./imgs/partners/SWFT-Bridge.png'), title: 'SWFT Bridge', url: 'https://defi.swft.pro?sourceFlag=filfis' },
+  {
+    img: require('./imgs/partners/SWFT-Bridge.png'),
+    title: 'SWFT Bridge',
+    url: 'https://defi.swft.pro?sourceFlag=filfis',
+  },
   { img: require('./imgs/partners/Filedoge.png'), title: 'Filedoge', url: 'https://filedoge.io' },
   { img: require('./imgs/partners/FileDrive.png'), title: 'FileDrive', url: 'https://filedrive.io' },
   { img: require('./imgs/partners/Filutils.png'), title: 'Filutils', url: 'https://www.filutils.com/zh' },
@@ -39,7 +43,7 @@ const partners = [
 export default function Home() {
   const { withConnect } = useAccount();
 
-  useTitle('首页 - FilFi', { restoreOnUnmount: true });
+  useTitle('首頁 - FilFi', { restoreOnUnmount: true });
 
   const handleCreate = withConnect(async () => {
     history.push('/account');
@@ -53,21 +57,22 @@ export default function Home() {
             <div className="col-12 col-lg-6">
               <p className="mb-4">
                 <span className="badge badge-primary ps-1 text-wrap">
-                  <span className="badge badge-primary bg-white lh-sm">FilFi联合节点</span>
-                  <span className="ms-2">创新的“节点计划”让建设者和SP重建信任</span>
+                  <span className="badge badge-primary bg-white lh-sm">FilFi聯合節點</span>
+                  <span className="ms-2">創新的“節點計畫”讓建設者和SP重建信任</span>
                 </span>
               </p>
               <h1 className={classNames('mb-4 fw-600', styles.title)}>
-                Filecoin首个100%<span className="text-danger">智能合约</span>管理的存储节点<span className="text-danger">联合建设</span>方案
+                Filecoin首個100%<span className="text-danger">智能合約</span>管理的儲存節點
+                <span className="text-danger">聯合建設</span>方案
               </h1>
-              <p className={classNames('mb-4 mb-lg-5', styles.summary)}>履约交给智能合约，安心领取节点激励</p>
+              <p className={classNames('mb-4 mb-lg-5', styles.summary)}>履約交給智能合約，安心領取節點激勵</p>
               <div className="d-flex flex-column flex-sm-row px-3 px-lg-0 gap-3 mb-3">
                 <Link className="btn btn-primary btn-lg" to="/raising">
-                  选择节点计划
+                  選擇節點計劃
                 </Link>
                 <button className="btn btn-light btn-lg" type="button" onClick={handleCreate}>
                   <span className="bi bi-plus-lg"></span>
-                  <span className="ms-2">发起节点计划</span>
+                  <span className="ms-2">發起節點計劃</span>
                 </button>
               </div>
             </div>
@@ -81,8 +86,10 @@ export default function Home() {
       <section className={classNames(styles.section, styles.grid)}>
         <div className="container text-center">
           <div className="mb-5">
-            <h3 className={classNames('mb-3 fw-600', styles.title)}>为建设者而生</h3>
-            <p className={classNames('text-gray-dark', styles.summary)}>守望建设者，重构存储节点联合建设规则，安全是一切节点激励之源</p>
+            <h3 className={classNames('mb-3 fw-600', styles.title)}>為建設者而生</h3>
+            <p className={classNames('text-gray-dark', styles.summary)}>
+              守望建設者，重構儲存節點聯合建設規則，安全是一切節點激勵之源
+            </p>
           </div>
 
           <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
@@ -90,8 +97,8 @@ export default function Home() {
               <div className="card h-100">
                 <div className="card-body">
                   <IconThumbs className="card-icon" />
-                  <h4 className="card-title">智能合约接管一切</h4>
-                  <p>质押、封装进度、分配激励，智能合约接管一切，坚定履约，不可变更，没有人为因素。</p>
+                  <h4 className="card-title">智能合約接管一切</h4>
+                  <p>質押、封裝進度、分配激勵，智能合約接手一切，堅定履約，不可變更，沒有人為因素。</p>
                 </div>
               </div>
             </div>
@@ -99,8 +106,8 @@ export default function Home() {
               <div className="card h-100">
                 <div className="card-body">
                   <IconSearch className="card-icon" />
-                  <h4 className="card-title">全流程极致透明</h4>
-                  <p>质押100%进入智能合约，看得见每个FIL的建设明细，查得到每笔激励的分配记录，杜绝一切黑箱操作。</p>
+                  <h4 className="card-title">全流程極致透明</h4>
+                  <p>質押100%進入智能合約，看得見每個FIL的建設明細，查得到每筆激勵的分配記錄，杜絕一切黑箱操作。</p>
                 </div>
               </div>
             </div>
@@ -108,8 +115,8 @@ export default function Home() {
               <div className="card h-100">
                 <div className="card-body">
                   <IconClock className="card-icon" />
-                  <h4 className="card-title">尊重时间价值</h4>
-                  <p>如果质押不成功，质押全额返还，并补偿滞留时间的价值。</p>
+                  <h4 className="card-title">尊重時間價值</h4>
+                  <p>如果質押不成功，質押全額退還，並補償滯留時間的價值。</p>
                 </div>
               </div>
             </div>
@@ -117,8 +124,8 @@ export default function Home() {
               <div className="card h-100">
                 <div className="card-body">
                   <IconSmile className="card-icon" />
-                  <h4 className="card-title">对建设者完全免费</h4>
-                  <p>建设者100%获得节点计划约定的分配比例，FilFi不会向建设者收取费用，也不会分享建设者的激励。</p>
+                  <h4 className="card-title">對建造者完全免費</h4>
+                  <p>建設者100%取得節點計畫約定的分配比例，FilFi不會向建造者收取費用，也不會分享建造者的激勵。</p>
                 </div>
               </div>
             </div>
@@ -127,7 +134,7 @@ export default function Home() {
                 <div className="card-body">
                   <IconDots className="card-icon" />
                   <h4 className="card-title">去中心化治理</h4>
-                  <p>FilFi由DAO社区治理，去中心化的方式共建共享，通过投票机制决定经济模型的关键参数。</p>
+                  <p>FilFi由DAO社群治理，去中心化的方式共建共享，透過投票機制決定經濟模型的關鍵參數。</p>
                 </div>
               </div>
             </div>
@@ -135,8 +142,10 @@ export default function Home() {
               <div className="card h-100">
                 <div className="card-body">
                   <IconShield className="card-icon" />
-                  <h4 className="card-title">严格KYC和保证金制度</h4>
-                  <p>可选技术服务商经过社区严格的KYC，创新的“运维保证金”制度，确保技术服务商与建设者的短期利益和长期利益绑定。</p>
+                  <h4 className="card-title">嚴格KYC和保證金制度</h4>
+                  <p>
+                    可選技術服務商經過社區嚴格的KYC，創新的“運維保證金”制度，確保技術服務商與建設者的短期利益和長期利益綁定。
+                  </p>
                 </div>
               </div>
             </div>
@@ -147,7 +156,7 @@ export default function Home() {
       <section className={classNames(styles.section, styles.sectionTint)}>
         <div className="container">
           <div className="mb-5 text-center">
-            <p className={classNames('text-gray-dark', styles.summary)}>合作伙伴及媒体支持</p>
+            <p className={classNames('text-gray-dark', styles.summary)}>合作夥伴及媒體支持</p>
           </div>
           <div className="mx-n3 text-center">
             <ul className="list-inline">

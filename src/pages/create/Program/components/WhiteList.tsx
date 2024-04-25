@@ -35,7 +35,10 @@ function normalizeList(val?: WhiteItem[]) {
   return [{ address: '', limit: '' }];
 }
 
-const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteListProps> = ({ form, name = 'whitelist' }, ref) => {
+const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteListProps> = (
+  { form, name = 'whitelist' },
+  ref,
+) => {
   const items = Form.useWatch(name, form);
   const [model, setModel] = useModel('stepform');
 
@@ -102,8 +105,11 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
       {list.map((item, idx) => (
         <Row key={item.key} gutter={16}>
           <Col flex={1}>
-            <Form.Item name={[name, idx, 'address']} rules={[{ required: true, message: '请输入钱包地址' }, { validator: V.combineAddr }]}>
-              <Input placeholder="输入钱包地址" />
+            <Form.Item
+              name={[name, idx, 'address']}
+              rules={[{ required: true, message: '請輸入錢包地址' }, { validator: V.combineAddr }]}
+            >
+              <Input placeholder="輸入錢包地址" />
             </Form.Item>
           </Col>
           <Col span={24} sm={18} lg={5}>
@@ -111,11 +117,11 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
               name={[name, idx, 'limit']}
               rules={[
                 {
-                  validator: V.Queue.create().add(V.number).add(V.createGtValidator(0, '必须大于0')).build(),
+                  validator: V.Queue.create().add(V.number).add(V.createGtValidator(0, '必須大於0')).build(),
                 },
               ]}
             >
-              <Input type="number" placeholder="限额" suffix="FIL" />
+              <Input type="number" placeholder="限額" suffix="FIL" />
             </Form.Item>
           </Col>
           <Col>
@@ -123,7 +129,12 @@ const WhiteListRender: React.ForwardRefRenderFunction<WhiteListActions, WhiteLis
               <Button size="large" style={{ height: 42 }} onClick={() => handleInsert(idx + 1)}>
                 <span className="bi bi-plus-lg fw-bold"></span>
               </Button>
-              <Button size="large" disabled={list.length <= 1} style={{ height: 42 }} onClick={() => handleSub(item.key)}>
+              <Button
+                size="large"
+                disabled={list.length <= 1}
+                style={{ height: 42 }}
+                onClick={() => handleSub(item.key)}
+              >
                 <span className="bi bi-dash-lg fw-bold"></span>
               </Button>
             </Space>

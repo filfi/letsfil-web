@@ -70,8 +70,8 @@ const ClientModalRender: React.ForwardRefRenderFunction<ModalAttrs, ClientModalP
     <Modal.Alert
       ref={modal}
       icon={<Logo />}
-      title="连接钱包"
-      confirmText="连接"
+      title="連接錢包"
+      confirmText="連接"
       bodyClassName="p-4"
       className={styles.modal}
       confirmLoading={loading}

@@ -5,12 +5,11 @@ import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import * as M from '@/helpers/mount';
 import * as R from '@/helpers/raise';
+import { sleep } from '@/utils/utils';
 import useAccount from './useAccount';
 import useContract from './useContract';
-import useRaiseBase from './useRaiseBase';
 import { withNull } from '@/utils/hackify';
 import useProcessify from './useProcessify';
-import { accDiv, sleep } from '@/utils/utils';
 
 /**
  * 建设者的投资信息
@@ -21,8 +20,6 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   const client = useQueryClient();
   const { address, withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
-
-  const { actual } = useRaiseBase(data);
 
   const getBackAssets = async () => {
     if (!address || !data) return;
@@ -61,10 +58,10 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   const backAmount = useMemo(() => backAsset.data?.[0] ?? 0, [backAsset.data]); // 退回金额
   const backInterest = useMemo(() => backAsset.data?.[1] ?? 0, [backAsset.data]); // 退回利息
 
-  const isInvestor = useMemo(() => record > 0, [record]);
-  const ratio = useMemo(() => (actual > 0 ? accDiv(record, actual) : 0), [record, actual]); // 投资占比
-
-  const isLoading = useMemo(() => investorInfo.isLoading || backAsset.isLoading, [investorInfo.isLoading, backAsset.isLoading]);
+  const isLoading = useMemo(
+    () => investorInfo.isLoading || backAsset.isLoading,
+    [investorInfo.isLoading, backAsset.isLoading],
+  );
 
   const refetch = async () => {
     return await investorInfo.refetch();
@@ -106,13 +103,11 @@ export default function useDepositInvestor(data?: API.Plan | null) {
   );
 
   return {
-    ratio,
     amount,
     record,
     withdraw,
     backAmount,
     backInterest,
-    isInvestor,
     staking,
     unstaking,
     isLoading,

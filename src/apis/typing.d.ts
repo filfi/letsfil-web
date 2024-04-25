@@ -48,6 +48,8 @@ declare namespace API {
     ffi_protocol_fee: string;
     ffi_protocol_fee_pay_meth: number;
     fil_per_tera_day: string;
+    has_direct_pledge: number;
+    has_leverage_pledge: number;
     his_blance: string;
     his_initial_pledge: string;
     his_power: string;
@@ -132,7 +134,7 @@ declare namespace API {
     ID: number;
     UpdatedAt: string;
     asset_pack_end_epoch: number;
-    asset_pack_id: number;
+    asset_pack_id: string;
     asset_pack_name: string;
     asset_pack_start_epoch: number;
     asset_pack_status: number;
@@ -148,6 +150,11 @@ declare namespace API {
     total_pledge_amount: string;
     total_power: string;
     total_sector: number;
+    PledgeList: {
+      miner_id: string;
+      pledge_id: string;
+      pledge_name: string;
+    }[];
   };
 
   type ContractData = {

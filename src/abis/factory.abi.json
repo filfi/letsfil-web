@@ -674,6 +674,19 @@
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "centerAddr",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "components": [
@@ -1150,6 +1163,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "loanAddr",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minerToolAddr",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "components": [
@@ -1356,6 +1395,32 @@
   },
   {
     "inputs": [],
+    "name": "processAddr",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "processSecond",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "proxiableUUID",
     "outputs": [
       {
@@ -1391,11 +1456,36 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "addr",
+        "name": "_toolAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_minerToolAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_processAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_processSecond",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_centerAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_loanAddr",
         "type": "address"
       }
     ],
-    "name": "setToolAddress",
+    "name": "setRelativeContracts",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

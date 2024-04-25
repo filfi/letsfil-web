@@ -15,7 +15,7 @@ export function toNumber(amount?: ethers.BigNumberish, unitName: ethers.BigNumbe
 
 export function formatID(id?: number | string) {
   if (id) {
-    return (+id).toString(36);
+    return (+id).toString(36).toUpperCase();
   }
 }
 
@@ -85,7 +85,7 @@ export function formatUnixNow(date: number | string | Date | dayjs.Dayjs) {
 
 export function formatPower(power?: number | string, decimals = 2, mode: BigNumber.RoundingMode = 3) {
   if (typeof power !== 'undefined') {
-    return formatBytes(power, decimals, mode).split(' ');
+    return formatBytes(power, decimals, mode).split(' ') as [string, string];
   }
 }
 

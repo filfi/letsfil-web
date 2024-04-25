@@ -106,7 +106,15 @@ export default function useDepositOps(data?: API.Plan | null) {
   );
 
   const refetch = async () => {
-    await Promise.all([cRes.refetch(), oRes.refetch(), nRes.refetch(), oBack.refetch(), oSealed.refetch(), sRes.refetch(), safeRes.refetch()]);
+    await Promise.all([
+      cRes.refetch(),
+      oRes.refetch(),
+      nRes.refetch(),
+      oBack.refetch(),
+      oSealed.refetch(),
+      sRes.refetch(),
+      safeRes.refetch(),
+    ]);
   };
 
   useUnmount(() => {

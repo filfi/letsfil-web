@@ -19,7 +19,7 @@ export type DaysInputProps = {
 const DaysInput: React.FC<DaysInputProps> = ({ options = [], value, onChange }) => {
   const [isCustom, setIsCustom] = useState(false);
   const selectVal = useMemo(() => (isCustom ? 'custom' : value), [isCustom, value]);
-  const items = useMemo(() => [...options, { label: '自定义', value: 'custom' }], [options]);
+  const items = useMemo(() => [...options, { label: '自訂', value: 'custom' }], [options]);
 
   const handleSelect = (val: any) => {
     const isCustom = val === 'custom';
@@ -47,11 +47,11 @@ const DaysInput: React.FC<DaysInputProps> = ({ options = [], value, onChange }) 
   return (
     <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4">
       <div className="col">
-        <Select options={items} value={selectVal} placeholder="请选择" onSelect={handleSelect} />
+        <Select options={items} value={selectVal} placeholder="請選擇" onSelect={handleSelect} />
       </div>
       {isCustom && (
         <div className="col">
-          <Input type="number" min={0} placeholder="输入天数" suffix="天" value={value} onChange={handleChange} />
+          <Input type="number" min={0} placeholder="輸入天數" suffix="天" value={value} onChange={handleChange} />
         </div>
       )}
     </div>

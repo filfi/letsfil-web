@@ -20,16 +20,18 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
   return (
     <>
       <div className="card h-100">
-        <div className={classNames('card-header py-2', isMountPlan(data) ? 'bg-success-tertiary' : 'bg-primary-tertiary')}>
+        <div
+          className={classNames('card-header py-2', isMountPlan(data) ? 'bg-success-tertiary' : 'bg-primary-tertiary')}
+        >
           <p className="py-1 mb-0 d-flex gap-3 align-items-center">
-            <span className="text-gray-dark">累计激励</span>
+            <span className="text-gray-dark">累計激勵</span>
             <span className="ms-auto">
               <span className="fw-600">{formatAmount(reward)}</span>
               <span className="ms-1 text-gray-dark">FIL</span>
             </span>
           </p>
           <p className="py-1 mb-0 d-flex gap-3 align-items-center">
-            <span className="text-gray-dark">分配给</span>
+            <span className="text-gray-dark">分配給</span>
             <span className="ms-auto">
               <span className="fw-600">{counter?.investor_count ?? '-'}</span>
               <span className="ms-1 text-gray-dark">地址</span>
@@ -42,17 +44,17 @@ const WorkingCard: React.FC<WorkingCardProps> = ({ data }) => {
               <Link className="text-underline" to={`/overview/${data.raising_id}`}>
                 {isMountPlan(data) ? (
                   <span>
-                    {formatSponsor(data.sponsor_company)}挂载的分配计划@{data.miner_id}
+                    {formatSponsor(data.sponsor_company)}掛載的分配計劃@{data.miner_id}
                   </span>
                 ) : (
                   <span>
-                    {formatSponsor(data.sponsor_company)}发起的节点计划@{data.miner_id}
+                    {formatSponsor(data.sponsor_company)}發起的節點計劃@{data.miner_id}
                   </span>
                 )}
               </Link>
             </span>
             <span className="flex-shrink-0">
-              <span className="fw-500">已运行{runningDays}天</span>
+              <span className="fw-500">已運行{runningDays}天</span>
             </span>
           </p>
         </div>

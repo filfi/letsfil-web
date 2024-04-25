@@ -10,7 +10,7 @@ const genName = () => {
   return (~~(Math.random() * 100000)).toString(16);
 };
 
-const FormRadio: RadioType = ({ className, children, checkbox, disabled, grid, items, name, type, value, onChange }) => {
+const FormRadio: RadioType = ({ className, children, checkbox, disabled, extra, grid, items, name, type, value, onChange }) => {
   const _name = useRef(genName()).current;
 
   const handleChange = (value: any) => {
@@ -30,6 +30,7 @@ const FormRadio: RadioType = ({ className, children, checkbox, disabled, grid, i
       <ItemComp
         key={`${nName}-${key}`}
         {...item}
+        extra={extra}
         name={item.name ?? nName}
         itemKey={`${nName}-${key}`}
         checked={value === item.value}

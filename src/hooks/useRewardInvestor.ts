@@ -19,9 +19,9 @@ export default function useRewardInvestor(data?: API.Plan | null) {
   const { address, withConnect } = useAccount();
   const contract = useContract(data?.raise_address);
 
-  const getInvestInfo = async () => {
+  const getBackAssets = async () => {
     if (address && data && !isPending(data)) {
-      return await contract.getInvestorInfo(data.raising_id, address);
+      return await contract.getBackAssets(data.raising_id, address);
     }
   };
   const getInvestorAvailableReward = async () => {
@@ -34,12 +34,17 @@ export default function useRewardInvestor(data?: API.Plan | null) {
       return await contract.getInvestorPendingReward(data.raising_id, address);
     }
   };
+  // const getInvestorWithdrawnReward = async () => {
+  //   if (address && data && !isPending(data)) {
+  //     return await contract.getInvestorWithdrawnReward(data.raising_id, address);
+  //   }
+  // };
 
-  const [iRes, aRes, pRes] = useQueries({
+  const [bRes, aRes, pRes /* , wRes */] = useQueries({
     queries: [
       {
-        queryKey: ['getInvestInfo', address, data?.raising_id],
-        queryFn: withNull(getInvestInfo),
+        queryKey: ['getBackAssets', address, data?.raising_id],
+        queryFn: withNull(getBackAssets),
       },
       {
         queryKey: ['getInvestorAvailableReward', address, data?.raising_id],
@@ -49,23 +54,33 @@ export default function useRewardInvestor(data?: API.Plan | null) {
         queryKey: ['getInvestorPendingReward', address, data?.raising_id],
         queryFn: withNull(getInvestorPendingReward),
       },
+      // {
+      //   queryKey: ['getInvestorWithdrawnReward', address, data?.raising_id],
+      //   queryFn: withNull(getInvestorWithdrawnReward),
+      // },
     ],
   });
 
   const reward = useMemo(() => aRes.data ?? 0, [aRes.data]); // 可提取
-  const record = useMemo(() => iRes.data?.[3] ?? 0, [iRes.data]); // 已提取
+  // const record = useMemo(() => wRes.data ?? 0, [wRes.data]); // 已提取
   const pending = useMemo(() => pRes.data ?? 0, [pRes.data]); // 待释放
+  const backAmount = useMemo(() => bRes.data?.[0] ?? 0, [bRes.data]); // 退回资产
+  const backInterest = useMemo(() => bRes.data?.[1] ?? 0, [bRes.data]); // 退回利息
 
-  const isLoading = useMemo(() => aRes.isLoading || iRes.isLoading || pRes.isLoading, [aRes.isLoading, iRes.isLoading, pRes.isLoading]);
+  const isLoading = useMemo(
+    () => bRes.isLoading || aRes.isLoading || pRes.isLoading /*  || wRes.isLoading */,
+    [bRes.isLoading, aRes.isLoading, pRes.isLoading /* , wRes.isLoading */],
+  );
 
   const refetch = () => {
-    return Promise.all([aRes.refetch(), iRes.refetch(), pRes.refetch()]);
+    return Promise.all([bRes.refetch(), aRes.refetch(), pRes.refetch() /* , wRes.refetch() */]);
   };
 
   useUnmount(() => {
-    client.invalidateQueries({ queryKey: ['getInvestInfo', address, data?.raising_id] });
+    client.invalidateQueries({ queryKey: ['getBackAssets', address, data?.raising_id] });
     client.invalidateQueries({ queryKey: ['getInvestorAvailableReward', address, data?.raising_id] });
     client.invalidateQueries({ queryKey: ['getInvestorPendingReward', address, data?.raising_id] });
+    // client.invalidateQueries({ queryKey: ['getInvestorWithdrawnReward', address, data?.raising_id] });
   });
 
   const [withdrawing, withdrawAction] = useProcessify(
@@ -83,9 +98,11 @@ export default function useRewardInvestor(data?: API.Plan | null) {
   );
 
   return {
-    record,
+    // record,
     reward,
     pending,
+    backAmount,
+    backInterest,
     isLoading,
     withdrawing,
     withdrawAction,

@@ -68,7 +68,7 @@ export default function CreateStorage() {
       const [e, res] = await fetchMiner(value);
 
       if (e) {
-        return Promise.reject((e as any).code === 3000002 ? '节点不存在' : '检测失败');
+        return Promise.reject((e as any).code === 3000002 ? '節點不存在' : '檢測失敗');
       }
 
       if (res) {
@@ -107,7 +107,7 @@ export default function CreateStorage() {
       if (e) {
         Dialog.alert({
           icon: 'error',
-          title: '提交失败',
+          title: '提交失敗',
           content: e.message,
         });
       }
@@ -170,9 +170,9 @@ export default function CreateStorage() {
 
         <div className="ffi-form">
           <div className={classNames('ffi-item border-bottom')}>
-            <h4 className="ffi-label">完善主办人资料</h4>
+            <h4 className="ffi-label">完善主辦人資料</h4>
             <p className="text-gray">
-              主办人的名称和Logo都会显示在节点计划中，使用有助于建设者识别的名称，也可以使用机构名称。名称允许修改，会产生Gas费，修改历史会在链上记录。
+              主辦人的名稱和Logo都會顯示在節點計畫中，使用有助於建構者識別的名稱，也可以使用機構名稱。名稱允許修改，會產生Gas費，修改歷史會在鏈上記錄。
             </p>
 
             <div className="d-flex gap-3">
@@ -184,7 +184,7 @@ export default function CreateStorage() {
               <div className="flex-grow-1">
                 <div className="row">
                   <div className="col-12 col-md-8 col-lg-6">
-                    <Form.Item name="sponsorCompany" help={<span>钱包地址：{formatAddr(address)}</span>}>
+                    <Form.Item name="sponsorCompany" help={<span>錢包地址：{formatAddr(address)}</span>}>
                       <Input maxLength={30} placeholder={address} />
                     </Form.Item>
                   </div>
@@ -194,22 +194,22 @@ export default function CreateStorage() {
           </div>
 
           {/* <div className="ffi-item border-bottom">
-            <h4 className="ffi-label mb-3">节点计划名称</h4>
+            <h4 className="ffi-label mb-3">節點計劃名稱</h4>
 
             <Form.Item
               name="raisingName"
-              rules={[{ required: true, message: '请输入名称' }]}
+              rules={[{ required: true, message: '請輸入名稱' }]}
             >
-              <Input maxLength={64} placeholder="输入名称" />
+              <Input maxLength={64} placeholder="輸入名稱" />
             </Form.Item>
           </div> */}
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">Filecoin存储节点</h4>
+            <h4 className="ffi-label">Filecoin儲存節點</h4>
             <p className="text-gray">
-              质押资金定向封装到指定存储节点，您需要从技术服务商获得节点号。
+              質押資金定向封裝到指定儲存節點，您需要從技術服務商取得節點號。
               {/* <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
-                什么是存储节点号？
+                什麼是儲存節點號？
               </a> */}
             </p>
 
@@ -218,13 +218,13 @@ export default function CreateStorage() {
                 <Form.Item
                   name="minerId"
                   rules={[
-                    { required: true, message: '请输入节点号' },
+                    { required: true, message: '請輸入節點號' },
                     {
                       validator: V.Queue.create().add(V.minerID).add(minerValidator).build(),
                     },
                   ]}
                 >
-                  <Input placeholder="输入存储节点号，如f023456" onPressEnter={handleMiner} />
+                  <Input placeholder="輸入儲存節點號，如f023456" onPressEnter={handleMiner} />
                 </Form.Item>
               </div>
               <div>
@@ -232,9 +232,10 @@ export default function CreateStorage() {
                   className="btn btn-outline-light btn-lg text-nowrap"
                   loading={fetching}
                   icon={<i className="bi bi-arrow-repeat"></i>}
+                  style={{ height: 42 }}
                   onClick={handleMiner}
                 >
-                  检测
+                  檢測
                 </SpinBtn>
               </div>
             </div>
@@ -243,21 +244,21 @@ export default function CreateStorage() {
                 grid
                 disabled
                 items={[
-                  { label: '新建节点', value: 1 },
-                  { label: '扩建节点', value: 2 },
+                  { label: '新建節點', value: 1 },
+                  { label: '擴建節點', value: 2 },
                 ]}
               />
             </Form.Item>
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">Filecoin存储方案</h4>
-            <p className="mb-3 text-gray">选择封装扇区的参数</p>
+            <h4 className="ffi-label">Filecoin儲存方案</h4>
+            <p className="mb-3 text-gray">選擇封裝扇區的參數</p>
 
-            <p className="ffi-label">扇区大小</p>
+            <p className="ffi-label">扇區大小</p>
             <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4">
               <div className="col">
-                <Form.Item name="sectorSize" rules={[{ required: true, message: '请选择扇区大小' }]}>
+                <Form.Item name="sectorSize" rules={[{ required: true, message: '請選擇扇區大小' }]}>
                   <Select
                     options={[
                       { label: '32G', value: 32 },
@@ -268,16 +269,16 @@ export default function CreateStorage() {
               </div>
             </div>
 
-            <p className="ffi-label">质押周期</p>
+            <p className="ffi-label">質押週期</p>
             <Form.Item
               name="sectorPeriod"
               rules={[
-                { required: true, message: '请输入质押周期' },
+                { required: true, message: '請輸入質押週期' },
                 {
                   validator: V.Queue.create()
                     .add(V.integer)
-                    .add(V.createGteValidator(180, '不能少于180天'))
-                    .add(V.createLteValidator(540, '不能多于540天'))
+                    .add(V.createGteValidator(180, '不能少於180天'))
+                    .add(V.createLteValidator(540, '不能多於540天'))
                     .build(),
                 },
               ]}
@@ -294,15 +295,15 @@ export default function CreateStorage() {
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">技术服务商</h4>
+            <h4 className="ffi-label">技術服務商</h4>
             <p className="text-gray">
-              技术服务商提供扇区封装、技术运维、IDC数据中心整体解决方案，是存储节点长期健康运行的最终保障。
+              技术服务商提供扇區封装、技术运维、IDC数据中心整体解决方案，是存储节点长期健康运行的最终保障。
               {/* <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">
-                如何成为技术服务商(SP Foundry)？
+                如何成為技術服務商(SP Foundry)？
               </a> */}
             </p>
 
-            <Form.Item name="serviceId" rules={[{ required: true, message: '请选择技术服务商' }]}>
+            <Form.Item name="serviceId" rules={[{ required: true, message: '請選擇技術服務商' }]}>
               <ProviderSelect options={list} loading={pFetching} onSelect={onServiceSelect} />
             </Form.Item>
             <Form.Item hidden name="serviceProviderAddress">
@@ -315,8 +316,13 @@ export default function CreateStorage() {
 
         <div className="ffi-form">
           <div className="ffi-form-actions">
-            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={fetching} loading={fetching || loading}>
-              {fetching ? '正在检测节点' : '下一步'}
+            <SpinBtn
+              type="submit"
+              className="btn btn-primary btn-lg w-100"
+              disabled={fetching}
+              loading={fetching || loading}
+            >
+              {fetching ? '正在檢測節點' : '下一步'}
             </SpinBtn>
           </div>
         </div>

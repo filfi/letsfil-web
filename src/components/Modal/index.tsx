@@ -22,12 +22,24 @@ import { ReactComponent as IconWarn } from '@/assets/icons/warn.svg';
 
 type DivProps = React.HtmlHTMLAttributes<HTMLDivElement>;
 
-export type IconSet = 'delete' | 'dollor' | 'dollor-warn' | 'edit' | 'error' | 'info' | 'safe' | 'success' | 'tag' | 'transfer' | 'warn';
+export type IconSet =
+  | 'delete'
+  | 'dollor'
+  | 'dollor-warn'
+  | 'edit'
+  | 'error'
+  | 'info'
+  | 'safe'
+  | 'success'
+  | 'tag'
+  | 'transfer'
+  | 'warn';
 
 export type ModalProps = Omit<DivProps, 'title'> & {
   icon?: React.ReactNode | IconSet;
   size?: 'sm' | 'lg' | 'xl';
   fade?: boolean;
+  modal?: boolean;
   closable?: boolean;
   centered?: boolean;
   confirmLoading?: boolean;
@@ -66,13 +78,20 @@ export type ModalStatic = React.ForwardRefExoticComponent<ModalProps & React.Ref
   confirm: (msgOrOpts: string | ConfirmOptions) => ModalAttrs['hide'];
 };
 
-function getModal(el: HTMLElement | React.RefObject<HTMLElement>) {
+function getModal(el: HTMLElement | React.RefObject<HTMLElement>, isStatic?: boolean) {
   const _el = (el as React.RefObject<HTMLElement>).current ?? (el as HTMLElement);
   if (_el) {
-    let modal = BSModal.getInstance(_el);
+    const options: Partial<BSModal.Options> = isStatic
+      ? {
+          keyboard: false,
+          backdrop: 'static',
+        }
+      : {};
+
+    let modal = BSModal.getOrCreateInstance(_el, options);
 
     if (!modal) {
-      modal = new BSModal(_el);
+      modal = new BSModal(_el, options);
     }
 
     return modal;
@@ -111,6 +130,7 @@ export function renderModalIcon(icon?: IconSet | React.ReactNode) {
 const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
   {
     size,
+    modal,
     title,
     children,
     className,
@@ -146,9 +166,9 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
 
   const { formatMessage } = useIntl();
 
-  const handleHide = () => getModal(el)?.hide();
-  const handleShow = () => getModal(el)?.show();
-  const handleToggle = () => getModal(el)?.toggle();
+  const handleHide = () => getModal(el, modal)?.hide();
+  const handleShow = () => getModal(el, modal)?.show();
+  const handleToggle = () => getModal(el, modal)?.toggle();
 
   const handleCancel = useCallback(() => {
     onCancel?.();
@@ -202,10 +222,20 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
             <div className="modal-icon">{renderModalIcon(icon)}</div>
           </div>
 
-          <div className="flex-grow-1">{isDef(title) && (isStr(title) ? <h1 className={classNames('modal-title', titleClassName)}>{title}</h1> : title)}</div>
+          <div className="flex-grow-1">
+            {isDef(title) &&
+              (isStr(title) ? <h1 className={classNames('modal-title', titleClassName)}>{title}</h1> : title)}
+          </div>
         </div>
 
-        {closable && <button type="button" className="btn-close align-self-start" aria-label="Close" data-bs-dismiss="modal"></button>}
+        {closable && (
+          <button
+            type="button"
+            className="btn-close align-self-start"
+            aria-label="Close"
+            data-bs-dismiss="modal"
+          ></button>
+        )}
       </div>
     );
   };
@@ -223,7 +253,12 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
 
     if (showConfirm) {
       btns.push(
-        <SpinBtn key="confirm" loading={confirmLoading} className="btn btn-lg btn-primary flex-fill" onClick={handleConfirm}>
+        <SpinBtn
+          key="confirm"
+          loading={confirmLoading}
+          className="btn btn-lg btn-primary flex-fill"
+          onClick={handleConfirm}
+        >
           {confirmText ?? formatMessage({ id: 'actions.button.confirm' })}
         </SpinBtn>,
       );
@@ -241,11 +276,20 @@ const ModalRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (
 
     const btns = renderBtns();
 
-    return <div className={classNames('modal-footer', { 'flex-column': btns.length > 2 }, footerClassName)}>{btns}</div>;
+    return (
+      <div className={classNames('modal-footer', { 'flex-column': btns.length > 2 }, footerClassName)}>{btns}</div>
+    );
   };
 
   return (
-    <div ref={el} className={classNames('modal', styles.modal, { fade }, className)} tabIndex={-1} aria-hidden="true" aria-labelledby="modal" {...props}>
+    <div
+      ref={el}
+      className={classNames('modal', styles.modal, { fade }, className)}
+      tabIndex={-1}
+      aria-hidden="true"
+      aria-labelledby="modal"
+      {...props}
+    >
       <div
         className={classNames(
           'modal-dialog',
@@ -288,7 +332,8 @@ const StaticRender: React.ForwardRefRenderFunction<ModalAttrs, ModalProps> = (pr
 };
 
 const AlertRender = (props: AlertProps, ref: React.ForwardedRef<ModalAttrs>) => StaticRender(props, ref);
-const ConfirmRender = (props: ConfirmProps, ref: React.ForwardedRef<ModalAttrs>) => StaticRender({ showCancel: true, ...props }, ref);
+const ConfirmRender = (props: ConfirmProps, ref: React.ForwardedRef<ModalAttrs>) =>
+  StaticRender({ showCancel: true, ...props }, ref);
 
 const Alert = forwardRef<ModalAttrs, AlertProps>(AlertRender);
 const Confirm = forwardRef<ModalAttrs, ConfirmProps>(ConfirmRender);

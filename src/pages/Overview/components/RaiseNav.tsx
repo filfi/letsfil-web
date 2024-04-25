@@ -1,75 +1,57 @@
 import classNames from 'classnames';
+import { useModel } from '@umijs/max';
 
 import { isTargeted } from '@/helpers/raise';
-import useRaiseRole from '@/hooks/useRaiseRole';
-import useRaiseState from '@/hooks/useRaiseState';
 
-const RaiseNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isRaiser } = useRaiseRole(data);
-  const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
+const NavItem: React.FC<React.PropsWithChildren<{ className?: classNames.Argument; href?: string }>> = ({
+  className,
+  href,
+  children,
+}) => {
+  return (
+    <li className={classNames('nav-item', className)}>
+      <a className="nav-link" href={href}>
+        {children}
+      </a>
+    </li>
+  );
+};
+
+const RaiseNav: React.FC = () => {
+  const { plan, role, state } = useModel('Overview.overview');
+  const { isRaiser } = role;
+  const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = state;
 
   return (
     <ul className="nav nav-pills d-inline-flex flex-lg-column mb-2">
-      <li className="nav-item">
-        <a className="nav-link" href="#raising">
-          质押目标
-        </a>
-      </li>
-      {isTargeted(data) && isRaiser && (
-        <li className="nav-item">
-          <a className="nav-link" href="#targeted">
-            定向地址
-          </a>
-        </li>
-      )}
-      {(isSealing || isDelayed || isFinished) && (
-        <li className="nav-item">
-          <a className="nav-link" href="#seals">
-            封装进度
-          </a>
-        </li>
-      )}
-      <li className={classNames('nav-item', { 'order-3': isSealing, 'order-5': isDelayed || isFinished })}>
-        <a className="nav-link" href="#provider">
-          服务商
-        </a>
-      </li>
-      <li className={classNames('nav-item', { 'order-3': isSealing, 'order-5': isDelayed || isFinished || isDestroyed })}>
-        <a className="nav-link" href="#deposit">
-          保证金
-        </a>
-      </li>
-      <li className="nav-item order-2">
-        <a className="nav-link" href="#reward">
-          分配方案
-        </a>
-      </li>
-      <li className="nav-item order-2">
-        <a className="nav-link" href="#pledge">
-          质押的归属
-        </a>
-      </li>
-      <li className="nav-item order-3">
-        <a className="nav-link" href="#sector">
-          建设方案
-        </a>
-      </li>
-      <li className="nav-item order-4">
-        <a className="nav-link" href="#timeline">
-          时间进度
-        </a>
-      </li>
-      <li className="nav-item order-5">
-        <a className="nav-link" href="#contract">
-          智能合约
-        </a>
-      </li>
+      <NavItem href="#raising">質押目標</NavItem>
+      {isTargeted(plan) && isRaiser && <NavItem href="#targeted">定向地址</NavItem>}
+      {(isSealing || isDelayed || isFinished) && <NavItem href="#seals">封裝進度</NavItem>}
+      <NavItem className={{ 'order-3': isSealing, 'order-5': isDelayed || isFinished }} href="#provider">
+        服務商
+      </NavItem>
+      <NavItem className={{ 'order-3': isSealing, 'order-5': isDelayed || isFinished || isDestroyed }} href="#deposit">
+        保證金
+      </NavItem>
+      <NavItem className="order-2" href="#reward">
+        分配方案
+      </NavItem>
+      <NavItem className="order-2" href="#pledge">
+        質押的歸屬
+      </NavItem>
+      <NavItem className="order-3" href="#sector">
+        建設方案
+      </NavItem>
+      <NavItem className="order-4" href="#timeline">
+        時間進度
+      </NavItem>
+      <NavItem className="order-5" href="#contract">
+        智能合約
+      </NavItem>
       {isStarted && (
-        <li className="nav-item order-5">
-          <a className="nav-link" href="#events">
-            事件
-          </a>
-        </li>
+        <NavItem className="order-5" href="#events">
+          事件
+        </NavItem>
       )}
     </ul>
   );

@@ -31,51 +31,51 @@ import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 type Values = ReturnType<typeof H.calcEachEarn>;
 
 const defaultTreeData = {
-  label: '封装算力',
+  label: '封裝算力',
   rate: 100,
-  desc: 'Filecoin激励',
+  desc: 'Filecoin激勵',
   children: [
     {
-      label: '建设者分成',
+      label: '建設者分成',
       active: true,
       rate: 0,
-      desc: '质押方的权益',
+      desc: '質押方的權益',
       // children: [
       //   {
-      //     label: '优先建设者分成',
+      //     label: '优先建設者分成',
       //     rate: 0,
-      //     desc: '优先质押的权益',
+      //     desc: '優先質押的權益',
       //   },
       //   {
-      //     label: '运维保证金分成',
+      //     label: '運維保證金分成',
       //     rate: 0,
       //     locked: true,
-      //     desc: '劣后质押的权益',
+      //     desc: '劣後質押的權益',
       //   },
       // ],
     },
     {
-      label: '服务方分成',
+      label: '服務方分成',
       rate: 0,
-      desc: '服务方的权益',
+      desc: '服務方的權益',
       children: [
         {
-          label: '技术运维服务费',
+          label: '技術運維服務費',
           rate: 0,
           active: true,
           locked: true,
-          desc: '技术服务商的权益',
+          desc: '技術服務商的權益',
         },
         {
-          label: '主办人分成',
+          label: '主辦人分成',
           rate: 0,
-          desc: '节点计划的管理人',
+          desc: '節點計劃的管理人',
         },
         {
-          label: 'FilFi协议分成',
+          label: 'FilFi協議分成',
           rate: 0,
           locked: true,
-          desc: '固定为服务方权益的8%',
+          desc: '固定為服務方權益的8%',
         },
       ],
     },
@@ -117,8 +117,14 @@ export default function CreateBenefit() {
   const treeData = useMemo(() => getTreeData(priority, spRate, pieVal), [priority, spRate, pieVal]);
   const sponsors = useMemo(() => (Array.isArray(_sponsors) ? _sponsors.filter(Boolean) : []), [_sponsors]);
   const raserRate = useMemo(() => H.calcEachEarn(priority, spRate, ratio).raiserRate, [priority, spRate, ratio]);
-  const servicerPowerRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0), [powerRate]);
-  const servicerPledgeRate = useMemo(() => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0), [pledgeRate]);
+  const servicerPowerRate = useMemo(
+    () => Math.max(accSub(100, Number.isNaN(+powerRate) ? 0 : +powerRate), 0),
+    [powerRate],
+  );
+  const servicerPledgeRate = useMemo(
+    () => Math.max(accSub(100, Number.isNaN(+pledgeRate) ? 0 : +pledgeRate), 0),
+    [pledgeRate],
+  );
   const spName = useMemo(() => provider?.full_name || formatAddr(provider?.wallet_address), [provider]);
 
   useEffect(() => {
@@ -143,10 +149,10 @@ export default function CreateBenefit() {
 
       const hide = Dialog.confirm({
         icon: 'error',
-        title: `${action}分配方案会清空已填写详细分配比例`,
-        summary: `建设者和主办人的详细分配比例，依赖“分配方案”中定义的比例。${action}“分配方案”中的任何比例，会自动清空已填写的详细分配比例。`,
-        content: '是否继续？',
-        confirmText: isReset ? '确认重置' : '继续修改',
+        title: `${action}分配方案會清空已填入詳細分配比例`,
+        summary: `建設者和主辦人的詳細分配比例，依賴“分配方案”中定義的比例。${action}“分配方案”中的任何比例，會自動清空已填寫的詳細分配比例。`,
+        content: '是否繼續？',
+        confirmText: isReset ? '確認重置' : '繼續修改',
         confirmBtnVariant: 'danger',
         onConfirm: () => {
           hide();
@@ -192,22 +198,22 @@ export default function CreateBenefit() {
   };
 
   const validateEquity = (list: API.Base[]) => {
-    const title = '主办人详细分配';
+    const title = '主辦人詳細分配';
 
     if (!Array.isArray(list) || !list.length) {
-      showErr('请添加主办人', title);
+      showErr('請新增主辦人', title);
       return false;
     }
 
     const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
 
     if (new Set(items).size !== items.length) {
-      showErr('主办人钱包地址不能重复', title);
+      showErr('主辦人錢包地址不能重複', title);
       return false;
     }
 
     if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(raserRate)) {
-      showErr(`主办人算力分配比例累加要精确等于${raserRate}%`, title);
+      showErr(`主辦人算力分配比例累加要精確等於${raserRate}%`, title);
       return false;
     }
 
@@ -329,9 +335,9 @@ export default function CreateBenefit() {
       >
         <div className="ffi-form">
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">运维保证金</h4>
+            <h4 className="ffi-label">運維保證金</h4>
             <p className="text-gray">
-              主办人要求技术服务商存入保证金，保证金将做为劣后质押，与建设者的质押一起封装到存储节点，优先承担Filecoin网络罚金。保证金占质押的比例不低于5%，提高占比要求，可提高对建设者的吸引力。
+              主辦人要求技術服務商存入保證金，保證金將做為劣後質押，與建造者的質押一起封裝到儲存節點，優先承擔Filecoin網路罰金。保證金佔質押的比例不低於5%，提高佔比要求，可提高對建設者的吸引力。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -346,10 +352,13 @@ export default function CreateBenefit() {
 
             <div className="row row-cols-1 row-cols-md-2 g-3 g-lg-4 mb-4">
               <div className="col">
-                <div className="mb-1 fw-500">劣后质押(运维保证金)</div>
+                <div className="mb-1 fw-500">劣後質押(運維保證金)</div>
                 <Form.Item
                   name="opsSecurityFundRate"
-                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, 100], '最小5%， 最大100%') }]}
+                  rules={[
+                    { required: true, message: '請輸入' },
+                    { validator: createNumRangeValidator([5, 100], '最小5%， 最大100%') },
+                  ]}
                 >
                   <Input
                     className="text-end"
@@ -363,11 +372,11 @@ export default function CreateBenefit() {
                       </div>
                     }
                     suffix="%"
-                    placeholder="请输入"
+                    placeholder="請輸入"
                   />
                 </Form.Item>
 
-                <div className="mb-1 fw-500">优先质押</div>
+                <div className="mb-1 fw-500">優先質押</div>
                 <Form.Item noStyle>
                   <Input
                     className="bg-light text-end"
@@ -376,7 +385,7 @@ export default function CreateBenefit() {
                     prefix={
                       <div>
                         <span className="bi bi-people align-middle"></span>
-                        <span className="ms-2 text-gray-dark">建设者</span>
+                        <span className="ms-2 text-gray-dark">建設者</span>
                       </div>
                     }
                     value={priorityRate}
@@ -390,9 +399,9 @@ export default function CreateBenefit() {
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">节点激励/算力分配方案</h4>
+            <h4 className="ffi-label">節點激勵/算力分配方案</h4>
             <p className="text-gray">
-              新增存储算力获得的节点激励，智能合约严格执行分配方案。算力产生节点激励，在分配方案中两者是等价概念。点击修改按钮调整分配方案
+              新增儲存算力獲得的節點激勵，智慧合約嚴格執行分配方案。算力產生節點激勵，在分配方案中兩者都是等價概念。點選修改按鈕調整分配方案
               {/* <a className="text-underline" href="#build-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -414,11 +423,11 @@ export default function CreateBenefit() {
                   <div className="col small">
                     <p className="text-gray mb-1">
                       <IconLock />
-                      <span className="align-middle ms-2">加锁的权益永久锁定，未来不可交易</span>
+                      <span className="align-middle ms-2">加鎖的權益永久鎖定，未來不可交易</span>
                     </p>
                     <p className="text-gray mb-1">
                       <IconBorder />
-                      <span className="align-middle ms-2">需要主办人填写的比例，其他比例自动计算</span>
+                      <span className="align-middle ms-2">需要主辦人填寫的比例，其他比例自動計算</span>
                     </p>
                   </div>
                   <div className="col">
@@ -441,10 +450,10 @@ export default function CreateBenefit() {
               <div className="border-top my-4" />
 
               <div className="ffi-item">
-                <h4 className="ffi-label">{model.minerId}历史资产的归属</h4>
+                <h4 className="ffi-label">{model.minerId}歷史資產的歸屬</h4>
                 <p className="text-gray">
-                  检测到 {model.minerId}{' '}
-                  是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押100%归属主办人。
+                  檢測到 {model.minerId}{' '}
+                  是已經存在的節點，歷史資產節點激勵不計入此節點計劃，按以下約定獨立分配，技術服務商移交Owner權限時對約定比例進行確認（要求技術服務商的節點激勵分成比例不低於10%）。歷史資產的質押100%歸屬主辦人。
                   {/* <a className="text-underline" href="#assets-modal" data-bs-toggle="modal">
                     了解更多
                   </a> */}
@@ -458,15 +467,15 @@ export default function CreateBenefit() {
                     </div>
                     <div className="col">
                       <p className="mb-0 fw-500">{formatEther(model.hisInitialPledge)} FIL</p>
-                      <p className="mb-0 text-gray-dark">质押</p>
+                      <p className="mb-0 text-gray-dark">質押</p>
                     </div>
                     <div className="col">
                       <p className="mb-0 fw-500">{formatEther(model.hisBlance)} FIL</p>
-                      <p className="mb-0 text-gray-dark">余额（含线性释放）</p>
+                      <p className="mb-0 text-gray-dark">餘額（含線性釋放）</p>
                     </div>
                     <div className="col">
                       <p className="mb-0 fw-500">{model.hisSectorCount} 个</p>
-                      <p className="mb-0 text-gray-dark">扇区数量</p>
+                      <p className="mb-0 text-gray-dark">扇區數量</p>
                     </div>
                   </div>
                 </div>
@@ -475,7 +484,10 @@ export default function CreateBenefit() {
                   <div className="flex-full">
                     <Form.Item
                       name="raiseHisPowerRate"
-                      rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 100], '最小0%，最大100%') }]}
+                      rules={[
+                        { required: true, message: '請輸入' },
+                        { validator: createNumRangeValidator([0, 100], '最小0%，最大100%') },
+                      ]}
                     >
                       <Input
                         className="text-end"
@@ -484,7 +496,7 @@ export default function CreateBenefit() {
                         max={100}
                         prefix={<span className="text-gray-dark">我的算力</span>}
                         suffix="%"
-                        placeholder="请输入"
+                        placeholder="請輸入"
                       />
                     </Form.Item>
                   </div>
@@ -509,7 +521,12 @@ export default function CreateBenefit() {
                 <div className="d-flex flex-column flex-lg-row gap-3 gap-lg-4 ps-4 ps-lg-0 position-relative">
                   <div className="flex-full">
                     <Form.Item noStyle name="raiseHisInitialPledgeRate">
-                      <Input className="bg-light text-end" readOnly prefix={<span className="text-gray-dark">我的质押</span>} suffix="%" />
+                      <Input
+                        className="bg-light text-end"
+                        readOnly
+                        prefix={<span className="text-gray-dark">我的質押</span>}
+                        suffix="%"
+                      />
                     </Form.Item>
                   </div>
                   <div className={classNames('flex-shrink-0 py-2', styles.line)}>
@@ -537,15 +554,22 @@ export default function CreateBenefit() {
 
         <div className="ffi-form">
           <div className="ffi-item">
-            <h4 className="ffi-label">主办人详细分配</h4>
-            <p className="mb-3 text-gray">主办人的权益可再分配给多个地址。点击+号增加地址。第一个地址为第一主办人，不可删减，其分配比例自动计算。</p>
+            <h4 className="ffi-label">主辦人詳細分配</h4>
+            <p className="mb-3 text-gray">
+              主辦人的權益可再分配給多個地址。點擊+號增加地址。第一個地址為第一主辦人，不可刪減，其分配比例自動計算。
+            </p>
 
             <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3">
-              <p className="mb-0 me-sm-auto">将 {raserRate}% 分配给以下地址</p>
+              <p className="mb-0 me-sm-auto">將 {raserRate}% 分配給以下地址</p>
 
-              <button className="btn btn-light btn-lg" type="button" disabled={sponsors.length >= 20} onClick={() => sponsor.current?.add()}>
+              <button
+                className="btn btn-light btn-lg"
+                type="button"
+                disabled={sponsors.length >= 20}
+                onClick={() => sponsor.current?.add()}
+              >
                 <span className="bi bi-plus-lg"></span>
-                <span className="ms-2">添加主办人</span>
+                <span className="ms-2">新增主辦人</span>
               </button>
             </div>
 
@@ -553,7 +577,7 @@ export default function CreateBenefit() {
 
             <p>
               <span className="me-1">共 {sponsors.length} 地址</span>
-              <span className="text-danger">算力分配比例累加要精确等于{raserRate}%</span>
+              <span className="text-danger">算力分配比例累加要精確等於{raserRate}%</span>
             </p>
           </div>
         </div>
@@ -576,30 +600,30 @@ export default function CreateBenefit() {
 
       <AssetsModal ref={modal} data={model} onConfirm={handleSubmit} />
 
-      {/* <Modal.Alert id="build-modal" title="算力/节点激励分配方案" confirmText="我知道了">
+      {/* <Modal.Alert id="build-modal" title="算力/節點激勵分配方案" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">新增的存储空间获得的Filecoin奖励，智能合约严格执行分配方案。点击修改按钮调整分配方案。</p>
+            <p className="mb-0">新增的儲存空間獲得的Filecoin獎勵，智慧合約嚴格執行分配方案。點選修改按鈕調整分配方案。</p>
           </div>
         </div>
       </Modal.Alert>
 
-      <Modal.Alert id="deposit-modal" title="运维保证金" confirmText="我知道了">
+      <Modal.Alert id="deposit-modal" title="運維保證金" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">
-              根据质押目标和分配方案可计算运维保证金。运维保证金保障节点长期可靠运行，做为劣后资金首先承担Filecoin网络罚金。合理比例会增加节点计划的吸引力，以及未来算力交易中的流动性。
+              依質押目標和分配方案可計算出運維保證金。運維保證金保障節點長期可靠運行，做為劣後資金先承擔Filecoin網路罰金。合理比例會增加節點計畫的吸引力，以及未來算力交易的流動性。
             </p>
           </div>
         </div>
       </Modal.Alert>
 
-      <Modal.Alert id="assets-modal" title={`${model?.minerId}历史资产的归属`} confirmText="我知道了">
+      <Modal.Alert id="assets-modal" title={`${model?.minerId}歷史資產的歸屬`} confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
             <p className="mb-0">
-              检测到 f1234567
-              是已经存在的节点，历史资产节点激励不计入此节点计划，按以下约定独立分配，技术服务商移交Owner权限时对约定比例进行确认（要求技术服务商的节点激励分成比例不低于10%）。历史资产的质押100%归属主办人。
+              檢測到 f1234567
+              是已經存在的節點，歷史資產節點激勵不計入此節點計劃，按以下約定獨立分配，技術服務商移交Owner權限時對約定比例進行確認（要求技術服務商的節點激勵分成比例不低於10%）。歷史資產的質押100%歸屬主辦人。
             </p>
           </div>
         </div>

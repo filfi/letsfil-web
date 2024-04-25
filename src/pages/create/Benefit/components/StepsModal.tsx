@@ -43,24 +43,27 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
     <Form form={form} size="large" layout="vertical" initialValues={values} onFinish={handleFinish}>
       <div className="ffi-form">
         <div className="ffi-item px-4 pt-4">
-          <p className="mb-1 fw-500">建设者分成</p>
+          <p className="mb-1 fw-500">建設者分成</p>
           <Form.Item
             className="mb-0"
             name="priority"
-            rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([0, 94.56], '最小0%，最大94.56%') }]}
+            rules={[
+              { required: true, message: '請輸入' },
+              { validator: createNumRangeValidator([0, 94.56], '最小0%，最大94.56%') },
+            ]}
           >
-            <Input type="number" min={0} max={94.56} placeholder="请输入" suffix="%" />
+            <Input type="number" min={0} max={94.56} placeholder="請輸入" suffix="%" />
           </Form.Item>
         </div>
         <div className="ffi-item bg-primary-tertiary p-4 mb-0">
-          <p className="mb-1 fw-500">服务方分成</p>
+          <p className="mb-1 fw-500">服務方分成</p>
           <Form.Item noStyle name="inferior">
             <Input className="bg-light" readOnly suffix="%" />
           </Form.Item>
           {/* <div className="row row-cols-1 row-cols-md-2 g-3">
             <div className="col">
               <div className="ffi-item">
-                <p className="mb-1 fw-500">建设者分成</p>
+                <p className="mb-1 fw-500">建設者分成</p>
                 <Form.Item noStyle name="investRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
@@ -68,7 +71,7 @@ const RaiseForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.Fo
             </div>
             <div className="col">
               <div className="ffi-item">
-                <p className="mb-1 fw-500">运维保证金分成</p>
+                <p className="mb-1 fw-500">運維保證金分成</p>
                 <Form.Item noStyle name="opsRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
@@ -106,7 +109,7 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
     <Form form={form} size="large" layout="vertical" initialValues={values} onFinish={handleFinish}>
       <div className="ffi-form">
         <div className="ffi-item px-4 pt-4">
-          <p className="mb-1 fw-500">服务方分成</p>
+          <p className="mb-1 fw-500">服務方分成</p>
           <Form.Item noStyle name="inferior">
             <Input className="bg-light" readOnly suffix="%" />
           </Form.Item>
@@ -115,19 +118,22 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
           <div className="row row-cols-1 row-cols-md-3 g-3">
             <div className="col">
               <div className="ffi-item mb-0">
-                <p className="mb-1 fw-500">技术运维服务费</p>
+                <p className="mb-1 fw-500">技術運維服務費</p>
                 <Form.Item
                   className="mb-0"
                   name="spRate"
-                  rules={[{ required: true, message: '请输入' }, { validator: createNumRangeValidator([5, opsMax], `最小5%，最大${opsMax}%`) }]}
+                  rules={[
+                    { required: true, message: '請輸入' },
+                    { validator: createNumRangeValidator([5, opsMax], `最小5%，最大${opsMax}%`) },
+                  ]}
                 >
-                  <Input type="number" min={5} max={opsMax} placeholder="请输入" suffix="%" />
+                  <Input type="number" min={5} max={opsMax} placeholder="請輸入" suffix="%" />
                 </Form.Item>
               </div>
             </div>
             <div className="col">
               <div className="ffi-item mb-0">
-                <p className="mb-1 fw-500">主办人分成</p>
+                <p className="mb-1 fw-500">主辦人分成</p>
                 <Form.Item noStyle name="raiserRate">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
@@ -135,8 +141,8 @@ const ServiceForm = forwardRef(({ values, onFinish }: StepFormProps, ref: React.
             </div>
             <div className="col">
               <div className="ffi-ite mb-0">
-                <p className="mb-1 fw-500">FilFi协议分成</p>
-                <Form.Item className="mb-0" name="ffiRate" help="服务方 * 8%">
+                <p className="mb-1 fw-500">FilFi協議分成</p>
+                <Form.Item className="mb-0" name="ffiRate" help="服務方 * 8%">
                   <Input className="bg-light" readOnly suffix="%" />
                 </Form.Item>
               </div>
@@ -212,7 +218,7 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
       <>
         <p className="text-gray">
           <span className="bi bi-info-circle"></span>
-          <span className="ms-2">不可修改字段会自动计算</span>
+          <span className="ms-2">不可修改欄位會自動計算</span>
         </p>
 
         {step === 0 ? (
@@ -237,7 +243,7 @@ const StepsModalRender: React.ForwardRefRenderFunction<ModalAttrs, StepsModalPro
     <Modal
       ref={modal}
       icon="edit"
-      title="如何分配节点激励? "
+      title="如何分配節點激勵? "
       bodyClassName="p-0"
       footerClassName="justify-content-between"
       onHidden={handleHidden}

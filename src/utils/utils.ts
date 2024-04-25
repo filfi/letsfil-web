@@ -18,7 +18,8 @@ export const isStr = (v: unknown): v is string => typeof v === 'string';
 
 export const isDef = <T>(v: T | null | undefined): v is T => v !== null && v !== undefined;
 
-export const isRef = <T>(val: unknown): val is React.MutableRefObject<T> => Object.prototype.hasOwnProperty.call(val, 'current');
+export const isRef = <T>(val: unknown): val is React.MutableRefObject<T> =>
+  Object.prototype.hasOwnProperty.call(val, 'current');
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const isFn = (val: unknown): val is Function => typeof val === 'function';
@@ -162,7 +163,6 @@ export function toF4Address(addr?: string) {
   return '';
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function getRowKey<R>(row: R) {
+export function genKey() {
   return (~~(Math.random() * 10000000)).toString(16);
 }

@@ -53,11 +53,11 @@ export default function MountResult() {
   return (
     <>
       <div className="ffi-form">
-        <Result title="已保存" />
+        <Result title="已儲存" />
 
         <div className="ffi-item">
           <h5 className="ffi-label mb-5">
-            <span>接下来做什么？</span>
+            <span>接下來做什麼？</span>
             {/* <a className="text-underline" href="#more-modal" data-bs-toggle="modal">
               了解更多
             </a> */}
@@ -70,10 +70,12 @@ export default function MountResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">主办人</span>
-                  <span>签名</span>
+                  <span className="fw-bold">主辦人</span>
+                  <span>簽名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">仍可以返回修改计划的参数，主办人签名后，计划上链，所有参数不可修改。</p>
+                <p className="mb-0 text-gray-dark">
+                  仍可以返回修改計畫的參數，主辦人簽名後，計畫上鍊，所有參數不可修改。
+                </p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -82,10 +84,12 @@ export default function MountResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">建设者</span>
-                  <span>签名</span>
+                  <span className="fw-bold">建設者</span>
+                  <span>簽名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">分配计划中的每个建设者需要签名，确认自己的分配比例。把分配计划页面分享给建设者。</p>
+                <p className="mb-0 text-gray-dark">
+                  分配計劃中的每個建設者都需要簽名，確認自己的分配比例。把分配計畫頁面分享給建設者。
+                </p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -94,10 +98,12 @@ export default function MountResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">技术服务商</span>
-                  <span>签名</span>
+                  <span className="fw-bold">技術服務商</span>
+                  <span>簽名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">分配计划需要获得技术服务商的签名，同时移交Owner地址给FilFi智能合约。把分配计划页面分享给技术服务商</p>
+                <p className="mb-0 text-gray-dark">
+                  分配計畫需要取得技術服務商的簽名，同時移交Owner位址給FilFi智慧合約。把分配計畫頁面分享給技術服務商
+                </p>
               </div>
             </li>
           </ul>
@@ -112,7 +118,7 @@ export default function MountResult() {
             重新修改
           </SpinBtn>
           <Link className="btn btn-primary btn-lg flex-fill" replace to={`/overview/${raiseId}`}>
-            查看分配计划
+            查看分配計劃
           </Link>
         </div>
       </div>

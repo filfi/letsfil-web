@@ -1,26 +1,29 @@
 import { useResponsive } from 'ahooks';
 
-import CardBack from './CardBack';
+// import CardBack from './CardBack';
 import CardMiner from './CardMiner';
 import CardRaise from './CardRaise';
 import CardAssets from './CardAssets';
+import CardLending from './CardLending';
 import CardStaking from './CardStaking';
 
-const RaiseSider: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseSider: React.FC = () => {
   const responsive = useResponsive();
 
   if (responsive.lg) {
     return (
       <>
-        <CardRaise data={data} />
+        <CardRaise />
 
-        <CardMiner data={data} />
+        <CardMiner />
 
-        <CardStaking data={data} />
+        <CardStaking />
 
-        <CardBack data={data} />
+        {/* <CardBack /> */}
 
-        <CardAssets data={data} />
+        <CardAssets />
+
+        <CardLending />
 
         {/* <CardCalc /> */}
       </>

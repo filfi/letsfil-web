@@ -1,8 +1,8 @@
-import { Contract, providers } from 'ethers';
+import { providers } from 'ethers';
 import type { BigNumberish, ContractInterface } from 'ethers';
 
+import { getContract } from './get';
 import raiseAbi from '@/abis/raise.abi.json';
-import { config } from '@/constants/config';
 
 export type WriteTxOptions = {
   gas?: BigNumberish;
@@ -27,14 +27,9 @@ export async function writeContract<A extends string = string, P extends unknown
   args = [] as unknown as P,
   ...opts
 }: WriteContractOptions<A, P>) {
-  const connector = config.connector;
+  const contract = await getContract(address, abi);
 
-  if (connector) {
-    const client = await connector.getProvider();
-    const chainId = config.getPublicClient().chain.id;
-    const provider = new providers.Web3Provider(client, chainId);
-    const contract = new Contract(address, abi, provider.getSigner());
-
+  if (contract) {
     // const gas = await contract.estimateGas[functionName](...args, {
     //   ...opts,
     // });

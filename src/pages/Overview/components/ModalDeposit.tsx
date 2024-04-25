@@ -40,7 +40,7 @@ const ModalDeposit: React.FC<ModalDepositProps> = ({ amount, onConfirm, onHidden
 
   return (
     <Modal.Confirm
-      title="追加保证金"
+      title="追加保證金"
       bodyClassName="pb-0"
       footerClassName="border-top"
       {...props}
@@ -51,9 +51,9 @@ const ModalDeposit: React.FC<ModalDepositProps> = ({ amount, onConfirm, onHidden
       <div className="ffi-form px-3">
         <Form form={form} size="large" initialValues={{ amount }} onFinish={handleFinish}>
           <div className="ffi-item">
-            <h4 className="ffi-label">追加数量</h4>
+            <h4 className="ffi-label">追加數量</h4>
             <Form.Item name="amount">
-              <Input readOnly type="number" placeholder="请输入追加数量" />
+              <Input readOnly type="number" placeholder="請輸入追加數量" />
             </Form.Item>
           </div>
         </Form>

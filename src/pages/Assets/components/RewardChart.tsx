@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { find } from 'lodash';
 import { useRequest } from 'ahooks';
-import { useParams } from '@umijs/max';
+import { useModel } from '@umijs/max';
 import { useMemo, useState } from 'react';
 import { Column } from '@ant-design/plots';
 import type { ColumnConfig } from '@ant-design/plots';
@@ -32,7 +32,7 @@ const config: ColumnConfig = {
   tooltip: {
     formatter(data) {
       return {
-        name: '节点激励',
+        name: '節點激勵',
         value: `${formatAmount(data.value)} FIL`,
       };
     },
@@ -40,16 +40,17 @@ const config: ColumnConfig = {
 };
 
 const RewardChart: React.FC = () => {
-  const param = useParams();
+  const { plan } = useModel('assets.assets');
+
   const [size, setSize] = useState(7);
 
   const service = async () => {
-    if (param.id) {
-      return await dailyIncome({ page: 1, page_size: size, asset_pack_id: param.id });
+    if (plan?.raising_id) {
+      return await dailyIncome({ page: 1, page_size: size, asset_pack_id: plan?.raising_id });
     }
   };
 
-  const { data, loading } = useRequest(service, { refreshDeps: [size, param.id] });
+  const { data, loading } = useRequest(service, { refreshDeps: [size, plan] });
 
   const dates = useMemo(
     () =>
@@ -75,7 +76,7 @@ const RewardChart: React.FC = () => {
   return (
     <div className="mb-3">
       <div className="d-flex gap-3 mb-3">
-        <h4 className="my-auto fs-18 fw-600">每日激励</h4>
+        <h4 className="my-auto fs-18 fw-600">每日激勵</h4>
 
         <FormRadio
           className="btn-group ms-auto"

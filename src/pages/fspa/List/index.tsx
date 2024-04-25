@@ -13,14 +13,19 @@ export default function FSPAList() {
     <>
       <section className="py-5 bg-primary-tertiary text-primary-dark">
         <div className="container">
-          <h3 className="mb-4 display-6 fw-600">加入 FSPA 联盟</h3>
+          <h3 className="mb-4 display-6 fw-600">加入 FSPA 聯盟</h3>
 
           <p className="mb-4 fs-lg">
-            加入 <strong>FSPA(FilFi Storage Provider Alliance)</strong>，链接FilFi网络，成为可信的Filecoin技术服务商。
+            加入 <strong>FSPA(FilFi Storage Provider Alliance)</strong>，連結FilFi網絡，成為可信賴的Filecoin技術服務商。
           </p>
-          <p className="mb-4 fs-lg">如果您是Filecoin Storage Provider，请点击</p>
+          <p className="mb-4 fs-lg">如果您是Filecoin Storage Provider，請點擊</p>
           <p>
-            <a className="btn btn-primary btn-lg" href="https://www.wjx.cn/vm/tSj3ajH.aspx" target="_blank" rel="noreferrer">
+            <a
+              className="btn btn-primary btn-lg"
+              href="https://www.wjx.cn/vm/tSj3ajH.aspx"
+              target="_blank"
+              rel="noreferrer"
+            >
               加入 FSPA
             </a>
           </p>
@@ -30,7 +35,7 @@ export default function FSPAList() {
       <section className="py-5">
         <div className="container my-3 text-center">
           <h4 className="mb-3 display-6 fw-600">Storage Provider</h4>
-          <p className="mb-5">已通过FilFi DAO 社区KYC，正在FilFi网络提供服务</p>
+          <p className="mb-5">已通過FilFi DAO 社區KYC，正在FilFi網路提供服務</p>
 
           <LoadingView className="my-5 py-5" data={data} error={isError} loading={isLoading} retry={refetch}>
             <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 g-md-4">
@@ -45,7 +50,14 @@ export default function FSPAList() {
                             height={72}
                             preview={false}
                             src={item.logo_url}
-                            placeholder={<Image className="object-fit-contain" height={72} preview={false} src={require('@/assets/placeholder.png')} />}
+                            placeholder={
+                              <Image
+                                className="object-fit-contain"
+                                height={72}
+                                preview={false}
+                                src={require('@/assets/placeholder.png')}
+                              />
+                            }
                           />
                         ) : (
                           <Avatar address={item.wallet_address} size={72} />
@@ -68,10 +80,15 @@ export default function FSPAList() {
             <div className="flex-fill">
               <h3 className="mb-4 display-6 fw-600">我是 Storage Provider</h3>
 
-              <p className="fs-lg">加入智能合约驱动的FilFi网络，成为可信的技术服务商</p>
+              <p className="fs-lg">加入智慧合約驅動的FilFi網絡，成為可信賴的技術服務商</p>
             </div>
             <div>
-              <a className="btn btn-primary btn-lg" href="https://www.wjx.cn/vm/tSj3ajH.aspx" target="_blank" rel="noreferrer">
+              <a
+                className="btn btn-primary btn-lg"
+                href="https://www.wjx.cn/vm/tSj3ajH.aspx"
+                target="_blank"
+                rel="noreferrer"
+              >
                 立刻加入 FSPA
               </a>
             </div>

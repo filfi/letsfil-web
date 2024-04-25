@@ -26,7 +26,7 @@ const ShareBtn: React.FC<ShareBtnProps> = ({ children, text, toast, type, onSucc
         return onSuccess(e.text);
       }
 
-      Modal.alert({ icon: 'success', title: toast ?? '已复制', content: e.text });
+      Modal.alert({ icon: 'success', title: toast ?? '已複製', content: e.text });
     });
   });
 

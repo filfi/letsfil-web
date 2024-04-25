@@ -80,7 +80,7 @@ const AvatarInput: React.FC<AvatarInputProps> = ({ size, value, onChange }) => {
 
   const beforeUpload: UploadProps['beforeUpload'] = (file) => {
     if (file.size > 2 * 1024 * 1024) {
-      message.error('不能超过2M');
+      message.error('不能超過2M');
       return false;
     }
   };
@@ -124,7 +124,11 @@ const AvatarInput: React.FC<AvatarInputProps> = ({ size, value, onChange }) => {
       customRequest={customUpload}
       onChange={handleChange}
     >
-      {url ? <img className="w-100 h-100 d-block rounded-circle object-fit-cover" src={url} /> : <Avatar address={address} size={size} />}
+      {url ? (
+        <img className="w-100 h-100 d-block rounded-circle object-fit-cover" src={url} />
+      ) : (
+        <Avatar address={address} size={size} />
+      )}
     </Upload>
   );
 };

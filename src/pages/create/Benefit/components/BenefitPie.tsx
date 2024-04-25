@@ -10,7 +10,7 @@ const BenefitPie: React.FC<{
   const pieData = useMemo(
     () => [
       { name: name ?? '-', value },
-      { name: '建设者', value: Math.max(100 - value, 0) },
+      { name: '建設者', value: Math.max(100 - value, 0) },
     ],
     [name, value],
   );
@@ -27,7 +27,7 @@ const BenefitPie: React.FC<{
     color: ['#2699FB', '#BCE0FD'],
     statistic: {
       title: {
-        content: '质押',
+        content: '質押',
         style: {
           fontSize: '14px',
           fontWeight: 500,

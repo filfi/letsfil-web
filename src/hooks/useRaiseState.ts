@@ -22,7 +22,12 @@ export default function useRaiseState(data?: API.Plan | null) {
     }
   };
 
-  const { data: planState } = useQuery(['getPlanState', data?.raising_id], withNull(queryStateFn), {
+  const {
+    data: planState,
+    isError,
+    isLoading,
+    refetch,
+  } = useQuery(['getPlanState', data?.raising_id], withNull(queryStateFn), {
     staleTime: 60_000,
   });
 
@@ -31,7 +36,10 @@ export default function useRaiseState(data?: API.Plan | null) {
   // 等待开始
   const isWaiting = useMemo(() => !isPending && planState === RaiseState.WaitingStart, [isPending, planState]);
   // 已开始
-  const isStarted = useMemo(() => !isPending && isDef(planState) && planState > RaiseState.WaitingStart, [isPending, planState]);
+  const isStarted = useMemo(
+    () => !isPending && isDef(planState) && planState > RaiseState.WaitingStart,
+    [isPending, planState],
+  );
   // 质押中
   const isRaising = useMemo(() => !isPending && planState === RaiseState.Raising, [isPending, planState]);
   // 已关闭
@@ -41,7 +49,10 @@ export default function useRaiseState(data?: API.Plan | null) {
   // 成功
   const isSuccess = useMemo(() => !isPending && planState === RaiseState.Success, [isPending, planState]);
   // 处理中（封装和运行）
-  const isProcess = useMemo(() => !isPending && isDef(planState) && planState >= RaiseState.Success, [isPending, planState]);
+  const isProcess = useMemo(
+    () => !isPending && isDef(planState) && planState >= RaiseState.Success,
+    [isPending, planState],
+  );
   const isRunning = useMemo(() => isSuccess && nodeState >= NodeState.WaitingStart, [isSuccess, nodeState]);
   // 等待封装
   const isWaitSeal = useMemo(() => isSuccess && nodeState === NodeState.WaitingStart, [isSuccess, nodeState]);
@@ -52,7 +63,10 @@ export default function useRaiseState(data?: API.Plan | null) {
   // 封装完成
   const isFinished = useMemo(() => isSuccess && nodeState === NodeState.End, [isSuccess, nodeState]);
   // 已销毁（节点运行结束）
-  const isDestroyed = useMemo(() => planState === RaiseState.Destroyed || (isSuccess && nodeState === NodeState.Destroy), [isSuccess, nodeState, planState]);
+  const isDestroyed = useMemo(
+    () => planState === RaiseState.Destroyed || (isSuccess && nodeState === NodeState.Destroy),
+    [isSuccess, nodeState, planState],
+  );
   // 工作中（产生节点激励）
   const isWorking = useMemo(() => isDestroyed || isFinished, [isDestroyed, isFinished]);
 
@@ -74,5 +88,8 @@ export default function useRaiseState(data?: API.Plan | null) {
     isDelayed,
     isFinished,
     isDestroyed,
+    isError,
+    isLoading,
+    refetch,
   };
 }

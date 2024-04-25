@@ -1,3 +1,4 @@
+import { useModel } from '@umijs/max';
 import { useResponsive } from 'ahooks';
 
 import CardMount from './CardMount';
@@ -10,66 +11,70 @@ import SectionContract from './SectionContract';
 import SectionProvider from './SectionProvider';
 import useMountState from '@/hooks/useMountState';
 
-const MountMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const MountMain: React.FC = () => {
+  const { plan } = useModel('Overview.overview');
+
   const responsive = useResponsive();
-  const { isStarted } = useMountState(data);
+  const { isStarted } = useMountState(plan);
 
   return (
     <>
       <section id="sector" className="section">
-        {data && !isClosed(data) && isStarted && (
+        {plan && !isClosed(plan) && isStarted && (
           <div className="section-header">
-            <h4 className="section-title">分配计划@{data?.miner_id}</h4>
-            <p className="mb-0">挂载成功</p>
+            <h4 className="section-title">分配計劃@{plan?.miner_id}</h4>
+            <p className="mb-0">掛載成功</p>
           </div>
         )}
 
         <div className="vstack gap-3">
-          <MountNode data={data} />
+          <MountNode />
 
-          {responsive.lg ? null : <CardMount data={data} />}
+          {responsive.lg ? null : <CardMount />}
         </div>
       </section>
       <section id="reward" className="section">
         <div className="section-header">
           <h4 className="section-title">分配方案</h4>
-          <p className="mb-0">智能合约严格执行分配方案，坚定履约，透明可信，省时省心。</p>
+          <p className="mb-0">智能合約嚴格執行分配方案，堅定履約，透明可信，省時省心。</p>
         </div>
 
-        <SectionReward data={data} />
+        <SectionReward />
       </section>
       <section id="details" className="section">
         <div className="section-header">
-          <h4 className="section-title">分配明细</h4>
-          <p className="mb-0">历史节点挂载到FilFi智能合约，按照约定分配方案自动分配。</p>
+          <h4 className="section-title">分配明細</h4>
+          <p className="mb-0">歷史節點掛載到FilFi智能合約，並依照約定分配方案自動分配。</p>
         </div>
 
-        <MountDetails data={data} />
+        <MountDetails />
       </section>
       <section id="provider" className="section">
         <div className="section-header">
-          <h4 className="section-title">服务商</h4>
-          <p className="mb-0">开创链上协作新模式，专业化服务，负责任承诺。</p>
+          <h4 className="section-title">服務商</h4>
+          <p className="mb-0">開創鏈上協作新模式，專業化服務，負責任承諾。</p>
         </div>
 
-        <SectionProvider data={data} />
+        <SectionProvider />
       </section>
       <section id="contract" className="section">
         <div className="section-header">
-          <h4 className="section-title">智能合约</h4>
-          <p className="mb-0">分配计划是部署在Filecoin上的智能合约，历史节点挂载到FilFi网络后，激励分配完全由智能合约管理。</p>
+          <h4 className="section-title">智能合約</h4>
+          <p className="mb-0">
+            分配計畫是部署在Filecoin上的智慧合約，歷史節點掛載到FilFi網路後，激勵分配完全由智慧合約管理。
+          </p>
         </div>
 
-        <SectionContract data={data} />
+        <SectionContract />
       </section>
       {isStarted && (
         <section id="events" className="section">
           <div className="section-header">
             <h4 className="section-title">事件</h4>
-            <p className="mb-0">分配计划发生的重要事件以及链上相关消息</p>
+            <p className="mb-0">分配計劃發生的重要事件以及鏈上相關訊息</p>
           </div>
 
-          <SectionEvents data={data} />
+          <SectionEvents />
         </section>
       )}
     </>

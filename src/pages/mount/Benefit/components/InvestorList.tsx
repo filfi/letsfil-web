@@ -109,46 +109,55 @@ const InvestorListRender: React.ForwardRefRenderFunction<InvestorListActions, In
     <ul className="list-unstyled">
       {list.map((item, idx) => (
         <li key={item.key} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative">
-          <Form.Item name={[name, idx, 'address']} rules={[{ required: true, message: '请输入建设者钱包地址' }, { validator: V.combineAddr }]}>
-            <Input placeholder="输入建设者地址" />
+          <Form.Item
+            name={[name, idx, 'address']}
+            rules={[{ required: true, message: '請輸入建設者錢包地址' }, { validator: V.combineAddr }]}
+          >
+            <Input placeholder="輸入建設者錢包地址" />
           </Form.Item>
           <div className="row g-3">
             <div className="col-12 col-md-8 pe-lg-3">
               <Form.Item
                 name={[name, idx, 'amount']}
                 rules={[
-                  { required: true, message: '请输入持有质押数量' },
+                  { required: true, message: '請輸入持有質押數量' },
                   {
                     validator: V.Queue.create()
-                      .add(V.createNumRangeValidator([1, max], `请输入1-${max}之间的数`))
-                      .add(V.createDecimalValidator(precision, `最多支持${precision}位小数`))
+                      .add(V.createNumRangeValidator([1, max], `請輸入1-${max}之間的數`))
+                      .add(V.createDecimalValidator(precision, `最多支援${precision}位小數`))
                       .build(),
                   },
                 ]}
               >
-                <Input placeholder="输入持有质押数量" suffix="FIL" />
+                <Input placeholder="輸入持有質押數量" suffix="FIL" />
               </Form.Item>
             </div>
             <div className="col-12 col-md-4">
               <Form.Item
                 name={['investors', idx, 'rate']}
                 rules={[
-                  { required: true, message: '请输入算力分配比例' },
+                  { required: true, message: '請輸入算力分配比例' },
                   {
                     validator: V.Queue.create()
                       .add(V.createGtValidator(0))
-                      .add(V.createNumRangeValidator([0, rateMax], `请输入0-${rateMax}之间的数`))
-                      .add(V.createDecimalValidator(ratePrecision, `最多支持${ratePrecision}位小数`))
+                      .add(V.createNumRangeValidator([0, rateMax], `請輸入0-${rateMax}之間的數`))
+                      .add(V.createDecimalValidator(ratePrecision, `最多支援${ratePrecision}位小數`))
                       .build(),
                   },
                 ]}
               >
-                <Input placeholder="输入算力分配比例" suffix="%" />
+                <Input placeholder="輸入算力分配比例" suffix="%" />
               </Form.Item>
             </div>
           </div>
 
-          {list.length > 1 && <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => handleSub(item.key)}></button>}
+          {list.length > 1 && (
+            <button
+              className="btn-close position-absolute end-0 top-0 me-3 mt-3"
+              type="button"
+              onClick={() => handleSub(item.key)}
+            ></button>
+          )}
         </li>
       ))}
     </ul>

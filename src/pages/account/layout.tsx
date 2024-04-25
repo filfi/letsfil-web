@@ -7,7 +7,7 @@ import Avatar from '@/components/Avatar';
 import { formatAddr, formatDate, formatSponsor } from '@/utils/format';
 
 export default function AccountLayout() {
-  useTitle('个人中心 - FilFi', { restoreOnUnmount: true });
+  useTitle('個人中心 - FilFi', { restoreOnUnmount: true });
 
   const { user } = useUser();
 
@@ -24,7 +24,7 @@ export default function AccountLayout() {
             <h3 className="mb-0 display-7 fw-600">{formatSponsor(user?.name ?? '未命名')}</h3>
             <p className="mb-0 fs-16 text-gray">
               <span>{formatAddr(user?.address)}&nbsp;</span>
-              {user && <span className="ms-2">加入时间 {formatDate(user.CreatedAt, 'll')}</span>}
+              {user && <span className="ms-2">加入時間 {formatDate(user.CreatedAt, 'll')}</span>}
             </p>
           </div>
         </div>
@@ -33,17 +33,17 @@ export default function AccountLayout() {
           <ul className="nav nav-tabs ffi-tabs">
             <li className="nav-item">
               <NavLink className="nav-link" to="/account/assets">
-                算力资产
+                算力資產
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink className="nav-link" to="/account/plans">
-                联合节点
+                聯合節點
               </NavLink>
             </li>
             {/* <li className="nav-item">
               <NavLink className="nav-link" to="/account/stats">
-                投资报告
+                投資報告
               </NavLink>
             </li> */}
           </ul>

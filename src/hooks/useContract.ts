@@ -1,15 +1,12 @@
-import { usePublicClient /* useWalletClient */ } from 'wagmi';
-// import type { Account } from 'viem';
 import type { BigNumberish } from 'ethers';
 
 import { isDef } from '@/utils/utils';
 import { toNumber } from '@/utils/format';
 import { toastify } from '@/utils/hackify';
-import { RAISE_ADDRESS } from '@/constants';
+import { ADDR_FACTORY } from '@/constants';
 import raiseAbi from '@/abis/raise.abi.json';
 import factoryAbi from '@/abis/factory.abi.json';
-// import { RevertedError } from '@/core/errors/RevertedError';
-import { writeContract as ethersContract } from '@/core/contract/write';
+import useContractTools from './useContractTools';
 import type { WriteContractOptions } from '@/core/contract/write';
 
 export type WriteOptions = TxOptions & {
@@ -30,130 +27,36 @@ function bigToNum(v: bigint | undefined) {
 }
 
 export default function useContract(address?: API.Address) {
-  const publicClient = usePublicClient();
-  // const { data: walletClient } = useWalletClient();
+  const db = useContractTools();
 
-  // const waitTransaction = function <P extends unknown[] = any>(service: (...args: P) => Promise<API.Address | string | undefined>) {
-  //   return async (...args: P) => {
-  //     const hash = (await service(...args)) as API.Address;
-
-  //     if (hash) {
-  //       const res = await publicClient.waitForTransactionReceipt({ hash });
-
-  //       console.log(res);
-
-  //       if (res.status === 'reverted') {
-  //         throw new RevertedError('交易失败', res);
-  //       }
-
-  //       return res;
-  //     }
-  //   };
-  // };
-
-  const readContract = async function <R = any, P extends unknown[] = any>(functionName: string, args: P, _address?: API.Address) {
+  const readContract = async function <R = any, P extends unknown[] = any>(
+    name: string,
+    args: P,
+    _address?: API.Address,
+  ) {
     const addr = _address ?? address;
 
     if (!addr) return;
 
-    const res = await publicClient.readContract({
-      args,
-      functionName,
-      abi: raiseAbi,
-      address: addr,
-    });
-
-    return res as R;
+    return await db.read<R>(addr, raiseAbi, name, args);
   };
 
-  // const writeContract = async function <P extends unknown[] = any>(
-  //   functionName: string,
-  //   args: P,
-  //   { account: _account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
-  // ) {
-  //   const abi = _abi ?? raiseAbi;
-  //   const addr = _address ?? address;
-
-  //   if (!addr || !walletClient) return;
-
-  //   // publicClient.e
-
-  //   const account = _account ?? walletClient.account;
-  //   const gas = await publicClient.estimateContractGas({
-  //     abi,
-  //     args,
-  //     account,
-  //     functionName,
-  //     address: addr,
-  //     ...opts,
-  //   });
-
-  //   const params = {
-  //     abi,
-  //     gas,
-  //     args,
-  //     account,
-  //     functionName,
-  //     address: addr,
-  //     ...(opts as any),
-  //   };
-
-  //   console.log(params);
-
-  //   return await waitTransaction(walletClient.writeContract)(params);
-  // };
-
   const writeContract = async function <P extends unknown[] = any>(
-    functionName: string,
+    name: string,
     args: P,
-    { abi: _abi, address: _address, ...opts }: Partial<Omit<WriteContractOptions<string, P>, 'args' | 'functionName'>> = {},
+    {
+      abi: _abi,
+      address: _address,
+      ...opts
+    }: Partial<Omit<WriteContractOptions<API.Address, P>, 'args' | 'functionName'>> = {},
   ) {
     const abi = _abi ?? raiseAbi;
     const addr = _address ?? address;
 
     if (!addr) return;
 
-    const params = {
-      abi,
-      args,
-      functionName,
-      address: addr,
-      ...opts,
-    };
-
-    console.log({ ...params });
-
-    const res = await ethersContract(params);
-    return res;
+    return await db.write(addr, abi, name, args, opts);
   };
-
-  // const writeContract = async function <P extends unknown[] = any>(
-  //   functionName: string,
-  //   args: P,
-  //   { account: _account, abi: _abi, address: _address, ...opts }: WriteOptions & { abi?: any } = {},
-  // ) {
-  //   const abi = _abi ?? raiseAbi;
-  //   const addr = _address ?? address;
-
-  //   if (!addr || !walletClient) return;
-
-  //   const account = _account ?? walletClient?.account;
-
-  //   const params = {
-  //     abi,
-  //     args,
-  //     account,
-  //     functionName,
-  //     address: addr,
-  //     ...opts,
-  //   };
-
-  //   const gas = await publicClient.estimateContractGas(params);
-
-  //   console.log({ ...params, gas });
-
-  //   return await waitTransaction(walletClient.writeContract)({ ...params, gas });
-  // };
 
   /**
    * 获取是否有Owner权限
@@ -219,13 +122,6 @@ export default function useContract(address?: API.Address) {
   };
 
   /**
-   * 获取主办人罚金
-   */
-  const getRaiserFine = async (id: string, _address = address) => {
-    return toEther(await readContract<bigint>('raiserFine', [id], _address));
-  };
-
-  /**
    * 获取主办人保证金
    */
   const getRaiserFund = async (id: string, _address = address) => {
@@ -278,7 +174,14 @@ export default function useContract(address?: API.Address) {
   /**
    * 获取质押金额
    */
-  const getPledgeAmount = async (id: string, _address = address) => {
+  const getPledgeCalcAmount = async (id: string, _address = address) => {
+    return toEther(await readContract<bigint>('pledgeCalcAmount', [id], _address));
+  };
+
+  /**
+   * 获取质押金额
+   */
+  const getPledgeTotalAmount = async (id: string, _address = address) => {
     return toEther(await readContract<bigint>('pledgeTotalAmount', [id], _address));
   };
 
@@ -360,6 +263,13 @@ export default function useContract(address?: API.Address) {
    */
   const getInvestorWithdrawnRecord = async (id: string, account: string, _address = address) => {
     return toEther(await readContract<bigint>('withdrawRecord', [id, account], _address));
+  };
+
+  /**
+   * 获取建设者已提取节点激励
+   */
+  const getInvestorWithdrawnReward = async (id: string, account: string, _address = address) => {
+    return toEther(await readContract<bigint>('gotInvestorReward', [id, account], _address));
   };
 
   /**
@@ -562,14 +472,16 @@ export default function useContract(address?: API.Address) {
   /**
    * 创建节点计划
    */
-  const createRaisePlan = toastify(async (raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: Omit<TxOptions, 'abi' | 'address'>) => {
-    console.log(raise, node, extra);
-    return await writeContract('createRaisePlan', [raise, node, extra], {
-      ...opts,
-      abi: factoryAbi,
-      address: RAISE_ADDRESS,
-    });
-  });
+  const createRaisePlan = toastify(
+    async (raise: RaiseInfo, node: NodeInfo, extra: ExtraInfo, opts?: Omit<TxOptions, 'abi' | 'address'>) => {
+      console.log(raise, node, extra);
+      return await writeContract('createRaisePlan', [raise, node, extra], {
+        ...opts,
+        abi: factoryAbi,
+        address: ADDR_FACTORY,
+      });
+    },
+  );
 
   /**
    * 创建节点计划（做个主办人）
@@ -602,7 +514,7 @@ export default function useContract(address?: API.Address) {
       return await writeContract('createPlan', [raise, node, sponsors, sponsorRates, startTime], {
         ...opts,
         abi: factoryAbi,
-        address: RAISE_ADDRESS,
+        address: ADDR_FACTORY,
       });
     },
   );
@@ -643,11 +555,15 @@ export default function useContract(address?: API.Address) {
       opts?: Omit<TxOptions, 'abi' | 'address'>,
     ) => {
       console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, startTime);
-      return await writeContract('createPrivatePlan', [raise, node, sponsors, sponsorRates, investors, investorPledges, startTime], {
-        ...opts,
-        abi: factoryAbi,
-        address: RAISE_ADDRESS,
-      });
+      return await writeContract(
+        'createPrivatePlan',
+        [raise, node, sponsors, sponsorRates, investors, investorPledges, startTime],
+        {
+          ...opts,
+          abi: factoryAbi,
+          address: ADDR_FACTORY,
+        },
+      );
     },
   );
 
@@ -691,11 +607,15 @@ export default function useContract(address?: API.Address) {
       opts?: Omit<TxOptions, 'abi' | 'address'>,
     ) => {
       console.log(raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates, totalPledge);
-      return await writeContract('mountNode', [raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates, totalPledge], {
-        ...opts,
-        abi: factoryAbi,
-        address: RAISE_ADDRESS,
-      });
+      return await writeContract(
+        'mountNode',
+        [raise, node, sponsors, sponsorRates, investors, investorPledges, investorRates, totalPledge],
+        {
+          ...opts,
+          abi: factoryAbi,
+          address: ADDR_FACTORY,
+        },
+      );
     },
   );
 
@@ -765,14 +685,14 @@ export default function useContract(address?: API.Address) {
     getOpsFundSeald,
     getOpsFundSafeSealed,
     getOpsFundSafeRemain,
-    getRaiserFine,
     getRaiserFund,
     getNodeState,
     getPlanState,
     getRaiseState,
     getBackAssets,
     getInvestorInfo,
-    getPledgeAmount,
+    getPledgeCalcAmount,
+    getPledgeTotalAmount,
     getSealedAmount,
     getReleasedPledge,
     getTotalPledge,
@@ -787,6 +707,7 @@ export default function useContract(address?: API.Address) {
     getInvestorPendingReward,
     getInvestorAvailableReward,
     getInvestorWithdrawnRecord,
+    getInvestorWithdrawnReward,
     getSponsorPendingReward,
     getSponsorAvailableReward,
     getSponsorWithdrawnReward,

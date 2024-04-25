@@ -13,7 +13,10 @@ export type AssetsModalProps = {
   onConfirm?: () => void;
 };
 
-const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalProps> = ({ data, onConfirm }, ref?: React.Ref<ModalAttrs> | null) => {
+const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalProps> = (
+  { data, onConfirm },
+  ref?: React.Ref<ModalAttrs> | null,
+) => {
   const modal = useRef<ModalAttrs>(null);
 
   const [form] = Form.useForm();
@@ -50,15 +53,16 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
       <Modal.Confirm
         ref={modal}
         icon="tag"
-        title="历史资产归属"
-        cancelText="关闭"
-        confirmText="继续"
+        title="歷史資產歸屬"
+        cancelText="關閉"
+        confirmText="繼續"
         footerClassName="border-0"
         onHidden={handleHiddn}
         onConfirm={handleConfirm}
       >
         <p className="mb-4 fs-16">
-          检测到 {data?.minerId} 是已存在的节点，先确认历史资产的归属。历史资产不属于当前节点计划，移交Owner之后，FilFi智能合约将按约定比例独立分配。
+          檢測到 {data?.minerId}{' '}
+          是已存在的節點，先確認歷史資產的歸屬。歷史資產不屬於目前節點計劃，移交Owner之後，FilFi智能合約將按約定比例獨立分配。
         </p>
 
         <div className="ffi-form mb-4">
@@ -73,7 +77,7 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
                     <span className="fs-24 lh-1 text-gray-dark">
                       <span className="bi bi-people"></span>
                     </span>
-                    <span className="ms-2">灵境资产管理</span>
+                    <span className="ms-2">靈境資產管理</span>
                   </div>
                 }
                 suffix="%"
@@ -106,28 +110,28 @@ const AssetsModalRender: React.ForwardRefRenderFunction<ModalAttrs, AssetsModalP
           </div>
           <div className="d-inline-flex flex-column">
             <p className="mb-0 fw-500">{formatEther(data?.hisInitialPledge)} FIL</p>
-            <p className="mb-0 text-gray-dark">质押</p>
+            <p className="mb-0 text-gray-dark">質押</p>
           </div>
           <div className="d-inline-flex flex-column">
             <p className="mb-0 fw-500">{formatEther(data?.hisBlance)} FIL</p>
-            <p className="mb-0 text-gray-dark">余额（含线性释放）</p>
+            <p className="mb-0 text-gray-dark">餘額（含線性釋放）</p>
           </div>
           <div className="d-inline-flex flex-column">
             <p className="mb-0 fw-500">{data?.hisSectorCount} 个</p>
-            <p className="mb-0 text-gray-dark">扇区数量</p>
+            <p className="mb-0 text-gray-dark">扇區數量</p>
           </div>
           {/* </div> */}
         </div>
 
         <Form form={form}>
-          <Form.Item name="agree" valuePropName="checked" rules={[{ required: true, message: '请确认' }]}>
+          <Form.Item name="agree" valuePropName="checked" rules={[{ required: true, message: '請確認' }]}>
             <Checkbox>
               <span>同意</span>
               <span className="fw-bold">{data?.minerId}</span>
               <span>已存在的</span>
               <span className="fw-bold">算力</span>
               <span>和</span>
-              <span className="fw-bold">质押</span>
+              <span className="fw-bold">質押</span>
               <span>按以上分配比例</span>
             </Checkbox>
           </Form.Item>

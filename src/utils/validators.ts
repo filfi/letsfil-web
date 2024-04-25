@@ -41,28 +41,28 @@ export function createValidator(pattern: RegExp | ((value: string) => boolean), 
   };
 }
 
-export const address = createValidator(ethers.utils.isAddress, '无效的地址');
+export const address = createValidator(ethers.utils.isAddress, '無效的地址');
 
-export const number = createValidator(/^\d+(\.\d+)?$/, '请输入数字');
+export const number = createValidator(/^\d+(\.\d+)?$/, '請輸入數字');
 
-export const integer = createValidator(/^[1-9]([0-9]+)?$/, '请输入正整数');
+export const integer = createValidator(/^[1-9]([0-9]+)?$/, '請輸入正整數');
 
-export const minerID = createValidator(/^(f0|t0)[0-9]{5,}$/i, '无效的节点号');
+export const minerID = createValidator(/^(f0|t0)[0-9]{5,}$/i, '無效的節點號');
 
 export const f4Address = createValidator((address) => {
   return /^(t4|f4)/i.test(address) && validateAddressString(address);
-}, '无效的地址');
+}, '無效的地址');
 
 export const combineAddr = createValidator((addr) => {
   return isAddress(addr) || (/^(t4|f4)/i.test(addr) && validateAddressString(addr));
-}, '无效的地址');
+}, '無效的地址');
 
 export function createGtValidator(min: number, message?: string) {
   return async function validator(rule: unknown, value: string) {
     const val = +`${value ?? ''}`;
 
     if (!Number.isNaN(val) && val <= min) {
-      return Promise.reject(message ?? `必须大于${min}`);
+      return Promise.reject(message ?? `必須大於${min}`);
     }
   };
 }
@@ -72,7 +72,7 @@ export function createGteValidator(min: number, message?: string) {
     const val = +`${value ?? ''}`;
 
     if (!Number.isNaN(val) && val < min) {
-      return Promise.reject(message ?? `不能小于${min}`);
+      return Promise.reject(message ?? `不能小於${min}`);
     }
   };
 }
@@ -82,7 +82,7 @@ export function createLtValidator(max: number, message?: string) {
     const val = +`${value ?? ''}`;
 
     if (!Number.isNaN(val) && val >= max) {
-      return Promise.reject(message ?? `必须小于${max}`);
+      return Promise.reject(message ?? `必須小於${max}`);
     }
   };
 }
@@ -92,7 +92,7 @@ export function createLteValidator(max: number, message?: string) {
     const val = +`${value ?? ''}`;
 
     if (!Number.isNaN(val) && val > max) {
-      return Promise.reject(message ?? `不能大于${max}`);
+      return Promise.reject(message ?? `不能大於${max}`);
     }
   };
 }
@@ -133,6 +133,6 @@ export function createNumRangeValidator(range: [number, number], message: string
   };
 }
 
-export const percent = createIntRangeValidator([0, 100], '请输入0-100之间的数');
+export const percent = createIntRangeValidator([0, 100], '請輸入0-100之間的數');
 
 export const minRaiseRate = createNumRangeValidator([10, 100], '最小10%，最大100%');

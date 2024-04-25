@@ -1,23 +1,17 @@
 import { defineConfig } from '@umijs/max';
 
-import { emergencyRoutes, commonRoutes } from './routes';
-
-const EMERGENCY_DRILL = ['yes', 'on', 'true', '1'].includes(process.env.EMERGENCY_DRILL ?? '');
+import routes from './routes';
 
 export default defineConfig({
   define: {
-    'process.env': {
-      API_URL: process.env.API_URL,
-      RPC_URL: process.env.RPC_URL,
-      RUN_ENV: process.env.RUN_ENV,
-      ADDRESS: process.env.ADDRESS,
-    },
+    'process.env.API_URL': '/api',
+    'process.env.RPC_URL': '/rpc',
   },
 
   antd: {},
 
   // routes
-  routes: EMERGENCY_DRILL ? emergencyRoutes : commonRoutes,
+  routes,
 
   model: {},
   access: {},
@@ -30,6 +24,7 @@ export default defineConfig({
     default: 'zh-CN',
     useLocalStorage: true,
   },
+  hash: true,
   request: {},
   title: 'FilFi',
   initialState: {},
@@ -53,5 +48,11 @@ export default defineConfig({
     ],
   },
   npmClient: 'pnpm',
-  copy: ['_headers'],
+  links: [
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Inter&display=swap',
+    },
+  ],
 });

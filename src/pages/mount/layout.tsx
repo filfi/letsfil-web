@@ -6,10 +6,10 @@ import Steps from '@/components/Steps';
 import PageHeader from '@/components/PageHeader';
 
 const paths = ['node', 'benefit', 'result'];
-const items = [{ title: '指定历史节点' }, { title: '填写分配方案' }, { title: '完成', path: 'result' }];
+const items = [{ title: '指定歷史節點' }, { title: '填寫分配方案' }, { title: '完成', path: 'result' }];
 
 export default function MountLayout() {
-  useTitle('挂载历史节点 - FilFi', { restoreOnUnmount: true });
+  useTitle('掛載歷史節點 - FilFi', { restoreOnUnmount: true });
 
   const location = useLocation();
   const current = useMemo(() => paths.findIndex((path) => location.pathname.includes(path)), [location.pathname]);
@@ -18,10 +18,10 @@ export default function MountLayout() {
     <>
       <div className="container pb-4 pb-lg-5">
         <PageHeader
-          title="挂载历史节点"
+          title="掛載歷史節點"
           desc={
             <>
-              <span>将历史节点挂载到FilFi网络，委托智能合约分配激励</span>
+              <span>將歷史節點掛載到FilFi網絡，委託智能合約分配激勵</span>
               {/* <a className="text-underline" href="#create-tips" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -36,10 +36,10 @@ export default function MountLayout() {
         <Outlet />
       </div>
 
-      {/* <Modal.Alert id="create-tips" title="新建节点计划" confirmText="我知道了">
+      {/* <Modal.Alert id="create-tips" title="掛載歷史節點" confirmText="我知道了">
         <div className="card border-0">
           <div className="card-body">
-            <p className="mb-0">依靠强大的FVM智能合约，合作共建Filecoin存储。</p>
+            <p className="mb-0">將歷史節點掛載到FilFi網絡，委託智能合約分配激勵</p>
           </div>
         </div>
       </Modal.Alert> */}

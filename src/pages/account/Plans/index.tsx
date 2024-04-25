@@ -38,8 +38,14 @@ export default function AccountPlans() {
   const lists = useMemo(() => filterRaises(address)(data?.list?.all_list), [address, data?.list?.all_list]);
   const investors = useMemo(() => data?.list?.invest_list, [address, data?.list?.invest_list]);
   const raises = useMemo(() => lists?.filter((item) => isEqual(item.raiser, address)), [lists, address]);
-  const services = useMemo(() => lists?.filter((item) => isEqual(item.service_provider_address, address)), [lists, address]);
-  const invests = useMemo(() => lists?.filter((item) => investors?.some((id) => isEqual(id, item.raising_id))), [lists, investors]);
+  const services = useMemo(
+    () => lists?.filter((item) => isEqual(item.service_provider_address, address)),
+    [lists, address],
+  );
+  const invests = useMemo(
+    () => lists?.filter((item) => investors?.some((id) => isEqual(id, item.raising_id))),
+    [lists, investors],
+  );
 
   useDebounceEffect(
     () => {
@@ -69,18 +75,22 @@ export default function AccountPlans() {
     <>
       <LoadingView className="vh-50" data={data} error={!!error} loading={isLoading} retry={refetch}>
         {isEmpty ? (
-          <Result icon={<IconSearch />} title="您还没有节点计划" desc="这里显示您的节点计划，包括您发起的节点计划和参与的节点计划。">
+          <Result
+            icon={<IconSearch />}
+            title="您還沒有節點計劃"
+            desc="這裡顯示您的節點計劃，包括您發起的節點計劃和參與的節點計劃。"
+          >
             <div className="d-flex flex-column flex-md-row justify-content-center gap-4">
               {/* <Link className="btn btn-light" to="/raising">
-                查看开放的节点计划
+                查看開放的節點計劃
               </Link> */}
               <button className="btn btn-light" type="button" onClick={() => handleCreate(2)}>
                 <span className="bi bi-hdd-stack"></span>
-                <span className="ms-2">挂载历史节点</span>
+                <span className="ms-2">掛載歷史節點</span>
               </button>
               <button className="btn btn-primary" type="button" onClick={() => handleCreate()}>
                 <span className="bi bi-plus-lg"></span>
-                <span className="ms-2">发起节点计划</span>
+                <span className="ms-2">發起節點計劃</span>
               </button>
             </div>
           </Result>
@@ -89,17 +99,17 @@ export default function AccountPlans() {
             <p className="hstack flex-wrap gap-3 float-lg-end mt-lg-3 text-end">
               <button className="btn btn-light" type="button" onClick={() => handleCreate(2)}>
                 <span className="bi bi-hdd-stack"></span>
-                <span className="ms-2">挂载历史节点</span>
+                <span className="ms-2">掛載歷史節點</span>
               </button>
               <button className="btn btn-primary" type="button" onClick={() => handleCreate()}>
                 <span className="bi bi-plus-lg"></span>
-                <span className="ms-2">发起节点计划</span>
+                <span className="ms-2">發起節點計劃</span>
               </button>
             </p>
 
             {isArrs(raises) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我发起的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我發起的節點計劃</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {raises.map((item) => (
                     <div className="col" key={item.raising_id}>
@@ -112,7 +122,7 @@ export default function AccountPlans() {
 
             {isArrs(invests) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我参与的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>我參與的節點計劃</h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {invests.map((item) => (
                     <div className="col" key={item.raising_id}>
@@ -125,7 +135,9 @@ export default function AccountPlans() {
 
             {isArrs(services) && (
               <>
-                <h3 className={classNames('my-4 my-lg-5', styles.title)}>{formatSponsor(user?.name)}提供技术服务的节点计划</h3>
+                <h3 className={classNames('my-4 my-lg-5', styles.title)}>
+                  {formatSponsor(user?.name)}提供技術服務的節點計劃
+                </h3>
                 <div className="row row-cols-1 row-cols-lg-2 g-3 g-lg-4 mb-3 mb-lg-4">
                   {services.map((item) => (
                     <div className="col" key={item.raising_id}>

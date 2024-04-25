@@ -26,26 +26,17 @@ export default function useDepositRaiser(data?: API.Plan | null) {
       return await contract.getRaiserFund(data.raising_id);
     }
   };
-  const getRaiserFine = async () => {
-    if (data && isRaiserPaied(data)) {
-      return await contract.getRaiserFine(data.raising_id);
-    }
-  };
   const getTotalInterest = async () => {
     if (data && isRaiserPaied(data)) {
       return await contract.getTotalInterest(data.raising_id);
     }
   };
 
-  const [sRes, gRes, fRes] = useQueries({
+  const [fRes, interest] = useQueries({
     queries: [
       {
         queryKey: ['getRaiserFund', data?.raising_id],
         queryFn: withNull(getRaiserFund),
-      },
-      {
-        queryKey: ['getRaiserFine', data?.raising_id],
-        queryFn: withNull(getRaiserFine),
       },
       {
         queryKey: ['getTotalInterest', data?.raising_id],
@@ -54,19 +45,17 @@ export default function useDepositRaiser(data?: API.Plan | null) {
     ],
   });
 
-  const gas = useMemo(() => gRes.data ?? 0, [gRes.data]); // gas费
-  const fines = useMemo(() => fRes.data ?? 0, [fRes.data]); // 罚息
-  const amount = useMemo(() => sRes.data ?? toNumber(data?.raise_security_fund), [sRes.data, data?.raise_security_fund]); // 当前保证金
+  const fines = useMemo(() => interest.data ?? 0, [interest.data]); // 罚息
+  const amount = useMemo(() => fRes.data ?? toNumber(data?.raise_security_fund), [fRes.data, data?.raise_security_fund]); // 当前保证金
   const total = useMemo(() => toNumber(data?.raise_security_fund), [data?.raise_security_fund]); // 总保证金
-  const isLoading = useMemo(() => sRes.isLoading || fRes.isLoading, [sRes.isLoading, fRes.isLoading]);
+  const isLoading = useMemo(() => fRes.isLoading || interest.isLoading, [fRes.isLoading, interest.isLoading]);
 
   const refetch = async () => {
-    return Promise.all([sRes.refetch(), fRes.refetch()]);
+    return Promise.all([fRes.refetch(), interest.refetch()]);
   };
 
   useUnmount(() => {
     client.invalidateQueries({ queryKey: ['getRaiserFund', data?.raising_id] });
-    client.invalidateQueries({ queryKey: ['getRaiserFine', data?.raising_id] });
     client.invalidateQueries({ queryKey: ['getTotalInterest', data?.raising_id] });
   });
 
@@ -80,7 +69,7 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(1_000);
 
-      sRes.refetch();
+      fRes.refetch();
 
       return res;
     }),
@@ -94,14 +83,13 @@ export default function useDepositRaiser(data?: API.Plan | null) {
 
       await sleep(200);
 
-      sRes.refetch();
+      fRes.refetch();
 
       return res;
     }),
   );
 
   return {
-    gas,
     fines,
     total,
     amount,

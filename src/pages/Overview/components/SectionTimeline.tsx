@@ -1,11 +1,10 @@
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
+import { useModel } from '@umijs/max';
 
 import * as F from '@/utils/format';
 import Steps from '@/components/Steps';
 import { NodeState } from '@/constants/state';
-import usePackInfo from '@/hooks/usePackInfo';
-import useRaiseState from '@/hooks/useRaiseState';
 
 function isExpire(sec?: number) {
   if (sec) {
@@ -14,28 +13,33 @@ function isExpire(sec?: number) {
   return false;
 }
 
-const StepStart: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isWaiting, isStarted } = useRaiseState(data);
+const StepStart: React.FC = () => {
+  const { plan, state } = useModel('Overview.overview');
+  const { isStarted, isWaiting } = state;
 
-  const isStart = useMemo(() => isStarted && data?.begin_time, [isStarted, data?.begin_time]);
+  const isStart = useMemo(() => isStarted && plan?.begin_time, [isStarted, plan?.begin_time]);
 
   return (
-    <Steps.Item title="质押开放" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
-      {data?.closing_time ? F.formatUnixDate(data.begin_time) : '主办人决定开放时间'}
+    <Steps.Item title="質押開放" status={isStart ? 'finish' : isWaiting ? 'active' : undefined}>
+      {plan?.closing_time ? F.formatUnixDate(plan.begin_time) : '主辦人決定開放時間'}
     </Steps.Item>
   );
 };
 
-const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { nodeState, isClosed, isFailed, isRaising, isSuccess, isDestroyed, isWaitSeal } = useRaiseState(data);
+const StepClose: React.FC = () => {
+  const { plan, state } = useModel('Overview.overview');
+  const { nodeState, isClosed, isFailed, isRaising, isSuccess, isDestroyed, isWaitSeal } = state;
 
   const isProgress = useMemo(() => !isSuccess && (isRaising || isWaitSeal), [isRaising, isSuccess, isWaitSeal]);
-  const isRaiseEnd = useMemo(() => (isDestroyed || isSuccess) && nodeState >= NodeState.Started, [nodeState, isDestroyed, isSuccess]);
+  const isRaiseEnd = useMemo(
+    () => (isDestroyed || isSuccess) && nodeState >= NodeState.Started,
+    [nodeState, isDestroyed, isSuccess],
+  );
 
   if (isClosed || isFailed) {
     return (
-      <Steps.Item title={isClosed ? '质押关闭' : '质押失败'} status="active">
-        {F.formatUnixDate(data!.closing_time)}
+      <Steps.Item title={isClosed ? '質押關閉' : '質押失敗'} status="active">
+        {F.formatUnixDate(plan!.closing_time)}
       </Steps.Item>
     );
   }
@@ -51,14 +55,15 @@ const StepClose: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   };
 
   return (
-    <Steps.Item title="质押阶段截止" status={isRaiseEnd ? 'finish' : isProgress ? 'active' : undefined}>
-      {data?.closing_time ? formatEndTime(data.closing_time) : `预期${data!.raise_days}天`}
+    <Steps.Item title="質押階段截止" status={isRaiseEnd ? 'finish' : isProgress ? 'active' : undefined}>
+      {plan?.closing_time ? formatEndTime(plan.closing_time) : `預期${plan!.raise_days}天`}
     </Steps.Item>
   );
 };
 
-const StepSeal: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isSuccess, isSealing, isDelayed, isWorking } = useRaiseState(data);
+const StepSeal: React.FC = () => {
+  const { plan, state } = useModel('Overview.overview');
+  const { isSuccess, isSealing, isDelayed, isWorking } = state;
 
   const formatEndTime = (time: number) => {
     const r = [F.formatUnixDate(time)];
@@ -72,37 +77,41 @@ const StepSeal: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
 
   return (
     <>
-      <Steps.Item title="开始分配激励" status={isWorking ? 'finish' : isSuccess && (isSealing || isDelayed) ? 'active' : undefined}>
-        质押结束即开始分配激励
+      <Steps.Item
+        title="開始分配激勵"
+        status={isWorking ? 'finish' : isSuccess && (isSealing || isDelayed) ? 'active' : undefined}
+      >
+        質押結束即開始分配激勵
       </Steps.Item>
 
-      <Steps.Item title="封装阶段截止" status={isWorking ? 'finish' : undefined}>
-        {data?.end_seal_time ? formatEndTime(data.end_seal_time) : `+ ${data!.seal_days} 天`}
+      <Steps.Item title="封裝階段截止" status={isWorking ? 'finish' : undefined}>
+        {plan?.end_seal_time ? formatEndTime(plan.end_seal_time) : `+ ${plan!.seal_days} 天`}
       </Steps.Item>
     </>
   );
 };
 
-const StepWork: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isFinished, isDestroyed, isWorking } = useRaiseState(data);
+const StepWork: React.FC = () => {
+  const { plan, state } = useModel('Overview.overview');
+  const { isFinished, isDestroyed, isWorking } = state;
 
   return (
-    <Steps.Item title="运维阶段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
-      {isWorking ? '产出和分配Filecoin激励' : `+${data!.sector_period}天`}
+    <Steps.Item title="運維階段" status={isDestroyed ? 'finish' : isFinished ? 'active' : undefined}>
+      {isWorking ? '產出與分配Filecoin激勵' : `+${plan!.sector_period}天`}
     </Steps.Item>
   );
 };
 
-const StepEnd: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { data: pack } = usePackInfo(data);
-  const { isFinished, isDestroyed, isWorking } = useRaiseState(data);
+const StepEnd: React.FC = () => {
+  const { pack, plan, state } = useModel('Overview.overview');
+  const { isFinished, isDestroyed, isWorking } = state;
 
   return (
     <Steps.Item
       title={
         <>
-          <span>扇区到期</span>
-          {isFinished && <span className="fw-normal opacity-75">（{data?.sector_period}天）</span>}
+          <span>扇區到期</span>
+          {isFinished && <span className="fw-normal opacity-75">（{plan?.sector_period}天）</span>}
         </>
       }
       status={isDestroyed ? (isExpire(pack?.max_expiration_epoch) ? 'finish' : 'active') : undefined}
@@ -122,19 +131,23 @@ const StepEnd: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   );
 };
 
-const SectionTimeline: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const SectionTimeline: React.FC = () => {
+  const { plan } = useModel('Overview.overview');
+
+  if (!plan) return null;
+
   return (
     <>
       <Steps>
-        <StepStart data={data} />
+        <StepStart />
 
-        <StepClose data={data} />
+        <StepClose />
 
-        <StepSeal data={data} />
+        <StepSeal />
 
-        <StepWork data={data} />
+        <StepWork />
 
-        <StepEnd data={data} />
+        <StepEnd />
       </Steps>
     </>
   );

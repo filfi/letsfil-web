@@ -1,8 +1,8 @@
 import { Tooltip } from 'antd';
 
+import LoanCard from './LoanCard';
 import { isMountPlan } from '@/helpers/mount';
 import useAssetPack from '@/hooks/useAssetPack';
-import useRaiseRate from '@/hooks/useRaiseRate';
 import useMountAssets from '@/hooks/useMountAssets';
 import useRewardInvestor from '@/hooks/useRewardInvestor';
 import { formatAmount, formatPower } from '@/utils/format';
@@ -17,9 +17,9 @@ const MountInvestor: React.FC<ItemProps> = ({ plan }) => {
   const { investorPledge, investorPower } = useMountAssets(plan);
 
   return (
-    <>
+    <div className="card-body py-1">
       <p className="d-flex my-3 gap-3">
-        <span className="text-gray-dark">我的质押</span>
+        <span className="text-gray-dark">我的質押</span>
         <span className="ms-auto">
           <span className="fs-16 fw-600">{formatAmount(investorPledge)}</span>
           <span className="text-gray-dark ms-1">FIL</span>
@@ -30,7 +30,7 @@ const MountInvestor: React.FC<ItemProps> = ({ plan }) => {
         <span className="text-gray-dark">
           <span className="me-1">我的算力</span>
 
-          <Tooltip title="按照挂载节点时的约定">
+          <Tooltip title="依照掛載節點時的約定">
             <span className="bi bi-question-circle"></span>
           </Tooltip>
         </span>
@@ -39,60 +39,75 @@ const MountInvestor: React.FC<ItemProps> = ({ plan }) => {
           <span className="text-gray-dark ms-1">{formatPower(investorPower)?.[1]}</span>
         </span>
       </p>
+
       <p className="d-flex my-3 gap-3">
-        <span className="text-gray-dark">可提余额</span>
+        <span className="text-gray-dark">可提餘額</span>
         <span className="ms-auto">
           <span className="fs-16 fw-600">{formatAmount(reward)}</span>
           <span className="text-gray-dark ms-1">FIL</span>
         </span>
       </p>
-    </>
+    </div>
   );
 };
 
 const RaiseInvestor: React.FC<ItemProps> = ({ pack, plan }) => {
-  const { priorityRate } = useRaiseRate(plan);
   const { reward } = useRewardInvestor(plan);
-  const { investorAmount, investorPower, investorSealsPower } = useAssetPack(plan, pack);
+  const { investorRate, pledge, pledgeSealsPower, pledgePower, leverage, leverageSealsPower } = useAssetPack(
+    plan,
+    pack,
+  );
+
+  const renderLoanContent = () => {
+    if (pack.PledgeList && pack.PledgeList.length) {
+      return <LoanCard list={pack.PledgeList} amount={leverage} rate={investorRate} power={leverageSealsPower} />;
+    }
+
+    return null;
+  };
 
   return (
     <>
-      <p className="d-flex my-3 gap-3">
-        <span className="text-gray-dark">我的质押</span>
-        <span className="ms-auto">
-          <span className="fs-16 fw-600">{formatAmount(investorAmount)}</span>
-          <span className="text-gray-dark ms-1">FIL</span>
-        </span>
-      </p>
-      {!isMountPlan(plan) && (
+      <div className="card-body py-1">
         <p className="d-flex my-3 gap-3">
-          <span className="text-gray-dark">封装算力</span>
+          <span className="text-gray-dark">我的質押</span>
           <span className="ms-auto">
-            <span className="fs-16 fw-600">{formatPower(investorSealsPower)?.[0]}</span>
-            <span className="text-gray-dark ms-1">{formatPower(investorSealsPower)?.[1]}</span>
+            <span className="fs-16 fw-600">{formatAmount(pledge)}</span>
+            <span className="text-gray-dark ms-1">FIL</span>
           </span>
         </p>
-      )}
-      <p className="d-flex my-3 gap-3">
-        <span className="text-gray-dark">
-          <span className="me-1">我的算力</span>
+        {!isMountPlan(plan) && (
+          <p className="d-flex my-3 gap-3">
+            <span className="text-gray-dark">封裝算力</span>
+            <span className="ms-auto">
+              <span className="fs-16 fw-600">{formatPower(pledgeSealsPower)?.[0]}</span>
+              <span className="text-gray-dark ms-1">{formatPower(pledgeSealsPower)?.[1]}</span>
+            </span>
+          </p>
+        )}
+        <p className="d-flex my-3 gap-3">
+          <span className="text-gray-dark">
+            <span className="me-1">我的算力</span>
 
-          <Tooltip title={`我的算力 = 封装算力 * ${priorityRate}%`}>
-            <span className="bi bi-question-circle"></span>
-          </Tooltip>
-        </span>
-        <span className="ms-auto">
-          <span className="fs-16 fw-600">{formatPower(investorPower)?.[0]}</span>
-          <span className="text-gray-dark ms-1">{formatPower(investorPower)?.[1]}</span>
-        </span>
-      </p>
-      <p className="d-flex my-3 gap-3">
-        <span className="text-gray-dark">可提余额</span>
-        <span className="ms-auto">
-          <span className="fs-16 fw-600">{formatAmount(reward)}</span>
-          <span className="text-gray-dark ms-1">FIL</span>
-        </span>
-      </p>
+            <Tooltip title={`我的算力 = 封裝算力 * ${investorRate}%`}>
+              <span className="bi bi-question-circle"></span>
+            </Tooltip>
+          </span>
+          <span className="ms-auto">
+            <span className="fs-16 fw-600">{formatPower(pledgePower)?.[0]}</span>
+            <span className="text-gray-dark ms-1">{formatPower(pledgePower)?.[1]}</span>
+          </span>
+        </p>
+        <p className="d-flex my-3 gap-3">
+          <span className="text-gray-dark">可提餘額</span>
+          <span className="ms-auto">
+            <span className="fs-16 fw-600">{formatAmount(reward)}</span>
+            <span className="text-gray-dark ms-1">FIL</span>
+          </span>
+        </p>
+      </div>
+
+      {renderLoanContent()}
     </>
   );
 };

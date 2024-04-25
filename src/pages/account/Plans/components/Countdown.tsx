@@ -6,7 +6,7 @@ const Countdown: React.FC<{ time: number }> = ({ time }) => {
   return (
     <>
       {formatted.days > 0 && <span>{formatted.days}天</span>}
-      {(formatted.days > 0 || formatted.hours > 0) && <span>{formatted.hours}小时</span>}
+      {(formatted.days > 0 || formatted.hours > 0) && <span>{formatted.hours}小時</span>}
       {(formatted.days > 0 || formatted.hours > 0 || formatted.minutes > 0) && <span>{formatted.minutes}分</span>}
       <span>{formatted.seconds}秒</span>
     </>

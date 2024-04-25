@@ -166,9 +166,16 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
   return (
     <ul className="list-unstyled">
       {list.map((item, idx) => (
-        <li key={item.key} className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative" style={{ paddingBottom: '0.01px' }}>
-          <Form.Item name={[name, idx, 'address']} rules={[{ required: true, message: '请输入主办人钱包地址' }, { validator: V.combineAddr }]}>
-            <Input disabled={isRaiser(item.address)} placeholder="输入主办人地址" />
+        <li
+          key={item.key}
+          className="ps-3 pt-3 pe-5 mb-3 bg-light rounded-3 position-relative"
+          style={{ paddingBottom: '0.01px' }}
+        >
+          <Form.Item
+            name={[name, idx, 'address']}
+            rules={[{ required: true, message: '請輸入主辦人錢包地址' }, { validator: V.combineAddr }]}
+          >
+            <Input disabled={isRaiser(item.address)} placeholder="輸入主辦人地址" />
           </Form.Item>
           <Form.Item hidden name={[name, idx, 'level']}>
             <Input />
@@ -176,21 +183,31 @@ const SponsorListRender: React.ForwardRefRenderFunction<SponsorListActions, Spon
           <Form.Item
             name={[name, idx, 'rate']}
             rules={[
-              { required: true, message: '请输入算力分配比例' },
+              { required: true, message: '請輸入算力分配比例' },
               {
                 validator: V.Queue.create()
                   // .add(V.createGtValidator(0))
-                  .add(V.createNumRangeValidator([0, max], `请输入0-${max}之间的数`))
-                  .add(V.createDecimalValidator(precision, `最多支持${precision}位小数`))
+                  .add(V.createNumRangeValidator([0, max], `請輸入0-${max}之間的數`))
+                  .add(V.createDecimalValidator(precision, `最多支援${precision}位小數`))
                   .build(),
               },
             ]}
           >
-            <RateInput type="number" disabled={isRaiser(item.address)} placeholder="输入算力分配比例" suffix="%" onChangeText={handleRateChange} />
+            <RateInput
+              type="number"
+              disabled={isRaiser(item.address)}
+              placeholder="輸入算力分配比例"
+              suffix="%"
+              onChangeText={handleRateChange}
+            />
           </Form.Item>
 
           {list.length > 1 && !isRaiser(item.address) && (
-            <button className="btn-close position-absolute end-0 top-0 me-3 mt-3" type="button" onClick={() => handleSub(item.key)}></button>
+            <button
+              className="btn-close position-absolute end-0 top-0 me-3 mt-3"
+              type="button"
+              onClick={() => handleSub(item.key)}
+            ></button>
           )}
         </li>
       ))}

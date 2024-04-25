@@ -1,10 +1,12 @@
 import classNames from 'classnames';
 import { useResponsive } from 'ahooks';
+import { useModel } from '@umijs/max';
 
 import CardBack from './CardBack';
 import CardMiner from './CardMiner';
 import CardRaise from './CardRaise';
 import CardAssets from './CardAssets';
+import CardLending from './CardLending';
 import CardStaking from './CardStaking';
 import SectionRaise from './SectionRaise';
 import SectionNode from './SectionNode';
@@ -18,121 +20,129 @@ import SectionTimeline from './SectionTimeline';
 import SectionProvider from './SectionProvider';
 import SectionWhitelist from './SectionWhitelist';
 import { isTargeted } from '@/helpers/raise';
-import useRaiseRole from '@/hooks/useRaiseRole';
-import useRaiseState from '@/hooks/useRaiseState';
 
-const RaiseMain: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
+const RaiseMain: React.FC = () => {
   const responsive = useResponsive();
-  const { isRaiser } = useRaiseRole(data);
-  const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = useRaiseState(data);
+  const { plan, role, state } = useModel('Overview.overview');
+
+  const { isRaiser } = role ?? {};
+  const { isStarted, isSealing, isDelayed, isFinished, isDestroyed } = state ?? {};
 
   return (
     <>
       <section id="raising" className="section">
         <div className="d-flex flex-column gap-3">
-          <SectionRaise data={data} />
+          <SectionRaise />
 
           {responsive.lg ? null : (
             <>
-              <CardRaise data={data} />
+              <CardRaise />
 
-              <CardMiner data={data} />
+              <CardMiner />
 
-              <CardStaking data={data} />
+              <CardStaking />
 
-              <CardBack data={data} />
+              <CardBack />
 
-              <CardAssets data={data} />
+              <CardAssets />
+
+              <CardLending />
 
               {/* <CardCalc /> */}
             </>
           )}
         </div>
       </section>
-      {isTargeted(data) && isRaiser && (
+      {isTargeted(plan) && isRaiser && (
         <section id="targeted" className="section">
           <div className="section-header">
             <h4 className="section-title">定向地址</h4>
-            <p className="mb-0">可参与定向计划的钱包地址和参与情况。</p>
+            <p className="mb-0">可參與定向計劃的錢包地址和參與情況。</p>
           </div>
 
-          <SectionWhitelist data={data} />
+          <SectionWhitelist />
         </section>
       )}
       {(isSealing || isDelayed || isFinished) && (
         <section id="seals" className="section">
           <div className="section-header">
-            <h4 className="section-title">封装进度</h4>
-            <p className="mb-0">封装进展一览无余</p>
+            <h4 className="section-title">封裝進度</h4>
+            <p className="mb-0">封裝進度一覽無餘</p>
           </div>
 
-          <SectionSeals data={data} />
+          <SectionSeals />
         </section>
       )}
-      <section id="provider" className={classNames('section', { 'order-3': isSealing, 'order-5': isDelayed || isFinished })}>
+      <section
+        id="provider"
+        className={classNames('section', { 'order-3': isSealing, 'order-5': isDelayed || isFinished })}
+      >
         <div className="section-header">
-          <h4 className="section-title">服务商</h4>
-          <p className="mb-0">开创链上协作新模式，专业化服务，负责任承诺。</p>
+          <h4 className="section-title">服務商</h4>
+          <p className="mb-0">開創鏈上協作新模式，專業化服務，負責任承諾。</p>
         </div>
 
-        <SectionProvider data={data} />
+        <SectionProvider />
       </section>
-      <section id="deposit" className={classNames('section', { 'order-3': isSealing, 'order-5': isDelayed || isFinished || isDestroyed })}>
+      <section
+        id="deposit"
+        className={classNames('section', { 'order-3': isSealing, 'order-5': isDelayed || isFinished || isDestroyed })}
+      >
         <div className="section-header">
-          <h4 className="section-title">保证金</h4>
-          <p className="mb-0">保障节点计划执行，违约自动触发惩罚机制，保护建设者权益。</p>
+          <h4 className="section-title">保證金</h4>
+          <p className="mb-0">保障節點計畫執行，違約自動觸發懲罰機制，保護建設者權益。</p>
         </div>
 
-        <SectionDeposit data={data} />
+        <SectionDeposit />
       </section>
       <section id="reward" className="section order-2">
         <div className="section-header">
           <h4 className="section-title">分配方案</h4>
-          <p className="mb-0">智能合约严格执行分配方案，坚定履约，透明可信，省时省心。</p>
+          <p className="mb-0">智能合約嚴格執行分配方案，堅定履約，透明可信，省時省心。</p>
         </div>
 
-        <SectionReward data={data} />
+        <SectionReward />
       </section>
       <section id="pledge" className="section order-2">
         <div className="section-header">
-          <h4 className="section-title">质押的归属</h4>
-          <p className="mb-0">质押的所有权永恒不变，投入多少返回多少。</p>
+          <h4 className="section-title">質押的歸屬</h4>
+          <p className="mb-0">質押的所有權永恆不變，投入多少返回多少。</p>
         </div>
 
-        <SectionPledge data={data} />
+        <SectionPledge />
       </section>
       <section id="sector" className="section order-3">
         <div className="section-header">
-          <h4 className="section-title">建设方案</h4>
-          <p className="mb-0">质押的FIL定向使用，用途不可更改，智能合约保障每个FIL去向可查。</p>
+          <h4 className="section-title">建設方案</h4>
+          <p className="mb-0">質押的FIL定向使用，用途不可更改，智能合約保障每個FIL去向可查。</p>
         </div>
 
-        <SectionNode data={data} />
+        <SectionNode />
       </section>
       <section id="timeline" className="section order-4">
         <div className="section-header">
-          <h4 className="section-title">时间进度</h4>
-          <p className="mb-0">建设进展尽在掌握。</p>
+          <h4 className="section-title">時間進度</h4>
+          <p className="mb-0">建設進展盡在掌握。</p>
         </div>
 
-        <SectionTimeline data={data} />
+        <SectionTimeline />
       </section>
       <section id="contract" className="section order-5">
         <div className="section-header">
-          <h4 className="section-title">智能合约</h4>
-          <p className="mb-0">节点计划是部署在Filecoin上的智能合约，存储节点的建设和激励分配完全由智能合约管理。</p>
+          <h4 className="section-title">智能合約</h4>
+          <p className="mb-0">節點計劃是部署在Filecoin上的智慧合約，儲存節點的建置和激勵分配完全由智慧合約管理。</p>
         </div>
 
-        <SectionContract data={data} />
+        <SectionContract />
       </section>
       {isStarted && (
         <section id="events" className="section order-5">
           <div className="section-header">
             <h4 className="section-title">事件</h4>
-            <p className="mb-0">节点计划发生的重要事件以及链上相关消息</p>
+            <p className="mb-0">節點計畫發生的重要事件以及鏈上相關訊息</p>
           </div>
 
-          <SectionEvents data={data} />
+          <SectionEvents />
         </section>
       )}
     </>

@@ -1,22 +1,22 @@
 import { Tooltip } from 'antd';
 import { useMemo } from 'react';
+import { useModel } from '@umijs/max';
 
 import * as F from '@/utils/format';
 import * as U from '@/utils/utils';
-import useRaiseBase from '@/hooks/useRaiseBase';
-import useRaiseRate from '@/hooks/useRaiseRate';
-import useRaiseState from '@/hooks/useRaiseState';
 import useIncomeRate from '@/hooks/useIncomeRate';
 import useRaiseReward from '@/hooks/useRaiseReward';
-import useAssetPack from '@/hooks/useAssetPack';
 
-const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { opsAmount } = useAssetPack(data);
-  const { priorityRate } = useRaiseRate(data);
-  const { rate, perFil } = useIncomeRate(data);
-  const { fines, reward } = useRaiseReward(data);
-  const { actual, minRate, target, progress } = useRaiseBase(data);
-  const { isPending, isWaiting, isStarted, isSealing, isDelayed, isWorking } = useRaiseState(data);
+const SectionRaise: React.FC = () => {
+  const { assets, base, plan, rate, state } = useModel('Overview.overview');
+
+  const { fines, reward } = useRaiseReward(plan);
+  const { rate: incomeRate, perFil } = useIncomeRate(plan);
+
+  const { opsAmount } = assets;
+  const { priorityRate } = rate;
+  const { actual, minRate, target, progress } = base;
+  const { isPending, isWaiting, isStarted, isSealing, isDelayed, isWorking } = state;
 
   const minAmount = useMemo(() => U.accMul(target, minRate), [target, minRate]);
   // 实际保证金配比：运维保证金配比 = 运维保证金 / (运维保证金 + 已质押金额)
@@ -28,13 +28,13 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">质押目标</p>
+              <p className="mb-1 text-gray-dark">質押目標</p>
               <p className="mb-0 d-flex flex-wrap align-items-center">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3 text-uppercase">{F.formatAmount(target)}</span>
                   <span className="ms-1 text-neutral">FIL</span>
                 </span>
-                <span className="badge badge-success ms-auto">达成{F.formatProgress(progress)}</span>
+                <span className="badge badge-success ms-auto">達成{F.formatProgress(progress)}</span>
               </p>
             </div>
           </div>
@@ -42,22 +42,24 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         <div className="col">
           <div className="card h-100">
             <div className="card-body">
-              <p className="mb-1 text-gray-dark">建设者获得</p>
+              <p className="mb-1 text-gray-dark">建設者獲得</p>
               <p className="mb-0 d-flex flex-wrap align-items-center text-break">
                 <span className="fs-5 fw-bold">
                   <span className="fs-3">{priorityRate}</span>
                   <span className="ms-1 text-neutral">%</span>
                 </span>
                 <span className="badge badge-primary ms-auto">
-                  <span className="me-1">静态产出{F.formatRate(rate, '0.00%')}</span>
+                  <span className="me-1">靜態產出{F.formatRate(incomeRate, '0.00%')}</span>
 
-                  <Tooltip title={`“产出ROA” 按照节点计划创建时刻全网产出（${F.formatAmount(perFil, 6)}FIL/TiB）静态估算`}>
+                  <Tooltip
+                    title={`“產出ROA” 依照節點計畫創建時刻全網產出（${F.formatAmount(perFil, 6)}FIL/TiB）靜態估算`}
+                  >
                     <span className="bi bi-question-circle"></span>
                   </Tooltip>
                 </span>
                 {/* <a className="badge badge-primary ms-auto" href="#calculator" data-bs-toggle="modal">
                   <span className="bi bi-calculator"></span>
-                  <span className="ms-1">产出ROA{F.formatRate(rate, '0.00%')}</span>
+                  <span className="ms-1">年化{F.formatRate(rate, '0.00%')}</span>
                 </a> */}
               </p>
             </div>
@@ -69,34 +71,34 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         {isStarted ? (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">开放截止</div>
-              <div className="col-8 table-cell">{data ? F.formatUnixDate(data.closing_time) : '-'}</div>
+              <div className="col-4 table-cell th">開放截止</div>
+              <div className="col-8 table-cell">{plan ? F.formatUnixDate(plan.closing_time) : '-'}</div>
             </div>
           </div>
         ) : (
           <div className="col table-row">
             <div className="row g-0">
-              <div className="col-4 table-cell th">开放时间</div>
-              <div className="col-8 table-cell">{data ? data.raise_days : '-'}天</div>
+              <div className="col-4 table-cell th">開放時間</div>
+              <div className="col-8 table-cell">{plan ? plan.raise_days : '-'}天</div>
             </div>
           </div>
         )}
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 col-xl-5 table-cell th">最低目标</div>
+            <div className="col-4 col-xl-5 table-cell th">最低目標</div>
             <div className="col-8 col-xl-7 table-cell">{F.formatAmount(minAmount, 2)} FIL</div>
           </div>
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">已质押</div>
+            <div className="col-4 table-cell th">已質押</div>
             <div className="col-8 table-cell">
               {isPending || isWaiting ? (
                 <span className="text-gray">-</span>
               ) : (
                 <>
                   <span>{F.formatAmount(actual, 2)} FIL</span>
-                  {isStarted && <span> · 达成{F.formatProgress(progress)}</span>}
+                  {isStarted && <span> · 達成{F.formatProgress(progress)}</span>}
                 </>
               )}
             </div>
@@ -104,9 +106,13 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         </div>
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 col-xl-5 table-cell th">保证金配比</div>
+            <div className="col-4 col-xl-5 table-cell th">保證金配比</div>
             <div className="col-8 col-xl-7 table-cell">
-              {isPending || isWaiting ? <span className="text-gray">-</span> : <span>{F.formatAmount(opsAmount, 2, 2)} FIL</span>}
+              {isPending || isWaiting ? (
+                <span className="text-gray">-</span>
+              ) : (
+                <span>{F.formatAmount(opsAmount, 2, 2)} FIL</span>
+              )}
             </div>
           </div>
         </div>
@@ -115,8 +121,8 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col table-row">
               <div className="row g-0">
                 <div className="col-4 table-cell th">
-                  <Tooltip title="获得Filecoin激励的总额，集合质押结束后开始分配。">
-                    <span>累计激励</span>
+                  <Tooltip title="取得Filecoin激勵的總金額，集合質押結束後開始分配。">
+                    <span>累計激勵</span>
                   </Tooltip>
                 </div>
                 <div className="col-8 table-cell">{F.formatAmount(reward, 2)} FIL</div>
@@ -125,8 +131,8 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
             <div className="col table-row">
               <div className="row g-0">
                 <div className="col-4 col-xl-5 table-cell th">
-                  <Tooltip title="来自Filecoin网络的累计罚金">
-                    <span>累计罚金</span>
+                  <Tooltip title="來自Filecoin網路的累計罰金">
+                    <span>累計罰金</span>
                   </Tooltip>
                 </div>
                 <div className="col-8 col-xl-7 table-cell">{F.formatAmount(fines, 2, 2)} FIL</div>
@@ -136,8 +142,8 @@ const SectionRaise: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
         )}
         <div className="col table-row">
           <div className="row g-0">
-            <div className="col-4 table-cell th">质押周期</div>
-            <div className="col-8 table-cell">{data?.sector_period} 天</div>
+            <div className="col-4 table-cell th">質押週期</div>
+            <div className="col-8 table-cell">{plan?.sector_period} 天</div>
           </div>
         </div>
         <div className="col table-row d-none d-md-block d-lg-none d-xl-block">

@@ -11,13 +11,24 @@ const Calculator: React.FC = () => {
 
   return (
     <>
-      <div id="calculator" className={classNames('modal fade calculator')} tabIndex={-1} aria-hidden="true" aria-labelledby="modal">
+      <div
+        id="calculator"
+        className={classNames('modal fade calculator')}
+        tabIndex={-1}
+        aria-hidden="true"
+        aria-labelledby="modal"
+      >
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header flex-column">
-              <button type="button" className="btn-close position-absolute end-0 top-0 me-3 mt-3" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button
+                type="button"
+                className="btn-close position-absolute end-0 top-0 me-3 mt-3"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
 
-              <p className="ms-auto pe-5 me-5 mb-2 text-end text-neutral fw-500">年化节点激励率</p>
+              <p className="ms-auto pe-5 me-5 mb-2 text-end text-neutral fw-500">年化節點激勵率</p>
 
               <div className="d-flex w-100">
                 <div className="flex-shrink-0 mt-auto mb-2">
@@ -37,7 +48,7 @@ const Calculator: React.FC = () => {
                     <Form.Item name="amount">
                       <Input
                         className="fs-3"
-                        placeholder="输入投资额"
+                        placeholder="輸入投資額"
                         size="large"
                         suffix={<span className="mt-auto mb-2 fs-5 small lh-1 text-gray">FIL</span>}
                       />
@@ -49,20 +60,20 @@ const Calculator: React.FC = () => {
               <div className="modal-body border-top">
                 <div className="row row-cols-1 row-cols-md-2 g-0 g-md-3 g-lg-4">
                   <div className="col d-flex flex-column">
-                    <Form.Item label="质押金额" name="total">
-                      <Input placeholder="输入质押金额" suffix="FIL" />
+                    <Form.Item label="質押金額" name="total">
+                      <Input placeholder="輸入質押金額" suffix="FIL" />
                     </Form.Item>
 
                     <div className="row row-cols-2 order-md-2">
                       <div className="col">
-                        <Form.Item label="24h平均节点激励/T" name="perPower">
-                          <Input placeholder="输入24h平均节点激励/T" suffix="FIL/TiB" />
+                        <Form.Item label="24h平均節點激勵/T" name="perPower">
+                          <Input placeholder="輸入24h平均節點激勵/T" suffix="FIL/TiB" />
                         </Form.Item>
                       </div>
                       <div className="col">
-                        <Form.Item label="扇区期限" name="period">
+                        <Form.Item label="扇區期限" name="period">
                           <Select
-                            placeholder="请选择"
+                            placeholder="請選擇"
                             dropdownStyle={{ zIndex: 1100 }}
                             options={[
                               { label: '210天', value: 210 },
@@ -74,19 +85,19 @@ const Calculator: React.FC = () => {
                       </div>
                     </div>
 
-                    <Form.Item className="order-md-1" label="总算力(QAP)">
+                    <Form.Item className="order-md-1" label="總算力(QAP)">
                       <Input className="border-0" readOnly value={0.0} suffix="PiB" />
                     </Form.Item>
                   </div>
 
                   <div className="col">
-                    <Form.Item label="总节点激励">
+                    <Form.Item label="總節點激勵">
                       <Input className="border-0 text-end" readOnly value={0.0} suffix="FIL" />
                     </Form.Item>
 
                     <div className="row row-cols-2">
                       <div className="col">
-                        <Form.Item label="建设者获得">
+                        <Form.Item label="建設者獲得">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="%" />
                         </Form.Item>
                       </div>
@@ -99,12 +110,12 @@ const Calculator: React.FC = () => {
 
                     <div className="row row-cols-2">
                       <div className="col">
-                        <Form.Item label="建设者节点激励">
+                        <Form.Item label="建設者節點激勵">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="FIL" />
                         </Form.Item>
                       </div>
                       <div className="col">
-                        <Form.Item label="我的节点激励">
+                        <Form.Item label="我的節點激勵">
                           <Input className="border-0 text-end" readOnly value={0.0} suffix="FIL" />
                         </Form.Item>
                       </div>
@@ -117,8 +128,8 @@ const Calculator: React.FC = () => {
                 <span className="text-gray">
                   <i className="bi bi-clock align-middle"></i>
 
-                  <span className="ms-2 align-middle">24h平均节点激励/T</span>
-                  <span className="ms-3 fw-500 align-middle">3小时前</span>
+                  <span className="ms-2 align-middle">24h平均節點激勵/T</span>
+                  <span className="ms-3 fw-500 align-middle">3小時前</span>
                 </span>
 
                 <button className="btn btn-outline-danger border-0" type="reset">

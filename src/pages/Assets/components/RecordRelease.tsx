@@ -5,10 +5,10 @@ import styles from '../styles.less';
 import { isDef } from '@/utils/utils';
 import Modal from '@/components/Modal';
 import { listRelease } from '@/apis/miner';
-import { formatEther, formatUnixDate } from '@/utils/format';
-import useInfiniteLoad from '@/hooks/useInfiniteLoad';
-import type { ModalProps } from '@/components/Modal';
 import { CREATION_TIME } from '@/constants/config';
+import useInfiniteLoad from '@/hooks/useInfiniteLoad';
+import { formatDate, formatEther } from '@/utils/format';
+import type { ModalProps } from '@/components/Modal';
 
 function withEmpty<D = any>(render: (value: any, row: D, index: number) => React.ReactNode) {
   return (value: any, row: D, index: number) => {
@@ -45,24 +45,24 @@ const RecordRelease: React.FC<ModalProps & { data?: API.Base }> = ({ data, ...pr
 
   const columns: ColumnsType<API.Base> = [
     {
-      title: '释放类型',
+      title: '釋放類型',
       dataIndex: 'id',
-      render: withEmpty((v) => (`${v}` === '0' ? '立即释放' : '线性释放')),
+      render: withEmpty((v) => (`${v}` === '0' ? '立即釋放' : '線性釋放')),
     },
     {
-      title: '释放数值',
+      title: '釋放數值',
       dataIndex: 'release_reward',
       render: withEmpty((v) => `${formatEther(v)} FIL`),
     },
     {
-      title: '释放高度',
+      title: '釋放高度',
       dataIndex: 'height',
       render: withEmpty((v) => v),
     },
     {
-      title: '释放时间',
+      title: '釋放時間',
       dataIndex: 'height',
-      render: withEmpty((v) => formatUnixDate(CREATION_TIME + v * 30)),
+      render: withEmpty((v) => formatDate(CREATION_TIME + v * 30)),
     },
   ];
 
@@ -71,8 +71,8 @@ const RecordRelease: React.FC<ModalProps & { data?: API.Base }> = ({ data, ...pr
       <Modal.Alert
         title={
           <>
-            <p className="mb-1 fs-20 fw-bold text-main">释放明细</p>
-            <p className="mb-0 text-sm text-gray">激励总额：{formatEther(data?.amount)} FIL</p>
+            <p className="mb-1 fs-20 fw-bold text-main">釋放明細</p>
+            <p className="mb-0 text-sm text-gray">激勵總額：{formatEther(data?.amount)} FIL</p>
           </>
         }
         confirmText="好的"

@@ -1,32 +1,35 @@
 import { Input } from 'antd';
 import { useMemo } from 'react';
+import { useModel } from '@umijs/max';
 
 import Dialog from '@/components/Dialog';
 import SpinBtn from '@/components/SpinBtn';
 import { formatAmount } from '@/utils/format';
 import useContract from '@/hooks/useContract';
-import useRaiseBase from '@/hooks/useRaiseBase';
-import useRaiseRole from '@/hooks/useRaiseRole';
 import useRaiseMiner from '@/hooks/useRaiseMiner';
-import useRaiseState from '@/hooks/useRaiseState';
 import useProcessify from '@/hooks/useProcessify';
 import { accAdd, accMul, accSub, sleep } from '@/utils/utils';
 
-const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { startPreSeal } = useContract(data?.raise_address);
+const CardMiner: React.FC = () => {
+  const { base, plan, role, state } = useModel('Overview.overview');
 
-  const { isRaiser } = useRaiseRole(data);
-  const { funds, pledge, safe, sealed } = useRaiseMiner(data);
-  const { isStarted, isSuccess, isWorking } = useRaiseState(data);
-  const { actual, progress, minTarget, refetch } = useRaiseBase(data);
+  const { startPreSeal } = useContract(plan?.raise_address);
+
+  const { isRaiser } = role;
+  const { isStarted, isSuccess, isWorking } = state;
+  const { actual, progress, minTarget, refetch } = base;
+  const { funds, pledge, safe, sealed } = useRaiseMiner(plan);
 
   // 可转入 = 总质押 + 运维保证金 * 募集比例 + 缓冲金 - 已封装
-  const amount = useMemo(() => accSub(accAdd(pledge, accMul(funds, progress), safe), sealed), [funds, pledge, progress, safe, sealed]);
+  const amount = useMemo(
+    () => accSub(accAdd(pledge, accMul(funds, progress), safe), sealed),
+    [funds, pledge, progress, safe, sealed],
+  );
 
   const [sealing, sealAction] = useProcessify(async () => {
-    if (!data) return;
+    if (!plan) return;
 
-    await startPreSeal(data.raising_id);
+    await startPreSeal(plan.raising_id);
 
     await sleep(2e3);
 
@@ -36,8 +39,8 @@ const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   const handleSeal = () => {
     const hide = Dialog.confirm({
       icon: 'transfer',
-      title: `${formatAmount(amount, 2, 2)}FIL 转入Miner地址`,
-      summary: '将集合质押(在Owner地址)的余额转入Miner地址，用于封装扇区。集合质押到期时，最后余额自动转入。',
+      title: `${formatAmount(amount, 2, 2)}FIL 轉入Miner地址`,
+      summary: '將集合質押(在Owner地址)的餘額轉入Miner地址，用於封裝扇區。集質押到期時，最後餘額自動轉入。',
       confirmBtnVariant: 'danger',
       onConfirm: () => {
         hide();
@@ -50,20 +53,27 @@ const CardMiner: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   if (isRaiser && (isStarted || isSuccess) && !isWorking && actual >= minTarget && amount > 0) {
     return (
       <>
-        <div className="card section-card">
+        <div className="card section-card sticky-card">
           <div className="card-body ffi-form">
-            <p className="mb-2 text-main">质押余额(Owner地址)</p>
+            <p className="mb-2 text-main">質押餘額(Owner地址)</p>
             <div className="ffi-item mb-3 fs-16 text-end">
               <Input readOnly size="large" suffix="FIL" value={formatAmount(amount, 2, 2)} />
             </div>
 
             <div className="mb-3">
-              <SpinBtn className="btn btn-primary btn-lg w-100" disabled={amount <= 0} loading={sealing} onClick={handleSeal}>
-                转入Miner地址
+              <SpinBtn
+                className="btn btn-primary btn-lg w-100"
+                disabled={amount <= 0}
+                loading={sealing}
+                onClick={handleSeal}
+              >
+                轉入Miner地址
               </SpinBtn>
             </div>
 
-            <p className="mb-0">集合质押达到成立条件，主办人可将质押转入Miner地址，边募集边封装。集合质押到期时，余额自动转入。</p>
+            <p className="mb-0">
+              集合質押達到成立條件，主辦人可將質押轉入Miner地址，邊募集邊封裝。集質押到期時，餘額自動轉入。
+            </p>
           </div>
         </div>
       </>

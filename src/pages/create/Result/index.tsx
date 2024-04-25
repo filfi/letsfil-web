@@ -60,11 +60,11 @@ export default function CreateResult() {
   return (
     <>
       <div className="ffi-form">
-        <Result title="已保存" />
+        <Result title="已儲存" />
 
         <div className="ffi-item">
           <h5 className="ffi-label mb-5">
-            <span>接下来做什么？</span>
+            <span>接下來做什麼？</span>
             {/* <a className="text-underline" href="#more-modal" data-bs-toggle="modal">
               了解更多
             </a> */}
@@ -77,10 +77,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">主办人</span>
-                  <span>签名</span>
+                  <span className="fw-bold">主辦人</span>
+                  <span>簽名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">对节点计划达成共识，主办人签名完成链上部署，上链之后不可修改。</p>
+                <p className="mb-0 text-gray-dark">對節點計畫達成共識，主辦人簽名完成鏈上部署，上鍊後不可修改。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -89,10 +89,10 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">主办人</span>
-                  <span>存入”主办人保证金“</span>
+                  <span className="fw-bold">主辦人</span>
+                  <span>存入”主辦人保證金“</span>
                 </p>
-                <p className="mb-0 text-gray-dark">封装结束后，主办人可取回保证金，保证金原路退回存入时使用的钱包。</p>
+                <p className="mb-0 text-gray-dark">封裝結束後，主辦人可取回保證金，保證金原路退回存入時使用的錢包。</p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -101,10 +101,12 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">技术服务商</span>
-                  <span>签名</span>
+                  <span className="fw-bold">技術服務商</span>
+                  <span>簽名</span>
                 </p>
-                <p className="mb-0 text-gray-dark">节点计划需要得到技术服务商签名确认，同时将存储节点的Owner交给智能合约。</p>
+                <p className="mb-0 text-gray-dark">
+                  節點計畫需要經過技術服務商簽名確認，同時將儲存節點的Owner交給智慧合約。
+                </p>
               </div>
             </li>
             <li className="list-group-item d-flex gap-3 border-0 mb-3">
@@ -113,10 +115,12 @@ export default function CreateResult() {
               </div>
               <div className="flex-grow-1">
                 <p className="mb-0">
-                  <span className="fw-bold">技术服务商</span>
-                  <span>存入”运维保证金“</span>
+                  <span className="fw-bold">技術服務商</span>
+                  <span>存入“運維保證金”</span>
                 </p>
-                <p className="mb-0 text-gray-dark">扇区全部到期后，技术服务商可取回保证金，保证金原路退回存入时使用的钱包。</p>
+                <p className="mb-0 text-gray-dark">
+                  扇區全部到期後，技術服務商可取回保證金，保證金原路退回存入時使用的錢包。
+                </p>
               </div>
             </li>
           </ul>
@@ -131,7 +135,7 @@ export default function CreateResult() {
             重新修改
           </SpinBtn>
           <Link className="btn btn-primary btn-lg flex-fill" replace to={`/overview/${raiseId}`}>
-            查看节点计划
+            查看節點計劃
           </Link>
         </div>
       </div>

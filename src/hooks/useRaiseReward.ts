@@ -17,12 +17,12 @@ export default function useRaiseReward(data?: API.Plan | null) {
   const contract = useContract(data?.raise_address);
 
   const getTotalReward = async () => {
-    if (data && (M.isMountPlan(data) ? M.isWorking(data) : !R.isPending(data))) {
+    if (data && (M.isMountPlan(data) ? !M.isInactive(data) : !R.isPending(data))) {
       return await contract.getTotalReward(data.raising_id);
     }
   };
   const getServicerFines = async () => {
-    if (data && (M.isMountPlan(data) ? M.isWorking(data) : !R.isPending(data))) {
+    if (data && (M.isMountPlan(data) ? !M.isInactive(data) : !R.isPending(data))) {
       return await contract.getServicerFines(data.raising_id);
     }
   };

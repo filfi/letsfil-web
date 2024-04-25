@@ -29,7 +29,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                 <Avatar address={data.raiser} src={data.sponsor_logo} size={{ md: 48, lg: 56 }} />
               </div>
               <div className="flex-grow-1">
-                <h4 className="card-title mb-0 fw-600">{formatSponsor(data.sponsor_company)}发起的节点计划</h4>
+                <h4 className="card-title mb-0 fw-600">{formatSponsor(data.sponsor_company)}發起的節點計劃</h4>
               </div>
             </div>
             <div className="d-flex flex-shrink-0 flex-column flex-md-row gap-3 mb-auto">
@@ -43,13 +43,13 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                 <div className="col">
                   <div className="cd-item">
                     <span className="fw-600">{formatted.hours}</span>
-                    <span className="label">小时</span>
+                    <span className="label">小時</span>
                   </div>
                 </div>
                 <div className="col">
                   <div className="cd-item">
                     <span className="fw-600">{formatted.minutes}</span>
-                    <span className="label">分钟</span>
+                    <span className="label">分鐘</span>
                   </div>
                 </div>
                 <div className="col">
@@ -60,7 +60,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                 </div>
               </div>
               <Link className="btn btn-primary btn-lg btn-join" to={`/overview/${data.raising_id}`}>
-                立刻质押
+                立刻質押
               </Link>
             </div>
           </div>
@@ -72,7 +72,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
             <div className="flex-grow-1">
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-2 mb-3 mb-lg-4">
                 <p className="mb-0 fs-16 text-gray-dark">
-                  <span>质押目标</span>
+                  <span>質押目標</span>
                   <span className="mx-1 fw-bold">{formatAmount(target)}</span>
                   <span>FIL</span>
                 </p>
@@ -82,7 +82,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                 </p>
 
                 <p className="mb-0 fs-16 text-gray-dark">
-                  <span>最低目标</span>
+                  <span>最低目標</span>
                   <span className="mx-1 fw-bold">{formatAmount(minTarget)}</span>
                   <span>FIL</span>
                 </p>
@@ -92,7 +92,7 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                 </p>
 
                 <p className="mb-0 fs-16 text-gray-dark">
-                  <span>质押周期</span>
+                  <span>質押週期</span>
                   <span className="mx-1 fw-bold">{data.sector_period}</span>
                   <span>天</span>
                 </p>
@@ -101,19 +101,19 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
               <div className="d-flex flex-column flex-md-row flex-md-wrap gap-2 gap-xl-3 gap-xxl-4">
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-people text-gray"></span>
-                  <span className="mx-1">建设者获得</span>
+                  <span className="mx-1">建設者獲得</span>
                   <span className="fw-bold">{priorityRate}%</span>
                 </p>
 
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-calculator text-gray"></span>
-                  <span className="mx-1">预估年化</span>
+                  <span className="mx-1">預估年化</span>
                   <span className="fw-bold">{formatRate(rate)}</span>
                 </p>
 
                 <p className="mb-0 fs-16 text-gray-dark">
                   <span className="bi bi-clock text-gray"></span>
-                  <span className="mx-1">封装时间</span>
+                  <span className="mx-1">封裝時間</span>
                   <span className="fw-bold">&lt; {data.seal_days}天</span>
                 </p>
 
@@ -125,9 +125,9 @@ const RaisingCard: React.FC<RaisingCardProps> = ({ data }) => {
                     <span>{provider?.full_name}</span>
                     <span className="d-none d-sm-inline mx-1">·</span>
                     <span>
-                      <span>保证金{opsRatio}%</span>
+                      <span>保證金{opsRatio}%</span>
                       <span className="mx-1">·</span>
-                      <span>提供技术服务</span>
+                      <span>提供技術服務</span>
                     </span>
                   </span>
                 </p>

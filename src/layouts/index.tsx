@@ -88,8 +88,6 @@ const BasicLayout: React.FC = () => {
       setTimeout(removeDom, 1000 / 60);
     };
 
-    document.documentElement.classList.add('has-layout');
-
     autoConnect();
   });
 
@@ -99,11 +97,11 @@ const BasicLayout: React.FC = () => {
         <div className="alert alert-danger fixed-top rounded-0">
           <div className="container">
             <p className="mb-0 text-center">
-              <span>不支持当前网络，请</span>
+              <span>不支援目前網絡，請</span>
               <a className="fw-500 text-underline" href="#" onClick={handleSwitch}>
-                切换
+                切換
               </a>
-              <span>到支持的网络</span>
+              <span>到支援的網絡</span>
             </p>
           </div>
         </div>

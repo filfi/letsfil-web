@@ -2,7 +2,7 @@ import { usePublicClient } from 'wagmi';
 
 import abi from '@/abis/raise.abi.json';
 import fabi from '@/abis/factory.abi.json';
-import { RAISE_ADDRESS } from '@/constants';
+import { ADDR_FACTORY } from '@/constants';
 import { WatchContractEventParameters } from 'viem';
 
 type OnLogsFn = Required<WatchContractEventParameters>['onLogs'];
@@ -36,7 +36,7 @@ export default function useContractEvent(address?: API.Address) {
     return watchContractEvent({
       abi: fabi,
       args: [id],
-      address: RAISE_ADDRESS,
+      address: ADDR_FACTORY,
       eventName: 'CreateRaisePlan',
       onLogs: withProxyHandler(handler),
     });

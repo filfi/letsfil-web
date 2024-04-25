@@ -7,21 +7,9 @@ import { Chain, configureChains, createConfig } from 'wagmi';
 import { isMainnet } from '@/constants';
 
 // const _chains: Chain[] = [filecoin];
-const _chains: Chain[] = isMainnet
-  ? [
-      {
-        ...filecoin,
-        rpcUrls: {
-          default: {
-            http: ['https://api.node.glif.io/rpc/v1', 'https://filfox.info/rpc/v1'],
-          },
-          public: {
-            http: ['https://api.node.glif.io/rpc/v1', 'https://filfox.info/rpc/v1'],
-          },
-        },
-      },
-    ]
-  : [filecoinCalibration];
+const _chains: Chain[] = isMainnet ? [filecoin] : [filecoinCalibration];
+
+// console.log(filecoinCalibration);
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,7 +21,7 @@ export const queryClient = new QueryClient({
 
 export const safeAmount = isMainnet ? 300 : 3;
 
-export const CREATION_TIME = isMainnet ? 1598306400 : 1667326380;
+export const CREATION_TIME = isMainnet ? 1598306400000 : 1667326380000;
 
 // const transport = custom(window.ethereum as any, {
 //   name: 'Window Ethereum Provider',

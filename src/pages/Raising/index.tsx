@@ -1,6 +1,7 @@
 import { filter } from 'lodash';
 import { useMemo } from 'react';
 import classNames from 'classnames';
+import { useIntl } from '@umijs/max';
 import { useRequest, useTitle } from 'ahooks';
 
 import * as A from '@/apis/raise';
@@ -26,16 +27,22 @@ function isRaising(data: API.Plan) {
 
 function isSealing(data: API.Plan) {
   return (
-    !isMountPlan(data) && data.status === RaiseState.Success && [NodeState.WaitingStart, NodeState.Started, NodeState.Delayed].includes(data.sealed_status)
+    !isMountPlan(data) &&
+    data.status === RaiseState.Success &&
+    [NodeState.WaitingStart, NodeState.Started, NodeState.Delayed].includes(data.sealed_status)
   );
 }
 
 function isWorking(data: API.Plan) {
-  return isMountPlan(data) ? isMountWorking(data) : data.status === RaiseState.Success && data.sealed_status >= NodeState.End;
+  return isMountPlan(data)
+    ? isMountWorking(data)
+    : data.status === RaiseState.Success && data.sealed_status >= NodeState.End;
 }
 
 export default function Raising() {
-  useTitle('节点计划 - FilFi', { restoreOnUnmount: true });
+  const { formatMessage } = useIntl();
+
+  useTitle(`${formatMessage({ id: 'menu.raising' })} - FilFi`, { restoreOnUnmount: true });
 
   const { address } = useAccount();
 
@@ -54,14 +61,17 @@ export default function Raising() {
   const seals = useMemo(() => filter(list, isSealing), [list]);
   const workes = useMemo(() => filter(list, isWorking), [list]);
   const isEmpty = useMemo(() => !((data && data.total > 0) || banner), [banner, data]);
-  const items = useMemo(() => (banner?.result ? list?.concat(filterRaises(address)([banner.result])!) : list), [address, list, banner]);
+  const items = useMemo(
+    () => (banner?.result ? list?.concat(filterRaises(address)([banner.result])!) : list),
+    [address, list, banner],
+  );
 
   return (
     <div className={classNames('container pt-4 pt-lg-5', styles.container)}>
       <LoadingView data={items} error={!!error} loading={loading} retry={refresh}>
         {isEmpty ? (
           <div className="vh-75 d-flex flex-column justify-content-center">
-            <Empty title="没有节点计划" />
+            <Empty title="沒有節點計劃" />
           </div>
         ) : (
           <>
@@ -78,7 +88,7 @@ export default function Raising() {
             {isArrs(raises) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">正在质押</h3>
+                  <h3 className="mb-1 fs-18 fw-600">正在質押</h3>
                 </div>
                 <div className="row row-cols-1 g-3 g-lg-4 mb-4 mb-lg-5">
                   {raises.map((item) => (
@@ -93,7 +103,7 @@ export default function Raising() {
             {isArrs(seals) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">正在封装</h3>
+                  <h3 className="mb-1 fs-18 fw-600">正在封裝</h3>
                 </div>
                 <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4 mb-4 mb-lg-5">
                   {seals.map((item) => (
@@ -108,8 +118,8 @@ export default function Raising() {
             {isArrs(workes) && (
               <>
                 <div className="mb-3 mb-lg-4">
-                  <h3 className="mb-1 fs-18 fw-600">正在运行</h3>
-                  <p className="text-gray-dark">FilFi智能合约持续分配节点激励。</p>
+                  <h3 className="mb-1 fs-18 fw-600">正在運行</h3>
+                  <p className="text-gray-dark">FilFi智能合約持續分配節點激勵。</p>
                 </div>
                 <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 g-lg-4">
                   {workes.map((item) => (

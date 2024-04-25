@@ -103,12 +103,12 @@ export default function MountStorage() {
       const [e, res] = await fetchMiner(value);
 
       if (e) {
-        return Promise.reject((e as any).code === 3000002 ? '节点不存在' : '检测失败');
+        return Promise.reject((e as any).code === 3000002 ? '節點不存在' : '檢測失敗');
       }
 
       if (res) {
         if (!checkMiner(res, value)) {
-          return Promise.reject('节点不可用');
+          return Promise.reject('節點不可用');
         }
 
         onMinerChange(res);
@@ -142,7 +142,7 @@ export default function MountStorage() {
       if (e) {
         Dialog.alert({
           icon: 'error',
-          title: '提交失败',
+          title: '提交失敗',
           content: e.message,
         });
       }
@@ -193,8 +193,8 @@ export default function MountStorage() {
 
         <div className="ffi-form">
           <div className={classNames('ffi-item border-bottom')}>
-            <h4 className="ffi-label">完善主办人资料</h4>
-            <p className="text-gray">主办人发起历史节点的分配计划。主办人必须了解历史节点的所有利益结构。</p>
+            <h4 className="ffi-label">完善主辦人資料</h4>
+            <p className="text-gray">主辦人發起歷史節點的分配計畫。主辦人必須了解歷史節點的所有利益結構。</p>
 
             <div className="d-flex gap-3">
               <div className="flex-shrink-0">
@@ -205,7 +205,7 @@ export default function MountStorage() {
               <div className="flex-grow-1">
                 <div className="row">
                   <div className="col-12 col-md-8 col-lg-6">
-                    <Form.Item name="sponsorCompany" help={<span>钱包地址：{formatAddr(address)}</span>}>
+                    <Form.Item name="sponsorCompany" help={<span>錢包地址：{formatAddr(address)}</span>}>
                       <Input maxLength={30} placeholder={address} />
                     </Form.Item>
                   </div>
@@ -215,11 +215,11 @@ export default function MountStorage() {
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">Filecoin存储节点</h4>
+            <h4 className="ffi-label">Filecoin儲存節點</h4>
             <p className="text-gray">
-              填写委托给FilFi协议的历史节点的节点号。委托成功意味着该节点的Owner地址将移交给FilFi智能合约。
+              填寫委託給FilFi協定的歷史節點的節點號碼。委託成功意味著該節點的Owner地址將移交給FilFi智能合約。
               {/* <a className="text-underline" href="#minerId-modal" data-bs-toggle="modal">
-                什么是存储节点号？
+                什麼是儲存節點號？
               </a> */}
             </p>
 
@@ -228,13 +228,13 @@ export default function MountStorage() {
                 <Form.Item
                   name="minerId"
                   rules={[
-                    { required: true, message: '请输入节点号' },
+                    { required: true, message: '請輸入節點號' },
                     {
                       validator: V.Queue.create().add(V.minerID).add(minerValidator).build(),
                     },
                   ]}
                 >
-                  <Input placeholder="输入存储节点号，如f023456" onPressEnter={handleMiner} />
+                  <Input placeholder="輸入節點號，如f023456" onPressEnter={handleMiner} />
                 </Form.Item>
               </div>
               <div>
@@ -244,21 +244,21 @@ export default function MountStorage() {
                   icon={<i className="bi bi-arrow-repeat"></i>}
                   onClick={handleMiner}
                 >
-                  检测
+                  檢測
                 </SpinBtn>
               </div>
             </div>
           </div>
 
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">Miner余额的处理</h4>
+            <h4 className="ffi-label">Miner餘額的處理</h4>
             <p className="text-gray">
-              Miner内的余额被视为可分配的激励，FilFi协议会按照计划约定的分配方案执行分配。若不希望留给FilFi智能合约管理，请务必在技术服务商移交Ower地址之前，转出所有余额。
+              Miner內的餘額被視為可分配的激勵，FilFi協議會依照計畫約定的分配方案執行分配。若不希望留給FilFi智能合約管理，請務必在技術服務商移交Ower位址之前，轉出所有餘額。
             </p>
 
             <div className="row">
               <div className="col-12 col-md-8 col-lg-6">
-                <p className="ffi-label">Miner当前余额为（余额会随着时间变化）</p>
+                <p className="ffi-label">Miner目前餘額為（餘額會隨著時間變化）</p>
                 <Form.Item noStyle>
                   <Input readOnly suffix="FIL" value={formattedBalance} />
                 </Form.Item>
@@ -267,15 +267,15 @@ export default function MountStorage() {
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">技术服务商</h4>
+            <h4 className="ffi-label">技術服務商</h4>
             <p className="text-gray">
-              历史节点的技术服务商。只有FilFi协议认可的技术服务商的历史节点，才可以委托给FilFi协议。
+              歷史節點的技術服務商。只有FilFi協定認可的技術服務商的歷史節點，才可以委託給FilFi協定。
               {/* <a className="text-underline" href="#provider-modal" data-bs-toggle="modal">
-                如何成为技术服务商(SP Foundry)？
+                如何成為技術服務商(SP Foundry)？
               </a> */}
             </p>
 
-            <Form.Item name="serviceId" rules={[{ required: true, message: '请选择技术服务商' }]}>
+            <Form.Item name="serviceId" rules={[{ required: true, message: '請選擇技術服務商' }]}>
               <ProviderSelect options={list} loading={pFetching} onSelect={onServiceSelect} />
             </Form.Item>
             <Form.Item hidden name="serviceProviderAddress">
@@ -288,8 +288,13 @@ export default function MountStorage() {
 
         <div className="ffi-form">
           <div className="ffi-form-actions">
-            <SpinBtn type="submit" className="btn btn-primary btn-lg w-100" disabled={fetching} loading={fetching || loading}>
-              {fetching ? '正在检测节点' : '下一步'}
+            <SpinBtn
+              type="submit"
+              className="btn btn-primary btn-lg w-100"
+              disabled={fetching}
+              loading={fetching || loading}
+            >
+              {fetching ? '正在檢測節點' : '下一步'}
             </SpinBtn>
           </div>
         </div>

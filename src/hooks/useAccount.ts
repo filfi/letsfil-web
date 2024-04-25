@@ -35,8 +35,8 @@ export default function useAccount() {
     if (!opts.slient && e?.name === 'ConnectorNotFoundError') {
       Dialog.alert({
         icon: 'error',
-        title: '连接失败',
-        content: '未检测到' + opts.id + '客户端',
+        title: '連線失敗',
+        content: '未檢測到' + opts.id + '客戶端',
       });
     }
   };

@@ -24,6 +24,10 @@ export function list(params: API.PagingParams & { status: string }) {
   return A.get<API.PagingRes<API.Plan>>('/raising-plan/list', params);
 }
 
+export function listLoans(params: API.PagingParams & { invest_address: string }) {
+  return A.get<API.PagingRes>('/raising-plan/address/investable/plan', params);
+}
+
 export function raiseList({ address, ...params }: API.PagingParams & { address: string; sort?: string }) {
   return A.get<API.PagingRes<API.Plan>>('/raising-plan/raiser/list', { ...params, raiser_address: address });
 }

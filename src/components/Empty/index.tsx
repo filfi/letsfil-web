@@ -7,7 +7,7 @@ const Empty: React.FC<{
   children?: React.ReactNode;
   title?: React.ReactNode;
   titleClassName?: string;
-}> = ({ children, title = '暂无数据', titleClassName }) => {
+}> = ({ children, title = '暫無數據', titleClassName }) => {
   return (
     <div className="text-center my-5">
       <img src={icon} />

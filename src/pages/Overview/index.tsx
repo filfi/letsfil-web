@@ -1,21 +1,20 @@
-import { useMemo } from 'react';
 import classNames from 'classnames';
 import { ScrollSpy } from 'bootstrap';
-import { useParams } from '@umijs/max';
 import { useDebounceEffect } from 'ahooks';
+import { useLayoutEffect, useMemo } from 'react';
+import { useModel, useParams } from '@umijs/max';
 
 import styles from './styles.less';
 import { isMountPlan } from '@/helpers/mount';
-import useRaiseInfo from '@/hooks/useRaiseInfo';
 import LoadingView from '@/components/LoadingView';
+import AssetsHeader from '@/components/AssetsHeader';
 import MountNav from './components/MountNav';
 import MountMain from './components/MountMain';
 import MountSider from './components/MountSider';
-import MountHeader from './components/MountHeader';
 import RaiseNav from './components/RaiseNav';
 import RaiseMain from './components/RaiseMain';
 import RaiseSider from './components/RaiseSider';
-import RaiseHeader from './components/RaiseHeader';
+import RaiseActions from './components/RaiseActions';
 
 function updateScrollSpy() {
   const el = document.querySelector('[data-bs-spy="scroll"]');
@@ -28,18 +27,23 @@ function updateScrollSpy() {
 }
 
 export default function Overview() {
-  const param = useParams();
-  const { data, error, isLoading, refetch } = useRaiseInfo(param.id);
+  const params = useParams();
 
-  const mountPlan = useMemo(() => isMountPlan(data), [data]);
+  const { plan, isError, isLoading, refetch, run } = useModel('Overview.overview');
 
-  useDebounceEffect(updateScrollSpy, [data], { wait: 300 });
+  const mountPlan = useMemo(() => isMountPlan(plan), [plan]);
+
+  useDebounceEffect(updateScrollSpy, [plan], { wait: 300 });
+
+  useLayoutEffect(() => {
+    run(params.id ?? '');
+  }, []);
 
   const renderContet = () => {
     return (
       <div className={classNames('d-flex flex-column flex-lg-row', styles.content)}>
         <div id="nav-pills" className={classNames('d-none d-lg-block flex-shrink-0', styles.tabs)}>
-          {mountPlan ? <MountNav data={data} /> : <RaiseNav data={data} />}
+          {mountPlan ? <MountNav /> : <RaiseNav />}
         </div>
         <div
           className={classNames('d-flex flex-column flex-grow-1', styles.main)}
@@ -49,9 +53,9 @@ export default function Overview() {
           data-bs-smooth-scroll="true"
           data-bs-root-margin="0px 0px -80%"
         >
-          {mountPlan ? <MountMain data={data} /> : <RaiseMain data={data} />}
+          {mountPlan ? <MountMain /> : <RaiseMain />}
         </div>
-        <div className={classNames('flex-shrink-0', styles.sidebar)}>{mountPlan ? <MountSider data={data} /> : <RaiseSider data={data} />}</div>
+        <div className={classNames('flex-shrink-0', styles.sidebar)}>{mountPlan ? <MountSider /> : <RaiseSider />}</div>
       </div>
     );
   };
@@ -59,8 +63,16 @@ export default function Overview() {
   return (
     <>
       <div className="container">
-        <LoadingView data={data} error={!!error} loading={isLoading} retry={refetch}>
-          {mountPlan ? <MountHeader data={data} /> : <RaiseHeader data={data} />}
+        <LoadingView data={plan} error={isError} loading={isLoading} retry={refetch}>
+          {/* {mountPlan ? <MountHeader data={data} /> : <RaiseHeader data={data} />} */}
+          <AssetsHeader
+            data={plan}
+            extra={
+              <div className="d-flex align-items-center gap-3 text-nowrap">
+                <RaiseActions />
+              </div>
+            }
+          />
 
           {renderContet()}
         </LoadingView>

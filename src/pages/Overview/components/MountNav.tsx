@@ -1,13 +1,16 @@
+import { useModel } from '@umijs/max';
+
 import useMountState from '@/hooks/useMountState';
 
-const MountNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
-  const { isStarted } = useMountState(data);
+const MountNav: React.FC = () => {
+  const { plan } = useModel('Overview.overview');
+  const { isStarted } = useMountState(plan);
 
   return (
     <ul className="nav nav-pills d-inline-flex flex-lg-column mb-2">
       <li className="nav-item">
         <a className="nav-link" href="#sector">
-          挂载节点
+          掛載節點
         </a>
       </li>
       <li className="nav-item">
@@ -17,17 +20,17 @@ const MountNav: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
       </li>
       <li className="nav-item">
         <a className="nav-link" href="#details">
-          分配明细
+          分配明細
         </a>
       </li>
       <li className="nav-item">
         <a className="nav-link" href="#provider">
-          服务商
+          服務商
         </a>
       </li>
       <li className="nav-item order-5">
         <a className="nav-link" href="#contract">
-          智能合约
+          智能合約
         </a>
       </li>
       {isStarted && (

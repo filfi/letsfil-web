@@ -13,6 +13,8 @@ export type LoadingViewProps = {
   loading?: boolean;
   className?: string;
   children?: React.ReactNode;
+  emptyTitle?: React.ReactNode;
+  errorTitle?: React.ReactNode;
   retry?: () => void;
 };
 
@@ -26,17 +28,17 @@ function isEmpty(data: unknown) {
   return !isDef(data);
 }
 
-const LoadingView: React.FC<LoadingViewProps> = ({ data, error, loading, children, className = 'vh-75', retry }) => {
+const LoadingView: React.FC<LoadingViewProps> = ({ className = 'vh-75', data, error, loading, children, emptyTitle, errorTitle, retry }) => {
   const empty = useMemo(() => isEmpty(data), [data]);
 
-  if (empty && loading) {
+  if ((empty || error) && loading) {
     return <Loading className={className} />;
   }
 
   if (error) {
     return (
       <div className={classNames('d-flex flex-column justify-content-center', className)}>
-        <Failed retry={retry} />
+        <Failed title={errorTitle} retry={retry} />
       </div>
     );
   }
@@ -44,7 +46,7 @@ const LoadingView: React.FC<LoadingViewProps> = ({ data, error, loading, childre
   if (empty) {
     return (
       <div className={classNames('d-flex flex-column justify-content-center', className)}>
-        <Empty />
+        <Empty title={emptyTitle} />
       </div>
     );
   }

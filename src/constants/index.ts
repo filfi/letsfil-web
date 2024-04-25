@@ -1,38 +1,57 @@
-export const ADDRESS = process.env.ADDRESS ?? '';
+export const NET_ENV = process.env.NET_ENV;
+export const RUN_ENV = process.env.RUN_ENV;
+export const API_URL = process.env.API_URL;
+export const RPC_URL = process.env.RPC_URL;
 
-export const API_URL = process.env.API_URL ?? '/api';
+/**
+ * 工厂合约地址
+ */
+export const ADDR_FACTORY = process.env.ADDR_FACTORY;
+/**
+ * aFil通证合约地址
+ */
+export const ADDR_AFIL = process.env.ADDR_AFIL;
+/**
+ * aFil借贷合约地址
+ */
+export const ADDR_LOAN = process.env.ADDR_LOAN;
+/**
+ * Retriever合约地址
+ */
+export const ADDR_RETRIEVER = process.env.ADDR_RETRIEVER;
 
-export const RPC_URL = process.env.RPC_URL ?? '/rpc';
-
-export const RUN_ENV = process.env.RUN_ENV ?? 'test';
-
-console.log('[RUN_ENV]: ', RUN_ENV);
+console.log('[ENV]: ', {
+  ...process.env,
+  UMI_ENV: process.env.UMI_ENV,
+  NET_ENV: process.env.NET_ENV,
+  RUN_ENV: process.env.RUN_ENV,
+  API_URL: process.env.API_URL,
+  RPC_URL: process.env.RPC_URL,
+  ADDR_FACTORY: process.env.ADDR_FACTORY,
+  ADDR_AFIL: process.env.ADDR_AFIL,
+  ADDR_LOAN: process.env.ADDR_LOAN,
+  ADDR_RETRIEVER: process.env.ADDR_RETRIEVER,
+});
 
 export const defaultLocale = 'zh-CN';
 
-export const isMainnet = RUN_ENV === 'main';
+export const isMainnet = NET_ENV === 'main';
 
 export const SUPPORTED_CHAINS = isMainnet
   ? [
       '0x13a', // 314, // Filecoin - Mainnet
     ]
   : [
-      // '0x13a', // 314, // Filecoin Mainnet
+      /**
+       * Filecoin testnet
+       */
       // '0xc45', // 3141, // Hypersapce testnet
       '0x4cb2f', // 314159, // Calibration testnet
     ];
 
-// Calibration testnet
-// const RAISE_ADDR = '0x30d10A82a29A367bD403bB2139d8994333550F80'; // 5200
-// const RAISE_ADDR = '0x390CB629D5057AB6F990471a725179FdfB64dEFD'; // 5000
-const RAISE_ADDR = '0xA188E617cF5181a9F7286196F82D690c552552f6'; // 5000
-/**
- * Raise Facory Contract Address
- */
-export const RAISE_ADDRESS = (ADDRESS || RAISE_ADDR) as API.Address;
-
 const SCAN_URL_MAIN = 'https://filfox.info/en'; // mainnet
-const SCAN_URL_CB = 'https://calibration.filscan.io'; // calibration testnet
+// const SCAN_URL_CB = 'https://calibration.filscan.io'; // calibration testnet
+const SCAN_URL_CB = 'https://calibration.filfox.info/en'; // calibration testnet
 /**
  * Miner Overview address
  */

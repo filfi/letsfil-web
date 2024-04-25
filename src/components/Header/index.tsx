@@ -83,7 +83,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header ref={header} className={classNames('header fixed-top bg-white')} style={{ boxShadow: `0 3px 10px rgba(0, 0, 0, ${percent * 0.15})` }}>
+    <header
+      ref={header}
+      className={classNames('header fixed-top bg-white')}
+      style={{ boxShadow: `0 3px 10px rgba(0, 0, 0, ${percent * 0.15})` }}
+    >
       <nav className="navbar navbar-expand-lg">
         <div className="container position-relative">
           <Link className="navbar-brand" to="/">
@@ -120,13 +124,15 @@ const Header: React.FC = () => {
                   </Link>
 
                   <ul
-                    className={classNames('dropdown-menu dropdown-menu-end border-0 py-2 shadow rounded-3', { show: isHover })}
+                    className={classNames('dropdown-menu dropdown-menu-end border-0 py-2 shadow rounded-3', {
+                      show: isHover,
+                    })}
                     data-bs-popper={isHover ? 'static' : undefined}
                   >
                     <li>
                       <Link className="dropdown-item" to="/account/assets">
                         <span className="bi bi-person"></span>
-                        <span className="ms-2">个人资料</span>
+                        <span className="ms-2">個人資料</span>
                       </Link>
                     </li>
                     <li className="dropdown-divider"></li>
@@ -146,7 +152,12 @@ const Header: React.FC = () => {
             )}
           </div>
 
-          <div id="navbarOffcanvas" className="offcanvas offcanvas-start" tabIndex={-1} aria-labelledby="navbar offcanvas">
+          <div
+            id="navbarOffcanvas"
+            className="offcanvas offcanvas-start"
+            tabIndex={-1}
+            aria-labelledby="navbar offcanvas"
+          >
             <div className="offcanvas-header">
               <h4 className="offcanvas-title">
                 <Brand />
@@ -156,18 +167,18 @@ const Header: React.FC = () => {
             <div className="offcanvas-body">
               <ul className="nav navbar-nav">
                 <li className="nav-item">
-                  <a className="nav-link" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="即将上线">
-                    <FormattedMessage id="menu.lending" />
-                  </a>
+                  <Link className="nav-link" to="/stake">
+                    <FormattedMessage id="menu.stake" />
+                  </Link>
                 </li>
                 <li className="nav-item">
                   <Link className="nav-link" to="/raising">
-                    <FormattedMessage id="menu.miner" />
+                    <FormattedMessage id="menu.raising" />
                   </Link>
                 </li>
                 <li className="nav-item dropdown">
                   <Link className="nav-link" to="/fspa">
-                    <FormattedMessage id="menu.storage" />
+                    <FormattedMessage id="menu.fspa" />
                   </Link>
                 </li>
                 <li className="nav-item dropdown">
@@ -182,7 +193,13 @@ const Header: React.FC = () => {
                   <div className="dropdown-menu border-0 shadow rounded-4">
                     <div className="d-flex flex-column gap-2">
                       {socials.map((item, key) => (
-                        <a key={key} className="dropdown-item d-flex px-4 py-3" href={item.url} target="_blank" rel="noreferrer">
+                        <a
+                          key={key}
+                          className="dropdown-item d-flex px-4 py-3"
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           <span className="flex-shrink-0 me-3">{<item.icon />}</span>
                           <span className="flex-grow-1">
                             <span className="d-block fw-600 mb-1">{item.title}</span>
@@ -194,7 +211,12 @@ const Header: React.FC = () => {
                   </div>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="https://docs.filfi.io/en/introduction/" target="_blank" rel="noreferrer">
+                  <a
+                    className="nav-link"
+                    href="https://docs.filfi.io/en/introduction/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     <FormattedMessage id="menu.docs" />
                   </a>
                 </li>

@@ -30,51 +30,51 @@ import { ReactComponent as IconBorder } from '@/assets/icons/icon-border.svg';
 type Values = ReturnType<typeof H.calcEachEarn>;
 
 const defaultTreeData = {
-  label: '历史算力',
+  label: '歷史算力',
   rate: 100,
-  desc: '以及Filecoin的未来激励',
+  desc: '以及Filecoin的未來激勵',
   children: [
     {
-      label: '建设者分成',
+      label: '建設者分成',
       active: true,
       rate: 0,
-      desc: '质押方的权益',
+      desc: '質押方的權益',
       // children: [
       //   {
-      //     label: '优先建设者分成',
+      //     label: '優先建設者分成',
       //     rate: 0,
-      //     desc: '优先质押的权益',
+      //     desc: '優先質押的權益',
       //   },
       //   {
-      //     label: '运维保证金分成',
+      //     label: '運維保證金分成',
       //     rate: 0,
       //     locked: true,
-      //     desc: '劣后质押的权益',
+      //     desc: '劣後質押的權益',
       //   },
       // ],
     },
     {
-      label: '服务方分成',
+      label: '服務方分成',
       rate: 0,
-      desc: '服务方的权益',
+      desc: '服務方的權益',
       children: [
         {
-          label: '技术服务商分成',
+          label: '技術服務商分成',
           rate: 0,
           active: true,
           locked: true,
-          desc: '技术服务商的权益',
+          desc: '技術服務商的權益',
         },
         {
-          label: '主办人分成',
+          label: '主辦人分成',
           rate: 0,
-          desc: '分配计划的管理人',
+          desc: '分配計劃的管理人',
         },
         {
-          label: 'FilFi协议分成',
+          label: 'FilFi協議分成',
           rate: 0,
           locked: true,
-          desc: '固定为服务方权益的8%',
+          desc: '固定為服務方權益的8%',
         },
       ],
     },
@@ -144,10 +144,10 @@ export default function MountBenefit() {
 
       const hide = Dialog.confirm({
         icon: 'error',
-        title: `${action}分配方案会清空已填写详细分配比例`,
-        summary: `建设者和主办人的详细分配比例，依赖“分配方案”中定义的比例。${action}“分配方案”中的任何比例，会自动清空已填写的详细分配比例。`,
+        title: `${action}分配方案會清空已填入詳細分配比例`,
+        summary: `建設者和主辦人的詳細分配比例，依賴“分配方案”中定義的比例。${action}“分配方案”中的任何比例，會自動清空已填寫的詳細分配比例。`,
         content: '是否继续？',
-        confirmText: isReset ? '确认重置' : '继续修改',
+        confirmText: isReset ? '確認重置' : '繼續修改',
         confirmBtnVariant: 'danger',
         onConfirm: () => {
           hide();
@@ -197,32 +197,32 @@ export default function MountBenefit() {
   };
 
   const validateEquity = (list: API.Base[], isInvestor = false) => {
-    const role = isInvestor ? '建设者' : '主办人';
-    const title = `${role}详细分配`;
+    const role = isInvestor ? '建設者' : '主辦人';
+    const title = `${role}詳細分配`;
 
     if (!Array.isArray(list) || !list.length) {
-      showErr(`请添加${role}`, title);
+      showErr(`請新增${role}`, title);
       return false;
     }
 
     const items = list.filter(Boolean).map(({ address }) => toEthAddr(address).toLowerCase());
 
     if (new Set(items).size !== items.length) {
-      showErr(`${role}钱包地址不能重复`, title);
+      showErr(`${role}錢包地址不能重複`, title);
       return false;
     }
 
     if (isInvestor) {
       const sum = list.filter(Boolean).reduce((s, { amount }) => accAdd(s, amount), 0);
       if (sum !== balance) {
-        showErr(`${role}持有质押币累加必须精确等于${formatAmount(balance, 5)}`, title);
+        showErr(`${role}持有質押幣累加必須精確等於${formatAmount(balance, 5)}`, title);
         return false;
       }
     }
 
     const rate = isInvestor ? priority : raserRate;
     if (list.filter(Boolean).reduce((sum, { rate }) => accAdd(sum, rate), 0) !== Number(rate)) {
-      showErr(`${role}分成比例累加必须精确等于${rate}%`, title);
+      showErr(`${role}分成比例累加必須精確等於${rate}%`, title);
       return false;
     }
 
@@ -274,7 +274,7 @@ export default function MountBenefit() {
     if (e) {
       Dialog.alert({
         icon: 'error',
-        title: '提交失败',
+        title: '提交失敗',
         content: e.message,
       });
       return;
@@ -336,9 +336,9 @@ export default function MountBenefit() {
       >
         <div className="ffi-form">
           <div className="ffi-item border-bottom">
-            <h4 className="ffi-label">质押归属</h4>
+            <h4 className="ffi-label">質押歸屬</h4>
             <p className="text-gray">
-              历史节点的质押全部归属建设者，不可调整。
+              歷史節點的質押全歸屬建設者，不可調整。
               {/* <a className="text-underline" href="#deposit-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -356,7 +356,7 @@ export default function MountBenefit() {
 
             <div className="row">
               <div className="col-12 col-md-8 col-lg-6">
-                <p className="mb-1 fw-500">优先质押</p>
+                <p className="mb-1 fw-500">優先質押</p>
                 <Form.Item>
                   <Input
                     className="bg-light text-end"
@@ -365,7 +365,7 @@ export default function MountBenefit() {
                     prefix={
                       <div>
                         <span className="bi bi-people align-middle text-primary"></span>
-                        <span className="ms-2 text-gray-dark">建设者</span>
+                        <span className="ms-2 text-gray-dark">建設者</span>
                       </div>
                     }
                     value={priorityRate}
@@ -378,7 +378,7 @@ export default function MountBenefit() {
           <div className="ffi-item border-bottom">
             <h4 className="ffi-label">分配方案</h4>
             <p className="text-gray">
-              主办人根据历史节点原来的利益结构，在FilFi协议上定义分配方案。（算力分配即收益分配，质押的分配已在前一项确定）
+              主辦人根據歷史節點原來的利益結構，在FilFi協定上定義分配方案。（算力分配即收益分配，質押的分配已在前一項確定）
               {/* <a className="text-underline" href="#build-modal" data-bs-toggle="modal">
                 了解更多
               </a> */}
@@ -400,11 +400,11 @@ export default function MountBenefit() {
                   <div className="col small">
                     <p className="text-gray mb-1">
                       <IconLock />
-                      <span className="align-middle ms-2">加锁的权益永久锁定，未来不可交易</span>
+                      <span className="align-middle ms-2">加鎖的權益永久鎖定，未來不可交易</span>
                     </p>
                     <p className="text-gray mb-1">
                       <IconBorder />
-                      <span className="align-middle ms-2">需要主办人填写的比例，其他比例自动计算</span>
+                      <span className="align-middle ms-2">需要主辦人填寫的比例，其他比例自動計算</span>
                     </p>
                   </div>
                   <div className="col">
@@ -424,15 +424,22 @@ export default function MountBenefit() {
 
           <div className="ffi-form border-bottom">
             <div className="ffi-item">
-              <h4 className="ffi-label">主办人详细分配</h4>
-              <p className="mb-3 text-gray">主办人的权益可再分配给多个地址。点击+号增加地址。第一个地址为第一主办人，不可删减，其分配比例自动计算。</p>
+              <h4 className="ffi-label">主辦人詳細分配</h4>
+              <p className="mb-3 text-gray">
+                主辦人的權益可再分配給多個地址。點擊+號增加地址。第一個地址為第一主辦人，不可刪減，其分配比例自動計算。
+              </p>
 
               <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3">
-                <p className="mb-0 me-sm-auto">将 {raserRate}% 分配给以下地址</p>
+                <p className="mb-0 me-sm-auto">將 {raserRate}% 分配給以下地址</p>
 
-                <button className="btn btn-light btn-lg" type="button" disabled={sponsors.length >= 20} onClick={() => sponsor.current?.add()}>
+                <button
+                  className="btn btn-light btn-lg"
+                  type="button"
+                  disabled={sponsors.length >= 20}
+                  onClick={() => sponsor.current?.add()}
+                >
                   <span className="bi bi-plus-lg"></span>
-                  <span className="ms-2">添加主办人</span>
+                  <span className="ms-2">新增主辦人</span>
                 </button>
               </div>
 
@@ -440,24 +447,31 @@ export default function MountBenefit() {
 
               <p>
                 <span className="me-1">共 {sponsors.length} 地址</span>
-                <span className="text-danger">算力分配比例累加要精确等于{raserRate}%</span>
+                <span className="text-danger">算力分配比例累加要精確等於{raserRate}%</span>
               </p>
             </div>
           </div>
 
           <div className="ffi-item">
-            <h4 className="ffi-label">建设者详细分配</h4>
+            <h4 className="ffi-label">建設者詳細分配</h4>
             <p className="text-gray">
-              建设者的算力和质押分配给多个地址。点击+号增加地址。所有建设者的质押累加等于节点的质押总额，所有建设者算力分配比例累加等于“分配方案”中定义的分成比例。
+              建設者的算力和質押分配給多個地址。 點擊+號增加地址。
+              所有建造者的質押累加等於節點的質押總額，所有建造者算力分配比例累加等於“分配方案”中定義的分成比例。
             </p>
 
             <p className="fw-500">
-              将 <span className="fw-bold">{priority}%</span> 算力和 <span className="fw-bold">{formatAmount(balance, 5)} FIL</span> 质押分配给以下地址
+              將 <span className="fw-bold">{priority}%</span> 算力和{' '}
+              <span className="fw-bold">{formatAmount(balance, 5)} FIL</span> 质押分配给以下地址
             </p>
             <p className="text-end">
-              <button className="btn btn-light" type="button" disabled={investors.length >= 50} onClick={() => investor.current?.add()}>
+              <button
+                className="btn btn-light"
+                type="button"
+                disabled={investors.length >= 50}
+                onClick={() => investor.current?.add()}
+              >
                 <span className="bi bi-plus-lg"></span>
-                <span className="ms-1">添加建设者</span>
+                <span className="ms-1">新增建設者</span>
               </button>
             </p>
 
