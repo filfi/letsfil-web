@@ -15,16 +15,13 @@ export default function PageNotice() {
           </p>
 
           <div className="mb-5">
-            <h2 className="mb-4 text-center">FilFi 举办特殊情况智能合约体验日公告</h2>
-
-            <p>FilFi致力于实现100%智能合约管理，所有节点参与方严格履约智能合约，依据合约领取各自权益。</p>
-            <p>近期行业出现Fevm智能合约信任危机，FilFi团队以为技术进步不容倒退，坚信去中心化建设是我们坚守的Web3信念。</p>
-            <p>
-              FilFi定于4月15日12时—16日12时，举办24小时特殊情况（模仿运营管理团队全体终止工作）的智能合约体验日活动，届时FilFi官网将暂停服务，16日12时恢复正常。
-            </p>
-            <p>我们邀请所有用户参与该特殊情况体验日活动，体验期间请按照《FilFi特殊情况智能合约操作指南》执行各项业务需求。</p>
-            <p>实现100%去中心化智能合约管理，必要条件是合约开源+社区代币投票权治理，FilFi正在遵照路线图紧张建设。</p>
-            <p className="text-end">FilFi Dao社区</p>
+            <h2 className="mb-4 text-center">FilFi社区停止中文服务公告</h2>
+            <p>Mars Swap Ltd.对FilFi社区及基金会完成收购，Mars Swap Ltd.系开曼群岛注册公司，合法服务范围禁止提供中文服务。</p>
+            <p>即日起，FilFi社区停止全部中文服务（官网和交流群），社区服务仅保留Discord和TG平台。</p>
+            <p>Discord：<a href="https://discord.gg/7ARv9ZfM" target="_blank" rel="noreferrer">https://discord.gg/7ARv9ZfM</a></p>
+            <p>TG：<a href="https://t.me/filfi_io" target="_blank" rel="noreferrer" >https://t.me/filfi_io</a></p>
+            <p className="text-end">FilFi社区</p>
+            <p className="text-end">2024年5月12日</p>
           </div>
 
           <p className="mb-4 d-flex flex-column flex-md-row justify-content-md-center gap-4">
