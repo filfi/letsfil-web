@@ -34,7 +34,7 @@ export default function PageNotice() {
             </a>
             <a
               className="btn btn-light btn-lg"
-              href="https://public-1a8hf.filfi.io/manual-operation-cn/FilFi%20%E7%89%B9%E6%AE%8A%E6%83%85%E5%86%B5%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%93%8D%E4%BD%9C%E6%8C%87%E5%8D%97%202.0.pdf"
+              href="https://public-1a8hf.filfi.io/manual-operation-cn%2FFilFi%20%E7%89%B9%E6%AE%8A%E6%83%85%E5%86%B5%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%93%8D%E4%BD%9C%E6%8C%87%E5%8D%97%202.1.pdf"
               data-fancybox
               data-type="pdf"
             >
