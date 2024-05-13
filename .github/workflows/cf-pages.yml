@@ -32,6 +32,7 @@ jobs:
           RUN_ENV: main
           API_URL: ${{ vars.API_URL }}
           ADDRESS: ${{ vars.CONTRACT_ADDRESS }}
+          EMERGENCY_DRILL: ${{ vars.EMERGENCY_DRILL }}
         run: node_modules/.bin/max build
 
       - name: Publish to Cloudflare Pages
