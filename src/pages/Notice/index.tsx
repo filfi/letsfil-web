@@ -23,7 +23,7 @@ export default function PageNotice() {
 
             <p className="d-flex flex-wrap gap-3">
               <span className="my-auto">合约调用：</span>
-              <a className="btn btn-primary" href="https://public-1a8hf.filfi.io/manual-operation-cn/filfi-manual-operation.mp4" data-fancybox>
+              <a className="btn btn-primary" href="https://public-1a8hf.filfi.io/manual-operation-cn/filfi-manual-operatio-v2.0.mp4" data-fancybox>
                 <span className="bi bi-play-circle"></span>
                 <span className="ms-2">观看教学视频</span>
               </a>
