@@ -37,5 +37,6 @@
   { "raising_id": "29000081705294571", "miner_id": "f02900008", "raise_address": "0xbd37ad3d3c1d714ef1c9e6d8c3d9c9e8c6bade41" },
   { "raising_id": "22223221705896916", "miner_id": "f02222322", "raise_address": "0xbc3058e43baa7efcfa174dfc9e888732a7240ed4" },
   { "raising_id": "22223181709171281", "miner_id": "f02222318", "raise_address": "0x0346fbdd536e8cc8b475c543bb98d8be674ce349" },
-  { "raising_id": "28888981710341456", "miner_id": "f02888898", "raise_address": "0x8b6e8cf9f6ff64d54c6698520ec2b86e50e90c42" }
+  { "raising_id": "28888981710341456", "miner_id": "f02888898", "raise_address": "0x8b6e8cf9f6ff64d54c6698520ec2b86e50e90c42" },
+  { "raising_id": "29000091715250225", "miner_id": "f02900009", "raise_address": "0x8354cb46661a1171eb1caf7a6209b61413c9ee3a" }
 ]
