@@ -40,7 +40,7 @@ export default function PageNotice() {
                 查询节点信息
               </a>
             </p>
-            <p>快捷提取入口：<a href="https://cf-ipfs.com/ipfs/bafybeieac5ahoy2z3buevdymdwwed3pyk3qly4uxhiepwl453ommsyztpq" target="_blank" rel="noreferrer">https://cf-ipfs.com/ipfs/bafybeieac5ahoy2z3buevdymdwwed3pyk3qly4uxhiepwl453ommsyztpq</a></p>
+            <p>快捷提取入口：<a href="https://myfil.pages.dev" target="_blank" rel="noreferrer">https://myfil.pages.dev</a></p>
 
             <p><br /></p>
             <p className="text-end">FilFi社区</p>
