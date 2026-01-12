@@ -35,7 +35,9 @@ const SectionContract: React.FC<{ data?: API.Plan | null }> = ({ data }) => {
   };
 
   const [backing, handleBack] = useProcessify(async () => {
-    await backOwner();
+    if (!data) return;
+
+    await backOwner(data.raising_id);
 
     await refetch();
   });

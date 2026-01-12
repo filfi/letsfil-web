@@ -43,6 +43,22 @@ const proxies: Options = {
       changeOrigin: true,
     },
   },
+  // staging - cb testnet
+  main: {
+    '/api': {
+      target: 'https://job.mining.filfi.io',
+      secure: false,
+      changeOrigin: true,
+      pathRewrite: {
+        '^/api': '',
+      },
+    },
+    '/rpc': {
+      // target: 'https://api.hyperspace.node.glif.io',
+      target: 'https://api.node.glif.io',
+      changeOrigin: true,
+    },
+  },
   // local - 2k testnet
   local: {
     '/api': {

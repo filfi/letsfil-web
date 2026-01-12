@@ -15,6 +15,12 @@ export type ConnectOptions = {
 export default function useAccount() {
   const { address, status } = useWagmi();
 
+  // const status: string = 'connected'
+  // const address = '0x6c7434feb871d105b1ddf613d941c499ee3b36b0'
+  // const address = '0xC5843790Ab007Fc0B0F7C057764925a5FB644fbB'
+  // const address = '0xA9aC84B0e87436a4b715A04Db6d8b56e9c7D8a9A'
+  // const address = '0xc166A292cb01514A267f482d771f8b48f54C664C'
+
   const { disconnectAsync } = useDisconnect();
   const { connectAsync } = useConnect({ chainId: chains[0].id });
 

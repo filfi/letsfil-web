@@ -485,8 +485,8 @@ export default function useContract(address?: API.Address) {
   /**
    * 取回Owner权限
    */
-  const backOwner = toastify(async (opts?: WriteOptions) => {
-    return await writeContract('backOwner', [], opts);
+  const backOwner = toastify(async (id: string, opts?: WriteOptions) => {
+    return await writeContract('backOwner', [id], opts);
   });
 
   /**
