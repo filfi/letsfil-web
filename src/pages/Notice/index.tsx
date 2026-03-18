@@ -18,7 +18,7 @@ export default function PageNotice() {
             <h2 className="mb-4 text-center">网站停止运营及提币通知</h2>
             <p><br /></p>
             <p><br /></p>
-            <p>尊敬的用户：</p>
+            <p className="mb-4">尊敬的用户：</p>
             <p>因所有节点已全部到期，本网站自公告发布之日起正式停止运营并关闭所有服务，感谢您一路以来的支持。</p>
             <p>为保障您的资产安全，我团队实施事后服务一年，截止日为2027年3月15日。请尚未完成提币的用户，请通过以下官方渠道提交信息办理：</p>
 
@@ -34,7 +34,7 @@ export default function PageNotice() {
               </li>
             </ul>
             <p>我们收到后将逐一核实处理。感谢您的理解与配合，由此带来的不便，我们深表歉意！</p>
-            <p>特此公告。</p>
+            <p className="mt-4">特此公告。</p>
 
             <p><br /></p>
             <p><br /></p>
