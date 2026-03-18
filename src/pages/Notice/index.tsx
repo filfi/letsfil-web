@@ -15,36 +15,31 @@ export default function PageNotice() {
           </p>
 
           <div className="mb-5">
-            <h2 className="mb-4 text-center">FilFi社区停止中文服务公告</h2>
-            <p>Mars Swap Ltd.对FilFi社区及基金会完成收购，Mars Swap Ltd.系开曼群岛注册公司，合法服务范围禁止提供中文服务。</p>
-            <p>即日起，FilFi社区停止全部中文服务（官网和交流群），社区服务仅保留Discord和TG平台。</p>
-            <p>Discord：<a href="https://discord.gg/7ARv9ZfM" target="_blank" rel="noreferrer">https://discord.gg/7ARv9ZfM</a></p>
-            <p>TG：<a href="https://t.me/filfi_io" target="_blank" rel="noreferrer" >https://t.me/filfi_io</a></p>
+            <h2 className="mb-4 text-center">网站停止运营及提币通知</h2>
+            <p><br /></p>
+            <p><br /></p>
+            <p>尊敬的用户：</p>
+            <p>因所有节点已全部到期，本网站自公告发布之日起正式停止运营并关闭所有服务，感谢您一路以来的支持。</p>
+            <p>为保障您的资产安全，我团队实施事后服务一年，截止日为2027年3月15日。请尚未完成提币的用户，请通过以下官方渠道提交信息办理：</p>
 
-            <p className="d-flex flex-wrap gap-3">
-              <span className="my-auto">合约调用：</span>
-              <a className="btn btn-primary" href="https://public-1a8hf.filfi.io/manual-operation-cn/filfi-manual-operation.mp4" data-fancybox>
-                <span className="bi bi-play-circle"></span>
-                <span className="ms-2">观看教学视频</span>
-              </a>
-              <a
-                className="btn btn-light"
-                href="https://public-1a8hf.filfi.io/manual-operation-cn%2FFilFi%20%E7%89%B9%E6%AE%8A%E6%83%85%E5%86%B5%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6%E6%93%8D%E4%BD%9C%E6%8C%87%E5%8D%97%202.1.pdf"
-                data-fancybox
-                data-type="pdf"
-              >
-                <span className="bi bi-file-earmark-text"></span>
-                <span className="ms-2">查看教学文档</span>
-              </a>
-              <a className="text-reset text-underline my-auto" href="#node-info" data-bs-toggle="modal">
-                查询节点信息
-              </a>
-            </p>
-            <p>快捷提取入口：<a href="https://myfil.pages.dev" target="_blank" rel="noreferrer">https://myfil.pages.dev</a></p>
+            <ul>
+              <li>
+                <p>提交材料：账户信息、钱包地址、节点号</p>
+              </li>
+              <li>
+                <p>官方邮箱：<a href="mailto:filfi@filfi.io">filfi@filfi.io</a></p>
+              </li>
+              <li>
+                <p>官方 TG：<a href="https://t.me/filfi_io" target="_blank" rel="noreferrer">@filfi_io</a></p>
+              </li>
+            </ul>
+            <p>我们收到后将逐一核实处理。感谢您的理解与配合，由此带来的不便，我们深表歉意！</p>
+            <p>特此公告。</p>
 
             <p><br /></p>
+            <p><br /></p>
             <p className="text-end">FilFi社区</p>
-            <p className="text-end">2024年5月12日</p>
+            <p className="text-end">2026年3月16日</p>
           </div>
 
           <p className="mb-4 d-flex flex-column flex-md-row justify-content-md-center gap-4">
