@@ -1,12 +1,97 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Filfi</title>
+    <link rel="icon" href="favicon.ico" />
+    <title>FilFi</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <script>
+      if (
+        window.location.href !== "https://filfi.io" &&
+        window.location.href !== "https://filfi.io/"
+      ) {
+        window.location.href = "https://filfi.io/";
+      }
+    </script>
   </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+  <body
+    class="min-h-dvh bg-linear-to-b from-sky-50 via-sky-50 to-slate-100 text-slate-900"
+  >
+    <div class="pointer-events-none fixed inset-0">
+      <div
+        class="absolute -top-24 left-[-10%] h-[520px] w-[1100px] rounded-full bg-sky-400/15 blur-3xl"
+      ></div>
+      <div
+        class="absolute top-[-40px] right-[-12%] h-[520px] w-[900px] rounded-full bg-amber-300/20 blur-3xl"
+      ></div>
+    </div>
+
+    <main
+      class="relative mx-auto grid min-h-dvh w-full max-w-4xl content-center justify-items-center px-5 py-10 sm:px-8 sm:py-14"
+    >
+      <img
+        src="/src/assets/filfi.svg"
+        alt="FilFi"
+        class="mb-4 h-auto w-[clamp(120px,14vw,200px)] drop-shadow-[0_14px_20px_rgba(2,22,72,0.14)]"
+      />
+
+      <div
+        class="mb-4 flex items-center justify-center gap-3 text-center text-[clamp(0.95rem,0.35vw+0.9rem,1.05rem)] tracking-wide text-slate-700/70"
+      >
+        <span>FilFi社区</span>
+        <span class="opacity-60">·</span>
+        <span>2026年3月16日</span>
+      </div>
+
+      <h1
+        class="mb-6 text-center text-[clamp(1.7rem,2.1vw+1rem,2.7rem)] font-semibold leading-[1.12] tracking-[-0.02em] text-slate-900"
+      >
+        网站停止运营及提币通知
+      </h1>
+
+      <section
+        class="w-full rounded-2xl border border-slate-900/10 bg-white/80 p-5 shadow-[0_18px_55px_rgba(2,22,72,0.10)] backdrop-blur-xl sm:p-7"
+      >
+        <div
+          class="space-y-3 text-[clamp(1.02rem,0.55vw+0.95rem,1.22rem)] leading-relaxed text-slate-800/80"
+        >
+          <p class="text-slate-900/90 font-bold">尊敬的用户：</p>
+          <p>
+            因所有节点已全部到期，本网站自公告发布之日起正式停止运营并关闭所有服务，感谢您一路以来的支持。
+          </p>
+          <p>
+            为保障您的资产安全，我团队实施事后服务一年，截止日为2027年3月15日。请尚未完成提币的用户，请通过以下官方渠道提交信息办理：
+          </p>
+          <p>提交材料：账户信息、钱包地址、节点号</p>
+          <table class="my-4 ml-8">
+            <tr class="h-10">
+              <td class="font-bold text-right pr-4">官方邮箱:</td>
+              <td>
+                <a
+                  href="mailto:filfi@filfi.io"
+                  class="font-semibold text-blue-500 underline decoration-blue-700/35 underline-offset-4 hover:text-blue-900 hover:decoration-blue-900/55 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/25"
+                  >filfi@filfi.io</a
+                >
+              </td>
+            </tr>
+            <tr class="h-10">
+              <td class="font-bold text-right pr-4">Telegram:</td>
+              <td>
+                <a
+                  href="https://t.me/filfi_io"
+                  class="font-semibold text-blue-500 underline decoration-blue-700/35 underline-offset-4 hover:text-blue-900 hover:decoration-blue-900/55 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/25"
+                  >@filfi_io</a
+                >
+              </td>
+            </tr>
+          </table>
+          <p>
+            我们收到后将逐一核实处理。感谢您的理解与配合，由此带来的不便，我们深表歉意！
+          </p>
+          <p>特此公告。</p>
+        </div>
+      </section>
+    </main>
   </body>
 </html>
